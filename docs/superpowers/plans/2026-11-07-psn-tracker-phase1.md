@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal :** construire le site personnel de trophées PSN de Zmx969 : synchro PSN fiable vers Postgres, page principale « Games » conforme à la maquette v11, page Settings, et déploiement sur le Synology via deux stacks Portainer et une image construite par GitHub Actions.
+**Goal :** construire le site personnel de trophées PSN de Zmx969 : synchro PSN fiable vers Postgres, page principale « Games » conforme à la maquette v12, page Settings, et déploiement sur le Synology via deux stacks Portainer et une image construite par GitHub Actions.
 
 **Architecture :**
 - Une seule application Next.js (App Router, React Server Components qui lisent Postgres via Drizzle) fournit **une seule image Docker**, lancée de deux façons :
@@ -13,7 +13,7 @@
 
 **Tech Stack :** Node.js 22 LTS, TypeScript strict, Next.js (dernière version stable, App Router, `output: "standalone"`), React 19, Drizzle ORM + drizzle-kit, `postgres` (postgres.js) en prod, `@electric-sql/pglite` pour les tests et le dev local, `psn-api`, `bcryptjs`, `zod`, Vitest + @testing-library/react + jsdom, esbuild (bundle du worker), Docker, GitHub Actions, GHCR, nginx, PostgreSQL 16.
 
-**Spec :** [docs/superpowers/specs/2026-11-07-psn-tracker-design.md](../specs/2026-11-07-psn-tracker-design.md). Maquette de référence : [2026-11-07-psn-tracker-maquette-accueil.html](../specs/2026-11-07-psn-tracker-maquette-accueil.html) (v11). **Tout le CSS des composants se porte depuis cette maquette** : mêmes règles, mêmes valeurs.
+**Spec :** [docs/superpowers/specs/2026-11-07-psn-tracker-design.md](../specs/2026-11-07-psn-tracker-design.md). Maquette de référence : [2026-11-07-psn-tracker-maquette-accueil.html](../specs/2026-11-07-psn-tracker-maquette-accueil.html) (v12). **Tout le CSS des composants se porte depuis cette maquette** : mêmes règles, mêmes valeurs.
 
 **Hors de ce plan :** la page de détail d'un jeu (spec 8.9). Sa maquette doit d'abord être faite et validée, puis elle aura son propre plan. Ici, les lignes de jeux mènent déjà à `/games/[id]`, qui affiche pour l'instant une page provisoire.
 
@@ -46,6 +46,10 @@
   - bannière au format 1920 × 520, bornée entre 240 et 560 px de haut ;
   - police Sora (300–700) ;
   - jetons de couleur de la maquette : `--bg:#0F1631`, `--text:#F3F5FB`, `--muted:#A9B3CB`, `--accent:#5AA9FF`, `--plat:#D3E2FF`, `--gold:#F2C462`, `--silver:#C9D0DA`, `--bronze:#DE9563`.
+- **Couleur des barres de progression des jeux, selon la complétion :**
+  - 100 % → S `#667FB2` ; 80–99 % → A `#008000` ; 60–79 % → B `#7B9E00` ;
+  - 40–59 % → C `#A68E00` ; 20–39 % → D `#A66A00` ; 1–19 % → E `#FF4100` ;
+  - 0 % → F `#EE0000`, appliquée au fond de la barre, à 38 %.
 - Jamais de « … » sur les noms des listes latérales, ni sur les trois lignes des lignes de jeux.
 - **Déploiement :**
   - deux stacks Portainer : « site » (app + worker) et « infra » (postgres + nginx) ;
@@ -545,8 +549,9 @@ it("maps rarity boundaries", () => {
   - `parseGameQuery(params: URLSearchParams): GameQuery`, avec repli sur les valeurs par défaut si un paramètre est invalide ;
   - `queryGames(db, q, { hideZero }): Promise<{ items: GameRowData[]; total: number }>` (50 par page) ;
   - `toGameRow(title, imageMap): GameRowData` ;
-  - `gameStatus(t): "plat-earned"|"plat-missing"|"complete"|"incomplete"`.
-- Produces : `GameRowData = { id; name; platforms: ("PS4"|"PS5")[]; coverSrc; earnedTotal; definedTotal; counts: Record<TrophyType, [earned: number, defined: number]>; progress; lastPlayedLine: string; status }`.
+  - `gameStatus(t): "plat-earned"|"plat-missing"|"complete"|"incomplete"` ;
+  - `progressRank(progress: number): "S"|"A"|"B"|"C"|"D"|"E"|"F"`.
+- Produces : `GameRowData = { id; name; platforms: ("PS4"|"PS5")[]; coverSrc; earnedTotal; definedTotal; counts: Record<TrophyType, [earned: number, defined: number]>; progress; rank; lastPlayedLine: string; status }`.
 - Produces : `GET /api/games?...` → `{ items, total }`.
 - Filtres (spec 8.7) :
   - `100` : progress = 100 ; `not100` : progress < 100 ;
@@ -563,6 +568,7 @@ it("maps rarity boundaries", () => {
 
 - [ ] **Step 1 : tests qui échouent.**
   - **`gameStatus`** : un platine obtenu → `plat-earned` ; 1 platine défini mais non obtenu → `plat-missing` ; aucun platine et 100 % → `complete` ; aucun platine et 80 % → `incomplete`.
+  - **`progressRank` aux bornes** : 0 → F ; 1 → E ; 19 → E ; 20 → D ; 39 → D ; 40 → C ; 59 → C ; 60 → B ; 79 → B ; 80 → A ; 99 → A ; 100 → S.
   - **`notFinished`** exclut un jeu platiné à 93 % et inclut un jeu non platiné à 93 %.
   - **`platinumRarity`** classe 1.30 avant 50.82, et place en dernier un jeu sans platine.
   - **Pagination** : sur 120 titres, l'`offset` 100 renvoie 20 éléments, avec `total` = 120.
@@ -612,7 +618,7 @@ it("maps rarity boundaries", () => {
 - [ ] **Step 3 :** FAIL, implémenter, puis PASS.
 - [ ] **Step 4 : vérification visuelle.**
   - `npm run seed:dev && npm run dev`.
-  - Comparer le menu et la bannière avec la maquette v11 à 1 630 px de large.
+  - Comparer le menu et la bannière avec la maquette v12 à 1 630 px de large.
   - Les 4 onglets mènent bien à « Coming soon ».
 - [ ] **Step 5 :** commit `feat: site shell, menu, banner and placeholders` + push.
 
@@ -702,6 +708,7 @@ it("maps rarity boundaries", () => {
     2. « 47 / 47 trophies » ;
     3. `lastPlayedLine`.
   - à droite, le bloc empilé : les pastilles des types présents dans le jeu, centrées sur la barre de progression (`padding-right:44px`), et sous elles la barre et le pourcentage PSN.
+  - La barre est remplie avec `var(--rank-<rang>)`. À 0 %, c'est le fond de la barre qui prend `--rank-f` à 38 % (règles `.bar.zero` et jetons `--rank-*` de la maquette v12).
   - Icône d'état :
     - `plat-earned` : icône platine en couleur ; `plat-missing` : icône platine grisée ;
     - `complete` : coche ; `incomplete` : coche grisée.
@@ -709,6 +716,7 @@ it("maps rarity boundaries", () => {
 
 - [ ] **Step 1 : tests qui échouent.**
   - Une ligne sans platine défini n'affiche pas de pastille platine, et n'a que 3 pastilles.
+  - Une ligne à 27 % a une barre en `var(--rank-d)`. Une ligne à 0 % a la classe `zero` sur sa barre.
   - Les lignes `plat-missing` et `incomplete` ont la classe grisée.
   - La 3e ligne vaut exactement « Last played 5 Nov 2026 | 33h 27m played ».
   - Avec un `fetch` simulé et une intersection déclenchée, `GameList` appelle `/api/games?offset=50&...`, ajoute les éléments, puis n'appelle plus rien une fois `total` atteint.
@@ -849,5 +857,5 @@ it("maps rarity boundaries", () => {
   - Le jeu de plus de 256 trophées, s'il est présent, a tous ses trophées.
   - Les 32 milestones et plus correspondent à ceux de psnprofiles, plus le 11,000th.
   - Les jaquettes sont carrées et les images sont servies depuis `/media/...`.
-- [ ] **Step 4 :** comparer visuellement la page à la maquette v11 à 1 630 px de large, puis à 375 px (pas de défilement horizontal).
+- [ ] **Step 4 :** comparer visuellement la page à la maquette v12 à 1 630 px de large, puis à 375 px (pas de défilement horizontal).
 - [ ] **Step 5 :** corriger les écarts (un commit par correction), puis `npx vitest run` → PASS, et push.

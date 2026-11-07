@@ -1,7 +1,7 @@
 # PSN Tracker — Design, phase 1 (socle + page principale + page jeu + Settings)
 
 Date : 2026-11-07
-Maquette validée : [2026-11-07-psn-tracker-maquette-accueil.html](2026-11-07-psn-tracker-maquette-accueil.html) (style « Console », v11)
+Maquette validée : [2026-11-07-psn-tracker-maquette-accueil.html](2026-11-07-psn-tracker-maquette-accueil.html) (style « Console », v12)
 
 Légende : **[décidé]** = choix explicite de l'utilisateur. **[mon choix]** = décision prise pendant la conception, que l'utilisateur peut contester. Tout le reste découle directement de ce qu'il a dit.
 
@@ -249,6 +249,19 @@ Chaque case contient un libellé et une valeur, **sans texte en dessous [décid�
   - **[décidé] progression « empilée »**, dans la partie droite de la ligne (~40 % de sa largeur) :
     - en haut, les pastilles obtenus/définis par type (platine, or, argent, bronze), **centrées par rapport à la barre de progression**. Les types absents du jeu ne sont pas affichés et ne décalent pas le centrage ;
     - en dessous, une longue barre de progression suivie du **pourcentage PSN**, celui que montre la console ;
+    - **[décidé] la couleur de la barre dépend de la complétion du jeu**, avec les couleurs des rangs de psnprofiles (valeurs exactes de son CSS) :
+
+      | Complétion | Rang | Couleur |
+      |---|---|---|
+      | 100 % | S | `#667FB2` |
+      | 80 à 99 % | A | `#008000` |
+      | 60 à 79 % | B | `#7B9E00` |
+      | 40 à 59 % | C | `#A68E00` |
+      | 20 à 39 % | D | `#A66A00` |
+      | 1 à 19 % | E | `#FF4100` |
+      | 0 % | F | `#EE0000` |
+
+      - **[mon choix]** À 0 %, la barre n'a rien à remplir. C'est donc le fond de la barre lui-même qui prend la couleur F, atténuée.
   - **[décidé] icône d'état**, tout à droite :
     - si le jeu a un platine : la **vraie icône du platine PSN**, en couleur quand le platine est obtenu, **grisée** sinon ;
     - si le jeu n'a pas de platine : une **coche en V**, en couleur quand le jeu est à 100 %, grisée sinon.
@@ -323,7 +336,8 @@ Chaque case contient un libellé et une valeur, **sans texte en dessous [décid�
   - fond `#0F1631` ;
   - texte `#F3F5FB`, texte secondaire `#A9B3CB` ;
   - accent `#5AA9FF` ;
-  - métaux : platine `#D3E2FF`, or `#F2C462`, argent `#C9D0DA`, bronze `#DE9563`.
+  - métaux : platine `#D3E2FF`, or `#F2C462`, argent `#C9D0DA`, bronze `#DE9563` ;
+  - rangs de complétion des barres de progression : S `#667FB2`, A `#008000`, B `#7B9E00`, C `#A68E00`, D `#A66A00`, E `#FF4100`, F `#EE0000` (voir 8.7).
 - **[décidé] Proportions**, calquées sur psnprofiles mesuré à la largeur d'écran de l'utilisateur (1 630 px) :
   - **contenu de 1 400 px**, **colonne latérale ~450 px** (environ un tiers) ;
   - bannière au format 1920 × 520 ;

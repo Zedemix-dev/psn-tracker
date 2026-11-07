@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Mockup v11 — Console</title>
+<title>Mockup v12 — Console</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -16,6 +16,7 @@
   --plat:#D3E2FF; --gold:#F2C462; --silver:#C9D0DA; --bronze:#DE9563;
   --font:"Sora",sans-serif; --r-panel:14px; --r-chip:8px;
   --icon:56px; --gap:8px; --card:380px;
+  --rank-s:#667FB2; --rank-a:#008000; --rank-b:#7B9E00; --rank-c:#A68E00; --rank-d:#A66A00; --rank-e:#FF4100; --rank-f:#EE0000;
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
@@ -148,7 +149,8 @@ svg.ico{width:14px;height:14px;flex:none}
 .progress{display:flex;align-items:center;gap:8px}
 .bar{flex:1;height:5px;border-radius:3px;background:var(--surface-2);overflow:hidden}
 .bar i{display:block;height:100%;background:var(--accent)}
-.game.done .bar i{background:var(--done)}
+/* 0%: nothing to fill, so the empty track itself takes colour F */
+.bar.zero{background:color-mix(in srgb,var(--rank-f) 38%,transparent)}
 .pct{font-size:12px;font-weight:600;width:36px;text-align:right;font-variant-numeric:tabular-nums}
 .status{display:grid;place-items:center}
 .status svg{width:20px;height:20px}
@@ -337,6 +339,7 @@ const TYPE={plat:'Platinum',gold:'Gold',silver:'Silver',bronze:'Bronze'};
 const TICON={plat:'https://psnprofiles.com/lib/img/icons/40-platinum.png',gold:'https://psnprofiles.com/lib/img/icons/40-gold.png',silver:'https://psnprofiles.com/lib/img/icons/40-silver.png',bronze:'https://psnprofiles.com/lib/img/icons/40-bronze.png'};
 const ticon=(t,cls)=>`<img class="ti ${cls||''}" src="${TICON[t]}" alt="${TYPE[t]}" title="${TYPE[t]}">`;
 const pct=r=>r.toFixed(2)+'%';
+const rankColor=p=>p===100?'var(--rank-s)':p>=80?'var(--rank-a)':p>=60?'var(--rank-b)':p>=40?'var(--rank-c)':p>=20?'var(--rank-d)':p>=1?'var(--rank-e)':'var(--rank-f)';
 const tier=r=>r<5?'Ultra rare':r<10?'Very rare':r<20?'Rare':r<50?'Uncommon':'Common';
 const cup=cls=>`<svg class="${cls||''}" aria-hidden="true"><use href="#cup"/></svg>`;
 const HB="Hellblade: Senua's Sacrifice";
@@ -379,7 +382,15 @@ const games=[
  {n:"Horizon Forbidden West",p:"PS4",i:"game/s/15451/59ed3702-7fdb-4a09-aee4-494ff316cbc2.png",last:"12 Oct 2026",h:"61h 53m",c:[1,1,1,1,7,7,53,53],pr:100},
  {n:"Tales of Arise",p:"PS4",i:"game/s/13898/eb6fa70e-66f9-4ddc-bd72-ed6cfb1e876b.png",last:"11 Oct 2026",h:"49h 39m",c:[1,1,2,2,13,13,43,43],pr:100},
  {n:"Final Fantasy XV Multiplayer: Comrades",p:"PS4",i:"game/s/8563/174a994a-0be7-42e9-b629-5b16e8be9aa0.png",last:"10 Oct 2026",h:"11h 00m",c:[0,0,3,3,3,3,10,10],pr:100},
- {n:"A Hat in Time",p:"PS4",i:"game/s/6921/dc253355-e5f6-40a3-b132-5158167ffa4d.png",last:"9 Oct 2026",h:"45h 35m",c:[1,1,7,8,15,15,14,14],pr:93}
+ {n:"A Hat in Time",p:"PS4",i:"game/s/6921/dc253355-e5f6-40a3-b132-5158167ffa4d.png",last:"9 Oct 2026",h:"45h 35m",c:[1,1,7,8,15,15,14,14],pr:93},
+ {n:"Nioh 3",p:"PS5",i:"game/s/39667/e9c561f1-e3c5-41e4-9017-1eb8d9eda0f4.png",last:"17 Feb 2026",c:[1,1,2,4,10,14,38,45],pr:84},
+ {n:"The Last of Us Part II Remastered",p:"PS5",i:"game/s/25442/f12f94d4-2c24-4066-ac71-340428f17c8c.png",last:"22 Jan 2024",c:[1,1,7,9,9,13,11,22],pr:71},
+ {n:"Have a Nice Death",p:"PS5",i:"game/s/24850/89bd4390-9747-4fec-abe9-dcf06d43c2d1.png",last:"16 Dec 2023",c:[0,1,0,3,0,8,4,26],pr:5},
+ {n:"Monster Hunter Rise",p:"PS5",i:"game/s/20635/4a7ba4e3-9c30-436a-be81-7e5fc27103e3.png",last:"16 Dec 2023",c:[0,1,0,5,0,20,1,74],pr:1},
+ {n:"Final Fantasy XIV",p:"PS5",i:"game/s/12696/cabf9666-ee7e-417f-91a5-b1f9b769fcbd.png",last:"6 Feb 2023",c:[0,1,0,14,13,60,63,172],pr:27},
+ {n:"Crash Bandicoot 4: It's About Time",p:"PS5",i:"game/s/12432/a8e4c8d8-b4bf-4e01-bee4-ca74f07c4d37.png",last:"27 Nov 2022",c:[0,1,0,4,0,8,22,39],pr:31},
+ {n:"Atelier Sophie 2: The Alchemist of the Mysterious Dream",p:"PS4",i:"game/s/15519/b357975e-1867-4e6b-8f94-5e1545f8ec03.png",last:"19 Sep 2022",c:[0,1,1,2,12,13,32,32],pr:88},
+ {n:"Stranger of Paradise: Final Fantasy Origin",p:"PS4",i:"game/s/15719/7a11dba0-92f5-4251-8dcf-5ddc934334ec.png",last:"21 Jul 2022",c:[1,1,3,5,8,12,46,65],pr:75}
 ];
 const cabinet=[
  {n:"The Greatest Expedition in History",g:"Clair Obscur: Expedition 33",r:39.72,i:"trophy/s/33395/45a58139-26d4-4e25-8d69-2444a1c34803.png"},
@@ -479,9 +490,9 @@ show(0); fit(); schedule();
       <img class="game-cover" src="${g.ph?PH:IMG+g.i}" alt="" loading="lazy">
       <div class="gtext"><div class="gtitle"><h3>${g.n}</h3><span class="platform">${g.p}</span></div>
         <div class="game-meta"><span>${earned} / ${total} trophies</span></div>
-        <div class="game-meta"><span>Last played ${g.last}</span><span class="sep" aria-hidden="true"></span><span>${g.h} played</span></div></div>
+        <div class="game-meta"><span>Last played ${g.last}</span>${g.h?`<span class="sep" aria-hidden="true"></span><span>${g.h} played</span>`:''}</div></div>
       <div class="right"><div class="chips">${chip('plat',pe,pt)}${chip('gold',ge,gt)}${chip('silver',se,st)}${chip('bronze',be,bt)}</div>
-      <div class="progress"><div class="bar"><i style="width:${g.pr}%"></i></div><span class="pct">${g.pr}%</span></div></div>
+      <div class="progress"><div class="bar${g.pr===0?' zero':''}"><i style="width:${g.pr}%;background:${rankColor(g.pr)}"></i></div><span class="pct">${g.pr}%</span></div></div>
       <div class="status">${status}</div></article>`;
   }).join('');
 })();
