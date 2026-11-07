@@ -3,6 +3,7 @@ import path from "node:path";
 import { createDb } from "@/src/db/client";
 import { runMigrations } from "@/src/db/migrate";
 import { cabinet, profile, titles, trophies, trophyGroups, type TrophyType } from "@/src/db/schema";
+import { isSafeSeedTarget } from "./seed-guard";
 import { CABINET, GAMES, RAREST, RECENT } from "./seed-data";
 
 // Fills the dev database with the data of mockup v12 so the UI has something to show.
@@ -52,6 +53,9 @@ function parsePlayTime(s: string | undefined): number | null {
 async function main(): Promise<void> {
   const url = process.env.DATABASE_URL;
   if (!url) throw new Error("DATABASE_URL is required (e.g. pglite:./.data/dev)");
+  if (!isSafeSeedTarget(url, process.argv.slice(2))) {
+    throw new Error("Refusing to wipe a non-local database. Pass --force if you really mean it.");
+  }
   if (url.startsWith("pglite:") && url !== "pglite:memory") {
     fs.mkdirSync(path.dirname(path.resolve(url.slice("pglite:".length))), { recursive: true });
   }

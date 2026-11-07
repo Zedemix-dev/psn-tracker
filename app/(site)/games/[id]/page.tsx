@@ -1,9 +1,11 @@
 import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
+import { requireSession } from "@/src/auth/require-session";
 import { getDb } from "@/src/db/client";
 import { titles } from "@/src/db/schema";
 
 export default async function GamePage({ params }: { params: Promise<{ id: string }> }) {
+  await requireSession();
   const { id } = await params;
   const db = await getDb();
   const [title] = await db
