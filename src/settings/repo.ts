@@ -1,4 +1,4 @@
-import { eq, sql } from "drizzle-orm";
+import { and, eq, isNotNull } from "drizzle-orm";
 import type { Db } from "@/src/db/client";
 import { settings, type PsnAuthStatus } from "@/src/db/schema";
 import { decrypt, encrypt } from "@/src/lib/crypto";
@@ -43,10 +43,11 @@ export async function requestSync(db: Db, now: Date): Promise<void> {
 }
 
 export async function takeSyncRequest(db: Db): Promise<boolean> {
-  const taken = await db.execute(
-    sql`update settings set sync_requested_at = null where id = 1 and sync_requested_at is not null returning id`,
-  );
-  const rows = Array.isArray(taken) ? taken : (taken as { rows: unknown[] }).rows;
+  const rows = await db
+    .update(settings)
+    .set({ syncRequestedAt: null })
+    .where(and(ROW, isNotNull(settings.syncRequestedAt)))
+    .returning({ id: settings.id });
   return rows.length > 0;
 }
 
