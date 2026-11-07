@@ -1,0 +1,25 @@
+:root{
+  --banner:none;
+  --banner-y:30%;
+  --bg:#0F1631; --surface:rgba(255,255,255,.07); --surface-2:rgba(255,255,255,.12); --line:rgba(255,255,255,.13);
+  --text:#F3F5FB; --muted:#A9B3CB; --accent:#5AA9FF; --done:#D3E2FF;
+  --plat:#D3E2FF; --gold:#F2C462; --silver:#C9D0DA; --bronze:#DE9563;
+  --font:var(--font-sora),"Sora",sans-serif; --r-panel:14px; --r-chip:8px;
+  --icon:56px; --gap:8px; --card:380px;
+  --rank-s:#667FB2; --rank-a:#008000; --rank-b:#7B9E00; --rank-c:#A68E00; --rank-d:#A66A00; --rank-e:#FF4100; --rank-f:#EE0000;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.4;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:-60px;background:var(--banner) center/cover;filter:blur(44px) brightness(.4) saturate(1.25);z-index:-1}
+img{display:block}
+button{font:inherit;color:inherit}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+svg.ico{width:14px;height:14px;flex:none}
+.wrap{max-width:1448px;margin:0 auto;padding:0 24px}
+.glass{background:var(--surface);border:1px solid var(--line);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+@media (max-width:640px){
+  .wrap{padding:0 16px}
+}

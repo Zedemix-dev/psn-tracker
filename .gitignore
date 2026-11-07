@@ -1,3 +1,14 @@
 # Maquettes de brainstorming : versionnées (pour les retrouver sur un autre PC),
 # sauf les fichiers techniques temporaires du serveur de maquettes.
 .superpowers/brainstorm/*/state/
+
+# Node / Next
+node_modules/
+.next/
+.data/
+.env
+.env.local
+dist/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
