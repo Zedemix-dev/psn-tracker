@@ -199,3 +199,58 @@ describe("withPacing", () => {
     expect(isRetryable(new Error("Empty trophy list for NPWR00500_00"))).toBe(false);
   });
 });
+
+describe("runSync robustness", () => {
+  function failingFinalWrite(real: Db): Db {
+    return new Proxy(real, {
+      get(target, prop, recv) {
+        if (prop !== "update") return Reflect.get(target, prop, recv);
+        return (table: never) => {
+          const builder = target.update(table);
+          return new Proxy(builder, {
+            get(b, p, r) {
+              if (p !== "set") return Reflect.get(b, p, r);
+              return (v: { status?: string; error?: string }) => {
+                if (v.status === "success" || (v.status === "error" && v.error !== "Interrupted")) {
+                  throw new Error("db down");
+                }
+                return b.set(v as never);
+              };
+            },
+          });
+        };
+      },
+    });
+  }
+
+  it("resolves to error when the final status write fails", async () => {
+    const res = await runSync(failingFinalWrite(db), fixture(), cfg, "manual", now, deps);
+    expect(res).toMatchObject({ status: "error", error: "db down" });
+  });
+
+  it("releases the guard after an error", async () => {
+    const empty = await createTestDb();
+    expect((await runSync(empty, fixture(), cfg, "manual", now, deps)).status).toBe("error");
+    expect((await runSync(empty, fixture(), cfg, "manual", now, deps)).status).toBe("error");
+  });
+
+  it("sets finishedAt from the injected clock", async () => {
+    const later = new Date(now.getTime() + 90_000);
+    const res = await runSync(db, fixture(), cfg, "manual", now, { ...deps, clock: () => later });
+    const [run] = await db.select().from(syncRuns).where(eq(syncRuns.id, res.runId!));
+    expect(run.finishedAt!.getTime()).toBeGreaterThan(run.startedAt.getTime());
+    expect(run.finishedAt).toEqual(later);
+  });
+});
+
+describe("isRetryable", () => {
+  it("classifies errors", () => {
+    expect(isRetryable(new Error("Found 500 trophies"))).toBe(false);
+    expect(isRetryable(new TypeError("fetch failed"))).toBe(true);
+    expect(isRetryable(new Error("Service Unavailable"))).toBe(true);
+    expect(isRetryable(Object.assign(new Error("x"), { cause: { code: "UND_ERR_SOCKET" } }))).toBe(true);
+    expect(isRetryable(Object.assign(new Error("x"), { status: 503 }))).toBe(true);
+    expect(isRetryable(Object.assign(new Error("x"), { status: 401 }))).toBe(false);
+    expect(isRetryable(new Error("Resource Not Found"))).toBe(false);
+  });
+});

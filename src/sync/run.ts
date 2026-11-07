@@ -11,7 +11,7 @@ import { defaultSleep, withPacing, type Sleep } from "@/src/sync/retry";
 import { syncTitle, upsertTitleRow } from "@/src/sync/title";
 
 export type SyncRunResult = { status: "success" | "error" | "skipped"; runId?: number; error?: string };
-export type SyncDeps = { sleep?: Sleep; fetchImpl?: typeof fetch };
+export type SyncDeps = { sleep?: Sleep; fetchImpl?: typeof fetch; clock?: () => Date };
 
 export type RunProgress = {
   setTotal(n: number): Promise<void>;
@@ -48,11 +48,12 @@ export async function executeRun(
   body: (ctx: RunContext) => Promise<void>,
 ): Promise<SyncRunResult> {
   if (active) return { status: "skipped" };
+  const clock = deps?.clock ?? (() => new Date());
   const run = (async (): Promise<SyncRunResult> => {
     const staleBefore = new Date(now.getTime() - STALE_RUN_MS);
     await db
       .update(syncRuns)
-      .set({ status: "error", error: "Interrupted", finishedAt: now })
+      .set({ status: "error", error: "Interrupted", finishedAt: clock() })
       .where(and(eq(syncRuns.status, "running"), lte(syncRuns.startedAt, staleBefore)));
     const running = await db
       .select({ id: syncRuns.id })
@@ -82,22 +83,23 @@ export async function executeRun(
           .where(eq(syncRuns.id, runId));
       },
     };
+    const writeFinal = async (status: "success" | "error", error: string | null) => {
+      await db.update(syncRuns).set({ status, finishedAt: clock(), error }).where(eq(syncRuns.id, runId));
+    };
     try {
       const auth = await getValidAuth(db, paced, cfg.appSecret, now);
       if (auth === "expired") throw new Error("PSN token expired");
       if (auth === "missing") throw new Error("PSN token missing");
       await body({ gw: paced, auth, progress, failures });
-      await db
-        .update(syncRuns)
-        .set({ status: "success", finishedAt: now, error: failureSummary(failures) })
-        .where(eq(syncRuns.id, runId));
+      await writeFinal("success", failureSummary(failures));
       return { status: "success", runId };
     } catch (err) {
       const message = errorMessage(err);
-      await db
-        .update(syncRuns)
-        .set({ status: "error", finishedAt: now, error: message })
-        .where(eq(syncRuns.id, runId));
+      try {
+        await writeFinal("error", message);
+      } catch {
+        // Best-effort: the DB itself may be the problem; never reject nor hold the guard.
+      }
       return { status: "error", runId, error: message };
     }
   })();

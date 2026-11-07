@@ -7,13 +7,32 @@ export const defaultSleep: Sleep = (ms) => new Promise((resolve) => setTimeout(r
 const PACE_MS = 200;
 const RETRY_DELAYS_MS = [1000, 2000, 4000];
 
-/** True for HTTP 429 and 5xx, read from the error's status or else its message. */
+const RETRY_PHRASES = [
+  "too many requests",
+  "rate limit",
+  "internal server error",
+  "bad gateway",
+  "service unavailable",
+  "gateway timeout",
+];
+const NETWORK_CODES = ["ECONNRESET", "ETIMEDOUT", "EAI_AGAIN"];
+
+/**
+ * Best-effort: psn-api hides the HTTP status (the real gateway throws a plain
+ * Error(message)), so besides a numeric status we recognise network errors and
+ * explicit phrases. Bare numbers in a message are never trusted.
+ */
 export function isRetryable(err: unknown): boolean {
-  const e = err as { status?: unknown; statusCode?: unknown; response?: { status?: unknown } } | null;
-  const status = [e?.status, e?.statusCode, e?.response?.status].find((s) => typeof s === "number");
+  const e = err as { status?: unknown; statusCode?: unknown; code?: unknown; cause?: { code?: unknown } } | null;
+  const status = [e?.status, e?.statusCode].find((x) => typeof x === "number");
   if (typeof status === "number") return status === 429 || (status >= 500 && status <= 599);
   const message = err instanceof Error ? err.message : String(err);
-  return /\b(429|5\d\d)\b|too many requests/i.test(message);
+  if (err instanceof TypeError && message === "fetch failed") return true;
+  for (const code of [e?.code, e?.cause?.code]) {
+    if (typeof code === "string" && (NETWORK_CODES.includes(code) || code.startsWith("UND_ERR_"))) return true;
+  }
+  const lower = message.toLowerCase();
+  return RETRY_PHRASES.some((p) => lower.includes(p));
 }
 
 /**
