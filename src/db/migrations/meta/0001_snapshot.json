@@ -1,6 +1,6 @@
 {
-  "id": "3d152f6c-4d94-4a0a-ac73-be4cad12cefd",
-  "prevId": "b248584d-866b-49e9-8e8e-9fe4e75fd654",
+  "id": "fe53ab57-209a-4883-b31a-26cb09cbbda0",
+  "prevId": "b795e98c-2661-43f7-9cb3-b9330ec24c1c",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -719,7 +719,7 @@
         },
         "progress_target": {
           "name": "progress_target",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         }

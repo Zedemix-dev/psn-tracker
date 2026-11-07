@@ -96,7 +96,7 @@ export const trophies = pgTable(
     earnedAt: ts("earned_at"),
     earnedRate: numeric("earned_rate", { precision: 6, scale: 2 }),
     rareCategory: integer("rare_category"),
-    progressTarget: integer("progress_target"),
+    progressTarget: text("progress_target"),
   },
   (t) => [
     primaryKey({ columns: [t.titleId, t.trophyId] }),

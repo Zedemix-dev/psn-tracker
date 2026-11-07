@@ -117,7 +117,7 @@ CREATE TABLE "trophies" (
 	"earned_at" timestamp with time zone,
 	"earned_rate" numeric(6, 2),
 	"rare_category" integer,
-	"progress_target" integer,
+	"progress_target" text,
 	CONSTRAINT "trophies_title_id_trophy_id_pk" PRIMARY KEY("title_id","trophy_id")
 );
 --> statement-breakpoint
