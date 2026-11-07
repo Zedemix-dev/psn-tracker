@@ -31,7 +31,7 @@ function compareCounting(a: EarnedTrophy, b: EarnedTrophy): number {
     second(a.earnedAt) - second(b.earnedAt) ||
     Number(a.type === "platinum") - Number(b.type === "platinum") ||
     a.trophyId - b.trophyId ||
-    a.titleId.localeCompare(b.titleId)
+    (a.titleId < b.titleId ? -1 : a.titleId > b.titleId ? 1 : 0)
   );
 }
 
@@ -56,7 +56,9 @@ export function computeMilestones(earned: EarnedTrophy[], _now: Date): Milestone
 
     const firstOfTitle = new Map<string, number>();
     for (const t of ordered) {
-      if (!firstOfTitle.has(t.titleId)) firstOfTitle.set(t.titleId, t.earnedAt.getTime());
+      const ms = t.earnedAt.getTime();
+      const cur = firstOfTitle.get(t.titleId);
+      if (cur === undefined || ms < cur) firstOfTitle.set(t.titleId, ms);
     }
     let fastest = platinumPositions[0];
     let fastestGap = Infinity;

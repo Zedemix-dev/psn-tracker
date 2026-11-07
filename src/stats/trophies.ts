@@ -75,9 +75,8 @@ export async function getLatestTrophies(db: Db, limit = 20): Promise<EarnedTroph
     .orderBy(
       desc(earnedSecond),
       platinumFirst,
-      desc(trophies.earnedAt),
       desc(trophies.trophyId),
-      desc(trophies.titleId),
+      sql`${trophies.titleId} collate "C" desc`,
     )
     .limit(limit);
   return rows.map(toEarned);

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import type { Db } from "@/src/db/client";
+import { computeMilestones } from "@/src/stats/milestones";
 import { getLatestTrophies, getRarest, getRarityBreakdown } from "@/src/stats/trophies";
 import { insertTitle, insertTrophies } from "@/tests/fixtures/profile";
 import { createTestDb } from "@/tests/helpers/db";
@@ -61,5 +62,18 @@ describe("getLatestTrophies", () => {
     expect(all.map((r) => r.trophyId)).toEqual([3, 2, 4, 1]);
     expect(all[2]).toMatchObject({ detail: "", earnedRate: null });
     expect(await getLatestTrophies(db, 2)).toHaveLength(2);
+  });
+
+  it("is the exact reverse of the milestone numbering within a second, ignoring milliseconds", async () => {
+    await insertTrophies(db, [
+      { titleId: "A", trophyId: 7, earnedAt: new Date("2024-01-01T00:00:09.900Z") },
+      { titleId: "A", trophyId: 8, earnedAt: new Date("2024-01-01T00:00:09.100Z") },
+      { titleId: "A", trophyId: 9, earnedAt: new Date("2024-01-01T00:00:01Z") },
+    ]);
+    const latest = await getLatestTrophies(db);
+    expect(latest.map((r) => r.trophyId)).toEqual([8, 7, 9]);
+    // numbering: 9 is first, then 7, then 8
+    const first = computeMilestones([...latest].reverse(), new Date()).find((m) => m.label === "First trophy")!;
+    expect(first.trophy.trophyId).toBe(9);
   });
 });

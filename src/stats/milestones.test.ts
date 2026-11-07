@@ -82,6 +82,19 @@ describe("computeMilestones", () => {
     expect(fast.trophy.trophyId).toBe(4);
   });
 
+  it("measures the fastest platinum from the exact earliest trophy of the game", () => {
+    const at = (sec: number, ms: number) => new Date(BASE + sec * 1000 + ms);
+    const earned = [
+      make(1, { titleId: "A", earnedAt: at(0, 900) }),
+      make(2, { titleId: "A", earnedAt: at(0, 100) }),
+      make(3, { titleId: "A", earnedAt: at(1, 0), type: "platinum" }),
+      make(4, { titleId: "B", earnedAt: at(10, 0) }),
+      make(5, { titleId: "B", earnedAt: at(10, 500), type: "platinum" }),
+    ];
+    const fast = computeMilestones(earned, NOW).find((m) => m.label === "Fastest platinum")!;
+    expect(fast.trophy.trophyId).toBe(5);
+  });
+
   it("uses English ordinals", () => {
     expect([1, 2, 3, 4, 11, 12, 13, 21, 22, 23, 101, 111, 1337].map(ordinal)).toEqual([
       "1st", "2nd", "3rd", "4th", "11th", "12th", "13th", "21st", "22nd", "23rd", "101st", "111th", "1,337th",
