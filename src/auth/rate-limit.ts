@@ -1,6 +1,8 @@
 export type LoginLimiter = {
   check(ip: string, now: number): boolean;
   fail(ip: string, now: number): void;
+  /** Atomically checks the cap and records the attempt (synchronous, so no race). */
+  attempt(ip: string, now: number): boolean;
   reset(ip: string): void;
 };
 
@@ -16,6 +18,12 @@ export function createLoginLimiter(opts: { max: number; windowMs: number }): Log
     check: (ip, now) => recent(ip, now).length < opts.max,
     fail(ip, now) {
       failures.set(ip, [...recent(ip, now), now]);
+    },
+    attempt(ip, now) {
+      const list = recent(ip, now);
+      if (list.length >= opts.max) return false;
+      failures.set(ip, [...list, now]);
+      return true;
     },
     reset(ip) {
       failures.delete(ip);
