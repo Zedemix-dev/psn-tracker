@@ -1,0 +1,494 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup v7 — Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --banner:url("https://img.psnprofiles.com/hero/l/33395/5d30a460-7281-4258-9c21-b368cc80b7b8.jpg");
+  --banner-y:30%;
+  --bg:#0F1631; --surface:rgba(255,255,255,.07); --surface-2:rgba(255,255,255,.12); --line:rgba(255,255,255,.13);
+  --text:#F3F5FB; --muted:#A9B3CB; --accent:#5AA9FF; --done:#D3E2FF;
+  --plat:#D3E2FF; --gold:#F2C462; --silver:#C9D0DA; --bronze:#DE9563;
+  --font:"Sora",sans-serif; --r-panel:14px; --r-chip:8px;
+  --icon:56px; --gap:8px; --card:380px;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.4;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:-60px;background:var(--banner) center/cover;filter:blur(44px) brightness(.4) saturate(1.25);z-index:-1}
+img{display:block}
+button{font:inherit;color:inherit}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+svg.ico{width:14px;height:14px;flex:none}
+.wrap{max-width:1280px;margin:0 auto;padding:0 24px}
+.glass{background:var(--surface);border:1px solid var(--line);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+
+/* Banner: height follows the image ratio (1920×520 recommended) so it is barely cropped */
+.hero{position:relative;width:100%;aspect-ratio:1920/520;min-height:240px;max-height:560px;overflow:hidden}
+.hero-img{position:absolute;inset:0;background:var(--banner) center var(--banner-y)/cover no-repeat;-webkit-mask-image:linear-gradient(to bottom,#000 72%,transparent 100%);mask-image:linear-gradient(to bottom,#000 72%,transparent 100%)}
+.hero-settings{position:absolute;top:14px;right:24px;z-index:2;display:inline-flex;align-items:center;gap:7px;padding:6px 12px;border-radius:999px;background:rgba(0,0,0,.45);color:#fff;text-decoration:none;font-size:13px;backdrop-filter:blur(6px)}
+.hero-settings:hover{background:rgba(0,0,0,.65)}
+
+/* Profile band */
+.profile{position:relative;z-index:2;margin-top:-72px;display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;align-items:center;gap:22px;padding:12px 20px;border-radius:var(--r-panel)}
+.avatar{width:92px;height:92px;margin-top:-40px;border-radius:50%;object-fit:cover;background:var(--surface-2);border:3px solid rgba(255,255,255,.9)}
+.identity h1{margin:0;font-size:22px;font-weight:700;line-height:1.15}
+.sync-row{display:flex;align-items:center;gap:10px;margin-top:6px;flex-wrap:wrap}
+.sync-when{color:var(--muted);font-size:12px}
+.btn-sync{display:inline-flex;align-items:center;gap:6px;border:0;background:#fff;color:#0F1631;padding:5px 11px;border-radius:999px;cursor:pointer;font-size:12px;font-weight:600}
+.btn-sync:hover{background:#E4ECFF}
+.btn-sync.busy svg{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.counts{display:flex;align-items:stretch;gap:6px}
+.count{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:64px;padding:6px 8px;border-radius:10px;background:var(--surface-2)}
+.count b{font-size:17px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.count span{display:flex;align-items:center;gap:3px;font-size:11px;margin-top:4px;color:var(--muted)}
+.count span svg{width:11px;height:11px}
+.count.plat b{color:var(--plat)} .count.gold b{color:var(--gold)} .count.silver b{color:var(--silver)} .count.bronze b{color:var(--bronze)}
+
+.level{display:flex;align-items:center;gap:10px;padding-left:20px;border-left:1px solid var(--line)}
+.lvl-icon{width:44px;height:44px;flex:none;background:url("https://psnprofiles.com/lib/img/icons/level-sprite.png?1") 0 55.5556%/100% 1000% no-repeat}
+.level .lv{font-size:20px;font-weight:700;line-height:1}
+.level .lv small{display:block;font-size:11px;font-weight:500;line-height:1.2;color:var(--muted);margin-bottom:2px}
+.level .next{margin-top:5px;width:104px;height:3px;background:var(--surface-2);border-radius:2px;overflow:hidden}
+.level .next i{display:block;height:100%;width:42%;background:var(--silver)}
+.level .next-label{font-size:11px;color:var(--muted);margin-top:3px}
+
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-top:12px}
+.stat{padding:12px 16px;border-radius:12px;min-width:0}
+.stat .label{font-size:12px;color:var(--muted)}
+.stat .value{font-size:28px;font-weight:300;line-height:1.15;margin-top:2px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.stat .value small{font-size:18px;font-weight:300;color:var(--muted)}
+
+/* Top menu: fully transparent, every item is a pill styled like Settings */
+.topbar{position:absolute;top:0;left:0;right:0;z-index:20}
+.topbar .wrap{display:flex;align-items:center;gap:12px;height:58px}
+.tabs{display:flex;align-items:center;gap:6px;overflow-x:auto;scrollbar-width:none;flex:1;min-width:0}
+.pill{display:inline-flex;align-items:center;gap:7px;padding:6px 13px;border-radius:999px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.16);color:#fff;text-decoration:none;font-size:13px;font-weight:500;white-space:nowrap;flex:none;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.pill:hover{background:rgba(0,0,0,.65)}
+.pill[aria-current]{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.85)}
+
+/* Latest trophies carousel: as many as fit, flush with both edges; the detailed one is exactly as tall as the icons */
+.strip{display:flex;align-items:center;justify-content:space-between;gap:var(--gap);margin-top:16px}
+.item{flex:0 0 var(--icon);height:var(--icon);border:0;padding:0;background:none;cursor:pointer;border-radius:10px;display:flex;align-items:center;gap:12px;text-align:left;position:relative}
+.item img{width:var(--icon);height:var(--icon);flex:none;border-radius:10px;object-fit:cover;background:var(--surface-2)}
+.item:not(.on):hover img{outline:2px solid #fff;outline-offset:2px}
+.item .det,.item .rar,.item .timer{display:none}
+.item.on{flex:0 0 var(--card);min-width:0;padding:0 12px 0 0;background:var(--surface);box-shadow:inset 0 0 0 1px var(--line);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);overflow:hidden;cursor:default}
+.item.on .det{display:block;min-width:0;flex:1}
+.det h4{margin:0;font-size:13px;font-weight:600;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.det .desc{font-size:11.5px;line-height:1.3;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.det .when{font-size:11px;line-height:1.3;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item.on .rar{display:flex;align-items:center;gap:8px;flex:none;text-align:right}
+.rar b{display:block;font-size:13px;font-weight:700;line-height:1.1}
+.rar span{font-size:11px;color:var(--muted)}
+.rar svg{width:18px;height:18px}
+.item.on .timer{display:block;position:absolute;left:0;bottom:0;height:2px;width:0;background:rgba(255,255,255,.5);animation:fill 6s linear forwards}
+.strip:hover .timer,.strip:focus-within .timer{animation-play-state:paused;opacity:0}
+@keyframes fill{to{width:100%}}
+
+/* Main grid */
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 370px;gap:18px;margin-top:14px;padding-bottom:64px;align-items:start}
+.panel{border-radius:var(--r-panel);overflow:hidden}
+.panel-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:12px 16px 10px}
+.panel-head h2{margin:0;font-size:15px;font-weight:600;line-height:1.2}
+.panel-head .aside{font-size:12px;color:var(--muted)}
+.panel-head a.aside{text-decoration:none}
+.panel-head a.aside:hover{color:var(--text)}
+.side{display:flex;flex-direction:column;gap:16px}
+
+/* Games list */
+.games-tools{display:flex;gap:6px;padding:0 16px 10px;flex-wrap:wrap}
+.select,.search{height:30px;border:1px solid var(--line);background:var(--surface-2);color:var(--text);border-radius:var(--r-chip);padding:0 10px;font-size:12px;display:inline-flex;align-items:center;gap:6px}
+.select svg{width:10px;height:10px;opacity:.6}
+.search{flex:1;min-width:160px;color:var(--muted)}
+.game{display:grid;grid-template-columns:60px minmax(0,1fr) auto 120px 22px;align-items:center;gap:14px;padding:9px 16px;border-top:1px solid rgba(255,255,255,.08)}
+.game:hover{background:rgba(255,255,255,.04)}
+.gtext{min-width:0}
+.gtitle{display:flex;align-items:center;gap:8px;min-width:0}
+.gtitle h3{min-width:0}
+.right{display:contents}
+/* Variant "stacked": chips on top, a long progress bar underneath */
+.stacked .game{grid-template-columns:60px minmax(0,1fr) minmax(280px,40%) 22px}
+.stacked .right{display:flex;flex-direction:column;gap:9px;min-width:0}
+.stacked .bar{height:6px}
+.game-cover{width:60px;height:60px;border-radius:9px;object-fit:cover;background:var(--surface-2)}
+.game h3{margin:0;font-size:15px;font-weight:600;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.game-meta{display:flex;align-items:center;gap:8px;margin-top:3px;font-size:12px;line-height:1.3;color:var(--muted);white-space:nowrap}
+.game-meta .sep{width:1px;height:11px;background:rgba(255,255,255,.28)}
+.platform{font-size:10px;font-weight:700;line-height:1;padding:2px 5px;border-radius:4px;border:1px solid var(--line);color:var(--text)}
+.chips{display:grid;grid-template-columns:repeat(4,54px);gap:4px}
+.chip{display:inline-flex;align-items:center;justify-content:center;gap:3px;font-size:12px;font-weight:600;padding:3px 4px;border-radius:6px;background:var(--surface-2);font-variant-numeric:tabular-nums}
+.chip svg{width:11px;height:11px}
+.chip.empty{visibility:hidden}
+.plat svg{color:var(--plat)} .gold svg{color:var(--gold)} .silver svg{color:var(--silver)} .bronze svg{color:var(--bronze)}
+.progress{display:flex;align-items:center;gap:8px}
+.bar{flex:1;height:5px;border-radius:3px;background:var(--surface-2);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent)}
+.game.done .bar i{background:var(--done)}
+.pct{font-size:12px;font-weight:600;width:36px;text-align:right;font-variant-numeric:tabular-nums}
+.status{display:grid;place-items:center}
+.status svg{width:20px;height:20px}
+.status .got{color:var(--plat)} .status .miss{color:var(--line)} .status .check{color:var(--done)}
+.load-more{padding:14px;text-align:center;color:var(--muted);font-size:12px;border-top:1px solid rgba(255,255,255,.08)}
+
+/* 60-day heatmap: every weekday labelled, square cells */
+.heat{padding:0 16px 14px}
+.heat-months,.heat-grid{display:grid;grid-template-columns:30px repeat(9,minmax(0,1fr));gap:3px}
+.heat-months{font-size:10px;color:var(--muted);margin-bottom:3px}
+.heat-grid .d{font-size:10px;color:var(--muted);align-self:center}
+.cell{aspect-ratio:1;border-radius:4px;background:var(--surface-2)}
+.cell.l1{background:color-mix(in srgb,var(--accent) 28%,transparent)}
+.cell.l2{background:color-mix(in srgb,var(--accent) 50%,transparent)}
+.cell.l3{background:color-mix(in srgb,var(--accent) 75%,transparent)}
+.cell.l4{background:var(--accent)}
+.cell.out{visibility:hidden}
+.heat-sum{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
+.heat-sum b{display:block;font-size:15px;font-weight:700;line-height:1.1}
+.heat-sum span{font-size:11px;color:var(--muted)}
+
+/* Trophy lists */
+.tlist{list-style:none;margin:0;padding:0 6px 8px}
+.tlist li{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:10px;align-items:center;padding:5px 10px;border-radius:var(--r-chip)}
+.tlist li:hover{background:rgba(255,255,255,.05)}
+.tlist img{width:36px;height:36px;border-radius:8px;object-fit:cover;background:var(--surface-2)}
+.tlist .n{font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tlist .g{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tlist .r{text-align:right;font-size:11px;color:var(--muted);white-space:nowrap}
+.tlist .r b{display:block;font-size:13px;font-weight:600;line-height:1.15;color:var(--text)}
+.tlist .m{color:var(--accent);font-weight:600}
+
+.rarity{padding:10px 16px 14px;border-top:1px solid var(--line)}
+.rbar{display:flex;height:6px;border-radius:3px;overflow:hidden;gap:2px}
+.rbar i{display:block;height:100%}
+.rgrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-top:10px}
+.rgrid div{min-width:0}
+.rgrid b{display:flex;align-items:center;gap:5px;font-size:14px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums}
+.rgrid b i{width:7px;height:7px;border-radius:2px;flex:none}
+.rgrid span{display:block;font-size:10px;line-height:1.25;color:var(--muted);margin-top:2px}
+.t1{background:var(--accent)} .t2{background:color-mix(in srgb,var(--accent) 75%,transparent)} .t3{background:color-mix(in srgb,var(--accent) 52%,transparent)} .t4{background:color-mix(in srgb,var(--accent) 32%,transparent)} .t5{background:color-mix(in srgb,var(--accent) 16%,transparent)}
+
+/* Responsive */
+@media (max-width:1180px){
+  .profile{grid-template-columns:auto minmax(0,1fr)}
+  .counts{grid-column:1/-1;flex-wrap:wrap}
+  .level{grid-column:1/-1;border-left:0;padding-left:0}
+  .stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media (max-width:980px){
+  .layout{grid-template-columns:minmax(0,1fr)}
+  .game{grid-template-columns:60px minmax(0,1fr) 22px}
+  .chips{grid-column:2/4;grid-row:2}
+  .progress{grid-column:2/4;grid-row:3}
+  .status{grid-column:3;grid-row:1}
+  .stacked .game{grid-template-columns:60px minmax(0,1fr) 22px}
+  .stacked .right{grid-column:2/4;grid-row:2}
+  .stacked .chips,.stacked .progress{grid-column:auto;grid-row:auto}
+  .strip{flex-wrap:wrap;row-gap:10px}
+  .item.on{flex:1 1 100%;order:-1}
+}
+@media (max-width:640px){
+  .wrap{padding:0 16px}
+  .profile{gap:14px;padding:12px;margin-top:-48px}
+  .avatar{width:68px;height:68px}
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .chips{grid-template-columns:repeat(4,minmax(0,1fr))}
+  :root{--icon:44px}
+}
+@media (prefers-reduced-motion:reduce){.btn-sync.busy svg{animation:none}.item.on .timer{animation:none;display:none}}
+/* Mockup-only switch (not part of the design) */
+.switcher{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:50;display:flex;align-items:center;gap:4px;padding:4px 4px 4px 14px;background:rgba(13,17,23,.92);border-radius:999px;box-shadow:0 6px 24px rgba(0,0,0,.35);font:500 13px/1 system-ui,sans-serif;color:#cfd6df}
+.switcher button{border:0;background:transparent;color:#cfd6df;padding:9px 14px;border-radius:999px;cursor:pointer}
+.switcher button[aria-pressed="true"]{background:#fff;color:#111}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="cup" viewBox="0 0 24 24"><path fill="currentColor" d="M7 3h10v5a5 5 0 0 1-4 4.9V17h3v3H8v-3h3v-4.1A5 5 0 0 1 7 8V3zM4 5h2v3.4A3 3 0 0 1 4 5.6V5zm14 0h2v.6a3 3 0 0 1-2 2.8V5z"/></symbol>
+  <symbol id="sync" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M20 12a8 8 0 0 1-14.3 4.9M4 12A8 8 0 0 1 18.3 7.1M18.5 3v4.5H14M5.5 21v-4.5H10"/></symbol>
+  <symbol id="sliders" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></g></symbol>
+  <symbol id="chev" viewBox="0 0 12 12"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M3 4.5L6 7.5 9 4.5"/></symbol>
+  <symbol id="search" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></g></symbol>
+</svg>
+
+<header class="topbar">
+  <div class="wrap">
+    <nav class="tabs" aria-label="Pages">
+      <a class="pill" href="#" aria-current="page">Games</a>
+      <a class="pill" href="#">Plat Wall</a>
+      <a class="pill" href="#">Trophy Log</a>
+      <a class="pill" href="#">Trophy Advisor</a>
+      <a class="pill" href="#">Stats</a>
+    </nav>
+    <a class="pill" href="#"><svg class="ico"><use href="#sliders"/></svg>Settings</a>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="hero-img" role="img" aria-label="Custom banner"></div>
+</div>
+
+<div class="wrap">
+  <section class="profile glass" aria-label="Profile">
+    <img class="avatar" src="https://i.psnprofiles.com/avatars/l/G6faae1b62.png" onerror="this.onerror=null;this.src='https://i.psnprofiles.com/avatars/m/G6faae1b62.png'" alt="Zmx969 avatar">
+    <div class="identity">
+      <h1>Zmx969</h1>
+      <div class="sync-row">
+        <span class="sync-when">Last synced 7 Nov 2026, 09:27</span>
+        <button class="btn-sync" id="sync"><svg class="ico"><use href="#sync"/></svg><span>Sync now</span></button>
+      </div>
+    </div>
+    <div class="counts">
+      <div class="count"><b>11,622</b><span>Trophies</span></div>
+      <div class="count plat"><b>230</b><span><svg><use href="#cup"/></svg>Platinum</span></div>
+      <div class="count gold"><b>990</b><span><svg><use href="#cup"/></svg>Gold</span></div>
+      <div class="count silver"><b>2,434</b><span><svg><use href="#cup"/></svg>Silver</span></div>
+      <div class="count bronze"><b>7,968</b><span><svg><use href="#cup"/></svg>Bronze</span></div>
+    </div>
+    <div class="level">
+      <div class="lvl-icon" role="img" aria-label="PSN level icon, silver tier"></div>
+      <div>
+        <div class="lv"><small>PSN level</small>536</div>
+        <div class="next"><i></i></div>
+        <div class="next-label">42% to level 537</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="stats" aria-label="Key stats">
+    <div class="stat glass"><div class="label">Games completed</div><div class="value">224 <small>/ 266</small></div></div>
+    <div class="stat glass"><div class="label">Completion rate</div><div class="value">94.52%</div></div>
+    <div class="stat glass"><div class="label">Average rarity</div><div class="value">26.54%</div></div>
+    <div class="stat glass"><div class="label">Unearned trophies</div><div class="value">776</div></div>
+    <div class="stat glass"><div class="label">Trophies per day</div><div class="value">3.19</div></div>
+    <div class="stat glass"><div class="label">Hours played</div><div class="value">19,416 h</div></div>
+  </section>
+
+
+  <div class="strip" id="strip" aria-label="Latest trophies"></div>
+
+  <div class="layout">
+    <section class="panel glass" aria-label="Games">
+      <div class="panel-head"><h2>Games</h2><span class="aside">266 games</span></div>
+      <div class="games-tools">
+        <span class="select">All games<svg><use href="#chev"/></svg></span>
+        <span class="select">All platforms<svg><use href="#chev"/></svg></span>
+        <span class="select">Last played<svg><use href="#chev"/></svg></span>
+        <span class="search"><svg class="ico"><use href="#search"/></svg>Search games</span>
+      </div>
+      <div id="games" class="stacked"></div>
+      <div class="load-more">The next 50 games load as you scroll down</div>
+    </section>
+
+    <aside class="side">
+
+      <section class="panel glass" aria-label="Trophy cabinet">
+        <div class="panel-head"><h2>Trophy cabinet</h2><a class="aside" href="#">Edit</a></div>
+        <ul class="tlist" id="cabinet"></ul>
+      </section>
+
+      <section class="panel glass" aria-label="Rarest trophies">
+        <div class="panel-head"><h2>Rarest trophies</h2><span class="aside">global PSN rarity</span></div>
+        <ul class="tlist" id="rarest"></ul>
+        <div class="rarity" id="rarity"></div>
+      </section>
+
+      <section class="panel glass" aria-label="Milestones">
+        <div class="panel-head"><h2>Milestones</h2><span class="aside" id="ms-count"></span></div>
+        <ul class="tlist" id="milestones"></ul>
+      </section>
+    </aside>
+  </div>
+</div>
+
+<div class="switcher" role="group" aria-label="Progress layout">Progress
+  <button data-v="stacked" aria-pressed="true">Stacked (your image)</button>
+  <button data-v="inline" aria-pressed="false">Inline (v6)</button>
+</div>
+
+<script>
+const IMG='https://img.psnprofiles.com/';
+const TYPE={plat:'Platinum',gold:'Gold',silver:'Silver',bronze:'Bronze'};
+const pct=r=>r.toFixed(2)+'%';
+const tier=r=>r<5?'Ultra rare':r<10?'Very rare':r<20?'Rare':r<50?'Uncommon':'Common';
+const cup=cls=>`<svg class="${cls||''}" aria-hidden="true"><use href="#cup"/></svg>`;
+const HB="Hellblade: Senua's Sacrifice";
+
+/* 20 latest trophies (real data, Paris time) */
+const recent=[
+ {n:"You Are The Special",d:"Get all other Trophies.",g:"Magicka 2",t:"plat",r:1.30,w:"5 Nov 2026, 00:16",i:"trophy/s/3589/6a14691b-03bf-42eb-83f9-fef8e6d89ebd.png"},
+ {n:"Archmage",d:"Kill 10,000 enemies.",g:"Magicka 2",t:"silver",r:1.51,w:"5 Nov 2026, 00:16",i:"trophy/s/3589/41e5c293-83c6-4b20-a6c8-3ea5660ff27f.png"},
+ {n:"Done",d:"Collect all of the other trophies",g:HB,t:"plat",r:50.82,w:"4 Nov 2026, 21:30",i:"trophy/s/35777/78fda04a-169f-4b25-8cba-1c9793cdf29b.png"},
+ {n:"The Final Battle",d:"Confront Hela",g:HB,t:"gold",r:55.09,w:"4 Nov 2026, 21:30",i:"trophy/s/35777/af4284b6-af5d-4ece-af2b-d69d4fa939c6.png"},
+ {n:"Stories From the North",d:"Collect all of the Lorestones",g:HB,t:"gold",r:50.86,w:"4 Nov 2026, 20:56",i:"trophy/s/35777/4b160b50-cad6-4efb-a9de-e256fc26418d.png"},
+ {n:"Tamed the Beast",d:"Defeat Fenrir",g:HB,t:"gold",r:55.32,w:"4 Nov 2026, 17:47",i:"trophy/s/35777/df3da837-4af3-458f-8997-8a6091f4a3dd.png"},
+ {n:"Into the Mountain",d:"Enter Helheim",g:HB,t:"gold",r:55.64,w:"4 Nov 2026, 16:15",i:"trophy/s/35777/a6fda35d-49fb-486a-8183-fa3292f1c597.png"},
+ {n:"Warrior",d:"Escape the Sea of Corpses",g:HB,t:"silver",r:55.73,w:"4 Nov 2026, 15:45",i:"trophy/s/35777/cab7c3b0-2443-4bbc-87c4-ba5d74669493.png"},
+ {n:"Gramr Released",d:"Pull Gramr out of the Tree",g:HB,t:"gold",r:55.79,w:"4 Nov 2026, 15:28",i:"trophy/s/35777/98f05c00-320b-403d-9526-cb71fa73d662.png"},
+ {n:"Trust Your Senses",d:"Complete the Blindness Shard Challenge",g:HB,t:"silver",r:55.96,w:"4 Nov 2026, 14:48",i:"trophy/s/35777/e880369d-5ad9-49f1-87d3-b8cdb02b6fe3.png"},
+ {n:"Cure For The Plague",d:"Complete the Swamp Shard Challenge",g:HB,t:"silver",r:56.00,w:"4 Nov 2026, 14:23",i:"trophy/s/35777/8a0ffdee-45b4-4ebd-abde-275efe4bce1c.png"},
+ {n:"Different Perspectives",d:"Complete the Tower Shard Challenge",g:HB,t:"silver",r:56.22,w:"4 Nov 2026, 13:39",i:"trophy/s/35777/d3497970-952c-4c59-967a-987e8581b6a0.png"},
+ {n:"Escaped",d:"Complete the Labyrinth Shard Challenge",g:HB,t:"silver",r:56.55,w:"4 Nov 2026, 12:48",i:"trophy/s/35777/a13dc341-6af6-4afd-9f21-75bae916e849.png"},
+ {n:"Source of The Darkness",d:"Meet Hela for the first time on the Bridge",g:HB,t:"gold",r:57.95,w:"3 Nov 2026, 20:03",i:"trophy/s/35777/7c149d02-dc14-426c-a6af-e71dc6597f9a.png"},
+ {n:"Extinguished",d:"Defeat Surtr",g:HB,t:"gold",r:61.48,w:"3 Nov 2026, 19:27",i:"trophy/s/35777/5755b078-5daf-4973-aa14-371421bf2882.png"},
+ {n:"Master of Illusion",d:"Defeat Valravn",g:HB,t:"gold",r:62.94,w:"3 Nov 2026, 16:21",i:"trophy/s/35777/95914f4d-b874-449f-aa61-b0a1a7d8e020.png"},
+ {n:"The Fight Begins",d:"Reaching the Gate for the first time",g:HB,t:"gold",r:81.03,w:"2 Nov 2026, 22:50",i:"trophy/s/35777/c4a73582-3f12-4a9d-a209-b996076c5dbf.png"},
+ {n:"Oh, My Bad",d:"Kill your friends 1000 times.",g:"Magicka 2",t:"silver",r:1.41,w:"2 Nov 2026, 21:36",i:"trophy/s/3589/372ed2d8-ea87-4dba-95c0-48dfc5ef0fd0.png"},
+ {n:"RESS PLZ!",d:"Revive your friends 1000 times.",g:"Magicka 2",t:"silver",r:1.98,w:"2 Nov 2026, 21:09",i:"trophy/s/3589/7fcecc98-76ed-41cf-b4b5-e7f58138c76e.png"},
+ {n:"Personal growth",d:"Collect all trophies",g:"Gris",t:"plat",r:47.57,w:"2 Nov 2026, 20:35",i:"trophy/s/19936/84f017b2-0031-48e9-a021-c6530972e51a.png"}
+];
+/* pr = PSN progress (what the console shows) */
+const games=[
+ {n:"Magicka 2",p:"PS4",i:"game/s/3589/a0f14bbb-72f5-4fdd-a927-4094055c8773.png",last:"5 Nov 2026",h:"33h 27m",c:[1,1,2,2,14,14,30,30],pr:100},
+ {n:HB,p:"PS5",i:"game/s/35777/8a8e90a3-028e-425e-ab66-59d9cb4ce274.png",last:"4 Nov 2026",h:"11h 46m",c:[1,1,9,9,5,5,0,0],pr:100},
+ {n:"Gris",p:"PS5",i:"game/s/19936/12bca8ac-e096-4847-81c6-404273462efa.png",last:"2 Nov 2026",h:"10h 37m",c:[1,1,9,9,4,4,4,4],pr:100},
+ {n:"Destiny 2",p:"PS5",i:"game/s/11984/cd306133-9a36-45e4-9e4b-72cf8deda29a.png",last:"1 Nov 2026",h:"240h 44m",c:[1,1,11,11,4,4,8,8],pr:100},
+ {n:"The Wolf Among Us Remastered",p:"PS5",i:"game/s/43292/e54c90f7-2f79-47ac-a89c-cfd5cb21a418.png",last:"31 Oct 2026",h:"12h 44m",c:[1,1,5,5,7,7,26,26],pr:100},
+ {n:"Final Fantasy Resonance",p:"PS5",i:"game/s/43178/ae6bc487-c707-47d1-93da-fca31ce64183.png",last:"29 Oct 2026",h:"66h 02m",c:[1,1,4,4,7,7,28,28],pr:100},
+ {n:"Uncharted 4: A Thief's End",p:"PS4",i:"game/s/4719/82c6538d-9abb-48cb-8e7d-27dc35bceb07.png",last:"26 Oct 2026",h:"69h 58m",c:[1,1,1,1,10,10,56,56],pr:100},
+ {n:"Destiny 2",p:"PS4",i:"game/s/6550/cee4332b-90f3-40ae-a547-d37173be6a5d.png",last:"24 Oct 2026",h:"3m",c:[0,1,10,11,4,4,8,8],pr:93},
+ {n:"Horizon Forbidden West",p:"PS4",i:"game/s/15451/59ed3702-7fdb-4a09-aee4-494ff316cbc2.png",last:"12 Oct 2026",h:"61h 53m",c:[1,1,1,1,7,7,53,53],pr:100},
+ {n:"Tales of Arise",p:"PS4",i:"game/s/13898/eb6fa70e-66f9-4ddc-bd72-ed6cfb1e876b.png",last:"11 Oct 2026",h:"49h 39m",c:[1,1,2,2,13,13,43,43],pr:100},
+ {n:"Final Fantasy XV Multiplayer: Comrades",p:"PS4",i:"game/s/8563/174a994a-0be7-42e9-b629-5b16e8be9aa0.png",last:"10 Oct 2026",h:"11h 00m",c:[0,0,3,3,3,3,10,10],pr:100},
+ {n:"A Hat in Time",p:"PS4",i:"game/s/6921/dc253355-e5f6-40a3-b132-5158167ffa4d.png",last:"9 Oct 2026",h:"45h 35m",c:[1,1,7,8,15,15,14,14],pr:93}
+];
+const cabinet=[
+ {n:"The Greatest Expedition in History",g:"Clair Obscur: Expedition 33",r:39.72,i:"trophy/s/33395/45a58139-26d4-4e25-8d69-2444a1c34803.png"},
+ {n:"Heroes of Gaia",g:"Final Fantasy IX",r:7.84,i:"trophy/s/6669/20ff8de9-5f45-4455-8bc4-27c4b9ffdd2b.png"},
+ {n:"Elden Ring",g:"Elden Ring",r:37.58,i:"trophy/s/15539/b0d9a703-d112-4415-b64e-b7093cabe18c.png"},
+ {n:"It can't be for nothing",g:"The Last of Us Remastered",r:4.64,i:"trophy/s/2752/f737e75b-4963-4d6d-a175-9a8428d2a726.png"},
+ {n:"Goddess of Nightmares",g:"Hades II",r:35.62,i:"trophy/s/41018/c22dc387-35bf-4e8d-a8c4-2642f05779d1.png"},
+ {n:"Pride of Baldur's Gate",g:"Baldur's Gate III",r:6.03,i:"trophy/s/23531/7e475664-7e40-4493-9785-99be0df800bd.png"},
+ {n:"The Planet's Hope",g:"Final Fantasy VII Rebirth",r:14.27,i:"trophy/s/26098/f92396c0-f79e-4340-bdb1-384d1ea55736.png"},
+ {n:"Deity",g:"Divinity: Original Sin 2",r:5.33,i:"trophy/s/7991/c4438620-23f8-4f88-9b4a-eb384ca5a367.png"},
+ {n:"Champion of Ivalice",g:"Final Fantasy XII: The Zodiac Age",r:11.44,i:"trophy/s/5788/a576f128-7983-42a5-aadc-c3535484b9c2.png"},
+ {n:"Original Sinner",g:"Divinity: Original Sin",r:2.43,i:"trophy/s/4007/7c283d4d-9186-4371-b42b-2881624b0e0f.png"}
+];
+const rarest=[
+ {n:"Ultimate Driver",g:"Gran Turismo Sport",r:1.19,i:"trophy/s/6806/4997345e-da38-4eb9-8eaa-3fd5dd8fb84a.png"},
+ {n:"You Are The Special",g:"Magicka 2",r:1.30,i:"trophy/s/3589/6a14691b-03bf-42eb-83f9-fef8e6d89ebd.png"},
+ {n:"To Live Forever",g:"No Man's Sky",r:1.34,i:"trophy/s/5155/982cad65-7044-462d-8797-9f7e46cba4f2.png"},
+ {n:"Oh, My Bad",g:"Magicka 2",r:1.41,i:"trophy/s/3589/372ed2d8-ea87-4dba-95c0-48dfc5ef0fd0.png"},
+ {n:"Echoing Elites",g:"Diablo IV",r:1.42,i:"trophy/s/22398/a0b4e398-285a-4653-841f-5b836ce36502.png"}
+];
+const milestones=[
+ ["You Are The Special","Magicka 2","Latest platinum","3 days ago","3589/6a14691b-03bf-42eb-83f9-fef8e6d89ebd"],
+ ["Ultimate Fantasy","Final Fantasy Resonance","225th platinum","1 week ago","43178/2bb655b2-1734-4cd4-a9b5-f34219da6b86"],
+ ["The Greatest Expedition in History","Clair Obscur: Expedition 33","200th platinum","5 months ago","33395/45a58139-26d4-4e25-8d69-2444a1c34803"],
+ ["Attack Interruption","Arknights: Endfield","10,000th trophy","9 months ago","39412/0e32a9a0-5b94-47a4-8dda-3e9dd1a3548b"],
+ ["The Final Verse","NieR Replicant ver.1.22474487139...","9,000th trophy","4 years ago","12768/03409081-2760-4fca-a420-ab637cea833f"],
+ ["The Shiniest Thing","Death's Door","175th platinum","4 years ago","14727/8bf73460-0cc2-4c7e-b972-94ea3011c0eb"],
+ ["Age of the Stars","Elden Ring","8,000th trophy","5 years ago","15539/c6300ac8-48fb-4044-bb08-47429bbc076b"],
+ ["God of Blood","Hades","150th platinum","5 years ago","13635/a6f8aa91-8778-4a4e-bbc3-16c22373512c"],
+ ["Arisen","Tales of Arise","7,000th trophy","5 years ago","13906/02e3509f-6352-4cd5-93b3-fff927dc3a13"],
+ ["Master of Fate","Final Fantasy VII Remake","125th platinum","5 years ago","13110/e603abf8-8b2a-4096-9a54-c50c6b057556"],
+ ["Viking Legend","Assassin's Creed Valhalla","6,000th trophy","5 years ago","11736/22d5b446-d06e-4156-b767-4b3db80fe9ae"],
+ ["True Phantom Thief","Persona 5 Strikers","100th platinum","6 years ago","12399/a2cdecdc-6601-4b3c-a198-11b2b4d972cd"],
+ ["Must Be Bored","Battle Chasers: Nightwar","5,000th trophy","6 years ago","6744/884c8e94-4407-46ee-b65e-4f4cd8cd252d"],
+ ["Well I'll Be Damned","Devil May Cry 5","4,500th trophy","6 years ago","8833/e5e29ac9-7141-47a1-a141-1853731ee720"],
+ ["Purification","Sekiro: Shadows Die Twice","4,000th trophy","6 years ago","8864/401e1928-8836-451f-b83e-90291f874f57"],
+ ["Greatest of Great Deliverers","Death Stranding","75th platinum","6 years ago","9955/13978430-2742-425d-8a07-abf50ec69952"],
+ ["Consider Yourself Noticed","Need for Speed Heat","3,500th trophy","7 years ago","9908/dafa5916-835f-4f8f-90bf-71a80a1ba6bc"],
+ ["Anathema","Divinity: Original Sin 2","3,000th trophy","8 years ago","7991/5db30a60-accd-46e4-a97f-4b109444d291"],
+ ["Proud Player/Critical Competitor","Kingdom Hearts 0.2 Birth by Sleep: A Fragmentary Passage","2,500th trophy","8 years ago","5748/2a2e4d99-61dd-4e89-bb6b-ca1141c44bb6"],
+ ["Father and Son","God of War","50th platinum","9 years ago","7523/6a5a7dd8-a4b2-416e-b7d6-a0bbb23b20a0"],
+ ["Conqueror of the New World","Monster Hunter World","40th platinum","9 years ago","7169/70af09f7-f7d6-48bd-b884-9779c3cd01b3"],
+ ["The Limits of the Possible","The Witcher 3: Wild Hunt – Game of the Year Edition","2,000th trophy","9 years ago","5235/cc7b3a81-2871-42e8-9650-1d133329fa8f"],
+ ["A Realm Restored","Final Fantasy XIV: A Realm Reborn","Fastest platinum","9 years ago","2096/a3d84c9f-acd5-4606-8f80-6d42e5042ce3"],
+ ["The Way of the Warrior","Uncharted: The Lost Legacy","1,500th trophy","9 years ago","6508/939d8d68-7b66-4d32-9ab4-9d189d3684a9"],
+ ["All trophies obtained","Horizon Zero Dawn","30th platinum","9 years ago","5879/ec645128-d91a-4eed-8b2e-97daecc7f7da"],
+ ["Bahamutype-0","Final Fantasy VII","1,337th trophy","9 years ago","4126/58069ea8-79a6-43a2-aaef-785bc8374ba4"],
+ ["One Last Time","Uncharted 4: A Thief's End","20th platinum","9 years ago","4719/7e983fb0-4e66-4044-95d4-1932c09f6cc9"],
+ ["Mercy","inFamous: Second Son","1,000th trophy","9 years ago","2481/1efa4c1e-dbab-43f4-a877-2a587478737f"],
+ ["What If?","Life is Strange","10th platinum","9 years ago","3313/90a0f002-d102-44d0-ba70-7bec5980d578"],
+ ["Trouble at the Raft","Marvel Heroes Omega","500th trophy","9 years ago","6161/6fdd44a2-ed5e-40e8-a269-98e0d0373625"],
+ ["The World Wanderer","Final Fantasy XV","First platinum","10 years ago","5611/a0f6791e-18fb-4a3f-ba1e-a8c80dc146b5"],
+ ["Basically Training","Ratchet & Clank","First trophy","10 years ago","4536/98fb9f1e-527d-4e89-a1b0-bffb29a68eb8"]
+].map(([n,g,m,w,i])=>({n,g,m,w,i:`trophy/s/${i}.png`}));
+
+/* Carousel: shows as many trophies as fit the width (flush with both edges),
+   one shows its details, advances every 6 s, pauses on hover/focus */
+const strip=document.getElementById('strip');
+strip.innerHTML=recent.map((t,k)=>`<button class="item" data-k="${k}" title="${t.n} (${TYPE[t.t]})">
+  <img src="${IMG+t.i}" alt="${t.n}">
+  <div class="det"><h4>${t.n}</h4><div class="desc">${t.d}</div><div class="when">${t.w} in ${t.g}</div></div>
+  <div class="rar"><div><b>${pct(t.r)}</b><span>${tier(t.r)}</span></div><span class="${t.t}">${cup()}</span></div>
+  <i class="timer"></i></button>`).join('');
+const items=[...strip.children]; const DELAY=6000; let active=0, visible=items.length, timer=null, paused=false;
+const px=v=>parseFloat(getComputedStyle(document.documentElement).getPropertyValue(v));
+function fit(){
+  const W=strip.clientWidth, icon=px('--icon'), gap=px('--gap'), card=px('--card');
+  const narrow=matchMedia('(max-width:980px)').matches;
+  /* desktop: card + N icons on one row; narrow: card on its own row, icons fill the row below */
+  const n = narrow ? 1+Math.floor((W+gap)/(icon+gap)) : 1+Math.floor((W-card)/(icon+gap));
+  visible=Math.max(1,Math.min(items.length,n));
+  items.forEach((el,i)=>el.hidden=i>=visible);
+  if(active>=visible) show(0);
+}
+const restartBar=()=>{const t=items[active].querySelector('.timer');t.style.animation='none';void t.offsetWidth;t.style.animation=''};
+function show(k){active=k;items.forEach((el,i)=>{el.classList.toggle('on',i===k);el.setAttribute('aria-pressed',i===k)});restartBar()}
+const schedule=()=>{clearTimeout(timer);if(!paused)timer=setTimeout(()=>{show((active+1)%visible);schedule()},DELAY)};
+const pause=()=>{paused=true;clearTimeout(timer)};
+const resume=()=>{paused=false;restartBar();schedule()};
+items.forEach(el=>el.addEventListener('click',()=>{show(+el.dataset.k);schedule()}));
+strip.addEventListener('mouseenter',pause); strip.addEventListener('mouseleave',resume);
+strip.addEventListener('focusin',pause); strip.addEventListener('focusout',e=>{if(!strip.contains(e.relatedTarget))resume()});
+new ResizeObserver(fit).observe(strip);
+show(0); fit(); schedule();
+
+/* Games */
+(function(){
+  const chip=(cls,e,t)=>t?`<span class="chip ${cls}">${cup()}${e}/${t}</span>`:`<span class="chip empty"></span>`;
+  document.getElementById('games').innerHTML=games.map(g=>{
+    const [pe,pt,ge,gt,se,st,be,bt]=g.c, earned=pe+ge+se+be, total=pt+gt+st+bt, done=g.pr===100;
+    const status=pt?(pe?`<span title="Platinum earned">${cup('got')}</span>`:`<span title="Platinum not earned">${cup('miss')}</span>`)
+      :(done?`<svg class="check" viewBox="0 0 24 24" aria-label="Completed"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`:'');
+    return `<article class="game${done?' done':''}">
+      <img class="game-cover" src="${IMG+g.i}" alt="" loading="lazy">
+      <div class="gtext"><div class="gtitle"><h3>${g.n}</h3><span class="platform">${g.p}</span></div>
+        <div class="game-meta"><span>${earned} / ${total} trophies</span></div>
+        <div class="game-meta"><span>Last played ${g.last}</span><span class="sep" aria-hidden="true"></span><span>${g.h} played</span></div></div>
+      <div class="right"><div class="chips">${chip('plat',pe,pt)}${chip('gold',ge,gt)}${chip('silver',se,st)}${chip('bronze',be,bt)}</div>
+      <div class="progress"><div class="bar"><i style="width:${g.pr}%"></i></div><span class="pct">${g.pr}%</span></div></div>
+      <div class="status">${status}</div></article>`;
+  }).join('');
+})();
+
+/* Lists */
+(function(){
+  const row=(t,right)=>`<li title="${t.n}"><img src="${IMG+t.i}" alt="" loading="lazy"><div><div class="n">${t.n}</div><div class="g">${t.g}</div></div><div class="r">${right}</div></li>`;
+  document.getElementById('cabinet').innerHTML=cabinet.map(t=>row(t,`<b>${pct(t.r)}</b>${tier(t.r)}`)).join('');
+  document.getElementById('rarest').innerHTML=rarest.map(t=>row(t,`<b>${pct(t.r)}</b>${tier(t.r)}`)).join('');
+  document.getElementById('milestones').innerHTML=milestones.map(t=>row(t,`<span class="m">${t.m}</span><br>${t.w}`)).join('');
+  document.getElementById('ms-count').textContent=milestones.length+' milestones';
+  const tiers=[['Ultra rare',101,'t1'],['Very rare',251,'t2'],['Rare',1314,'t3'],['Uncommon',5656,'t4'],['Common',4300,'t5']];
+  const sum=tiers.reduce((s,t)=>s+t[1],0);
+  document.getElementById('rarity').innerHTML=`<div class="rbar">${tiers.map(t=>`<i class="${t[2]}" style="flex:${t[1]/sum}"></i>`).join('')}</div>
+    <div class="rgrid">${tiers.map(t=>`<div><b><i class="${t[2]}"></i>${t[1].toLocaleString('en-GB')}</b><span>${t[0]}</span></div>`).join('')}</div>`;
+})();
+
+/* Mockup-only: compare progress layouts */
+document.querySelectorAll('.switcher button').forEach(b=>b.onclick=()=>{
+  document.getElementById('games').classList.toggle('stacked',b.dataset.v==='stacked');
+  document.querySelectorAll('.switcher button').forEach(x=>x.setAttribute('aria-pressed',x===b));
+});
+
+/* Sync button (demo) */
+document.getElementById('sync').onclick=e=>{
+  const b=e.currentTarget; if(b.classList.contains('busy'))return;
+  b.classList.add('busy'); b.querySelector('span').textContent='Syncing…';
+  setTimeout(()=>{b.classList.remove('busy');b.querySelector('span').textContent='Sync now';document.querySelector('.sync-when').textContent='Last synced just now'},2200);
+};
+</script>
+</body>
+</html>

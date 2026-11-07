@@ -1,0 +1,568 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maquettes — page principale</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Saira+Semi+Condensed:wght@500;600;700&family=Saira:wght@400;500;600&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{ --banner:url("https://img.psnprofiles.com/hero/l/33395/5d30a460-7281-4258-9c21-b368cc80b7b8.jpg"); }
+
+/* ---------- Thèmes ---------- */
+body.a{
+  --bg:#171C24; --surface:#1F2630; --surface-2:#283140; --line:#323C4A;
+  --text:#E9EEF4; --muted:#8E9AAA; --accent:#8FB8FF; --done:#C9D6EA;
+  --plat:#C9D6EA; --gold:#E1B65B; --silver:#B3BBC5; --bronze:#C98A59;
+  --font-d:"Saira Semi Condensed",sans-serif; --font-b:"Saira",sans-serif;
+  --r-panel:6px; --r-chip:3px;
+}
+body.b{
+  --bg:#F1F3F6; --surface:#FFFFFF; --surface-2:#F0F2F5; --line:#DCE1E7;
+  --text:#17202B; --muted:#5D6A79; --accent:#0070D1; --done:#1E8E5A;
+  --plat:#5F7FAE; --gold:#B5871C; --silver:#7A8592; --bronze:#A6643A;
+  --font-d:"Hanken Grotesk",sans-serif; --font-b:"Hanken Grotesk",sans-serif;
+  --r-panel:12px; --r-chip:999px;
+}
+body.c{
+  --bg:#0F1631; --surface:rgba(255,255,255,.07); --surface-2:rgba(255,255,255,.12); --line:rgba(255,255,255,.13);
+  --text:#F3F5FB; --muted:#A9B3CB; --accent:#5AA9FF; --done:#D3E2FF;
+  --plat:#D3E2FF; --gold:#F2C462; --silver:#C9D0DA; --bronze:#DE9563;
+  --font-d:"Sora",sans-serif; --font-b:"Sora",sans-serif;
+  --r-panel:18px; --r-chip:10px;
+}
+
+/* ---------- Base ---------- */
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font-b);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+img{display:block}
+button{font:inherit;color:inherit}
+a{color:inherit}
+.num{font-variant-numeric:tabular-nums}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+svg.ico{width:16px;height:16px;flex:none}
+.wrap{max-width:1280px;margin:0 auto;padding:0 24px}
+
+/* Sélecteur de maquette (hors design) */
+.switcher{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:50;display:flex;gap:4px;padding:4px;background:rgba(13,17,23,.92);border-radius:999px;box-shadow:0 6px 24px rgba(0,0,0,.35);font:500 13px/1 system-ui,sans-serif}
+.switcher button{border:0;background:transparent;color:#cfd6df;padding:10px 16px;border-radius:999px;cursor:pointer}
+.switcher button[aria-pressed="true"]{background:#fff;color:#111}
+
+/* ---------- Bannière ---------- */
+.hero{position:relative;height:340px;overflow:hidden}
+.hero-img{position:absolute;inset:0;background:var(--banner) center 28%/cover no-repeat}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(to bottom,transparent 40%,var(--bg) 100%)}
+.hero-settings{position:absolute;top:16px;right:24px;z-index:2;display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:var(--r-chip);background:rgba(0,0,0,.45);color:#fff;text-decoration:none;font-size:14px;backdrop-filter:blur(6px)}
+
+/* ---------- Bandeau profil ---------- */
+.profile{position:relative;z-index:2;margin-top:-96px;display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;align-items:center;gap:28px;padding:18px 24px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-panel)}
+.avatar-box{position:relative;margin-top:-52px}
+.avatar{width:108px;height:108px;border-radius:50%;object-fit:cover;background:var(--surface-2);border:4px solid var(--bg)}
+.plus{position:absolute;right:2px;bottom:4px;display:grid;place-items:center;width:26px;height:26px;border-radius:7px;background:#F5C518;color:#1a1a1a;font:800 17px/1 system-ui,sans-serif;border:2px solid var(--bg)}
+.identity h1{margin:0;font:700 30px/1.1 var(--font-d);letter-spacing:.01em}
+.identity .sub{margin-top:2px;color:var(--muted);font-size:14px}
+.sync-row{display:flex;align-items:center;gap:12px;margin-top:12px;flex-wrap:wrap}
+.sync-when{color:var(--muted);font-size:13px}
+.btn-sync{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--surface-2);padding:7px 12px;border-radius:var(--r-chip);cursor:pointer;font-size:13px;font-weight:600}
+.btn-sync:hover{border-color:var(--accent)}
+.btn-sync.busy svg{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.counts{display:flex;align-items:stretch;gap:8px}
+.count{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:76px;padding:8px 10px;border-radius:var(--r-chip)}
+.count b{font:700 22px/1 var(--font-d);font-variant-numeric:tabular-nums}
+.count span{display:flex;align-items:center;gap:4px;font-size:12px;margin-top:5px}
+.count span svg{width:12px;height:12px}
+
+.level{display:flex;align-items:center;gap:12px;padding-left:24px;border-left:1px solid var(--line)}
+.level .badge{width:54px;height:54px;flex:none}
+.level .lv{font:700 28px/1 var(--font-d)}
+.level .lv small{display:block;font:500 12px/1.2 var(--font-b);color:var(--muted);margin-bottom:3px}
+.level .next{margin-top:7px;width:120px;height:4px;background:var(--surface-2);border-radius:2px;overflow:hidden}
+.level .next i{display:block;height:100%;width:42%;background:var(--silver)}
+.level .next-label{font-size:12px;color:var(--muted);margin-top:4px}
+
+/* ---------- Stats ---------- */
+.stats{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));margin-top:16px}
+.stat{padding:16px 18px;min-width:0}
+.stat .label{font-size:13px;color:var(--muted)}
+.stat .value{font:700 30px/1.1 var(--font-d);margin-top:4px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.stat .note{font-size:12px;color:var(--muted);margin-top:4px}
+
+/* ---------- Menu ---------- */
+.tabs{display:flex;align-items:center;gap:4px;margin-top:24px;border-bottom:1px solid var(--line);overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
+.tabs a{padding:12px 16px;color:var(--muted);text-decoration:none;font-weight:500;border-bottom:2px solid transparent;white-space:nowrap}
+.tabs a:hover{color:var(--text)}
+.tabs a[aria-current]{color:var(--text);border-color:var(--accent)}
+
+/* ---------- Carrousel derniers trophées ---------- */
+.strip-title{margin:20px 0 8px;font:600 14px/1 var(--font-d);color:var(--muted)}
+.strip{display:flex;align-items:center;gap:8px;overflow-x:auto;padding:4px 2px 10px;scrollbar-width:thin}
+.strip button{flex:none;border:0;padding:0;background:none;cursor:pointer;border-radius:var(--r-chip);text-align:left}
+.strip .t-icon{width:56px;height:56px;border-radius:var(--r-chip);object-fit:cover;background:var(--surface-2)}
+.strip button.icon-btn:hover .t-icon{outline:2px solid var(--accent);outline-offset:2px}
+.t-card{display:flex;align-items:center;gap:14px;padding:8px 16px 8px 8px;background:var(--surface);border:1px solid var(--line)!important;border-radius:var(--r-panel)!important;width:440px}
+.t-card img{width:56px;height:56px;border-radius:var(--r-chip);flex:none}
+.t-card .txt{min-width:0}
+.t-card h4{margin:0;font:600 15px/1.2 var(--font-d);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t-card .desc{font-size:13px;color:var(--text);opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t-card .when{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t-card .rar{margin-left:auto;text-align:right;flex:none;display:flex;align-items:center;gap:10px}
+.t-card .rar b{display:block;font:700 18px/1 var(--font-d)}
+.t-card .rar span{font-size:12px;color:var(--muted)}
+.t-card .rar svg{width:28px;height:28px}
+
+/* ---------- Grille principale ---------- */
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:20px;margin-top:16px;padding-bottom:120px;align-items:start}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-panel);overflow:hidden}
+.panel-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:16px 18px 12px}
+.panel-head h2{margin:0;font:600 17px/1.2 var(--font-d)}
+.panel-head .aside{font-size:13px;color:var(--muted)}
+.panel-head a.aside{text-decoration:none}
+.panel-head a.aside:hover{color:var(--accent)}
+.side{display:flex;flex-direction:column;gap:20px}
+
+/* Liste des jeux */
+.games-tools{display:flex;gap:8px;padding:0 18px 14px;flex-wrap:wrap}
+.select,.search{height:36px;border:1px solid var(--line);background:var(--surface-2);color:var(--text);border-radius:var(--r-chip);padding:0 12px;font-size:14px;display:inline-flex;align-items:center;gap:8px}
+.select svg{width:12px;height:12px;opacity:.6}
+.search{flex:1;min-width:180px;color:var(--muted)}
+.game{display:grid;grid-template-columns:64px minmax(0,1fr) 272px 136px 30px;align-items:center;gap:16px;padding:12px 18px;border-top:1px solid var(--line)}
+.game-cover{width:64px;height:64px;border-radius:var(--r-chip);object-fit:cover;background:var(--surface-2)}
+.game h3{margin:0;font:600 16px/1.25 var(--font-d);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.game-meta{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;margin-top:5px;font-size:13px;color:var(--muted)}
+.platform{font-size:11px;font-weight:700;line-height:1;padding:3px 6px;border-radius:4px;border:1px solid var(--line);color:var(--text)}
+.chips{display:flex;gap:6px;justify-content:flex-end}
+.chip{display:inline-flex;align-items:center;justify-content:center;gap:4px;min-width:62px;font-size:13px;font-weight:600;padding:4px 8px;border-radius:var(--r-chip);background:var(--surface-2);font-variant-numeric:tabular-nums}
+.chip svg{width:13px;height:13px}
+.chip.empty{visibility:hidden}
+.plat svg,.plat .c{color:var(--plat)} .gold svg,.gold .c{color:var(--gold)} .silver svg,.silver .c{color:var(--silver)} .bronze svg,.bronze .c{color:var(--bronze)}
+.progress{display:flex;align-items:center;gap:10px}
+.bar{flex:1;height:6px;border-radius:3px;background:var(--surface-2);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent)}
+.game.done .bar i{background:var(--done)}
+.pct{font:600 14px/1 var(--font-d);width:44px;text-align:right}
+.status{display:grid;place-items:center}
+.status svg{width:26px;height:26px}
+.status .got{color:var(--plat)} .status .miss{color:var(--line)} .status .check{color:var(--done)}
+.load-more{padding:18px;text-align:center;color:var(--muted);font-size:13px;border-top:1px solid var(--line)}
+
+/* Heatmap 60 jours */
+.heat{padding:0 18px 18px}
+.heat-months,.heat-grid{display:grid;grid-template-columns:30px repeat(9,minmax(0,1fr));gap:4px}
+.heat-months{font-size:11px;color:var(--muted);margin-bottom:4px}
+.heat-grid .d{font-size:11px;color:var(--muted);align-self:center}
+.cell{aspect-ratio:1;border-radius:3px;background:var(--surface-2)}
+.cell.l1{background:color-mix(in srgb,var(--accent) 28%,var(--surface-2))}
+.cell.l2{background:color-mix(in srgb,var(--accent) 50%,var(--surface-2))}
+.cell.l3{background:color-mix(in srgb,var(--accent) 75%,var(--surface-2))}
+.cell.l4{background:var(--accent)}
+.cell.out{visibility:hidden}
+.heat-sum{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+.heat-sum b{display:block;font:700 18px/1.1 var(--font-d)}
+.heat-sum span{font-size:12px;color:var(--muted)}
+
+/* Listes de trophées (vitrine, rares, jalons) */
+.tlist{list-style:none;margin:0;padding:0 8px 10px}
+.tlist li{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:12px;align-items:center;padding:7px 10px;border-radius:var(--r-chip)}
+.tlist li:hover{background:var(--surface-2)}
+.tlist img{width:44px;height:44px;border-radius:var(--r-chip);object-fit:cover;background:var(--surface-2)}
+.tlist .n{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tlist .g{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tlist .r{text-align:right;font-size:12px;color:var(--muted);white-space:nowrap}
+.tlist .r b{display:block;font:600 14px/1.15 var(--font-d);color:var(--text)}
+.tlist .m{color:var(--accent);font-weight:600}
+
+.rarity{padding:14px 18px 18px;border-top:1px solid var(--line)}
+.rbar{display:flex;height:8px;border-radius:4px;overflow:hidden;gap:2px}
+.rbar i{display:block;height:100%}
+.rgrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-top:12px}
+.rgrid div{min-width:0}
+.rgrid b{display:flex;align-items:center;gap:5px;font:700 16px/1.1 var(--font-d);font-variant-numeric:tabular-nums}
+.rgrid b i{width:8px;height:8px;border-radius:2px;flex:none}
+.rgrid span{display:block;font-size:11px;line-height:1.25;color:var(--muted);margin-top:3px}
+.t1{background:var(--accent)} .t2{background:color-mix(in srgb,var(--accent) 75%,var(--surface-2))} .t3{background:color-mix(in srgb,var(--accent) 52%,var(--surface-2))} .t4{background:color-mix(in srgb,var(--accent) 32%,var(--surface-2))} .t5{background:color-mix(in srgb,var(--accent) 14%,var(--surface-2))}
+
+/* ================= A — Métal ================= */
+.a .count{color:#1A2029;box-shadow:inset 0 1px 0 rgba(255,255,255,.65),inset 0 -1px 0 rgba(0,0,0,.25),0 1px 2px rgba(0,0,0,.4)}
+.a .count span{opacity:.8}
+.a .count.plat{background:linear-gradient(165deg,#F6F9FD 0%,#C8D5EA 40%,#95A6C1 58%,#E3EAF5 100%)}
+.a .count.gold{background:linear-gradient(165deg,#FCE8AE 0%,#E2B65A 40%,#B08230 58%,#F1D58E 100%)}
+.a .count.silver{background:linear-gradient(165deg,#F3F5F8 0%,#C1C8D1 40%,#8C95A1 58%,#DEE3E9 100%)}
+.a .count.bronze{background:linear-gradient(165deg,#F2C6A0 0%,#C98A59 40%,#955D35 58%,#E1AB7E 100%)}
+.a .count.total{background:transparent;color:var(--text);box-shadow:none;border:1px solid var(--line)}
+.a .count svg{color:inherit!important}
+.a .stats{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-panel)}
+.a .stat+.stat{border-left:1px solid var(--line)}
+.a .game.done{box-shadow:inset 3px 0 0 var(--plat)}
+.a .cabinet .tlist{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;padding:2px 18px 18px}
+.a .cabinet .tlist li{display:block;padding:0;position:relative}
+.a .cabinet .tlist li:hover{background:none}
+.a .cabinet .tlist li>div{display:none}
+.a .cabinet .tlist img{width:100%;height:auto;aspect-ratio:1;border-radius:4px;box-shadow:0 0 0 1px var(--line),0 4px 10px rgba(0,0,0,.35)}
+.a .cabinet .tlist li:hover img{box-shadow:0 0 0 2px var(--plat)}
+.a .cabinet .shelf{margin:0 18px 18px;padding-top:10px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+.cabinet .shelf{display:none}
+.a .cabinet .shelf{display:block}
+
+/* ================= B — Clair ================= */
+.b .hero{height:300px}
+.b .profile{background:transparent;border:0;padding:0 4px;margin-top:-64px;align-items:end;gap:32px}
+.b .avatar-box{margin-top:0}
+.b .avatar{width:132px;height:132px;border-width:5px;box-shadow:0 2px 12px rgba(23,32,43,.18)}
+.b .identity{padding-bottom:4px}
+.b .identity h1{font-size:34px;font-weight:800;letter-spacing:-.01em}
+.b .btn-sync{background:var(--accent);border-color:var(--accent);color:#fff}
+.b .btn-sync:hover{filter:brightness(1.08)}
+.b .counts{gap:0;padding-bottom:6px}
+.b .count{min-width:0;padding:0 16px;border-left:1px solid var(--line);border-radius:0;align-items:flex-start}
+.b .count:first-child{border-left:0}
+.b .count b{font-size:26px;font-weight:800}
+.b .count span{color:var(--muted)}
+.b .count.plat b{color:var(--plat)} .b .count.gold b{color:var(--gold)} .b .count.silver b{color:var(--silver)} .b .count.bronze b{color:var(--bronze)}
+.b .level{padding-bottom:6px}
+.b .stats{margin-top:28px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.b .stat{padding:20px 20px 20px 0}
+.b .stat+.stat{padding-left:20px;border-left:1px solid var(--line)}
+.b .stat .value{font-size:36px;font-weight:800;letter-spacing:-.02em}
+.b .tabs{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px;width:max-content;max-width:100%}
+.b .tabs a{border:0;margin:0;border-radius:999px;padding:9px 16px}
+.b .tabs a[aria-current]{background:var(--text);color:#fff}
+.b .t-card{box-shadow:0 1px 3px rgba(23,32,43,.08)}
+.b .strip .t-icon{border-radius:10px}
+.b .panel{box-shadow:0 1px 2px rgba(23,32,43,.05)}
+.b .game:hover{background:#F8FAFC}
+.b .game-cover{border-radius:8px}
+.b .chip{background:transparent;border:1px solid var(--line)}
+.b .tlist img{border-radius:8px}
+
+/* ================= C — Console ================= */
+body.c::before{content:"";position:fixed;inset:-60px;background:var(--banner) center/cover;filter:blur(44px) brightness(.4) saturate(1.25);z-index:-1}
+.c .hero{height:420px}
+.c .hero-img{-webkit-mask-image:linear-gradient(to bottom,#000 50%,transparent 100%);mask-image:linear-gradient(to bottom,#000 50%,transparent 100%)}
+.c .hero::after{display:none}
+.c .profile,.c .panel,.c .t-card,.c .stat{backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.c .profile{margin-top:-120px}
+.c .avatar{border-color:rgba(255,255,255,.9)}
+.c .plus{border-color:#fff}
+.c .count{background:var(--surface-2);border-radius:14px}
+.c .count.plat b{color:var(--plat)} .c .count.gold b{color:var(--gold)} .c .count.silver b{color:var(--silver)} .c .count.bronze b{color:var(--bronze)}
+.c .stats{gap:12px}
+.c .stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-panel);padding:18px 20px}
+.c .tabs{border:0;gap:6px}
+.c .tabs a{border:1px solid transparent;border-radius:999px;margin:0;padding:10px 18px}
+.c .tabs a:hover{border-color:var(--line)}
+.c .tabs a[aria-current]{background:#fff;color:#0F1631}
+.c .strip{gap:12px;padding:8px 4px 14px}
+.c .strip .t-icon{width:76px;height:76px;border-radius:16px}
+.c .strip button.icon-btn:hover .t-icon{outline:3px solid #fff;outline-offset:3px}
+.c .t-card{width:480px;padding:10px 18px 10px 10px;outline:3px solid #fff;outline-offset:3px;margin:0 6px}
+.c .t-card img{width:76px;height:76px;border-radius:14px}
+.c .game{border-top-color:rgba(255,255,255,.08)}
+.c .game-cover{border-radius:12px}
+.c .btn-sync{background:#fff;color:#0F1631;border-color:#fff;border-radius:999px}
+
+/* ---------- Responsive ---------- */
+@media (max-width:1180px){
+  .profile{grid-template-columns:auto minmax(0,1fr)}
+  .counts{grid-column:1/-1;flex-wrap:wrap}
+  .level{grid-column:1/-1;border-left:0;padding-left:0}
+  .b .profile{align-items:center}
+  .stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .a .stat:nth-child(4){border-left:0}
+  .a .stat:nth-child(n+4){border-top:1px solid var(--line)}
+  .b .stat:nth-child(4){border-left:0;padding-left:0}
+}
+@media (max-width:980px){
+  .layout{grid-template-columns:minmax(0,1fr)}
+  .game{grid-template-columns:56px minmax(0,1fr) 30px}
+  .game-cover{width:56px;height:56px}
+  .chips{grid-column:2/4;grid-row:2;justify-content:flex-start;flex-wrap:wrap}
+  .progress{grid-column:2/4;grid-row:3}
+  .status{grid-column:3;grid-row:1}
+}
+@media (max-width:640px){
+  .wrap{padding:0 16px}
+  .hero{height:220px}.b .hero{height:220px}.c .hero{height:260px}
+  .profile{gap:16px;padding:16px}
+  .avatar{width:84px;height:84px}.b .avatar{width:96px;height:96px}
+  .identity h1{font-size:24px}.b .identity h1{font-size:26px}
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stat .value{font-size:24px}.b .stat .value{font-size:26px}
+  .a .stat:nth-child(odd){border-left:0}.a .stat:nth-child(even){border-left:1px solid var(--line)}
+  .a .stat:nth-child(n+3){border-top:1px solid var(--line)}
+  .b .stat:nth-child(odd){border-left:0;padding-left:0}.b .stat:nth-child(even){padding-left:16px;border-left:1px solid var(--line)}
+  .t-card,.c .t-card{width:300px}
+  .t-card .desc{display:none}
+}
+@media (prefers-reduced-motion:reduce){.btn-sync.busy svg{animation:none}}
+</style>
+</head>
+<body class="a">
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="cup" viewBox="0 0 24 24"><path fill="currentColor" d="M7 3h10v5a5 5 0 0 1-4 4.9V17h3v3H8v-3h3v-4.1A5 5 0 0 1 7 8V3zM4 5h2v3.4A3 3 0 0 1 4 5.6V5zm14 0h2v.6a3 3 0 0 1-2 2.8V5z"/></symbol>
+  <symbol id="sync" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M20 12a8 8 0 0 1-14.3 4.9M4 12A8 8 0 0 1 18.3 7.1M18.5 3v4.5H14M5.5 21v-4.5H10"/></symbol>
+  <symbol id="sliders" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></g></symbol>
+  <symbol id="chev" viewBox="0 0 12 12"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M3 4.5L6 7.5 9 4.5"/></symbol>
+  <symbol id="search" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></g></symbol>
+</svg>
+
+<header class="hero">
+  <div class="hero-img" role="img" aria-label="Bannière personnalisée"></div>
+  <a class="hero-settings" href="#"><svg class="ico"><use href="#sliders"/></svg>Réglages</a>
+</header>
+
+<div class="wrap">
+  <section class="profile" aria-label="Profil">
+    <div class="avatar-box">
+      <img class="avatar" src="https://i.psnprofiles.com/avatars/l/G6faae1b62.png" onerror="this.onerror=null;this.src='https://i.psnprofiles.com/avatars/m/G6faae1b62.png'" alt="Avatar de Zmx969">
+      <span class="plus" title="PlayStation Plus">+</span>
+    </div>
+    <div class="identity">
+      <h1>Zmx969</h1>
+      <div class="sub">France</div>
+      <div class="sync-row">
+        <span class="sync-when">Dernière synchro le 7 nov. 2026 à 09:27</span>
+        <button class="btn-sync" id="sync"><svg class="ico"><use href="#sync"/></svg><span>Synchroniser</span></button>
+      </div>
+    </div>
+    <div class="counts">
+      <div class="count total"><b>11 622</b><span>Trophées</span></div>
+      <div class="count plat"><b>230</b><span><svg><use href="#cup"/></svg>Platine</span></div>
+      <div class="count gold"><b>990</b><span><svg><use href="#cup"/></svg>Or</span></div>
+      <div class="count silver"><b>2 434</b><span><svg><use href="#cup"/></svg>Argent</span></div>
+      <div class="count bronze"><b>7 968</b><span><svg><use href="#cup"/></svg>Bronze</span></div>
+    </div>
+    <div class="level">
+      <svg class="badge" viewBox="0 0 48 48" aria-hidden="true">
+        <defs><linearGradient id="lvg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F6F8FB"/><stop offset=".5" stop-color="#A9B2BE"/><stop offset="1" stop-color="#E2E6EC"/></linearGradient></defs>
+        <circle cx="24" cy="24" r="22" fill="url(#lvg)"/>
+        <circle cx="24" cy="24" r="17.5" fill="none" stroke="#7E8794" stroke-width="1.2"/>
+        <use href="#cup" x="13" y="12" width="22" height="22" style="color:#5B6470"/>
+      </svg>
+      <div>
+        <div class="lv"><small>Niveau PSN</small>536</div>
+        <div class="next"><i></i></div>
+        <div class="next-label">42 % vers le niveau 537</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="stats" aria-label="Statistiques principales">
+    <div class="stat"><div class="label">Jeux finis</div><div class="value">224</div><div class="note">sur 266 jeux</div></div>
+    <div class="stat"><div class="label">Complétion du profil</div><div class="value">94,52 %</div><div class="note">moyenne de tes jeux</div></div>
+    <div class="stat"><div class="label">Rareté moyenne</div><div class="value">26,54 %</div><div class="note">des trophées obtenus</div></div>
+    <div class="stat"><div class="label">Trophées manquants</div><div class="value">776</div><div class="note">dans 42 jeux</div></div>
+    <div class="stat"><div class="label">Trophées par jour</div><div class="value">3,19</div><div class="note">depuis nov. 2016</div></div>
+    <div class="stat"><div class="label">Heures jouées</div><div class="value">19 416 h</div><div class="note">PS4 et PS5</div></div>
+  </section>
+
+  <nav class="tabs" aria-label="Pages">
+    <a href="#" aria-current="page">Jeux</a>
+    <a href="#">Plat wall</a>
+    <a href="#">Trophy log</a>
+    <a href="#">Trophy advisor</a>
+    <a href="#">Stats</a>
+  </nav>
+
+  <h2 class="strip-title">10 derniers trophées</h2>
+  <div class="strip" id="strip"></div>
+
+  <div class="layout">
+    <section class="panel" aria-label="Mes jeux">
+      <div class="panel-head"><h2>Mes jeux</h2><span class="aside">266 jeux</span></div>
+      <div class="games-tools">
+        <span class="select">Tous les jeux<svg><use href="#chev"/></svg></span>
+        <span class="select">Toutes plateformes<svg><use href="#chev"/></svg></span>
+        <span class="select">Joué récemment<svg><use href="#chev"/></svg></span>
+        <span class="search"><svg class="ico"><use href="#search"/></svg>Chercher un jeu</span>
+      </div>
+      <div id="games"></div>
+      <div class="load-more">Les 50 jeux suivants se chargent quand tu arrives ici</div>
+    </section>
+
+    <aside class="side">
+      <section class="panel" aria-label="Trophées des 60 derniers jours">
+        <div class="panel-head"><h2>60 derniers jours</h2><span class="aside">9 sept. – 7 nov.</span></div>
+        <div class="heat" id="heat"></div>
+      </section>
+
+      <section class="panel cabinet" aria-label="Vitrine">
+        <div class="panel-head"><h2>Ma vitrine</h2><a class="aside" href="#">Modifier</a></div>
+        <ul class="tlist" id="cabinet"></ul>
+        <div class="shelf">Survole un trophée pour voir son nom</div>
+      </section>
+
+      <section class="panel" aria-label="Trophées les plus rares">
+        <div class="panel-head"><h2>Les plus rares</h2><span class="aside">rareté PSN mondiale</span></div>
+        <ul class="tlist" id="rarest"></ul>
+        <div class="rarity" id="rarity"></div>
+      </section>
+
+      <section class="panel" aria-label="Jalons">
+        <div class="panel-head"><h2>Jalons</h2><a class="aside" href="#">Tout voir</a></div>
+        <ul class="tlist" id="milestones"></ul>
+      </section>
+    </aside>
+  </div>
+</div>
+
+<div class="switcher" role="group" aria-label="Choisir une maquette">
+  <button data-t="a">A · Métal</button>
+  <button data-t="b">B · Clair</button>
+  <button data-t="c">C · Console</button>
+</div>
+
+<script>
+const IMG='https://img.psnprofiles.com/';
+const TYPE={plat:'Platine',gold:'Or',silver:'Argent',bronze:'Bronze'};
+const pct=r=>r.toFixed(2).replace('.',',')+' %';
+const tier=r=>r<5?'Ultra rare':r<10?'Très rare':r<20?'Rare':r<50?'Peu commun':'Commun';
+const cup=cls=>`<svg class="${cls||''}" aria-hidden="true"><use href="#cup"/></svg>`;
+
+const recent=[
+ {n:"You Are The Special",d:"Get all other Trophies.",g:"Magicka 2",t:"plat",r:1.30,w:"5 nov. 2026 à 00:16",i:"trophy/s/3589/6a14691b-03bf-42eb-83f9-fef8e6d89ebd.png"},
+ {n:"Archmage",d:"Kill 10,000 enemies.",g:"Magicka 2",t:"silver",r:1.51,w:"4 nov. 2026 à 23:58",i:"trophy/s/3589/41e5c293-83c6-4b20-a6c8-3ea5660ff27f.png"},
+ {n:"Done",d:"Collect all of the other trophies",g:"Hellblade: Senua's Sacrifice",t:"plat",r:50.82,w:"4 nov. 2026 à 21:30",i:"trophy/s/35777/78fda04a-169f-4b25-8cba-1c9793cdf29b.png"},
+ {n:"The Final Battle",d:"Confront Hela",g:"Hellblade: Senua's Sacrifice",t:"gold",r:55.09,w:"4 nov. 2026 à 21:12",i:"trophy/s/35777/af4284b6-af5d-4ece-af2b-d69d4fa939c6.png"},
+ {n:"Stories From the North",d:"Collect all of the Lorestones",g:"Hellblade: Senua's Sacrifice",t:"gold",r:50.86,w:"4 nov. 2026 à 20:41",i:"trophy/s/35777/4b160b50-cad6-4efb-a9de-e256fc26418d.png"},
+ {n:"Tamed the Beast",d:"Defeat Fenrir",g:"Hellblade: Senua's Sacrifice",t:"gold",r:55.32,w:"4 nov. 2026 à 19:55",i:"trophy/s/35777/df3da837-4af3-458f-8997-8a6091f4a3dd.png"},
+ {n:"Into the Mountain",d:"Enter Helheim",g:"Hellblade: Senua's Sacrifice",t:"gold",r:55.64,w:"4 nov. 2026 à 18:47",i:"trophy/s/35777/a6fda35d-49fb-486a-8183-fa3292f1c597.png"},
+ {n:"Warrior",d:"Escape the Sea of Corpses",g:"Hellblade: Senua's Sacrifice",t:"silver",r:55.73,w:"4 nov. 2026 à 17:20",i:"trophy/s/35777/cab7c3b0-2443-4bbc-87c4-ba5d74669493.png"},
+ {n:"Gramr Released",d:"Pull Gramr out of the Tree",g:"Hellblade: Senua's Sacrifice",t:"gold",r:56.10,w:"4 nov. 2026 à 15:28",i:"trophy/s/35777/98f05c00-320b-403d-9526-cb71fa73d662.png"},
+ {n:"Trust Your Senses",d:"Complete the Blindness Shard Challenge",g:"Hellblade: Senua's Sacrifice",t:"silver",r:57.02,w:"4 nov. 2026 à 14:48",i:"trophy/s/35777/e880369d-5ad9-49f1-87d3-b8cdb02b6fe3.png"}
+];
+const games=[
+ {n:"Magicka 2",p:"PS4",i:"game/s/3589/a0f14bbb-72f5-4fdd-a927-4094055c8773.png",last:"5 nov. 2026",h:"33 h 27",c:[1,1,2,2,14,14,30,30]},
+ {n:"Hellblade: Senua's Sacrifice",p:"PS5",i:"game/s/35777/8a8e90a3-028e-425e-ab66-59d9cb4ce274.png",last:"4 nov. 2026",h:"11 h 46",c:[1,1,9,9,5,5,0,0]},
+ {n:"Gris",p:"PS5",i:"game/s/19936/12bca8ac-e096-4847-81c6-404273462efa.png",last:"2 nov. 2026",h:"10 h 37",c:[1,1,9,9,4,4,4,4]},
+ {n:"Destiny 2",p:"PS5",i:"game/s/11984/cd306133-9a36-45e4-9e4b-72cf8deda29a.png",last:"1 nov. 2026",h:"240 h 44",c:[1,1,11,11,4,4,8,8]},
+ {n:"The Wolf Among Us Remastered",p:"PS5",i:"game/s/43292/e54c90f7-2f79-47ac-a89c-cfd5cb21a418.png",last:"31 oct. 2026",h:"12 h 44",c:[1,1,5,5,7,7,26,26]},
+ {n:"Final Fantasy Resonance",p:"PS5",i:"game/s/43178/ae6bc487-c707-47d1-93da-fca31ce64183.png",last:"29 oct. 2026",h:"66 h 02",c:[1,1,4,4,7,7,28,28]},
+ {n:"Uncharted 4: A Thief's End",p:"PS4",i:"game/s/4719/82c6538d-9abb-48cb-8e7d-27dc35bceb07.png",last:"26 oct. 2026",h:"69 h 58",c:[1,1,1,1,10,10,56,56]},
+ {n:"Destiny 2",p:"PS4",i:"game/s/6550/cee4332b-90f3-40ae-a547-d37173be6a5d.png",last:"24 oct. 2026",h:"3 min",c:[0,1,10,11,4,4,8,8]},
+ {n:"Horizon Forbidden West",p:"PS4",i:"game/s/15451/59ed3702-7fdb-4a09-aee4-494ff316cbc2.png",last:"12 oct. 2026",h:"61 h 53",c:[1,1,1,1,7,7,53,53]},
+ {n:"Tales of Arise",p:"PS4",i:"game/s/13898/eb6fa70e-66f9-4ddc-bd72-ed6cfb1e876b.png",last:"11 oct. 2026",h:"49 h 39",c:[1,1,2,2,13,13,43,43]},
+ {n:"Final Fantasy XV Multiplayer: Comrades",p:"PS4",i:"game/s/8563/174a994a-0be7-42e9-b629-5b16e8be9aa0.png",last:"10 oct. 2026",h:"11 h 00",c:[0,0,3,3,3,3,10,10]},
+ {n:"A Hat in Time",p:"PS4",i:"game/s/6921/dc253355-e5f6-40a3-b132-5158167ffa4d.png",last:"9 oct. 2026",h:"45 h 35",c:[1,1,7,8,15,15,14,14]}
+];
+const cabinet=[
+ {n:"The Greatest Expedition in History",g:"Clair Obscur: Expedition 33",r:39.72,i:"trophy/s/33395/45a58139-26d4-4e25-8d69-2444a1c34803.png"},
+ {n:"Heroes of Gaia",g:"Final Fantasy IX",r:7.84,i:"trophy/s/6669/20ff8de9-5f45-4455-8bc4-27c4b9ffdd2b.png"},
+ {n:"Elden Ring",g:"Elden Ring",r:37.58,i:"trophy/s/15539/b0d9a703-d112-4415-b64e-b7093cabe18c.png"},
+ {n:"It can't be for nothing",g:"The Last of Us Remastered",r:4.64,i:"trophy/s/2752/f737e75b-4963-4d6d-a175-9a8428d2a726.png"},
+ {n:"Goddess of Nightmares",g:"Hades II",r:35.62,i:"trophy/s/41018/c22dc387-35bf-4e8d-a8c4-2642f05779d1.png"},
+ {n:"Pride of Baldur's Gate",g:"Baldur's Gate III",r:6.03,i:"trophy/s/23531/7e475664-7e40-4493-9785-99be0df800bd.png"},
+ {n:"The Planet's Hope",g:"Final Fantasy VII Rebirth",r:14.27,i:"trophy/s/26098/f92396c0-f79e-4340-bdb1-384d1ea55736.png"},
+ {n:"Deity",g:"Divinity: Original Sin 2",r:5.33,i:"trophy/s/7991/c4438620-23f8-4f88-9b4a-eb384ca5a367.png"},
+ {n:"Champion of Ivalice",g:"Final Fantasy XII: The Zodiac Age",r:11.44,i:"trophy/s/5788/a576f128-7983-42a5-aadc-c3535484b9c2.png"},
+ {n:"Original Sinner",g:"Divinity: Original Sin",r:2.43,i:"trophy/s/4007/7c283d4d-9186-4371-b42b-2881624b0e0f.png"}
+];
+const rarest=[
+ {n:"Ultimate Driver",g:"Gran Turismo Sport",r:1.19,i:"trophy/s/6806/4997345e-da38-4eb9-8eaa-3fd5dd8fb84a.png"},
+ {n:"You Are The Special",g:"Magicka 2",r:1.30,i:"trophy/s/3589/6a14691b-03bf-42eb-83f9-fef8e6d89ebd.png"},
+ {n:"To Live Forever",g:"No Man's Sky",r:1.34,i:"trophy/s/5155/982cad65-7044-462d-8797-9f7e46cba4f2.png"},
+ {n:"Oh, My Bad",g:"Magicka 2",r:1.41,i:"trophy/s/3589/372ed2d8-ea87-4dba-95c0-48dfc5ef0fd0.png"},
+ {n:"Echoing Elites",g:"Diablo IV",r:1.42,i:"trophy/s/22398/a0b4e398-285a-4653-841f-5b836ce36502.png"}
+];
+const milestones=[
+ {n:"You Are The Special",g:"Magicka 2",m:"Dernier platine",w:"5 nov. 2026",i:"trophy/s/3589/6a14691b-03bf-42eb-83f9-fef8e6d89ebd.png"},
+ {n:"Ultimate Fantasy",g:"Final Fantasy Resonance",m:"225e platine",w:"29 oct. 2026",i:"trophy/s/43178/2bb655b2-1734-4cd4-a9b5-f34219da6b86.png"},
+ {n:"The Greatest Expedition in History",g:"Clair Obscur: Expedition 33",m:"200e platine",w:"14 juin 2026",i:"trophy/s/33395/45a58139-26d4-4e25-8d69-2444a1c34803.png"},
+ {n:"Attack Interruption",g:"Arknights: Endfield",m:"10 000e trophée",w:"23 janv. 2026",i:"trophy/s/39412/0e32a9a0-5b94-47a4-8dda-3e9dd1a3548b.png"},
+ {n:"The Final Verse",g:"NieR Replicant ver.1.22474487139...",m:"9 000e trophée",w:"24 août 2022",i:"trophy/s/12768/03409081-2760-4fca-a420-ab637cea833f.png"},
+ {n:"The Shiniest Thing",g:"Death's Door",m:"175e platine",w:"25 juil. 2022",i:"trophy/s/14727/8bf73460-0cc2-4c7e-b972-94ea3011c0eb.png"},
+ {n:"Age of the Stars",g:"Elden Ring",m:"8 000e trophée",w:"4 mars 2022",i:"trophy/s/15539/c6300ac8-48fb-4044-bb08-47429bbc076b.png"},
+ {n:"God of Blood",g:"Hades",m:"150e platine",w:"12 déc. 2021",i:"trophy/s/13635/a6f8aa91-8778-4a4e-bbc3-16c22373512c.png"}
+];
+
+/* Carrousel */
+let active=0;
+function renderStrip(){
+  document.getElementById('strip').innerHTML=recent.map((t,k)=>k===active
+    ?`<button class="t-card" aria-expanded="true"><img src="${IMG+t.i}" alt=""><div class="txt"><h4>${t.n}</h4><div class="desc">${t.d}</div><div class="when">${t.w} dans ${t.g}</div></div><div class="rar"><div><b>${pct(t.r)}</b><span>${tier(t.r)}</span></div><span class="${t.t}">${cup()}</span></div></button>`
+    :`<button class="icon-btn" data-k="${k}" title="${t.n} (${TYPE[t.t]})" aria-label="${t.n}"><img class="t-icon" src="${IMG+t.i}" alt=""></button>`).join('');
+  document.querySelectorAll('#strip .icon-btn').forEach(b=>b.onclick=()=>{active=+b.dataset.k;renderStrip()});
+}
+
+/* Jeux */
+function renderGames(){
+  const chip=(cls,e,t)=>t?`<span class="chip ${cls}">${cup()}${e}/${t}</span>`:`<span class="chip empty"></span>`;
+  document.getElementById('games').innerHTML=games.map(g=>{
+    const [pe,pt,ge,gt,se,st,be,bt]=g.c, earned=pe+ge+se+be, total=pt+gt+st+bt, p=Math.floor(earned/total*100), done=earned===total;
+    const status=pt?(pe?`<span title="Platine obtenu">${cup('got')}</span>`:`<span title="Platine non obtenu">${cup('miss')}</span>`)
+      :(done?`<svg class="check" viewBox="0 0 24 24" aria-label="Terminé"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`:'');
+    return `<article class="game${done?' done':''}">
+      <img class="game-cover" src="${IMG+g.i}" alt="" loading="lazy">
+      <div class="game-main"><h3>${g.n}</h3>
+        <div class="game-meta"><span class="platform">${g.p}</span><span>${earned} / ${total} trophées</span><span>Joué le ${g.last}</span><span>${g.h} de jeu</span></div></div>
+      <div class="chips">${chip('plat',pe,pt)}${chip('gold',ge,gt)}${chip('silver',se,st)}${chip('bronze',be,bt)}</div>
+      <div class="progress"><div class="bar"><i style="width:${p}%"></i></div><span class="pct num">${p} %</span></div>
+      <div class="status">${status}</div></article>`;
+  }).join('');
+}
+
+/* Heatmap 60 jours */
+function renderHeat(){
+  const start=new Date(2026,8,9), end=new Date(2026,10,7), gridStart=new Date(2026,8,7);
+  let seed=11; const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+  const M=['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
+  const D=['lun.','','mer.','','ven.','','dim.'];
+  const counts={}; let total=0, best=0, bestDay=null;
+  for(let d=new Date(start);d<=end;d.setDate(d.getDate()+1)){
+    const x=rnd(); const n=x<.22?0:x<.45?1+Math.floor(rnd()*2):x<.72?3+Math.floor(rnd()*3):x<.9?6+Math.floor(rnd()*5):11+Math.floor(rnd()*9);
+    counts[d.toDateString()]=n; total+=n; if(n>best){best=n;bestDay=new Date(d)}
+  }
+  let months='<span></span>';
+  for(let c=0;c<9;c++){
+    const mon=new Date(gridStart); mon.setDate(mon.getDate()+c*7);
+    let lab=c===0?M[mon.getMonth()]:'';
+    for(let k=0;k<7&&!lab;k++){const d=new Date(mon);d.setDate(d.getDate()+k);if(d.getDate()===1&&d>=start)lab=M[d.getMonth()]}
+    months+=`<span>${lab}</span>`;
+  }
+  let grid='';
+  for(let r=0;r<7;r++){
+    grid+=`<span class="d">${D[r]}</span>`;
+    for(let c=0;c<9;c++){
+      const d=new Date(gridStart); d.setDate(d.getDate()+c*7+r);
+      if(d<start||d>end){grid+='<span class="cell out"></span>';continue}
+      const n=counts[d.toDateString()], l=n===0?0:n<3?1:n<6?2:n<11?3:4;
+      grid+=`<span class="cell l${l}" title="${d.getDate()} ${M[d.getMonth()]} : ${n} trophée${n>1?'s':''}"></span>`;
+    }
+  }
+  document.getElementById('heat').innerHTML=`<div class="heat-months">${months}</div><div class="heat-grid">${grid}</div>
+    <div class="heat-sum"><div><b>${total}</b><span>trophées</span></div><div><b>8</b><span>platines</span></div><div><b>${bestDay.getDate()} ${M[bestDay.getMonth()]}</b><span>meilleur jour (${best})</span></div></div>`;
+}
+
+/* Listes */
+const row=(t,right)=>`<li title="${t.n}"><img src="${IMG+t.i}" alt="" loading="lazy"><div><div class="n">${t.n}</div><div class="g">${t.g}</div></div><div class="r">${right}</div></li>`;
+function renderLists(){
+  document.getElementById('cabinet').innerHTML=cabinet.map(t=>row(t,`<b>${pct(t.r)}</b>${tier(t.r)}`)).join('');
+  document.getElementById('rarest').innerHTML=rarest.map(t=>row(t,`<b>${pct(t.r)}</b>${tier(t.r)}`)).join('');
+  document.getElementById('milestones').innerHTML=milestones.map(t=>row(t,`<span class="m">${t.m}</span><br>${t.w}`)).join('');
+  const tiers=[['Ultra rare',101,'t1'],['Très rare',251,'t2'],['Rare',1314,'t3'],['Peu commun',5656,'t4'],['Commun',4300,'t5']];
+  const sum=tiers.reduce((s,t)=>s+t[1],0);
+  document.getElementById('rarity').innerHTML=`<div class="rbar">${tiers.map(t=>`<i class="${t[2]}" style="flex:${t[1]/sum}"></i>`).join('')}</div>
+    <div class="rgrid">${tiers.map(t=>`<div><b><i class="${t[2]}"></i>${t[1].toLocaleString('fr-FR')}</b><span>${t[0]}</span></div>`).join('')}</div>`;
+}
+
+/* Bouton synchro (démo) */
+document.getElementById('sync').onclick=e=>{
+  const b=e.currentTarget; if(b.classList.contains('busy'))return;
+  b.classList.add('busy'); b.querySelector('span').textContent='Synchro en cours…';
+  setTimeout(()=>{b.classList.remove('busy');b.querySelector('span').textContent='Synchroniser';document.querySelector('.sync-when').textContent='Dernière synchro à l’instant'},2200);
+};
+
+/* Sélecteur de maquette */
+function setTheme(t){document.body.className=t;document.querySelectorAll('.switcher button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.t===t));history.replaceState(null,'','#'+t)}
+document.querySelectorAll('.switcher button').forEach(b=>b.onclick=()=>setTheme(b.dataset.t));
+const fromHash=()=>setTheme(['a','b','c'].includes(location.hash.slice(1))?location.hash.slice(1):'a');
+window.addEventListener('hashchange',fromHash); fromHash();
+
+renderStrip();renderGames();renderHeat();renderLists();
+</script>
+</body>
+</html>

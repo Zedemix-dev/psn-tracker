@@ -1,0 +1,3 @@
+# Maquettes de brainstorming : versionnées (pour les retrouver sur un autre PC),
+# sauf les fichiers techniques temporaires du serveur de maquettes.
+.superpowers/brainstorm/*/state/
