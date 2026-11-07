@@ -6,7 +6,8 @@ const date = new Date("2025-03-01T10:00:00Z");
 
 function stored(overrides: Partial<StoredTitleState> = {}): StoredTitleState {
   return {
-    lastTrophyAt: date,
+    psnLastUpdatedAt: date,
+    syncedAt: date,
     earnedPlatinum: 0,
     earnedGold: 0,
     earnedSilver: 0,
@@ -32,12 +33,16 @@ describe("titleNeedsReload", () => {
   });
 
   it("is false when both dates are null", () => {
-    expect(titleNeedsReload(stored({ lastTrophyAt: null }), remote({ lastUpdatedAt: null }))).toBe(false);
+    expect(titleNeedsReload(stored({ psnLastUpdatedAt: null }), remote({ lastUpdatedAt: null }))).toBe(false);
+  });
+
+  it("is true when the row was never fully synced", () => {
+    expect(titleNeedsReload(stored({ syncedAt: null }), remote())).toBe(true);
   });
 
   it("is true when only the last update date changes", () => {
     expect(titleNeedsReload(stored(), remote({ lastUpdatedAt: new Date("2025-03-02T00:00:00Z") }))).toBe(true);
-    expect(titleNeedsReload(stored({ lastTrophyAt: null }), remote())).toBe(true);
+    expect(titleNeedsReload(stored({ psnLastUpdatedAt: null }), remote())).toBe(true);
   });
 
   it("is true when only trophySetVersion changes (new DLC, nothing earned)", () => {

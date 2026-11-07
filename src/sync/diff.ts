@@ -6,7 +6,8 @@ import type { RemoteTitle } from "@/src/psn/types";
 /** The part of a `titles` row that decides whether a title must be reloaded. */
 export type StoredTitleState = Pick<
   typeof titles.$inferSelect,
-  | "lastTrophyAt"
+  | "psnLastUpdatedAt"
+  | "syncedAt"
   | "earnedPlatinum"
   | "earnedGold"
   | "earnedSilver"
@@ -25,7 +26,8 @@ export async function loadTitleState(
 ): Promise<StoredTitleState | null> {
   const [row] = await db
     .select({
-      lastTrophyAt: titles.lastTrophyAt,
+      psnLastUpdatedAt: titles.psnLastUpdatedAt,
+      syncedAt: titles.syncedAt,
       earnedPlatinum: titles.earnedPlatinum,
       earnedGold: titles.earnedGold,
       earnedSilver: titles.earnedSilver,
@@ -46,9 +48,9 @@ const time = (d: Date | null) => (d === null ? null : d.getTime());
 
 /** Spec 6.4: reload when the title was never seen or any change indicator differs. */
 export function titleNeedsReload(stored: StoredTitleState | null, remote: RemoteTitle): boolean {
-  if (stored === null) return true;
+  if (stored === null || stored.syncedAt === null) return true;
   return (
-    time(stored.lastTrophyAt) !== time(remote.lastUpdatedAt) ||
+    time(stored.psnLastUpdatedAt) !== time(remote.lastUpdatedAt) ||
     stored.earnedPlatinum !== remote.earned.platinum ||
     stored.earnedGold !== remote.earned.gold ||
     stored.earnedSilver !== remote.earned.silver ||

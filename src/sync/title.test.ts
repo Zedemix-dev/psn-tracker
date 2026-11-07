@@ -114,6 +114,66 @@ describe("syncTitle", () => {
     await syncTitle(db, gw, auth, remote, now);
     expect(titleNeedsReload(await loadTitleState(db, ID), remote)).toBe(false);
   });
+
+  it("is not reloaded after a full sync, even with 0 earned and a PSN date", async () => {
+    const { defs, userTrophies } = makeTrophies(3);
+    const gw = createFakePsn({ titleData: { [ID]: { groups: [makeGroup("default")], defs, userTrophies } } });
+    const remote = makeRemoteTitle({ lastUpdatedAt: new Date("2025-05-05T05:05:05Z") });
+    await syncTitle(db, gw, auth, remote, now);
+    expect(titleNeedsReload(await loadTitleState(db, ID), remote)).toBe(false);
+  });
+
+  it("updates trophy rows with changed values and never flips earned back", async () => {
+    const mk = (earned: boolean) => {
+      const { defs, userTrophies } = makeTrophies(2, { earnedIds: [1] });
+      if (earned) {
+        userTrophies[0] = {
+          trophyId: 0,
+          earned: true,
+          earnedAt: new Date("2025-02-02T02:02:02Z"),
+          earnedRate: 1.3,
+          rareCategory: 0,
+          progressTarget: null,
+        };
+      }
+      return createFakePsn({ titleData: { [ID]: { groups: [makeGroup("default")], defs, userTrophies } } });
+    };
+    const read = async (id: number) =>
+      (await db.select().from(trophies).where(eq(trophies.trophyId, id)))[0];
+
+    await syncTitle(db, mk(false), auth, makeRemoteTitle(), now);
+    expect((await read(0)).earned).toBe(false);
+    const before1 = await read(1);
+
+    await syncTitle(db, mk(true), auth, makeRemoteTitle(), now);
+    const t0 = await read(0);
+    expect(t0.earned).toBe(true);
+    expect(t0.earnedAt).toEqual(new Date("2025-02-02T02:02:02Z"));
+    expect(t0.earnedRate).toBe("1.30");
+    expect(t0.rareCategory).toBe(0);
+    expect(await read(1)).toEqual(before1);
+
+    await syncTitle(db, mk(true), auth, makeRemoteTitle(), now);
+    expect(await read(0)).toEqual(t0);
+    expect((await read(1)).earned).toBe(true);
+  });
+
+  it("throws on an empty trophy or group list and leaves stored rows intact", async () => {
+    const { defs, userTrophies } = makeTrophies(3);
+    const full = { groups: [makeGroup("default")], defs, userTrophies };
+    await syncTitle(db, createFakePsn({ titleData: { [ID]: full } }), auth, makeRemoteTitle(), now);
+
+    const noDefs = createFakePsn({ titleData: { [ID]: { ...full, defs: [], userTrophies: [] } } });
+    await expect(syncTitle(db, noDefs, auth, makeRemoteTitle(), now)).rejects.toThrow(
+      `Empty trophy list for ${ID}`,
+    );
+    const noGroups = createFakePsn({ titleData: { [ID]: { ...full, groups: [] } } });
+    await expect(syncTitle(db, noGroups, auth, makeRemoteTitle(), now)).rejects.toThrow(
+      `Empty group list for ${ID}`,
+    );
+    expect(await db.select().from(trophies)).toHaveLength(3);
+    expect(await db.select().from(trophyGroups)).toHaveLength(1);
+  });
 });
 
 describe("upsertTitleRow", () => {

@@ -15,6 +15,13 @@
       "when": 1794072326867,
       "tag": "0001_seed_singletons",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794075912852,
+      "tag": "0002_thankful_vanisher",
+      "breakpoints": true
     }
   ]
 }

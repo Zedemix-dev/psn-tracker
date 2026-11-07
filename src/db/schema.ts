@@ -54,6 +54,7 @@ export const titles = pgTable("titles", {
   progress: integer("progress").notNull().default(0),
   hidden: boolean("hidden").notNull().default(false),
   lastTrophyAt: ts("last_trophy_at"),
+  psnLastUpdatedAt: ts("psn_last_updated_at"),
   firstTrophyAt: ts("first_trophy_at"),
   playSeconds: integer("play_seconds"),
   playCount: integer("play_count"),

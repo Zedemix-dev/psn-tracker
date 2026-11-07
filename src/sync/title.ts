@@ -26,6 +26,7 @@ function titleColumns(remote: RemoteTitle) {
     earnedBronze: remote.earned.bronze,
     progress: remote.progress,
     hidden: remote.hidden,
+    psnLastUpdatedAt: remote.lastUpdatedAt,
   };
 }
 
@@ -54,6 +55,9 @@ export async function syncTitle(
   const groups = await gw.getGroups(auth, ref);
   const defs = await gw.getTrophyDefs(auth, ref);
   const userTrophies = await gw.getUserTrophies(auth, ref);
+  const definedTotal = Object.values(remote.defined).reduce((a, b) => a + b, 0);
+  if (definedTotal > 0 && defs.length === 0) throw new Error(`Empty trophy list for ${titleId}`);
+  if (definedTotal > 0 && groups.length === 0) throw new Error(`Empty group list for ${titleId}`);
   const userById = new Map(userTrophies.map((u) => [u.trophyId, u]));
 
   const groupRows = groups.map((g) => ({
