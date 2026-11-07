@@ -12,7 +12,6 @@
 [hidden]{display:none!important}
 html,body{margin:0}
 body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.4;-webkit-font-smoothing:antialiased}
-body::before{content:"";position:fixed;inset:-60px;background:var(--banner) center/cover;filter:blur(44px) brightness(.4) saturate(1.25);z-index:-1}
 img{display:block}
 button{font:inherit;color:inherit}
 a{color:inherit}
@@ -20,6 +19,30 @@ a{color:inherit}
 svg.ico{width:14px;height:14px;flex:none}
 .wrap{max-width:1448px;margin:0 auto;padding:0 24px}
 .glass{background:var(--surface);border:1px solid var(--line);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+/* Blurred copy of the banner behind the whole page */
+.page-bg{position:fixed;inset:-60px;background:var(--banner) center/cover;filter:blur(44px) brightness(.4) saturate(1.25);z-index:-1}
+
+/* Banner: height follows the image ratio (1920x520 recommended) so it is barely cropped */
+.shell-top{position:relative}
+.hero{position:relative;width:100%;aspect-ratio:1920/520;min-height:240px;max-height:560px;overflow:hidden}
+.hero-img{position:absolute;inset:0;background:var(--banner) center var(--banner-y)/cover no-repeat;-webkit-mask-image:linear-gradient(to bottom,#000 72%,transparent 100%);mask-image:linear-gradient(to bottom,#000 72%,transparent 100%)}
+.hero-empty{display:grid;place-items:center;background:linear-gradient(135deg,#1B2547 0%,#2A3560 55%,#18203F 100%)}
+
+/* Top menu: fully transparent over the banner, every item is a pill */
+.topbar{position:absolute;top:0;left:0;right:0;z-index:20}
+.topbar .wrap{display:flex;align-items:center;gap:12px;height:58px}
+.tabs{display:flex;align-items:center;gap:6px;overflow-x:auto;scrollbar-width:none;flex:1;min-width:0}
+.pill{display:inline-flex;align-items:center;gap:7px;padding:6px 13px;border-radius:999px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.16);color:#fff;text-decoration:none;font-size:13px;font-weight:500;white-space:nowrap;flex:none;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.pill:hover{background:rgba(0,0,0,.65)}
+.pill[aria-current]{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.85)}
+
+/* PSN token alert and provisional pages */
+.auth-banner{display:block;padding:9px 24px;text-align:center;font-size:13px;font-weight:500;color:#2B1B00;background:var(--gold);text-decoration:none}
+.auth-banner:hover{text-decoration:underline}
+.coming-soon{padding-top:32px;padding-bottom:48px}
+.coming-soon h1{margin:0 0 8px;font-size:24px;font-weight:600}
+.coming-soon p{margin:0;color:var(--muted)}
+
 @media (max-width:640px){
   .wrap{padding:0 16px}
 }

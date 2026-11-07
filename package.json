@@ -12,7 +12,8 @@
     "test": "vitest run",
     "worker:dev": "tsx src/worker/index.ts",
     "hash-password": "tsx scripts/hash-password.ts",
-    "db:generate": "drizzle-kit generate"
+    "db:generate": "drizzle-kit generate",
+    "seed:dev": "tsx scripts/seed-dev.ts"
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.5.15",

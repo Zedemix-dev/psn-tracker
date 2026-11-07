@@ -6,6 +6,7 @@
 node_modules/
 .next/
 .data/
+AGENTS.md
 .env
 .env.local
 dist/
