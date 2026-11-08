@@ -551,7 +551,12 @@ Il doit aussi vérifier en pratique la détection des nouveaux DLC (6.4).
    - C'est un **filtre séparé**, une surcouche qui s'ajoute aux autres : il fonctionne en même temps que l'état, la plateforme, le tri, la recherche et « Hide 0% games ».
    - Il a deux valeurs : **« With unobtainable »** (seulement les jeux qui ont des trophées non obtenables) et **« Without unobtainable »** (seulement les jeux qui n'en ont pas).
    - Il est **désactivé par défaut** : la liste n'est filtrée que lorsque l'utilisateur choisit l'une des deux valeurs.
-3. **Source de la liste réglable dans Settings** : un champ permet de saisir l'adresse de la liste des jeux aux trophées non obtenables.
+3. **Repère « ! » dans la liste des jeux** (8.7) : un jeu qui a des trophées non obtenables porte un « ! » sur sa ligne, juste après le badge de plateforme (PS4/PS5).
+   - Au survol du « ! », une infobulle indique que le jeu a des trophées non obtenables, et combien. Ce nombre vient de la liste.
+4. **Sur la page d'un jeu** (8.9), chaque trophée non obtenable porte un « ! » à côté de son nom.
+   - Un trophée non obtenable **et non obtenu** a en plus une **légère surbrillance rouge**, sur le même principe que la surbrillance verte d'un trophée obtenu.
+   - Un trophée non obtenable **mais déjà obtenu** garde sa **surbrillance verte**, avec seulement le « ! » à côté de son nom, sans rouge.
+5. **Source de la liste réglable dans Settings** : un champ permet de saisir l'adresse de la liste des jeux aux trophées non obtenables.
    - Adresse actuelle, à mettre par défaut : `https://psnp-plus.huskycode.dev/list.json` (liste maintenue pour l'extension PSNP+).
    - Si l'adresse change un jour, l'utilisateur la met à jour depuis l'interface, sans toucher au code.
 
@@ -563,10 +568,14 @@ Il doit aussi vérifier en pratique la détection des nouveaux DLC (6.4).
 - **Aucun identifiant PSN** (`npCommunicationId`) dans la liste : un jeu doit être rapproché **par son nom et sa plateforme**.
   - Avec un nom normalisé (minuscules, sans ™ ® ©, ponctuation réduite) et une plateforme commune, 5 des 266 jeux de l'utilisateur sont reconnus : Dauntless (PS4 et PS5), Final Fantasy XV (PS4), Gran Turismo Sport et Marvel Heroes Omega. Aucun faux positif n'a été vu.
   - Un même jeu peut avoir plusieurs entrées, une par région (Final Fantasy XV en a 4). Pour savoir si un jeu « a des trophées non obtenables », il suffit que l'une d'elles corresponde.
+- **Numéros des trophées** : leur correspondance avec les `trophyId` du PSN est **à vérifier** au cadrage, en comparant avec les pages psnprofiles.
+  - Pour Gran Turismo Sport (`[1, 2, 3, 4, 35, 36, 38]`), la lecture « numéro − 1 = `trophyId` » donne des trophées en ligne plausibles : le platine, les records du Sport Mode, la livrée partagée, le Daily Workout.
+  - Mais l'entrée de Dauntless vaut `[0]`, ce qui ne colle pas avec une numérotation qui part de 1.
+  - Le nombre de trophées non obtenables affiché dans l'infobulle de la liste des jeux est la taille de ce tableau.
 
 **Points à trancher au cadrage** :
 - le libellé du filtre quand il est désactivé, et l'aspect du bouton « tout afficher » une fois tous les jeux chargés ;
 - la fréquence de téléchargement de la liste (par exemple avec le rafraîchissement quotidien, et à l'enregistrement d'une nouvelle adresse), et ce qui s'affiche si elle est inaccessible ;
 - l'effet du filtre sur les stats, comme « Hide 0% games » le fait (8.4), ou non ;
-- l'affichage éventuel des trophées non obtenables, et de la note, sur la page d'un jeu (la liste donne leurs numéros) ;
+- l'affichage de la note de la liste (la cause : « Servers closed on… »), dans l'infobulle du « ! » ou sur la page d'un jeu ;
 - une correction manuelle pour un jeu mal reconnu par son nom.

@@ -49,6 +49,8 @@ Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un aut
 3. **Jeux aux trophées non obtenables** (demandé le 8 novembre 2026, spec section 14) : à faire **à part**, après la page de détail, sur la branche `feat/unobtainable`, avec son propre cadrage.
    - Un bouton dans l'en-tête de la liste Games pour afficher tous les jeux d'un coup, sans défiler.
    - Un filtre séparé « With unobtainable » / « Without unobtainable », désactivé par défaut, qui s'ajoute aux autres filtres.
+   - Un « ! » après le badge PS4/PS5 des jeux concernés dans la liste Games, avec une infobulle qui donne le nombre de trophées non obtenables.
+   - Sur la page d'un jeu, un « ! » à côté de chaque trophée non obtenable. Le trophée a une légère surbrillance rouge s'il n'est pas obtenu, et garde sa surbrillance verte s'il l'est.
    - Dans Settings, l'adresse de la liste des jeux concernés, modifiable. Adresse actuelle : `https://psnp-plus.huskycode.dev/list.json`.
    - La liste ne donne pas l'identifiant PSN des jeux : rapprochement par nom et plateforme (5 de tes jeux reconnus le 8 novembre 2026).
 4. **Pages suivantes**, chacune avec **son propre brainstorming** (spec, section 3) :
