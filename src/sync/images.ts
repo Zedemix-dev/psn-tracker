@@ -75,6 +75,8 @@ async function collectUrls(db: Db): Promise<string[]> {
     db.select({ u: profile.avatarUrl }).from(profile),
     db.select({ u: titles.iconUrl }).from(titles),
     db.select({ u: titles.coverUrl }).from(titles),
+    db.select({ u: titles.bannerUrl }).from(titles),
+    db.select({ u: titles.logoUrl }).from(titles),
     db.select({ u: trophyGroups.iconUrl }).from(trophyGroups),
     db.select({ u: trophies.iconUrl }).from(trophies),
   ]);

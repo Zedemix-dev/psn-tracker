@@ -40,6 +40,20 @@ const okFetch = () =>
   vi.fn(async (_url: string | URL | Request) => new Response(new Uint8Array([1, 2, 3]), { status: 200 }));
 
 describe("cacheImages", () => {
+  it("collects the game banner and logo", async () => {
+    const BANNER = "https://image.api.playstation.com/banner1.jpg";
+    const LOGO = "https://image.api.playstation.com/logo1.png";
+    await db
+      .update(titles)
+      .set({ bannerUrl: BANNER, logoUrl: LOGO })
+      .where(eq(titles.npCommunicationId, "NPWR00001_00"));
+    const f = okFetch();
+    await cacheImages(db, dir, f);
+    const urls = f.mock.calls.map((c) => String(c[0]));
+    expect(urls).toContain(BANNER);
+    expect(urls).toContain(LOGO);
+  });
+
   it("downloads each url once across two calls", async () => {
     const f = okFetch();
     const first = await cacheImages(db, dir, f);

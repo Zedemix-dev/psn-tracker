@@ -5,6 +5,7 @@ import type { AppConfig } from "@/src/lib/config";
 import type { PsnAuth, PsnGateway } from "@/src/psn/gateway";
 import { getValidAuth } from "@/src/psn/tokens";
 import { loadTitleState, titleNeedsReload } from "@/src/sync/diff";
+import { syncCatalog } from "@/src/sync/catalog";
 import { cacheImages } from "@/src/sync/images";
 import { syncPlayedGames } from "@/src/sync/played";
 import { defaultSleep, withPacing, type Sleep } from "@/src/sync/retry";
@@ -190,6 +191,7 @@ export async function runSync(
         }
       }
     }
+    await syncCatalog(db, paced, auth, "missing", now);
     await cacheImages(db, cfg.mediaDir, deps?.fetchImpl);
   });
 }

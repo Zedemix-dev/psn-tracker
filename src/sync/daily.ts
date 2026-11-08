@@ -3,6 +3,7 @@ import type { Db } from "@/src/db/client";
 import { titles, trophyGroups } from "@/src/db/schema";
 import type { AppConfig } from "@/src/lib/config";
 import type { PsnGateway } from "@/src/psn/gateway";
+import { syncCatalog } from "@/src/sync/catalog";
 import { describeFailure, executeRun, type SyncDeps, type SyncRunResult } from "@/src/sync/run";
 import { syncTitle } from "@/src/sync/title";
 import { refreshUserState } from "@/src/sync/user-state";
@@ -49,5 +50,6 @@ export async function runDailyRefresh(
       }
       await progress.titleDone(updated);
     }
+    await syncCatalog(db, paced, auth, "all", now);
   });
 }
