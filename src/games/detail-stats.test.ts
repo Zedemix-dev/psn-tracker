@@ -10,6 +10,15 @@ describe("groupProgress", () => {
     expect(groupProgress(mk("bronze", 13, 2))).toBe(15);
     expect(groupProgress(mk("bronze", 144, 1))).toBe(1);
   });
+  it("floors instead of rounding up", () => {
+    expect(groupProgress([...mk("bronze", 39, 38), ...mk("silver", 1, 1)])).toBe(97);
+    expect(groupProgress(mk("bronze", 200, 199))).toBe(99);
+  });
+  it("excludes the platinum from the percentage", () => {
+    expect(groupProgress([...mk("platinum", 1, 0), ...mk("gold", 2, 2), ...mk("bronze", 5, 5)])).toBe(100);
+    expect(groupProgress([...mk("platinum", 1, 1), ...mk("bronze", 4, 0)])).toBe(0);
+    expect(groupProgress(mk("platinum", 1, 1))).toBe(0);
+  });
   it("handles all and none", () => {
     const all = [...mk("platinum", 1, 1), ...mk("gold", 2, 2), ...mk("bronze", 5, 5)];
     expect(groupProgress(all)).toBe(100);

@@ -17,10 +17,12 @@ export function pointsOf(trophies: ProgressTrophy[]): { total: number; earned: n
   return { total, earned };
 }
 
-/** Points-weighted progress, rounded to a whole percent. */
+/** PSN-style progress: platinum excluded, floored, at least 1 once any non-platinum point is earned. */
 export function groupProgress(trophies: ProgressTrophy[]): number {
-  const { total, earned } = pointsOf(trophies);
-  return total === 0 ? 0 : Math.round((earned / total) * 100);
+  const base = trophies.filter((t) => t.type !== "platinum");
+  const { total, earned } = pointsOf(base);
+  if (total === 0 || earned === 0) return 0;
+  return Math.max(1, Math.floor((earned * 100) / total));
 }
 
 export function typeCounts(trophies: ProgressTrophy[]): Record<TrophyType, [earned: number, defined: number]> {
