@@ -6,6 +6,12 @@
       "runtimeExecutable": "C:\\Users\\NIC.PAIN\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
       "runtimeArgs": ["-m", "http.server", "8765", "--bind", "127.0.0.1", "--directory", ".superpowers/brainstorm/maquettes"],
       "port": 8765
+    },
+    {
+      "name": "e2e-web",
+      "runtimeExecutable": "C:\\Program Files\\nodejs\\node.exe",
+      "runtimeArgs": ["scripts/e2e/web.mjs"],
+      "port": 3000
     }
   ]
 }
