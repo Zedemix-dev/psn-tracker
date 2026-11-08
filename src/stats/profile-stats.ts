@@ -1,6 +1,6 @@
-import { and, eq, isNotNull, ne, sql } from "drizzle-orm";
+import { and, eq, exists, isNotNull, ne, sql } from "drizzle-orm";
 import type { Db } from "@/src/db/client";
-import { titles, trophies } from "@/src/db/schema";
+import { playedGames, titles, trophies } from "@/src/db/schema";
 
 export type ProfileStats = {
   gamesCompleted: number;
@@ -33,10 +33,23 @@ export async function getProfileStats(
       completed: sql<number>`(count(*) filter (where ${titles.progress} = 100))::int`,
       earned: sql<number>`coalesce(sum(${earnedCount}), 0)::int`,
       defined: sql<number>`coalesce(sum(${definedCount}), 0)::int`,
-      playSeconds: sql<number>`coalesce(sum(${titles.playSeconds}), 0)::int`,
     })
     .from(titles)
     .where(included);
+
+  // A played game can map to several trophy lists, each of which carries the game's full
+  // time: count each game once, when at least one of its lists is included.
+  const [played] = await db
+    .select({ seconds: sql<number>`coalesce(sum(${playedGames.playSeconds}), 0)::int` })
+    .from(playedGames)
+    .where(
+      exists(
+        db
+          .select({ one: sql`1` })
+          .from(titles)
+          .where(and(sql`${titles.npCommunicationId} = any(${playedGames.npCommunicationIds})`, included)),
+      ),
+    );
 
   const [tro] = await db
     .select({
@@ -56,6 +69,6 @@ export async function getProfileStats(
     averageRarity: tro.avgRate == null ? 0 : round2(Number(tro.avgRate)),
     unearned: agg.defined - agg.earned,
     trophiesPerDay: days == null ? 0 : round2(agg.earned / days),
-    hoursSeconds: agg.playSeconds,
+    hoursSeconds: played.seconds,
   };
 }

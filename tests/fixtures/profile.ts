@@ -1,5 +1,5 @@
 import type { Db } from "@/src/db/client";
-import { titles, trophies, type TrophyType } from "@/src/db/schema";
+import { playedGames, titles, trophies, type TrophyType } from "@/src/db/schema";
 
 export type TitleSeed = {
   id: string;
@@ -25,6 +25,19 @@ export async function insertTitle(db: Db, seed: TitleSeed): Promise<void> {
     progress: seed.progress ?? (defined === 0 ? 0 : Math.floor((earned / defined) * 100)),
     hidden,
     playSeconds,
+  });
+}
+
+/** A played game linked to the trophy lists `titleIds`. */
+export async function insertPlayedGame(
+  db: Db,
+  seed: { id: string; titleIds: string[]; playSeconds: number },
+): Promise<void> {
+  await db.insert(playedGames).values({
+    npTitleId: seed.id,
+    npCommunicationIds: seed.titleIds,
+    name: `Played ${seed.id}`,
+    playSeconds: seed.playSeconds,
   });
 }
 
