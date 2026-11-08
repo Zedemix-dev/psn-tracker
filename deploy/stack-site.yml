@@ -1,0 +1,45 @@
+# Stack "site": the Next.js app and the sync worker, same image.
+# Deploy after "infra". Variables (Portainer "Environment variables"):
+#   POSTGRES_PASSWORD, ADMIN_USERNAME, ADMIN_PASSWORD_HASH, APP_SECRET
+#
+# ADMIN_PASSWORD_HASH is a bcrypt hash full of "$". Compose interpolates "$", so
+# every "$" of the hash must be doubled ("$$") when it is written in this file
+# or in a compose-interpolated env editor. In .env / .env.local files (local dev)
+# every "$" must instead be escaped as "\$".
+x-env: &env
+  DATABASE_URL: postgres://psn:${POSTGRES_PASSWORD}@postgres:5432/psn
+  ADMIN_USERNAME: ${ADMIN_USERNAME}
+  ADMIN_PASSWORD_HASH: ${ADMIN_PASSWORD_HASH}
+  APP_SECRET: ${APP_SECRET}
+  PSN_LANGUAGE: en-GB
+  MEDIA_DIR: /data/media
+  TZ: Europe/Paris
+
+services:
+  app:
+    image: ghcr.io/zedemix-dev/psn-tracker:latest
+    restart: unless-stopped
+    environment: *env
+    volumes:
+      - /volume1/docker/psn-tracker/media:/data/media
+    networks:
+      psn-net:
+        # nginx (stack "infra") reaches the app as http://app:3000
+        aliases:
+          - app
+
+  worker:
+    image: ghcr.io/zedemix-dev/psn-tracker:latest
+    restart: unless-stopped
+    command: ["node", "dist/worker.js"]
+    # SIGTERM lets the current tick finish before the container is killed.
+    stop_grace_period: 30s
+    environment: *env
+    volumes:
+      - /volume1/docker/psn-tracker/media:/data/media
+    networks:
+      - psn-net
+
+networks:
+  psn-net:
+    external: true
