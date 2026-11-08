@@ -13,14 +13,18 @@ export function ordinal(n: number): string {
   return `${formatInt(n)}${suffix}`;
 }
 
+// Same steps as psnprofiles: 10…50 by 10, then by 25 up to the 250th, then every 50.
 function isPlatinumMilestone(n: number): boolean {
-  return n <= 50 ? n % 10 === 0 : n % 25 === 0;
+  if (n <= 50) return n % 10 === 0;
+  return n <= 250 ? n % 25 === 0 : n % 50 === 0;
 }
 
+// 500…5,000 by 500, then by 1,000 up to the 10,000th, then every 5,000; plus the 1,337th.
 function isTrophyMilestone(n: number): boolean {
   if (n === 1337) return true;
   if (n < 500) return false;
-  return n <= 5000 ? n % 500 === 0 : n % 1000 === 0;
+  if (n <= 5000) return n % 500 === 0;
+  return n <= 10_000 ? n % 1000 === 0 : n % 5000 === 0;
 }
 
 const second = (d: Date) => Math.floor(d.getTime() / 1000);

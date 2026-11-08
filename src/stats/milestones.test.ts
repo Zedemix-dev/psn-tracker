@@ -71,6 +71,21 @@ describe("computeMilestones", () => {
     expect(last).toEqual(["Latest platinum", "225th platinum"]);
   });
 
+  it("goes every 50 platinums after the 250th, and every 5,000 trophies after the 10,000th", () => {
+    const plats = Array.from({ length: 400 }, (_, k) => make(k, { type: "platinum" }));
+    const all = labels(computeMilestones([...plats, ...run(19_600, 1000)], NOW));
+    for (const l of ["225th platinum", "250th platinum", "300th platinum", "350th platinum", "400th platinum"]) {
+      expect(all).toContain(l);
+    }
+    for (const l of ["275th platinum", "325th platinum", "375th platinum"]) expect(all).not.toContain(l);
+    for (const l of ["9,000th trophy", "10,000th trophy", "15,000th trophy", "20,000th trophy"]) {
+      expect(all).toContain(l);
+    }
+    for (const l of ["11,000th trophy", "12,000th trophy", "14,000th trophy", "16,000th trophy"]) {
+      expect(all).not.toContain(l);
+    }
+  });
+
   it("picks the fastest platinum by gap to the first trophy of the same game", () => {
     const earned = [
       make(1, { titleId: "A", sec: 0 }),
