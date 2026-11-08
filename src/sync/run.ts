@@ -1,4 +1,4 @@
-import { and, eq, gt, lte } from "drizzle-orm";
+import { and, eq, gt, lte, notInArray } from "drizzle-orm";
 import type { Db } from "@/src/db/client";
 import { profile, syncRuns, titles, type SyncKind } from "@/src/db/schema";
 import type { AppConfig } from "@/src/lib/config";
@@ -159,6 +159,15 @@ export async function runSync(
         failures.push(describeFailure(remote.npCommunicationId, err));
       }
       await progress.titleDone(updated);
+    }
+
+    // A list PSN no longer returns (PS4 lets you delete 0% lists) leaves the site. Each remote
+    // title sets `hidden` above, so a list that comes back is shown again. An empty answer hides nothing.
+    if (remoteTitles.length > 0) {
+      await db
+        .update(titles)
+        .set({ hidden: true })
+        .where(notInArray(titles.npCommunicationId, remoteTitles.map((t) => t.npCommunicationId)));
     }
 
     await syncPlayedGames(db, paced, auth);

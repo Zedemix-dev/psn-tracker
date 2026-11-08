@@ -162,6 +162,41 @@ describe("runSync", () => {
     expect(old).toMatchObject({ status: "error", error: "Interrupted" });
   });
 
+  describe("trophy lists removed on PSN", () => {
+    /** The fixture, minus the `missing` titles in getTitles. */
+    function without(...missing: string[]) {
+      const gw = fixture();
+      const getTitles = gw.getTitles;
+      gw.getTitles = async (a) => (await getTitles(a)).filter((t) => !missing.includes(t.npCommunicationId));
+      return gw;
+    }
+    const titleRows = async () => db.select().from(titles).orderBy(titles.npCommunicationId);
+
+    it("hides a stored title missing from the remote list and leaves the others untouched", async () => {
+      await runSync(db, fixture(), cfg, "manual", now, deps);
+      const before = await titleRows();
+
+      expect((await runSync(db, without(ids[1]), cfg, "scheduled", now, deps)).status).toBe("success");
+
+      const after = await titleRows();
+      expect(after[1]).toEqual({ ...before[1], hidden: true });
+      expect([after[0], after[2]]).toEqual([before[0], before[2]]);
+    });
+
+    it("hides nothing when the remote list is empty", async () => {
+      await runSync(db, fixture(), cfg, "manual", now, deps);
+      await runSync(db, without(...ids), cfg, "scheduled", now, deps);
+      expect((await titleRows()).map((t) => t.hidden)).toEqual([false, false, false]);
+    });
+
+    it("shows a title again when it comes back in a later sync", async () => {
+      await runSync(db, fixture(), cfg, "manual", now, deps);
+      await runSync(db, without(ids[1]), cfg, "scheduled", now, deps);
+      await runSync(db, fixture(), cfg, "scheduled", now, deps);
+      expect((await titleRows()).map((t) => t.hidden)).toEqual([false, false, false]);
+    });
+  });
+
   it("ends in error when getTitles fails", async () => {
     const gw = createFakePsn({ failures: [{ method: "getTitles" }] });
     const res = await runSync(db, gw, cfg, "manual", now, deps);
