@@ -4,7 +4,7 @@ import type { GameRank, GameStatus } from "@/src/games/row";
 
 const TYPES: TrophyType[] = ["platinum", "gold", "silver", "bronze"];
 
-function Cup() {
+export function Cup() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <path
