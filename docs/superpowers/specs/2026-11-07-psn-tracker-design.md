@@ -3,7 +3,7 @@
 Date : 2026-11-07
 Maquettes validées :
 - page Games : [2026-11-07-psn-tracker-maquette-accueil.html](2026-11-07-psn-tracker-maquette-accueil.html) (style « Console », v12) ;
-- page d'un jeu : [2026-11-08-psn-tracker-maquette-jeu.html](2026-11-08-psn-tracker-maquette-jeu.html) (v4, validée le 8 novembre 2026, section 8.9).
+- page d'un jeu : [2026-11-08-psn-tracker-maquette-jeu.html](2026-11-08-psn-tracker-maquette-jeu.html) (v5, validée le 8 novembre 2026, section 8.9).
 
 Légende : **[décidé]** = choix explicite de l'utilisateur. **[mon choix]** = décision prise pendant la conception, que l'utilisateur peut contester. Tout le reste découle directement de ce qu'il a dit.
 
@@ -48,7 +48,7 @@ Le site doit reprendre **la lisibilité épurée de psnprofiles** et **la prése
 2. La page principale « Games » (section 8).
 3. La page Settings (section 9).
 4. **[décidé]** La page de détail d'un jeu, ouverte au clic sur une ligne de la liste (section 8.9).
-   - **[décidé]** Son design détaillé a été fait à part, par une maquette validée par l'utilisateur le 8 novembre 2026 (v4), avant toute construction.
+   - **[décidé]** Son design détaillé a été fait à part, par une maquette validée par l'utilisateur le 8 novembre 2026 (v5), avant toute construction.
 
 **Hors phase 1** (chacune fera l'objet de son propre brainstorming une fois l'accueil terminé) : Plat Wall, Trophy Log, Trophy Advisor, Stats.
 - **[décidé]** Leurs onglets apparaissent déjà dans le menu et mènent à une page « Coming soon ».
@@ -331,8 +331,8 @@ Chaque case contient un libellé et une valeur, **sans texte en dessous [décid�
      - Pour le comptage, les trophées sont numérotés dans l'ordre de leur date d'obtention.
 
 ### 8.9 Page de détail d'un jeu
-Maquette validée : [2026-11-08-psn-tracker-maquette-jeu.html](2026-11-08-psn-tracker-maquette-jeu.html) (v4, 8 novembre 2026). Les versions intermédiaires sont dans `.superpowers/brainstorm/maquettes/` (`jeu-v1` à `jeu-v4`).
-- Elle affiche les vraies données de Cyberpunk 2077 (PS5, avec DLC), Gran Turismo 7 (PS5, platine non obtenu, sans DLC) et FINAL FANTASY XIV Online (17 groupes, 247 trophées).
+Maquette validée : [2026-11-08-psn-tracker-maquette-jeu.html](2026-11-08-psn-tracker-maquette-jeu.html) (v5, 8 novembre 2026). Les versions intermédiaires sont dans `.superpowers/brainstorm/maquettes/` (`jeu-v1` à `jeu-v5`).
+- Elle affiche les vraies données de Cyberpunk 2077 (PS5, avec DLC), Gran Turismo 7 (PS5, platine non obtenu, sans DLC) FINAL FANTASY XIV Online (17 groupes, 247 trophées, compteurs de trophées à paliers) et Phantom Blade Zero (aucun trophée obtenu, compteurs à 0).
 - Un sélecteur en bas de page, **propre à la maquette**, passe d'un jeu à l'autre et masque le logo. Il ne fait pas partie du site.
 - Elle charge les images depuis le CDN de Sony. Le site, lui, les sert depuis son stockage local (6.5).
 
