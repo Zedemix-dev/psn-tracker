@@ -17,10 +17,13 @@ export function Banner({
   hasImage,
   label = "Custom banner",
   logo,
+  settingsLink = true,
 }: {
   hasImage: boolean;
   label?: string;
   logo?: { src: string; alt: string } | null;
+  /** Without an image, show the "Choose a banner in Settings" link (default) or an empty band. */
+  settingsLink?: boolean;
 }) {
   return (
     <div className="hero">
@@ -28,9 +31,11 @@ export function Banner({
         <div className="hero-img" role="img" aria-label={label} />
       ) : (
         <div className="hero-img hero-empty">
-          <Link className="pill" href="/settings">
-            Choose a banner in Settings
-          </Link>
+          {settingsLink && (
+            <Link className="pill" href="/settings">
+              Choose a banner in Settings
+            </Link>
+          )}
         </div>
       )}
       {logo && (

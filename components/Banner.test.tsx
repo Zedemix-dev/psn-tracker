@@ -21,6 +21,12 @@ describe("Banner", () => {
     expect(container.querySelector("img")).toBeNull();
   });
 
+  it("shows an empty band, without link, when settingsLink is off", () => {
+    const { container } = render(<Banner hasImage={false} settingsLink={false} />);
+    expect(screen.queryByRole("link", { name: "Choose a banner in Settings" })).toBeNull();
+    expect(container.querySelector(".hero")).not.toBeNull();
+  });
+
   it("keeps the settings link when there is no banner", () => {
     render(<Banner hasImage={false} />);
     expect(screen.getByRole("link", { name: "Choose a banner in Settings" })).toBeTruthy();

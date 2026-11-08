@@ -1,3 +1,4 @@
+import { eq } from "drizzle-orm";
 import { beforeEach, describe, expect, it } from "vitest";
 import type { Db } from "@/src/db/client";
 import { titles, trophies, trophyGroups } from "@/src/db/schema";
@@ -36,6 +37,24 @@ async function addTrophy(trophyId: number, over: Partial<T> = {}) {
     ...over,
   });
 }
+
+describe("getGameDetail borrowing", () => {
+  it("borrows banner and publisher from the PS5 version, and has none when nobody has one", async () => {
+    await addTitle({ npCommunicationId: "P4", platforms: ["PS4"] });
+    await addTitle({
+      npCommunicationId: "P5",
+      platforms: ["PS5"],
+      bannerUrl: "https://img.example/banner.png",
+      publisher: "Studio",
+    });
+    const map: ImageMap = new Map([["https://img.example/banner.png", { path: "psn/b.png", thumb: null }]]);
+    const d = await getGameDetail(db, "P4", map, NOW);
+    expect(d!.bannerPath).toBe("psn/b.png");
+    expect(d!.publisher).toBe("Studio");
+    await db.update(titles).set({ bannerUrl: null }).where(eq(titles.npCommunicationId, "P5"));
+    expect((await getGameDetail(db, "P4", map, NOW))!.bannerPath).toBeNull();
+  });
+});
 
 describe("getGameDetail", () => {
   it("builds the Cyberpunk-like detail", async () => {

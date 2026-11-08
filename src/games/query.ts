@@ -2,6 +2,7 @@ import { and, asc, eq, gt, ilike, lt, ne, sql, type SQL } from "drizzle-orm";
 import type { Db } from "@/src/db/client";
 import { titles, trophies } from "@/src/db/schema";
 import { toGameRow, type GameRowData } from "@/src/games/row";
+import { loadSiblingIndex } from "@/src/games/siblings";
 import { loadImageMap } from "@/src/sync/images";
 
 export const GAME_STATES = ["all", "100", "not100", "notFinished", "0", "platinum", "platinumNot100"] as const;
@@ -112,7 +113,7 @@ export async function queryGames(
   { hideZero }: { hideZero: boolean },
 ): Promise<{ items: GameRowData[]; total: number }> {
   const where = filtersFor(query, hideZero);
-  const [rows, [count], imageMap] = await Promise.all([
+  const [rows, [count], imageMap, siblings] = await Promise.all([
     db
       .select()
       .from(titles)
@@ -122,6 +123,7 @@ export async function queryGames(
       .offset(Math.max(0, query.offset)),
     db.select({ n: sql<number>`count(*)::int` }).from(titles).where(where),
     loadImageMap(db),
+    loadSiblingIndex(db),
   ]);
-  return { items: rows.map((r) => toGameRow(r, imageMap)), total: count.n };
+  return { items: rows.map((r) => toGameRow(r, imageMap, siblings)), total: count.n };
 }

@@ -11,6 +11,7 @@ import {
   type TimelineRow,
 } from "@/src/games/detail-stats";
 import { gameStatus, progressRank, type GameRank, type GameStatus } from "@/src/games/row";
+import { loadSiblingIndex, withSiblings } from "@/src/games/siblings";
 import { guideSearchName, powerPyxRoadmapUrl, psnProfilesGuidesUrl } from "@/src/lib/guide-links";
 import { formatDate, formatInt, formatPercent, formatPlayTime, formatTime } from "@/src/lib/format";
 import { rarityTier, type RarityTier } from "@/src/lib/rarity";
@@ -83,6 +84,7 @@ export async function getGameDetail(
 ): Promise<GameDetail | null> {
   const [title] = await db.select().from(titles).where(eq(titles.npCommunicationId, id));
   if (!title) return null;
+  const info = withSiblings(title, await loadSiblingIndex(db));
   const rows = await db
     .select()
     .from(trophies)
@@ -160,10 +162,10 @@ export async function getGameDetail(
     id: title.npCommunicationId,
     name: title.name,
     platforms: (["PS4", "PS5"] as const).filter((p) => title.platforms.includes(p)),
-    coverSrc: mediaSrc(title.coverUrl ?? title.iconUrl, imageMap, "full"),
-    coverIsIcon: title.coverUrl == null,
-    bannerPath: title.bannerUrl ? (imageMap.get(title.bannerUrl)?.path ?? null) : null,
-    logoSrc: title.logoUrl && imageMap.has(title.logoUrl) ? mediaSrc(title.logoUrl, imageMap, "full") : null,
+    coverSrc: mediaSrc(info.coverUrl ?? info.coverFallbackUrl, imageMap, "full"),
+    coverIsIcon: info.coverIsIcon,
+    bannerPath: info.bannerUrl ? (imageMap.get(info.bannerUrl)?.path ?? null) : null,
+    logoSrc: info.logoUrl && imageMap.has(info.logoUrl) ? mediaSrc(info.logoUrl, imageMap, "full") : null,
     metaParts,
     counts: {
       platinum: [title.earnedPlatinum, title.definedPlatinum],
@@ -188,9 +190,9 @@ export async function getGameDetail(
           highest: formatPercent(stats.highest),
         }
       : null,
-    publisher: title.publisher ?? null,
-    genres: title.genres && title.genres.length > 0 ? title.genres.join(", ") : null,
-    releaseDate: title.releaseDate ? formatDate(title.releaseDate) : null,
+    publisher: info.publisher,
+    genres: info.genres ? info.genres.join(", ") : null,
+    releaseDate: info.releaseDate ? formatDate(info.releaseDate) : null,
     guides: { powerPyx: powerPyxRoadmapUrl(guideName), psnProfiles: psnProfilesGuidesUrl(guideName) },
     timeline: buildTimeline(
       earnedRows.map((r) => ({ type: r.type, earnedAt: r.earnedAt as Date })),

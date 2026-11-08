@@ -69,7 +69,7 @@ const title = (over: Partial<GameTitle> = {}): GameTitle => ({
 
 describe("toGameRow", () => {
   it("maps counts, platforms, cover and the played line", () => {
-    const row = toGameRow(title(), new Map([["https://img/cover.png", { path: "psn/c.png", thumb: null }]]));
+    const row = toGameRow(title(), new Map([["https://img/cover.png", { path: "psn/c.png", thumb: null }]]), new Map());
     expect(row).toEqual({
       id: "NPWR1",
       name: "Game",
@@ -90,6 +90,7 @@ describe("toGameRow", () => {
   it("falls back to the icon without cover and to the last trophy date without play data", () => {
     const row = toGameRow(
       title({ coverUrl: null, lastPlayedAt: null, playSeconds: null }),
+      new Map(),
       new Map(),
     );
     expect(row.coverIsIcon).toBe(true);

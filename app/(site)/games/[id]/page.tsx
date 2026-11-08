@@ -10,7 +10,6 @@ import { requireSession } from "@/src/auth/require-session";
 import { getDb } from "@/src/db/client";
 import { getGameDetail } from "@/src/games/detail";
 import { parseTrophyView } from "@/src/games/trophy-view";
-import { getPageBanner } from "@/src/settings/page-banner";
 import { loadImageMap } from "@/src/sync/images";
 import { getSyncStatus } from "@/src/sync/requests";
 
@@ -33,15 +32,9 @@ export default async function GamePage({
   const db = await getDb();
   const detail = await getGameDetail(db, id, await loadImageMap(db), new Date());
   if (!detail) notFound();
-  const hasOwnBanner = detail.bannerPath !== null;
-  const [sync, pageBanner] = await Promise.all([
-    getSyncStatus(db),
-    hasOwnBanner ? Promise.resolve(null) : getPageBanner(db),
-  ]);
-  const vars = hasOwnBanner
-    ? bannerVars(detail.bannerPath, 25)
-    : bannerVars(pageBanner?.path ?? null, pageBanner?.posY ?? 50);
-  const hasImage = hasOwnBanner || pageBanner !== null;
+  const hasImage = detail.bannerPath !== null;
+  const sync = await getSyncStatus(db);
+  const vars = hasImage ? bannerVars(detail.bannerPath, 25) : bannerVars(null, 50);
   const view = parseTrophyView(query);
 
   return (
@@ -49,8 +42,9 @@ export default async function GamePage({
       {hasImage && <PageBackground />}
       <Banner
         hasImage={hasImage}
+        settingsLink={false}
         label={detail.name}
-        logo={hasOwnBanner && detail.logoSrc ? { src: detail.logoSrc, alt: `${detail.name} logo` } : null}
+        logo={hasImage && detail.logoSrc ? { src: detail.logoSrc, alt: `${detail.name} logo` } : null}
       />
       <main className="wrap">
         <AutoRefresh active={sync.status === "queued" || sync.status === "running"} />
