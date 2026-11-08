@@ -637,3 +637,20 @@ Les objectifs viennent des définitions des trophées, qui ne sont lues qu'au re
 - [ ] **Step 3 :** implémenter.
 - [ ] **Step 4 :** `npx vitest run` → PASS ; `npx tsc --noEmit` ; `npm run build`.
 - [ ] **Step 5 :** commit `feat(site): automatic Games banner from the last played game`, puis push.
+
+### Task 15 : Tri par défaut de Games = « Last trophy » (spec 8.7)
+
+Ordre d'exécution : avec la Task 13, avant la Task 14.
+
+**Files:**
+- Modify: `src/games/query.ts`, `components/game-query-string.ts`
+- Test: `src/games/query.test.ts`, et le test existant de `game-query-string` ou de `GameFilters` qui couvre l'omission du tri par défaut
+
+- [ ] **Step 1 : tests qui échouent.**
+  - `parseGameQuery(new URLSearchParams(""))` donne `sort: "lastTrophy"` ;
+  - `parseGameQuery(new URLSearchParams("sort=lastPlayed"))` donne `sort: "lastPlayed"` ;
+  - `gameQueryParams` omet `sort` pour `lastTrophy` et écrit `sort=lastPlayed` pour `lastPlayed`.
+- [ ] **Step 2 :** lancer → FAIL.
+- [ ] **Step 3 :** changer la valeur par défaut dans `parseGameQuery` et dans `gameQueryParams`. L'ordre des options de `GameFilters` ne change pas. Adapter les tests existants qui supposaient `lastPlayed` par défaut.
+- [ ] **Step 4 :** `npx vitest run` → PASS ; `npx tsc --noEmit`.
+- [ ] **Step 5 :** commit `feat(games): default sort is last trophy`, puis push.

@@ -264,7 +264,8 @@ Chaque case contient un libellé et une valeur, **sans texte en dessous [décid�
     - Platinum, not 100% (platine obtenu mais il manque des trophées, en général des DLC) ;
   - **plateforme** : All / PS4 / PS5 ;
   - **recherche** par nom.
-- **Tri [décidé]** : Last played (par défaut), Last trophy, Alphabetical, Percent completion, Time played, Total trophies, Earned trophies, Unearned trophies, Platinum rarity.
+- **Tri [décidé]** : Last played, Last trophy, Alphabetical, Percent completion, Time played, Total trophies, Earned trophies, Unearned trophies, Platinum rarity.
+  - **[décidé, 8 novembre 2026] Le tri par défaut est « Last trophy »** (auparavant « Last played »). L'ordre des options dans le menu ne change pas. Sans paramètre `sort` dans l'adresse, la liste est triée par dernier trophée.
   - **[mon choix]** Chaque tri a son sens naturel :
     - les plus récents d'abord pour les deux tris par date ;
     - de A à Z pour Alphabetical ;
