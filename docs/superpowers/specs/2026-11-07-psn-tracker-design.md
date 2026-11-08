@@ -361,8 +361,11 @@ Maquette validée : [2026-11-08-psn-tracker-maquette-jeu.html](2026-11-08-psn-tr
   - **[mon choix]** Il est placé en bas à gauche, aligné sur le bord gauche du contenu, juste au-dessus du bandeau du jeu, avec une ombre portée. Il fait au plus 400 px de large (38 % de la page) et 42 % de la hauteur de la bannière, et il est masqué sur téléphone.
 - **[décidé, 8 novembre 2026] Une page de jeu sans bannière n'en affiche aucune** : la bannière de Games n'y est jamais reprise (elle montrait par exemple Cyberpunk sur la page de Dauntless).
   - **[mon choix]** L'espace de la bannière garde sa hauteur habituelle, mais il est vide, sans lien « Choose a banner in Settings ». Le fond de la page est uni, sans image floutée. Le bandeau du jeu reste ainsi à la même place que sur les autres pages de jeu.
-- **[décidé, 8 novembre 2026] Emprunt à l'autre version du même jeu** : une liste de trophées sans jeu joué relié (6.3) n'a ni jaquette, ni bannière, ni logo, ni infos du catalogue. Elle les prend chez une autre liste **du même nom** qui les a, en préférant la version PS5.
+- **[décidé, 8 novembre 2026] Emprunt à l'autre version du même jeu, information par information** : pour toute information qui manque à une liste de trophées, le site la cherche chez les autres listes **du même nom**, en préférant la version PS5. S'il la trouve, il la copie. Il ne laisse le manque (et donc, pour la bannière, l'espace vide sur fond uni) que si **aucune** version ne l'a.
+  - Les informations concernées : jaquette, bannière, logo, éditeur, genre(s) et date de sortie.
+  - Cela vaut pour toutes les listes, qu'elles soient reliées à un jeu joué ou non. Une liste sans jeu joué relié (6.3) n'a rien de tout cela par elle-même : c'est le cas le plus courant.
   - Exemple : Gran Turismo 7 PS4 prend la jaquette, la bannière, le logo, l'éditeur, le genre et la date de sortie de Gran Turismo 7 PS5.
+  - **[mon choix]** Une information propre à la liste n'est jamais remplacée. Une information empruntée est recalculée à chaque synchro, pour suivre la version qui la prête.
   - Si aucune version n'a de jaquette, une liste PS4 prend l'**icône de la liste PS5** du même jeu, qui est carrée, plutôt que sa propre icône rectangulaire. C'est le cas de Dauntless PS4.
   - Sans autre version (Game of Thrones, Minecraft: Story Mode, Tales from the Borderlands), la liste garde son icône, affichée en entier, et sa page n'a pas de bannière.
   - **[mon choix]** « Du même nom » veut dire même nom en minuscules, sans ™ ® ©, avec les espaces multiples réduits à un.

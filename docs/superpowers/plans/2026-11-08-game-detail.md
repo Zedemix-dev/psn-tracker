@@ -656,34 +656,50 @@ Ordre d'exécution : avec la Task 13, avant la Task 14.
 - [ ] **Step 4 :** `npx vitest run` → PASS ; `npx tsc --noEmit`.
 - [ ] **Step 5 :** commit `feat(games): default sort is last trophy`, puis push.
 
-### Task 16 : Pas de bannière de repli, et emprunt à l'autre version du même jeu (spec 8.7 et 8.9)
+### Task 16 : Pas de bannière de repli, et emprunt aux autres versions du même jeu (spec 8.7 et 8.9)
 
-Ordre d'exécution : après la Task 11, avant la Task 12. Elle **remplace** le repli de la Task 10 vers `getPageBanner` : une page de jeu sans bannière n'en affiche aucune.
+Ordre d'exécution : après la Task 11, avant la Task 12. Elle **remplace** le repli de la Task 10 vers `getPageBanner` : une page de jeu sans bannière (ni chez elle ni chez une autre version) n'en affiche aucune.
+
+**Décision de conception [mon choix]** : l'emprunt se fait **à la lecture**, pas à la synchro. Rien d'emprunté n'est stocké. Une information propre n'est donc jamais remplacée, et un emprunt suit toujours la version qui le prête. La synchro ne change pas.
 
 **Files:**
-- Modify: `src/sync/played.ts`, `app/(site)/games/[id]/page.tsx`, `components/Banner.tsx`, `app/globals.css` (si besoin)
-- Test: `src/sync/played.test.ts`, `components/Banner.test.tsx`
+- Create: `src/games/siblings.ts`
+- Modify: `src/games/row.ts` et ses appelants (liste Games et `/api/games`), `src/games/detail.ts`, `app/(site)/games/[id]/page.tsx`, `components/Banner.tsx`
+- Test: `src/games/siblings.test.ts`, `src/games/row.test.ts`, `src/games/detail.test.ts`, `components/Banner.test.tsx`
 
 **Interfaces:**
+- Produces (`src/games/siblings.ts`) :
+  ```ts
+  export function gameKey(name: string): string; // minuscules, sans ™ ® ©, espaces multiples réduits à un, rogné
+  export type GameInfo = { coverUrl: string | null; bannerUrl: string | null; logoUrl: string | null;
+    publisher: string | null; genres: string[] | null; releaseDate: Date | null };
+  export type SiblingIndex = Map<string, SiblingTitle[]>; // titres non cachés, par gameKey
+  export async function loadSiblingIndex(db: Db): Promise<SiblingIndex>;
+  export function withSiblings(title: GameTitle, index: SiblingIndex): GameInfo & { coverIsIcon: boolean; coverFallbackUrl: string };
+  ```
+- Règles de `withSiblings` :
+  - Chaque champ de `GameInfo` vaut la valeur **propre** du titre si elle existe. Sinon, il prend la valeur non nulle d'un autre titre de même clé : d'abord un titre PS5, puis le plus récemment joué, puis le premier par `npCommunicationId`.
+  - La **jaquette** suit la même règle. Si aucun titre de même clé n'en a, un titre PS4 prend l'`iconUrl` d'un titre PS5 de même clé, s'il en existe un (`coverIsIcon` faux, car cette icône est carrée). Sinon, c'est sa propre icône (`coverIsIcon` vrai).
+  - Un genre vide (`[]`) compte comme une valeur absente.
+- `toGameRow` et `getGameDetail` utilisent `withSiblings` : la jaquette de la liste Games, puis la jaquette, la bannière, le logo, l'éditeur, les genres et la date de sortie de la page.
+  - L'index est chargé une fois par requête : une seule requête sur `titles`.
 - `Banner` reçoit `settingsLink?: boolean` (vrai par défaut). Sans image et avec `settingsLink={false}`, il affiche un `.hero` vide, de la même hauteur et sans lien.
 - La page d'un jeu :
   - n'appelle plus `getPageBanner` ;
-  - sans bannière téléchargée, elle utilise `bannerVars(null, 50)`, sans `PageBackground` et sans logo, avec `<Banner hasImage={false} settingsLink={false} label={nom du jeu} />`.
-- `syncPlayedGames` traite aussi les titres **sans jeu joué relié** :
-  - Clé de jeu : `name` en minuscules, sans ™ ® ©, espaces multiples réduits à un, rogné.
-  - Un titre sans jeu relié prend, chez un titre de même clé **qui a un jeu relié**, ses `coverUrl`, `conceptId`, `bannerUrl` et `logoUrl`. On préfère un titre PS5, puis le plus récemment joué.
-  - Si le `conceptId` change, les champs du catalogue sont remis à `null`, comme dans la Task 4. Le catalogue les remplit ensuite par `conceptId`.
-  - Si aucun titre de même clé n'a de jaquette, un titre PS4 prend comme `coverUrl` l'`iconUrl` d'un titre PS5 de même clé, s'il en existe un.
-  - Sinon, rien ne change.
+  - si aucune bannière n'est téléchargée, ni chez elle ni chez une autre version, elle utilise `bannerVars(null, 50)`, sans `PageBackground` et sans logo, avec `<Banner hasImage={false} settingsLink={false} label={nom du jeu} />` ;
+  - le logo ne s'affiche que si la bannière s'affiche.
 
 - [ ] **Step 1 : tests qui échouent.**
-  - `played.test.ts` :
-    - `it("lends a linked PS5 version's cover, concept, banner and logo to an unlinked list of the same game")` : « Gran Turismo 7 » PS4 sans jeu relié, et « Gran Turismo 7 » PS5 relié avec concept et images. Après `syncPlayedGames`, le PS4 a les mêmes `coverUrl`, `conceptId`, `bannerUrl` et `logoUrl`.
-    - `it("uses the PS5 list icon as the cover when no version has one")` : « Dauntless » PS4 et PS5, aucun relié. Le PS4 a `coverUrl` égal à l'`iconUrl` du PS5, et le PS5 garde `coverUrl` nul.
-    - `it("leaves an unlinked game without another version untouched")`.
-    - La clé ignore ™ et la casse : « ELDEN RING™ » et « Elden Ring » sont le même jeu.
+  - `siblings.test.ts` (PGlite) :
+    - « Gran Turismo 7 » PS4 sans aucune info, et « Gran Turismo 7 » PS5 avec jaquette, bannière, logo, éditeur, genres et date : le PS4 obtient les six valeurs du PS5 ;
+    - un titre qui a sa propre bannière la garde, même si une autre version en a une autre ;
+    - « Dauntless » PS4 et PS5 sans jaquette : la jaquette du PS4 est l'`iconUrl` du PS5, avec `coverIsIcon` faux ; le PS5 garde sa propre icône, avec `coverIsIcon` vrai ;
+    - à défaut de PS5, c'est la version la plus récemment jouée qui prête ;
+    - un titre caché ne prête rien ;
+    - `gameKey("ELDEN RING™")` est égal à `gameKey("Elden  Ring")`.
+  - `detail.test.ts` : un titre sans bannière, dont la version PS5 en a une téléchargée, a `bannerPath` et `publisher` empruntés. Sans aucune version qui en a, `bannerPath` est `null`.
   - `Banner.test.tsx` : avec `hasImage={false}` et `settingsLink={false}`, il n'y a pas de lien « Choose a banner in Settings », mais il y a bien un `.hero`.
 - [ ] **Step 2 :** lancer → FAIL.
 - [ ] **Step 3 :** implémenter, puis retirer le repli `getPageBanner` de la page d'un jeu.
 - [ ] **Step 4 :** `npx vitest run` → PASS ; `npx tsc --noEmit` ; `npm run build`.
-- [ ] **Step 5 :** commit `feat(game): no fallback banner; borrow cover and info from the other version of the same game`, puis push.
+- [ ] **Step 5 :** commit `feat(game): no fallback banner; borrow missing info from the other versions of the same game`, puis push.
