@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { ComingSoon } from "@/components/ComingSoon";
 
-// A static sibling such as app/(site)/settings/page.tsx takes precedence over this segment.
+// A static sibling such as app/(site)/(banner)/settings/page.tsx takes precedence over this segment.
 const SECTIONS: Record<string, string> = {
   "plat-wall": "Plat Wall",
   "trophy-log": "Trophy Log",

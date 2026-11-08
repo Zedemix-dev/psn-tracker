@@ -281,7 +281,7 @@ dialog.ce::backdrop{background:rgba(5,8,20,.65)}
 .game-page .meta{display:contents}
 .game-page .when{text-align:right;font-size:12.5px;line-height:1.3;color:var(--earned-text);font-variant-numeric:tabular-nums}
 .game-page .when small{display:block;font-size:11.5px;opacity:.8}
-.game-page .when .count{font-size:15px;font-weight:600;color:var(--text);font-variant-numeric:tabular-nums}
+.game-page .when .tcount{font-size:15px;font-weight:600;color:var(--text);font-variant-numeric:tabular-nums}
 .game-page .rate{text-align:right;font-size:11px;line-height:1.3;color:var(--muted)}
 .game-page .rate b{display:block;font-size:15px;font-weight:600;line-height:1.15;color:var(--text);font-variant-numeric:tabular-nums}
 .game-page img.ti{width:30px;height:30px;object-fit:contain}

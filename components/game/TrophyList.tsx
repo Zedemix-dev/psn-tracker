@@ -28,7 +28,7 @@ function Row({ t }: { t: TrophyRowData }) {
               <small>{t.earnedTime}</small>
             </>
           ) : t.counter ? (
-            <span className="count" title="Progress">
+            <span className="tcount" title="Progress">
               {t.counter}
             </span>
           ) : null}

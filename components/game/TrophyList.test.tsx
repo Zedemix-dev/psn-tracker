@@ -86,6 +86,8 @@ describe("TrophyList", () => {
     const { container } = setup(one);
     const rows = container.querySelectorAll(".trophy");
     expect(rows[1].querySelector(".when")).toHaveTextContent("0/4");
+    expect(rows[1].querySelector(".when .count")).toBeNull();
+    expect(rows[1].querySelector(".when .tcount")).toHaveTextContent("0/4");
   });
 
   it("shows date and time of an earned trophy", () => {

@@ -14,6 +14,11 @@ vi.mock("@/app/(site)/(banner)/settings/actions", () => ({
 afterEach(cleanup);
 
 describe("BannerForm", () => {
+  it("frames the automatic banner at 25% whatever the stored position", () => {
+    render(<BannerForm bannerUrl={null} posY={80} auto={{ url: "/media/b.jpg", gameName: "Cyberpunk 2077" }} />);
+    expect(screen.getByRole("img", { name: "Banner preview" })).toHaveStyle({ backgroundPositionY: "25%" });
+  });
+
   it("shows the automatic banner and its reset button without a custom banner", () => {
     render(<BannerForm bannerUrl={null} posY={50} auto={{ url: "/media/b.jpg", gameName: "Cyberpunk 2077" }} />);
     expect(screen.getByText("Automatic — last played game (Cyberpunk 2077)")).toBeInTheDocument();

@@ -39,7 +39,7 @@ export function BannerForm({
         className="set-preview"
         role="img"
         aria-label="Banner preview"
-        style={preview ? { backgroundImage: `url("${preview}")`, backgroundPositionY: `${pos}%` } : undefined}
+        style={preview ? { backgroundImage: `url("${preview}")`, backgroundPositionY: `${custom ? pos : 25}%` } : undefined}
       >
         {!preview && <span>Default banner</span>}
         {!custom && auto && <span>Automatic — last played game ({auto.gameName})</span>}

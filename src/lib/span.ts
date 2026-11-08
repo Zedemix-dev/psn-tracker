@@ -33,32 +33,27 @@ export function formatSpan(from: Date, to: Date, maxUnits = 6): string {
   const f = wall(a);
   const t = wall(b);
 
-  let second = t.second - f.second;
-  let minute = t.minute - f.minute;
-  let hour = t.hour - f.hour;
-  let day = t.day - f.day;
-  let month = t.month - f.month;
-  let year = t.year - f.year;
+  // Whole months first, stepping from `from` with the day clamped to the target month length.
+  const anchor = (months: number) => {
+    const idx = f.year * 12 + (f.month - 1) + months;
+    const year = Math.floor(idx / 12);
+    const month = (idx % 12) + 1;
+    const day = Math.min(f.day, daysInMonth(year, month));
+    return Date.UTC(year, month - 1, day, f.hour, f.minute, f.second);
+  };
+  const end = Date.UTC(t.year, t.month - 1, t.day, t.hour, t.minute, t.second);
+  let totalMonths = (t.year - f.year) * 12 + (t.month - f.month);
+  if (anchor(totalMonths) > end) totalMonths -= 1;
 
-  if (second < 0) minute -= 1;
-  if (minute < 0) {
-    minute += 60;
-    hour -= 1;
-  }
-  if (hour < 0) {
-    hour += 24;
-    day -= 1;
-  }
-  if (day < 0) {
-    const prevMonth = t.month === 1 ? 12 : t.month - 1;
-    const prevYear = t.month === 1 ? t.year - 1 : t.year;
-    day += daysInMonth(prevYear, prevMonth);
-    month -= 1;
-  }
-  if (month < 0) {
-    month += 12;
-    year -= 1;
-  }
+  // Then the remaining time, which is always non-negative and shorter than a month.
+  let rest = Math.floor((end - anchor(totalMonths)) / 1000);
+  const day = Math.floor(rest / 86400);
+  rest -= day * 86400;
+  const hour = Math.floor(rest / 3600);
+  rest -= hour * 3600;
+  const minute = Math.floor(rest / 60);
+  const year = Math.floor(totalMonths / 12);
+  const month = totalMonths % 12;
 
   const values = [year, month, Math.floor(day / 7), day % 7, hour, minute];
   const first = values.findIndex((v) => v > 0);
