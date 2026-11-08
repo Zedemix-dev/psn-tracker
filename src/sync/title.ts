@@ -89,7 +89,7 @@ export async function syncTitle(
       earnedAt: earned ? (u?.earnedAt ?? null) : null,
       earnedRate: u?.earnedRate == null ? null : u.earnedRate.toFixed(2),
       rareCategory: u?.rareCategory ?? null,
-      progressTarget: u?.progressTarget ?? null,
+      progressTarget: u?.progressTarget == null ? null : Number(u.progressTarget),
     };
   });
 

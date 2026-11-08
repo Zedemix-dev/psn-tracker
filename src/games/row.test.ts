@@ -57,6 +57,13 @@ const title = (over: Partial<GameTitle> = {}): GameTitle => ({
   lastPlayedAt: new Date("2024-03-05T10:00:00Z"),
   syncedAt: null,
   groupsCheckedAt: null,
+  conceptId: null,
+  bannerUrl: null,
+  logoUrl: null,
+  publisher: null,
+  genres: null,
+  releaseDate: null,
+  catalogCheckedAt: null,
   ...over,
 });
 
