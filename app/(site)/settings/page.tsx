@@ -1,10 +1,12 @@
 import { desc } from "drizzle-orm";
+import { AutoRefresh } from "@/components/AutoRefresh";
 import { BannerForm, NpssoForm } from "@/components/SettingsForms";
 import { requireSession } from "@/src/auth/require-session";
 import { getDb } from "@/src/db/client";
 import { syncRuns } from "@/src/db/schema";
 import { formatDate, formatDateTime, formatPlayTime } from "@/src/lib/format";
 import { getSettings } from "@/src/settings/repo";
+import { getSyncStatus } from "@/src/sync/requests";
 import { logout } from "./actions";
 
 const STATUS_LABEL = { valid: "Valid", expired: "Expired", missing: "Not connected" } as const;
@@ -13,14 +15,17 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 export default async function SettingsPage() {
   await requireSession();
   const db = await getDb();
-  const [s, runs] = await Promise.all([
+  const [s, runs, sync] = await Promise.all([
     getSettings(db),
     db.select().from(syncRuns).orderBy(desc(syncRuns.startedAt), desc(syncRuns.id)).limit(20),
+    getSyncStatus(db),
   ]);
   const age = s.npssoSetAt ? Math.floor((Date.now() - s.npssoSetAt.getTime()) / DAY_MS) : null;
 
   return (
     <main className="wrap set-page">
+      {/* Keeps the token status and the sync history live (first sync progress, 6-hourly syncs). */}
+      <AutoRefresh active={sync.status === "queued" || sync.status === "running"} />
       <section className="panel glass" aria-label="Banner">
         <div className="panel-head">
           <h2>Banner</h2>
