@@ -104,14 +104,18 @@ Le site doit reprendre **la lisibilité épurée de psnprofiles** et **la prése
 | Niveau, % vers le niveau suivant, palier (1–10), compteurs par type | `getUserTrophyProfileSummary` |
 | Liste des jeux (listes de trophées), compteurs définis/obtenus, progression PSN | `getUserTitles` (pagination `limit`/`offset`, 800 max par appel) |
 | Groupes de trophées (jeu de base + DLC), avec nom et icône | `getTitleTrophyGroups` |
-| Définition des trophées : nom, description, icône, type, groupe, caché | `getTitleTrophies(..., "all")` |
-| État utilisateur par trophée : obtenu, date, rareté mondiale (`trophyEarnedRate`), catégorie de rareté | `getUserTrophiesEarnedForTitle(..., "all")` |
+| Définition des trophées : nom, description, icône, type, groupe, caché, **objectif d'un trophée à paliers** (`trophyProgressTargetValue`, listes PS5) | `getTitleTrophies(..., "all")` |
+| État utilisateur par trophée : obtenu, date, rareté mondiale (`trophyEarnedRate`), catégorie de rareté, **progression d'un trophée à paliers non obtenu** (`progress`, et sa date `progressedDateTime`) | `getUserTrophiesEarnedForTitle(..., "all")` |
 | Progression par groupe | `getUserTrophyGroupEarningsForTitle` (**[mon choix, 8 novembre 2026]** non utilisé : le pourcentage d'un groupe est calculé avec la règle du PSN, 8.9) |
 | Temps de jeu, nombre de sessions, dernière partie, **jaquette carrée** | `getUserPlayedGames` (PS4/PS5) |
 | Lien entre jeu joué (`titleId`) et liste de trophées (`npCommunicationId`) | `getUserTrophiesForSpecificTitle` (5 `npTitleIds` max par appel) |
 | Concept du jeu (page d'un jeu, 8.9) : identifiant, **bannière** (image `GAMEHUB_COVER_ART`) et **logo** (image `LOGO`) | `getUserPlayedGames`, champ `concept` (`id`, `media.images[].type` / `url`), déjà appelé à chaque synchro |
 | **Éditeur, date de sortie, genres** (page d'un jeu, 8.9) | catalogue PSN, par `call` : `GET https://m.np.playstation.com/api/catalog/v2/concepts/{conceptId}?country=GB&language=en&age=99` → `publisherName`, `releaseDate.date`, `localizedGenres[].value` |
 
+- **Trophées à paliers**, vérifié en pratique le 8 novembre 2026 sur 14 listes PS5 :
+  - l'objectif (`trophyProgressTargetValue`) est dans la **définition** des trophées (`getTitleTrophies`), pas dans l'état utilisateur. La synchro de la phase 1 le cherchait dans l'état utilisateur : la colonne est restée vide pour les 12 434 trophées, et c'est à corriger ;
+  - la progression de l'utilisateur (`progress`) n'est renvoyée que pour les trophées **non obtenus** qui ont un objectif. Elle vaut `0` tant que rien n'est fait ;
+  - les listes PS4 n'en ont jamais.
 - **[décidé, 8 novembre 2026] PSN seul** pour les infos d'un jeu : pas d'IGDB. Le PSN ne fournit pas le **développeur**, qui n'est donc pas affiché.
 - Catalogue PSN, vérifié en pratique le 8 novembre 2026 :
   - les paramètres `country`, `language` et `age` doivent être tous présents ou tous absents, sinon l'API répond une erreur ;
@@ -131,6 +135,10 @@ Le site doit reprendre **la lisibilité épurée de psnprofiles** et **la prése
   - Le builder doit le vérifier en pratique (`trophySetVersion` et `definedTrophies` sont les candidats).
   - Par sécurité, il prévoit aussi une revérification des groupes de tous les jeux **une fois par jour [décidé]**.
 - **[décidé] Rareté :** le pourcentage mondial d'un trophée évolue même quand l'utilisateur ne joue plus au jeu. Une synchro uniquement incrémentale laisserait donc dériver la rareté moyenne et le classement des trophées les plus rares. Les raretés de tous les jeux sont donc **rafraîchies une fois par jour**.
+- **[mon choix] Compteurs des trophées à paliers** (8.9) : une progression peut avancer sans qu'aucun trophée ne soit obtenu, et un tel jeu n'est alors pas vu comme modifié. Les compteurs sont donc rafraîchis :
+  - quand le jeu est rechargé ;
+  - par le rafraîchissement quotidien, qui lit déjà l'état utilisateur de chaque jeu pour les raretés ;
+  - à chaque synchro, pour les jeux dont la date de dernière partie (`getUserPlayedGames`) a changé depuis la synchro précédente. Un « Sync now » après une session de jeu met donc à jour les compteurs du jeu joué.
 - **[mon choix]** Infos du catalogue (éditeur, date de sortie, genres) : récupérées pour tout concept qui n'en a pas encore, puis rafraîchies une fois par jour avec les raretés. Un échec sur un concept n'arrête pas la synchro : il est retenté la fois suivante.
 - Les jaquettes carrées et le temps de jeu viennent de `getUserPlayedGames`, rechargé à chaque synchro.
   - Le lien `titleId` → `npCommunicationId` n'est calculé qu'une fois par nouveau `titleId`, puis mis en cache.
@@ -158,7 +166,7 @@ Le schéma exact est laissé au builder. Il doit au minimum permettre :
   - et, pour la page d'un jeu (8.9) : l'identifiant du concept, la bannière et le logo (adresses Sony), l'éditeur, les genres et la date de sortie, avec la date de leur dernière récupération ;
   - Les versions PS4 et PS5 d'un même jeu sont **deux listes distinctes**, comme sur le PSN. **[mon choix]**
 - **les groupes** (base et DLC) avec leurs compteurs ;
-- **les trophées** : définition, état obtenu ou non, date d'obtention, rareté mondiale (en nombre), catégorie de rareté PSN, objectif de progression éventuel ;
+- **les trophées** : définition, état obtenu ou non, date d'obtention, rareté mondiale (en nombre), catégorie de rareté PSN, objectif de progression éventuel, et la progression de l'utilisateur vers cet objectif avec sa date (8.9) ;
 - **les fichiers d'images locaux**, avec l'adresse Sony d'origine ;
 - **l'historique des synchros** et **les sessions** ;
 - **les réglages** : bannière et sa position verticale, Trophy cabinet ordonné (10 trophées au plus), réglage « Hide 0% games », identifiants PSN chiffrés.
@@ -385,6 +393,14 @@ C'est un panneau translucide qui chevauche le bas de la bannière, comme le band
   - si le trophée est obtenu : la date (« 18 Jul 2022 ») et l'heure (« 01:21 ») sur deux lignes, en vert clair ;
   - la rareté PSN (« 2.30% ») et sa catégorie (« Ultra rare »), avec les paliers de 8.8 ;
   - l'icône officielle du type.
+- **[décidé, 8 novembre 2026] Compteur des trophées à paliers**, comme sur psnprofiles (capture de l'utilisateur, Phantom Blade Zero) :
+  - Certains trophées demandent d'atteindre un nombre, par exemple « Defeat the Four Great Puppets » (4) ou « Synthesize 5,000 collectables ».
+  - Tant qu'un tel trophée n'est pas obtenu, sa progression s'affiche **à la place de la date** : « 0/4 », « 3,626/5,000 ».
+  - Le compteur est en 15 px, gras, de la couleur du texte, avec les séparateurs de milliers de 8.1.
+  - Un trophée obtenu affiche sa date, jamais de compteur.
+  - Seules les listes PS5 ont des compteurs. Au 8 novembre 2026, il en restait par exemple 60 dans FFXIV Online, 7 dans Phantom Blade Zero, 8 dans The Last of Us Part II Remastered et 5 dans Nioh 3.
+  - **[mon choix]** Si la progression de l'utilisateur est inconnue, rien n'est affiché : pas de « 0 » supposé (2, anti-objectifs).
+  - La maquette v5 (`jeu-v5.html`) montre ces compteurs sur FFXIV Online et Phantom Blade Zero.
 - **[décidé] Un trophée obtenu se distingue** par un fond vert, comme sur psnprofiles, et par sa date.
   - **[mon choix]** Le fond est le vert `#3DBE6B` à 14 %, avec un liseré de 2 px de ce vert autour de l'icône. La date est en `#93E2AE`.
   - Un trophée non obtenu n'a ni fond, ni liseré, ni date. Son icône reste en couleur.
@@ -444,9 +460,7 @@ C'est un panneau translucide qui chevauche le bas de la bannière, comme le band
   - les notes, vues et favoris des guides, les boutons de partage et les listes « to-do » ;
   - le développeur, les thèmes, les modes de jeu, les autres noms du jeu et les dates de sortie par plateforme, qui viennent d'IGDB ;
   - les chiffres des autres joueurs (propriétaires, rang, classements, joueurs récents), qui sont des non-objectifs (2).
-- **[mon choix]** Deux fonctions laissées de côté pour cette page, qui pourront venir plus tard :
-  - **Le compteur des trophées à paliers.** Certains trophées PS5 demandent d'atteindre un nombre, par exemple « Kill 300 enemies ». La console montre alors où en est le joueur, par exemple « 214/300 ». La synchro de la phase 1 ne stocke pas ce compteur. L'afficher demanderait de modifier la synchro, ce qui sort du cadre de cette page.
-  - **Le lien vers l'autre version du jeu.** Un jeu sorti sur PS4 et sur PS5 a deux listes de trophées, donc deux pages (Cyberpunk 2077 : PS4 à 100 %, PS5 à 86 %). psnprofiles relie les deux dans un encart « Other platforms and regions ». Ici, pour passer de l'une à l'autre, on repasse par la liste des jeux.
+- **[décidé, 8 novembre 2026] Pas de lien vers l'autre version du jeu.** Un jeu sorti sur PS4 et sur PS5 a deux listes de trophées, donc deux pages (Cyberpunk 2077 : PS4 à 100 %, PS5 à 86 %). psnprofiles relie les deux dans un encart « Other platforms and regions ». Ici, pour passer de l'une à l'autre, on repasse par la liste des jeux.
 
 ## 9. Page Settings
 - **Banner [décidé]** :
