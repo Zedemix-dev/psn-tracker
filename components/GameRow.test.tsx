@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
 import { cleanup, render, screen } from "@testing-library/react";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { GameRow } from "@/components/GameRow";
 import type { GameRank, GameRowData } from "@/src/games/row";
@@ -124,5 +126,17 @@ describe("GameRow", () => {
     expect(container.querySelector(".game-cover")).not.toHaveClass("icon");
     rerender(<GameRow row={game({ coverIsIcon: true })} />);
     expect(container.querySelector(".game-cover")).toHaveClass("icon");
+  });
+});
+
+describe("game row CSS", () => {
+  it("lets titles and meta lines wrap instead of truncating", () => {
+    const css = readFileSync(path.resolve(import.meta.dirname, "../app/globals.css"), "utf8");
+    const rule = (sel: string) => css.split("\n").find((l) => l.startsWith(`${sel}{`)) ?? "";
+    for (const sel of [".game h3", ".game-meta"]) {
+      expect(rule(sel), sel).not.toBe("");
+      expect(rule(sel), sel).not.toMatch(/text-overflow|white-space:\s*nowrap/);
+    }
+    expect(rule(".game-meta")).toMatch(/flex-wrap:wrap/);
   });
 });

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { gameQueryParams } from "@/components/game-query-string";
 import type { GamePlatform, GameQuery, GameSort, GameState } from "@/src/games/query";
 
@@ -42,16 +42,28 @@ function Options<T extends string>({ options }: { options: [T, string][] }) {
 export function GameFilters({ query }: { query: GameQuery }) {
   const router = useRouter();
   const [text, setText] = useState(query.q);
+  /** Last search text this component put in the URL, to tell its own navigations from history ones. */
+  const pushedQ = useRef<string | null>(null);
 
   function go(next: Omit<GameQuery, "offset">) {
     const qs = gameQueryParams(next).toString();
     router.replace(qs ? `/?${qs}` : "/", { scroll: false });
   }
 
+  // The URL changed by itself (Back/Forward): show its search text again.
+  useEffect(() => {
+    if (query.q === pushedQ.current) return;
+    pushedQ.current = null;
+    setText(query.q);
+  }, [query.q]);
+
   useEffect(() => {
     const q = text.trim();
     if (q === query.q) return;
-    const timer = setTimeout(() => go({ ...query, q }), DEBOUNCE_MS);
+    const timer = setTimeout(() => {
+      pushedQ.current = q;
+      go({ ...query, q });
+    }, DEBOUNCE_MS);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [text, query]);
