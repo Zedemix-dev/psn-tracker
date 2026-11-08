@@ -11,7 +11,12 @@ Deux stacks Portainer : **infra** (`stack-infra.yml` : postgres + nginx) et **si
 3. Portainer doit pouvoir télécharger l'image. Deux options :
    - **Package privé (recommandé)** : créer un *Personal Access Token (classic)* sur GitHub (Settings → Developer settings → Personal access tokens → Tokens (classic)) avec **uniquement** la permission `read:packages`. Puis dans Portainer : **Registries → Add registry → Custom registry** (ou GitHub/GHCR), URL `ghcr.io`, avec authentification : nom d'utilisateur GitHub + le token.
    - **Package public** : sur la page du package → Package settings → Change visibility → Public. Aucun token n'est alors nécessaire (mais l'image est visible de tous : elle ne contient aucun secret, ceux-ci sont dans les variables d'environnement).
-4. Quotas gratuits : pour un dépôt privé, GitHub Actions offre un nombre limité de minutes par mois et GHCR un espace de stockage limité (les plafonds exacts sont sur la page de facturation GitHub). Chaque push lance les tests ; l'image n'est publiée que sur `main`. Pour économiser le stockage, ne gardez que les dernières versions de l'image (page du package → supprimer les anciennes versions, en conservant les 3 à 5 dernières).
+4. Quotas gratuits : pour un dépôt privé, GitHub Actions offre un nombre limité de minutes par mois et un espace de stockage limité (les plafonds exacts sont sur la page de facturation GitHub). Le workflow est réglé pour les économiser :
+   - il ne tourne qu'une fois par push (pas une deuxième fois pour une pull request), et un nouveau push sur la même branche annule le run en cours (sauf sur `main`) ;
+   - il ne crée plus d'artefact par run (le résumé du build reste visible dans le run) ;
+   - sur `main`, après la publication, il **supprime les anciennes images** et garde les **3 plus récentes** : celle qui tourne + 2 pour revenir en arrière (étiquettes `sha-<court>`).
+5. **Une seule fois, après la première publication**, autoriser ce nettoyage : page du package (onglet **Packages** du dépôt → `psn-tracker`) → **Package settings** → **Manage Actions access** → le dépôt `psn-tracker` doit avoir le rôle **Admin** (l'ajouter avec **Add repository** s'il n'apparaît pas). Sans ce rôle, l'étape « Prune old images in GHCR » échoue sans bloquer le build (elle apparaît en orange dans le run) et rien n'est supprimé.
+6. Les artefacts déjà créés par les anciens runs (`*.dockerbuild`, ~60 Ko chacun) expirent seuls (90 jours par défaut). Pour les effacer tout de suite : onglet **Actions** → un run → section **Artifacts** → icône corbeille. Pour raccourcir la durée de conservation de tous les futurs artefacts et journaux : **Settings** du dépôt → **Actions** → **General** → **Artifact and log retention**.
 
 ## 2. Dossiers sur le NAS
 
