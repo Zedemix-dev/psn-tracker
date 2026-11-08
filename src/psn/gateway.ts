@@ -16,6 +16,8 @@ import {
 } from "psn-api";
 import type {
   PsnTokens,
+  RemoteCatalog,
+  RemoteConcept,
   RemoteGroup,
   RemotePlayedGame,
   RemoteProfile,
@@ -27,6 +29,12 @@ import type {
   TrophyCounts,
   TrophyType,
 } from "@/src/psn/types";
+
+type CatalogResponse = {
+  publisherName?: string;
+  releaseDate?: { date?: string };
+  localizedGenres?: Array<{ value: string }>;
+};
 
 export type PsnAuth = { accessToken: string };
 
@@ -40,6 +48,7 @@ export interface PsnGateway {
   getTrophyDefs(auth: PsnAuth, t: TitleRef): Promise<RemoteTrophyDef[]>;
   getUserTrophies(auth: PsnAuth, t: TitleRef): Promise<RemoteUserTrophy[]>;
   getPlayedGames(auth: PsnAuth): Promise<RemotePlayedGame[]>;
+  getCatalog(auth: PsnAuth, conceptId: number): Promise<RemoteCatalog>;
   /** npTitleId -> npCommunicationIds */
   mapNpTitleIds(auth: PsnAuth, ids: string[]): Promise<Record<string, string[]>>;
 }
@@ -49,6 +58,8 @@ const PLAYED_PAGE = 200;
 const NP_TITLE_IDS_PER_CALL = 5;
 const PROFILE_URL = "https://m.np.playstation.com/api/userProfile/v1/internal/users";
 const GAMELIST_URL = "https://m.np.playstation.com/api/gamelist/v2/users/me/titles";
+const CATALOG_URL = "https://m.np.playstation.com/api/catalog/v2/concepts";
+const LOGO_WIDTH = 800;
 
 function toTokens(r: AuthTokensResponse, now = Date.now()): PsnTokens {
   return {
@@ -79,6 +90,31 @@ function toRate(s: string | undefined | null): number | null {
   if (s === undefined || s === null || s.trim() === "") return null;
   const n = Number(s);
   return Number.isFinite(n) ? n : null;
+}
+
+/** Integer from a PSN string value ("5000"); null when missing or not numeric. */
+function toInt(s: string | undefined | null): number | null {
+  const n = toRate(s);
+  return n === null ? null : Math.trunc(n);
+}
+
+/** PSN language ("en-GB", "en") to the catalog's country and language parameters. */
+export function catalogLocale(language: string): { country: string; language: string } {
+  const [lang, region] = language.split("-");
+  return { country: region?.toUpperCase() ?? "US", language: lang.toLowerCase() };
+}
+
+type ApiConcept = { id: number; media?: { images?: Array<{ type: string; url: string }> } };
+
+function toConcept(c: ApiConcept | null | undefined): RemoteConcept | null {
+  if (!c) return null;
+  const image = (type: string) => c.media?.images?.find((i) => i.type === type)?.url ?? null;
+  const logo = image("LOGO");
+  return {
+    id: c.id,
+    bannerUrl: image("GAMEHUB_COVER_ART"),
+    logoUrl: logo === null ? null : `${logo}?w=${LOGO_WIDTH}`,
+  };
 }
 
 /** Follows offset/nextOffset until every item has been fetched. */
@@ -180,7 +216,7 @@ export function createPsnGateway(language: string): PsnGateway {
         return {
           total: r.totalItemCount,
           next: r.nextOffset,
-          items: r.trophies.map(
+          items: (r.trophies as Array<(typeof r.trophies)[number] & { trophyProgressTargetValue?: string }>).map(
             (d): RemoteTrophyDef => ({
               trophyId: d.trophyId,
               groupId: d.trophyGroupId ?? "default",
@@ -189,6 +225,7 @@ export function createPsnGateway(language: string): PsnGateway {
               detail: d.trophyDetail ?? "",
               iconUrl: d.trophyIconUrl ?? "",
               hidden: d.trophyHidden,
+              progressTarget: toInt(d.trophyProgressTargetValue),
             }),
           ),
         };
@@ -205,14 +242,15 @@ export function createPsnGateway(language: string): PsnGateway {
         return {
           total: r.totalItemCount,
           next: r.nextOffset,
-          items: r.trophies.map(
+          items: (r.trophies as Array<(typeof r.trophies)[number] & { progress?: string; progressedDateTime?: string }>).map(
             (u): RemoteUserTrophy => ({
               trophyId: u.trophyId,
               earned: u.earned ?? false,
               earnedAt: toDate(u.earnedDateTime),
               earnedRate: toRate(u.trophyEarnedRate),
               rareCategory: u.trophyRare ?? null,
-              progressTarget: u.trophyProgressTargetValue ?? null,
+              progress: toInt(u.progress),
+              progressedAt: toDate(u.progressedDateTime),
             }),
           ),
         };
@@ -244,10 +282,25 @@ export function createPsnGateway(language: string): PsnGateway {
               playCount: g.playCount,
               firstPlayedAt: toDate(g.firstPlayedDateTime),
               lastPlayedAt: toDate(g.lastPlayedDateTime),
+              concept: toConcept(g.concept),
             }),
           ),
         };
       });
+    },
+
+    async getCatalog(auth, conceptId) {
+      const url = `${CATALOG_URL}/${conceptId}?${new URLSearchParams(catalogLocale(language))}&age=99`;
+      const r = await call<CatalogResponse & { error?: { message?: string } }>(
+        { url, headers: headerOverrides },
+        auth,
+      );
+      if (r.error) throw new Error(r.error.message ?? "Unexpected Error");
+      return {
+        publisher: r.publisherName ?? null,
+        releaseDate: toDate(r.releaseDate?.date),
+        genres: [...new Set((r.localizedGenres ?? []).map((g) => g.value))],
+      };
     },
 
     async mapNpTitleIds(auth, ids) {

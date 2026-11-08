@@ -1,6 +1,7 @@
 import type { PsnGateway } from "@/src/psn/gateway";
 import type {
   PsnTokens,
+  RemoteCatalog,
   RemoteGroup,
   RemotePlayedGame,
   RemoteProfile,
@@ -28,6 +29,8 @@ export type FakePsnFixture = {
   titles?: RemoteTitle[];
   titleData?: Record<string, FakeTitleData>;
   playedGames?: RemotePlayedGame[];
+  /** conceptId -> catalog entry; getCatalog rejects for a concept missing here. */
+  catalogs?: Record<number, RemoteCatalog>;
   /** npTitleId -> npCommunicationIds, returned by mapNpTitleIds. */
   npTitleMap?: Record<string, string[]>;
   /**
@@ -109,6 +112,12 @@ export function createFakePsn(fixture: FakePsnFixture = {}): FakePsn {
     },
     async getPlayedGames() {
       return paged("getPlayedGames", fixture.playedGames ?? []);
+    },
+    async getCatalog(_auth, conceptId) {
+      record("getCatalog", String(conceptId));
+      const catalog = fixture.catalogs?.[conceptId];
+      if (!catalog) throw new Error(`fake PSN: no catalog for concept ${conceptId}`);
+      return catalog;
     },
     async mapNpTitleIds(_auth, ids) {
       record("mapNpTitleIds");

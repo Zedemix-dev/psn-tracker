@@ -9,6 +9,7 @@ export function makePlayedGame(overrides: Partial<RemotePlayedGame> = {}): Remot
     playCount: 1,
     firstPlayedAt: new Date("2025-01-01T00:00:00Z"),
     lastPlayedAt: new Date("2025-01-02T00:00:00Z"),
+    concept: null,
     ...overrides,
   };
 }

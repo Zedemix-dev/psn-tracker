@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { createPsnGateway, parseIsoDuration } from "@/src/psn/gateway";
+import { catalogLocale, createPsnGateway, parseIsoDuration } from "@/src/psn/gateway";
 
 type Req = { url: URL; headers: Record<string, string> };
 let requests: Req[];
@@ -112,7 +112,7 @@ describe("createPsnGateway", () => {
     on(/users\/me\/npCommunicationIds\/.*\/trophies$/, (url) =>
       url.searchParams.get("offset") === "0"
         ? {
-            trophies: [{ trophyId: 0, trophyHidden: false, earned: true, earnedDateTime: "2026-02-03T00:00:00Z", trophyEarnedRate: "12.5", trophyRare: 2, trophyProgressTargetValue: "10" }],
+            trophies: [{ trophyId: 0, trophyHidden: false, earned: true, earnedDateTime: "2026-02-03T00:00:00Z", trophyEarnedRate: "12.5", trophyRare: 2 }],
             totalItemCount: 2,
             nextOffset: 1,
           }
@@ -125,12 +125,12 @@ describe("createPsnGateway", () => {
 
     expect(await gw.getGroups(auth, trophy2)).toEqual([{ groupId: "default", name: "Base", iconUrl: "g.png", defined: counts }]);
     expect(await gw.getTrophyDefs(auth, trophy)).toEqual([
-      { trophyId: 0, groupId: "001", type: "gold", name: "N", detail: "D", iconUrl: "t.png", hidden: true },
+      { trophyId: 0, groupId: "001", type: "gold", name: "N", detail: "D", iconUrl: "t.png", hidden: true, progressTarget: null },
     ]);
     const user = await gw.getUserTrophies(auth, trophy2);
     expect(user).toEqual([
-      { trophyId: 0, earned: true, earnedAt: new Date("2026-02-03T00:00:00Z"), earnedRate: 12.5, rareCategory: 2, progressTarget: "10" },
-      { trophyId: 1, earned: false, earnedAt: null, earnedRate: null, rareCategory: null, progressTarget: null },
+      { trophyId: 0, earned: true, earnedAt: new Date("2026-02-03T00:00:00Z"), earnedRate: 12.5, rareCategory: 2, progress: null, progressedAt: null },
+      { trophyId: 1, earned: false, earnedAt: null, earnedRate: null, rareCategory: null, progress: null, progressedAt: null },
     ]);
 
     expect(requests.map((r) => r.url.searchParams.get("npServiceName"))).toEqual(["trophy2", "trophy", "trophy2", "trophy2"]);
@@ -143,7 +143,7 @@ describe("createPsnGateway", () => {
       nextOffset: 1,
     }));
     expect(await gw.getPlayedGames(auth)).toEqual([
-      { npTitleId: "CUSA1_00", name: "G", imageUrl: "g.png", playSeconds: 3723, playCount: 4, firstPlayedAt: new Date("2025-01-01T00:00:00Z"), lastPlayedAt: new Date("2025-02-01T00:00:00Z") },
+      { npTitleId: "CUSA1_00", name: "G", imageUrl: "g.png", playSeconds: 3723, playCount: 4, firstPlayedAt: new Date("2025-01-01T00:00:00Z"), lastPlayedAt: new Date("2025-02-01T00:00:00Z"), concept: null },
     ]);
   });
 
@@ -155,5 +155,83 @@ describe("createPsnGateway", () => {
     const map = await gw.mapNpTitleIds(auth, ids);
     expect(requests.map((r) => r.url.searchParams.get("npTitleIds"))).toEqual(["A,B,C,D,E", "F,G"]);
     expect(map).toEqual(Object.fromEntries(ids.map((id) => [id, [`NPWR_${id}`]])));
+  });
+
+  it("reads the progress target from definitions and the progress from the user state", async () => {
+    on(/^\/api\/trophy\/v1\/npCommunicationIds\/.*\/trophies$/, () => ({
+      trophies: [
+        { trophyId: 0, trophyHidden: false, trophyType: "bronze", trophyProgressTargetValue: "5000" },
+        { trophyId: 1, trophyHidden: false, trophyType: "bronze", trophyProgressTargetValue: "abc" },
+      ],
+      totalItemCount: 2,
+    }));
+    on(/users\/me\/npCommunicationIds\/.*\/trophies$/, () => ({
+      trophies: [
+        { trophyId: 0, trophyHidden: false, progress: "3626", progressedDateTime: "2023-02-05T09:36:54Z" },
+        { trophyId: 1, trophyHidden: false, progress: "n/a" },
+      ],
+      totalItemCount: 2,
+    }));
+    const defs = await gw.getTrophyDefs(auth, trophy);
+    expect(defs.map((d) => d.progressTarget)).toEqual([5000, null]);
+    const user = await gw.getUserTrophies(auth, trophy);
+    expect(user[0]).toMatchObject({ progress: 3626, progressedAt: new Date("2023-02-05T09:36:54Z") });
+    expect(user[1]).toMatchObject({ progress: null, progressedAt: null });
+  });
+
+  it("maps the played game concept to its banner and its logo resized to 800 px", async () => {
+    const base = { name: "G", imageUrl: "g.png", playCount: 1, playDuration: "PT1H" };
+    on(/gamelist/, () => ({
+      titles: [
+        {
+          ...base,
+          titleId: "A",
+          concept: {
+            id: 234567,
+            media: {
+              images: [
+                { type: "MASTER", url: "https://img.example/master.png" },
+                { type: "GAMEHUB_COVER_ART", url: "https://img.example/a1krx.png" },
+                { type: "LOGO", url: "https://img.example/logo.png" },
+              ],
+            },
+          },
+        },
+        { ...base, titleId: "B" },
+      ],
+      totalItemCount: 2,
+      nextOffset: 2,
+    }));
+    const games = await gw.getPlayedGames(auth);
+    expect(games[0].concept).toEqual({
+      id: 234567,
+      bannerUrl: "https://img.example/a1krx.png",
+      logoUrl: "https://img.example/logo.png?w=800",
+    });
+    expect(games[1].concept).toBeNull();
+  });
+
+  it("fetches the catalog with country, language and age together", async () => {
+    on(/catalog\/v2\/concepts\/234567$/, () => ({
+      publisherName: "CD PROJEKT RED S.A.",
+      releaseDate: { date: "2020-12-10T00:00:00Z" },
+      localizedGenres: [{ value: "Role Playing Games" }, { value: "Role Playing Games" }],
+    }));
+    on(/catalog\/v2\/concepts\/1$/, () => ({ error: { message: "x" } }));
+    expect(await gw.getCatalog(auth, 234567)).toEqual({
+      publisher: "CD PROJEKT RED S.A.",
+      releaseDate: new Date("2020-12-10T00:00:00Z"),
+      genres: ["Role Playing Games"],
+    });
+    expect(requests[0].url.searchParams.get("country")).toBe("GB");
+    expect(requests[0].url.searchParams.get("language")).toBe("en");
+    expect(requests[0].url.searchParams.get("age")).toBe("99");
+    expect(requests[0].headers["Accept-Language"]).toBe("en-GB");
+    await expect(gw.getCatalog(auth, 1)).rejects.toThrow("x");
+  });
+
+  it("derives the catalog locale from the PSN language", () => {
+    expect(catalogLocale("en-GB")).toEqual({ country: "GB", language: "en" });
+    expect(catalogLocale("en")).toEqual({ country: "US", language: "en" });
   });
 });

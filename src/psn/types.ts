@@ -34,6 +34,7 @@ export type RemoteTrophyDef = {
   detail: string;
   iconUrl: string;
   hidden: boolean;
+  progressTarget: number | null;
 };
 
 export type RemoteUserTrophy = {
@@ -42,8 +43,11 @@ export type RemoteUserTrophy = {
   earnedAt: Date | null;
   earnedRate: number | null;
   rareCategory: number | null;
-  progressTarget: string | null;
+  progress: number | null;
+  progressedAt: Date | null;
 };
+
+export type RemoteConcept = { id: number; bannerUrl: string | null; logoUrl: string | null };
 
 export type RemotePlayedGame = {
   npTitleId: string;
@@ -53,7 +57,10 @@ export type RemotePlayedGame = {
   playCount: number;
   firstPlayedAt: Date | null;
   lastPlayedAt: Date | null;
+  concept: RemoteConcept | null;
 };
+
+export type RemoteCatalog = { publisher: string | null; releaseDate: Date | null; genres: string[] };
 
 export type RemoteSummary = {
   accountId: string;

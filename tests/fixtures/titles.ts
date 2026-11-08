@@ -53,6 +53,7 @@ export function makeTrophies(
       detail: `Do thing ${i}`,
       iconUrl: `https://img.example/t${i}.png`,
       hidden: false,
+      progressTarget: null,
     });
     const earned = earnedIds.includes(i);
     userTrophies.push({
@@ -61,7 +62,8 @@ export function makeTrophies(
       earnedAt: earned ? new Date(Date.UTC(2024, 0, 1 + i)) : null,
       earnedRate: 12.345,
       rareCategory: 2,
-      progressTarget: null,
+      progress: null,
+      progressedAt: null,
     });
   }
   return { defs, userTrophies };

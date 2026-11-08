@@ -133,7 +133,8 @@ describe("syncTitle", () => {
           earnedAt: new Date("2025-02-02T02:02:02Z"),
           earnedRate: 1.3,
           rareCategory: 0,
-          progressTarget: null,
+          progress: null,
+          progressedAt: null,
         };
       }
       return createFakePsn({ titleData: { [ID]: { groups: [makeGroup("default")], defs, userTrophies } } });
