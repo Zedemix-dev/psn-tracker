@@ -291,8 +291,8 @@ Chaque case contient un libellé et une valeur, **sans texte en dessous [décid�
    - **[mon choix]** La date s'affiche en temps relatif comme sur psnprofiles (« 9 years ago »), et la date exacte apparaît en infobulle.
    - **[décidé] Mêmes étapes que psnprofiles** (relevées sur le profil de l'utilisateur) :
      - **First trophy**, **First platinum**, **Latest platinum**, **Fastest platinum** (le platine obtenu le plus vite après le premier trophée du jeu) ;
-     - platines : 10th, 20th, 30th, 40th, 50th, puis tous les 25 (75th, 100th, 125th…) ;
-     - trophées : 500th, puis tous les 500 jusqu'au 5,000th, puis tous les 1 000 (6,000th, 7,000th…), plus le clin d'œil **1,337th trophy**.
+     - platines : 10th, 20th, 30th, 40th, 50th, puis tous les 25 jusqu'au 250th (75th, 100th… 250th), puis **tous les 50** (300th, 350th, 400th…) — **[décidé]** précisé par l'utilisateur le 8 novembre 2026 ;
+     - trophées : 500th, puis tous les 500 jusqu'au 5,000th, puis tous les 1 000 jusqu'au 10,000th, puis **tous les 5 000** (15,000th, 20,000th…), plus le clin d'œil **1,337th trophy** — **[décidé]** précisé par l'utilisateur le 8 novembre 2026 (pas de 11,000th).
      - Pour le comptage, les trophées sont numérotés dans l'ordre de leur date d'obtention.
 
 ### 8.9 Page de détail d'un jeu

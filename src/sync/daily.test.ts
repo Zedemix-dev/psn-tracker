@@ -1,0 +1,92 @@
+import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
+import { eq } from "drizzle-orm";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { Db } from "@/src/db/client";
+import { syncRuns, titles, trophies, trophyGroups } from "@/src/db/schema";
+import type { AppConfig } from "@/src/lib/config";
+import { savePsnTokens } from "@/src/settings/repo";
+import { runDailyRefresh } from "@/src/sync/daily";
+import { runSync } from "@/src/sync/run";
+import { createFakePsn } from "@/tests/fakes/psn";
+import { makeGroup, makeRemoteTitle, makeTrophies } from "@/tests/fixtures/titles";
+import { createTestDb } from "@/tests/helpers/db";
+
+const now = new Date("2026-01-01T12:00:00Z");
+const later = new Date("2026-01-02T12:00:00Z");
+const ID = "NPWR00001_00";
+const deps = {
+  sleep: vi.fn(async (_ms: number) => {}),
+  fetchImpl: vi.fn(async () => new Response(new Uint8Array([1]), { status: 200 })) as unknown as typeof fetch,
+};
+
+let db: Db;
+let mediaDir: string;
+let cfg: AppConfig;
+
+function gwWith(rate: number, groups = [makeGroup("default")], extraDefs = 0) {
+  const base = makeTrophies(2);
+  const dlc = makeTrophies(extraDefs, { groupId: "001", start: 2 });
+  const userTrophies = [...base.userTrophies, ...dlc.userTrophies];
+  userTrophies.forEach((u) => (u.earnedRate = rate));
+  return createFakePsn({
+    titles: [makeRemoteTitle({ defined: { platinum: 0, gold: 0, silver: 0, bronze: 2 + extraDefs } })],
+    titleData: { [ID]: { groups, defs: [...base.defs, ...dlc.defs], userTrophies } },
+  });
+}
+
+beforeEach(async () => {
+  db = await createTestDb();
+  mediaDir = await fs.mkdtemp(path.join(os.tmpdir(), "daily-"));
+  cfg = {
+    databaseUrl: "pglite:memory",
+    adminUsername: "a",
+    adminPasswordHash: "h",
+    appSecret: Buffer.alloc(32, 7),
+    psnLanguage: "en-GB",
+    mediaDir,
+  };
+  await savePsnTokens(db, cfg.appSecret, {
+    accessToken: "a",
+    accessExpiresAt: new Date("2099-01-01T00:00:00Z"),
+    refreshToken: "r",
+    refreshExpiresAt: new Date("2099-06-01T00:00:00Z"),
+  });
+  await runSync(db, gwWith(1.3), cfg, "manual", now, deps);
+});
+afterEach(async () => {
+  await fs.rm(mediaDir, { recursive: true, force: true });
+});
+
+describe("runDailyRefresh", () => {
+  it("updates earnedRate from 1.30 to 1.28 without reloading the title", async () => {
+    const gw = gwWith(1.28);
+    const res = await runDailyRefresh(db, gw, cfg, later, deps);
+
+    expect(res.status).toBe("success");
+    const rows = await db.select().from(trophies).where(eq(trophies.titleId, ID));
+    expect(rows.map((r) => r.earnedRate)).toEqual(["1.28", "1.28"]);
+    expect(gw.calls.filter((c) => c.startsWith("getTrophyDefs"))).toHaveLength(0);
+    const [t] = await db.select().from(titles).where(eq(titles.npCommunicationId, ID));
+    expect(t.groupsCheckedAt).toEqual(later);
+    const runs = await db.select().from(syncRuns).orderBy(syncRuns.id);
+    expect(runs[1]).toMatchObject({ kind: "daily", status: "success", titlesDone: 1 });
+  });
+
+  it("reloads a title whose group set changed", async () => {
+    const gw = gwWith(1.3, [makeGroup("default"), makeGroup("001")], 2);
+    await runDailyRefresh(db, gw, cfg, later, deps);
+
+    expect(gw.calls.filter((c) => c.startsWith("getTrophyDefs"))).toHaveLength(1);
+    expect(await db.select().from(trophyGroups).where(eq(trophyGroups.titleId, ID))).toHaveLength(2);
+    expect(await db.select().from(trophies).where(eq(trophies.titleId, ID))).toHaveLength(4);
+  });
+
+  it("skips hidden titles", async () => {
+    await db.update(titles).set({ hidden: true });
+    const gw = gwWith(1.28);
+    await runDailyRefresh(db, gw, cfg, later, deps);
+    expect(gw.calls.filter((c) => c.startsWith("getUserTrophies"))).toHaveLength(0);
+  });
+});

@@ -1,0 +1,1 @@
+ALTER TABLE "titles" ADD COLUMN "psn_last_updated_at" timestamp with time zone;
