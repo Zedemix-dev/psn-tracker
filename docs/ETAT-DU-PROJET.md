@@ -43,14 +43,20 @@ Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un aut
    - Juste après la première publication, donner une seule fois le rôle **Admin** au dépôt dans « Manage Actions access » du package GHCR (étape 1.5).
    - Faire les vérifications du premier déploiement listées dans `docs/superpowers/plans/2026-11-08-phase1-suivis.md`.
 2. **Page de détail d'un jeu** : c'est la dernière étape prévue de la phase 1 (spec, sections 3 et 8.9).
-   - La section 8.9 donne un point de départ.
-   - La maquette doit être faite et **validée avant de construire**.
-3. **Pages suivantes**, chacune avec **son propre brainstorming** (spec, section 3) :
+   - Maquette **validée le 8 novembre 2026** (v5), spec 8.9 écrite, plan `docs/superpowers/plans/2026-11-08-game-detail.md`.
+   - Construction en cours sur la branche `feat/game-detail`. Le journal de suivi est dans `.superpowers/sdd/2026-11-08-game-detail/progress.md` (local).
+   - La même branche apporte aussi : la bannière automatique de Games (dernier jeu joué), le tri par défaut « Last trophy » (en tête du menu), et le retour sur la liste Games au même endroit.
+3. **Jeux aux trophées non obtenables** (demandé le 8 novembre 2026, spec section 14) : à faire **à part**, après la page de détail, sur la branche `feat/unobtainable`, avec son propre cadrage.
+   - Un bouton dans l'en-tête de la liste Games pour afficher tous les jeux d'un coup, sans défiler.
+   - Un filtre séparé « With unobtainable » / « Without unobtainable », désactivé par défaut, qui s'ajoute aux autres filtres.
+   - Dans Settings, l'adresse de la liste des jeux concernés, modifiable. Adresse actuelle : `https://psnp-plus.huskycode.dev/list.json`.
+   - La liste ne donne pas l'identifiant PSN des jeux : rapprochement par nom et plateforme (5 de tes jeux reconnus le 8 novembre 2026).
+4. **Pages suivantes**, chacune avec **son propre brainstorming** (spec, section 3) :
    - **Plat Wall** ;
    - **Trophy Log** ;
    - **Trophy Advisor** : les trophées non obtenus sont déjà stockés avec leur rareté. Le toggle « Hide 0% games » doit aussi en retirer les jeux à 0 % ;
    - **Stats** : elle reçoit le calendrier « Last 60 days », déjà décrit dans la spec, section 3.
-4. **Points de suivi** : à piocher dans `docs/superpowers/plans/2026-11-08-phase1-suivis.md` quand une page touche le même code.
+5. **Points de suivi** : à piocher dans `docs/superpowers/plans/2026-11-08-phase1-suivis.md` quand une page touche le même code.
 
 ## 4. Comment reprendre dans une nouvelle conversation
 Pour démarrer une page, il suffit de le dire, par exemple « On attaque la page de détail d'un jeu ». Avec le plugin superpowers installé (voir 6), Claude lance de lui-même le bon processus. Pour être sûr, on peut aussi le demander explicitement : « utilise le skill brainstorming ».

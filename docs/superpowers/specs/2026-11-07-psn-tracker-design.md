@@ -538,3 +538,35 @@ Il doit aussi vérifier en pratique la détection des nouveaux DLC (6.4).
 
 ## 13. Points restants
 - **Page de détail d'un jeu :** sa maquette a été validée le 8 novembre 2026 (8.9). Il reste à la construire, sur la branche `feat/game-detail`. C'est la dernière étape de la phase 1.
+- **Jeux aux trophées non obtenables :** fonctionnalité demandée le 8 novembre 2026, décrite en 14. Elle sera faite à part, après la page de détail d'un jeu.
+
+## 14. Jeux aux trophées non obtenables (à venir)
+**[décidé, 8 novembre 2026]** Cette fonctionnalité est faite **à part**, après la page de détail d'un jeu, sur sa propre branche (`feat/unobtainable`). Elle suivra le processus habituel : cadrage, maquette validée, spec, plan, construction. Ce qui suit est ce que l'utilisateur a déjà décidé, plus les constats faits le jour même.
+
+**Intention** : repérer les jeux dont certains trophées ne peuvent plus être obtenus (serveurs fermés, jeu plus supporté, jeu retiré du PSN…), pour les mettre de côté ou les cibler.
+
+**Ce que l'utilisateur a décidé** :
+1. **Bouton « tout afficher » dans la liste des jeux** (8.7). Il est placé dans l'en-tête de la liste, à côté du nombre de jeux (« 266 games »). En un clic, il affiche la liste complète des jeux de Games, sans avoir à faire défiler la page pour charger les jeux 50 par 50.
+2. **Filtre « non obtenables »**, dans la barre de filtres de Games, juste après le menu de tri.
+   - C'est un **filtre séparé**, une surcouche qui s'ajoute aux autres : il fonctionne en même temps que l'état, la plateforme, le tri, la recherche et « Hide 0% games ».
+   - Il a deux valeurs : **« With unobtainable »** (seulement les jeux qui ont des trophées non obtenables) et **« Without unobtainable »** (seulement les jeux qui n'en ont pas).
+   - Il est **désactivé par défaut** : la liste n'est filtrée que lorsque l'utilisateur choisit l'une des deux valeurs.
+3. **Source de la liste réglable dans Settings** : un champ permet de saisir l'adresse de la liste des jeux aux trophées non obtenables.
+   - Adresse actuelle, à mettre par défaut : `https://psnp-plus.huskycode.dev/list.json` (liste maintenue pour l'extension PSNP+).
+   - Si l'adresse change un jour, l'utilisateur la met à jour depuis l'interface, sans toucher au code.
+
+**Constats du 8 novembre 2026** (à confirmer au cadrage) :
+- **Format de la liste** : `{ "version": 2, "list": { "<id psnprofiles>": { "title", "platforms", "submitter", "note", "trophies": [numéros], "timestamp" } } }`.
+  - Elle compte 1 622 jeux, dont 1 150 sur PS4 ou PS5.
+  - `note` explique la cause, par exemple « The servers closed on May 29/30, 2025. ».
+  - `trophies` donne les numéros des trophées non obtenables dans la liste psnprofiles du jeu.
+- **Aucun identifiant PSN** (`npCommunicationId`) dans la liste : un jeu doit être rapproché **par son nom et sa plateforme**.
+  - Avec un nom normalisé (minuscules, sans ™ ® ©, ponctuation réduite) et une plateforme commune, 5 des 266 jeux de l'utilisateur sont reconnus : Dauntless (PS4 et PS5), Final Fantasy XV (PS4), Gran Turismo Sport et Marvel Heroes Omega. Aucun faux positif n'a été vu.
+  - Un même jeu peut avoir plusieurs entrées, une par région (Final Fantasy XV en a 4). Pour savoir si un jeu « a des trophées non obtenables », il suffit que l'une d'elles corresponde.
+
+**Points à trancher au cadrage** :
+- le libellé du filtre quand il est désactivé, et l'aspect du bouton « tout afficher » une fois tous les jeux chargés ;
+- la fréquence de téléchargement de la liste (par exemple avec le rafraîchissement quotidien, et à l'enregistrement d'une nouvelle adresse), et ce qui s'affiche si elle est inaccessible ;
+- l'effet du filtre sur les stats, comme « Hide 0% games » le fait (8.4), ou non ;
+- l'affichage éventuel des trophées non obtenables, et de la note, sur la page d'un jeu (la liste donne leurs numéros) ;
+- une correction manuelle pour un jeu mal reconnu par son nom.
