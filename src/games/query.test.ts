@@ -63,6 +63,12 @@ describe("filters", () => {
     expect(await ids({ state: "platinumNot100" })).toEqual(["plat93"]);
   });
 
+  it("0 keeps only the 0% games, and nothing when they are hidden", async () => {
+    expect(parseGameQuery(new URLSearchParams("state=0")).state).toBe("0");
+    expect(await ids({ state: "0" })).toEqual(["zero"]);
+    expect(await ids({ state: "0" }, true)).toEqual([]);
+  });
+
   it("always excludes hidden titles and drops 0% ones with hideZero", async () => {
     expect(await ids({})).not.toContain("hid");
     expect(await ids({})).toContain("zero");

@@ -4,7 +4,7 @@ import { titles, trophies } from "@/src/db/schema";
 import { toGameRow, type GameRowData } from "@/src/games/row";
 import { loadImageMap } from "@/src/sync/images";
 
-export const GAME_STATES = ["all", "100", "not100", "notFinished", "platinum", "platinumNot100"] as const;
+export const GAME_STATES = ["all", "100", "not100", "notFinished", "0", "platinum", "platinumNot100"] as const;
 export const GAME_PLATFORMS = ["all", "PS4", "PS5"] as const;
 export const GAME_SORTS = [
   "lastPlayed",
@@ -90,6 +90,9 @@ function filtersFor(query: GameQuery, hideZero: boolean): SQL | undefined {
       break;
     case "notFinished":
       conds.push(lt(titles.progress, 100), eq(titles.earnedPlatinum, 0));
+      break;
+    case "0":
+      conds.push(eq(titles.progress, 0));
       break;
     case "platinum":
       conds.push(gt(titles.earnedPlatinum, 0));

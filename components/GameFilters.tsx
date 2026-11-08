@@ -10,6 +10,7 @@ const STATES: [GameState, string][] = [
   ["100", "100%"],
   ["not100", "Not 100%"],
   ["notFinished", "Not 100% or Platinum"],
+  ["0", "0%"],
   ["platinum", "Platinum"],
   ["platinumNot100", "Platinum, not 100%"],
 ];

@@ -72,7 +72,9 @@ export default async function Home({ searchParams }: { searchParams: Promise<Sea
               <h2>Games</h2>
               <HideZeroToggle checked={hideZero} />
             </div>
-            <span className="aside">{formatInt(games.total)} games</span>
+            <span className="aside">
+              {formatInt(games.total)} {games.total === 1 ? "game" : "games"}
+            </span>
           </div>
           <GameFilters query={query} />
           {/* lastSuccessAt in the key: after a sync, the list restarts from the fresh first page. */}
@@ -80,6 +82,11 @@ export default async function Home({ searchParams }: { searchParams: Promise<Sea
             key={`${hideZero}|${query.state}|${query.platform}|${query.sort}|${query.q}|${sync.lastSuccessAt}`}
             initial={games}
             query={query}
+            empty={
+              hideZero && query.state === "0"
+                ? "0% games are hidden. Turn off “Hide 0% games” to see them."
+                : "No games match these filters."
+            }
           />
         </section>
         <aside className="side">

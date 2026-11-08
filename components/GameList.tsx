@@ -8,7 +8,16 @@ import type { GameRowData } from "@/src/games/row";
 
 type Page = { items: GameRowData[]; total: number };
 
-export function GameList({ initial, query }: { initial: Page; query: GameQuery }) {
+export function GameList({
+  initial,
+  query,
+  empty = "No games match these filters.",
+}: {
+  initial: Page;
+  query: GameQuery;
+  /** Shown instead of the list when no game matches. */
+  empty?: string;
+}) {
   const [items, setItems] = useState(initial.items);
   const [total, setTotal] = useState(initial.total);
   const [failed, setFailed] = useState(false);
@@ -58,6 +67,7 @@ export function GameList({ initial, query }: { initial: Page; query: GameQuery }
 
   return (
     <>
+      {items.length === 0 && !more && <p className="empty">{empty}</p>}
       <div className="stacked">
         {items.map((row) => (
           <GameRow key={row.id} row={row} />

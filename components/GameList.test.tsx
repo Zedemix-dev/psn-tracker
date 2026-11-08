@@ -91,6 +91,12 @@ describe("GameList", () => {
     expect(observerOptions?.rootMargin).toBe("100000px 0px 600px 0px");
   });
 
+  it("says so when no game matches", () => {
+    render(<GameList initial={{ items: [], total: 0 }} query={query} empty="No games match these filters." />);
+    expect(screen.getByText("No games match these filters.")).toBeInTheDocument();
+    expect(screen.queryByText(FOOTER)).toBeNull();
+  });
+
   it("sends the current filters along with the offset", async () => {
     fetchMock.mockResolvedValueOnce(reply(games(51, 1), 51));
     render(
