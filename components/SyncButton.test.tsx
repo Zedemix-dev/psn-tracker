@@ -71,6 +71,38 @@ describe("SyncButton", () => {
     expect(refresh).toHaveBeenCalledTimes(1);
   });
 
+  it("refreshes when a sync finished elsewhere while the page was idle", async () => {
+    fetchMock.mockResolvedValue(reply(status({ lastSuccessAt: "2026-11-07T14:00:00Z" })));
+    render(<SyncButton initial={status({ lastSuccessAt: "2026-11-07T08:00:00Z" })} />);
+    await act(() => vi.advanceTimersByTimeAsync(59_000));
+    expect(fetchMock).not.toHaveBeenCalled();
+    await act(() => vi.advanceTimersByTimeAsync(1000));
+    expect(fetchMock).toHaveBeenCalledWith("/api/sync", { cache: "no-store" });
+    expect(screen.getByText("Last synced 7 Nov 2026, 15:00")).toBeInTheDocument();
+    expect(refresh).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not refresh while idle when nothing new was synced", async () => {
+    fetchMock.mockResolvedValue(reply(status({ lastSuccessAt: "2026-11-07T08:00:00Z" })));
+    render(<SyncButton initial={status({ lastSuccessAt: "2026-11-07T08:00:00Z" })} />);
+    await act(() => vi.advanceTimersByTimeAsync(120_000));
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(refresh).not.toHaveBeenCalled();
+  });
+
+  it("follows an automatic sync that starts while the page is open", async () => {
+    fetchMock
+      .mockResolvedValueOnce(reply(status({ status: "running", lastSuccessAt: "2026-11-07T08:00:00Z" })))
+      .mockResolvedValueOnce(reply(status({ lastSuccessAt: "2026-11-07T14:00:00Z" })));
+    render(<SyncButton initial={status({ lastSuccessAt: "2026-11-07T08:00:00Z" })} />);
+    await act(() => vi.advanceTimersByTimeAsync(60_000));
+    expect(button()).toHaveTextContent("Syncing…");
+    expect(refresh).not.toHaveBeenCalled();
+    await act(() => vi.advanceTimersByTimeAsync(2000));
+    expect(button()).toHaveTextContent("Sync now");
+    expect(refresh).toHaveBeenCalledTimes(1);
+  });
+
   it("offers a retry and shows the message when the sync failed", async () => {
     fetchMock.mockResolvedValue(reply(status({ status: "error", error: "PSN down" })));
     render(<SyncButton initial={status({ status: "error", error: "PSN down" })} />);

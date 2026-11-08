@@ -75,8 +75,9 @@ export default async function Home({ searchParams }: { searchParams: Promise<Sea
             <span className="aside">{formatInt(games.total)} games</span>
           </div>
           <GameFilters query={query} />
+          {/* lastSuccessAt in the key: after a sync, the list restarts from the fresh first page. */}
           <GameList
-            key={`${hideZero}|${query.state}|${query.platform}|${query.sort}|${query.q}`}
+            key={`${hideZero}|${query.state}|${query.platform}|${query.sort}|${query.q}|${sync.lastSuccessAt}`}
             initial={games}
             query={query}
           />

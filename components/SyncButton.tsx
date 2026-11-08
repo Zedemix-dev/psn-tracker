@@ -6,6 +6,8 @@ import { formatDateTime } from "@/src/lib/format";
 import type { SyncStatus } from "@/src/sync/requests";
 
 const POLL_MS = 2000;
+// While idle, a slow poll notices the 6-hourly sync so the open page follows it too.
+const IDLE_POLL_MS = 60_000;
 
 const isActive = (s: SyncStatus) => s.status === "queued" || s.status === "running";
 
@@ -13,22 +15,27 @@ export function SyncButton({ initial }: { initial: SyncStatus }) {
   const router = useRouter();
   const [sync, setSync] = useState(initial);
   const active = isActive(sync);
+  const lastSuccessAt = sync.lastSuccessAt;
 
   useEffect(() => {
-    if (!active) return;
-    const timer = setInterval(async () => {
-      try {
-        const res = await fetch("/api/sync", { cache: "no-store" });
-        if (!res.ok) return;
-        const next: SyncStatus = await res.json();
-        setSync(next);
-        if (!isActive(next)) router.refresh();
-      } catch {
-        // Network blip: keep polling.
-      }
-    }, POLL_MS);
+    const timer = setInterval(
+      async () => {
+        try {
+          const res = await fetch("/api/sync", { cache: "no-store" });
+          if (!res.ok) return;
+          const next: SyncStatus = await res.json();
+          setSync(next);
+          // A sync just ended (ours, or one that ran entirely between two idle polls): reload the data.
+          const ended = active ? !isActive(next) : !isActive(next) && next.lastSuccessAt !== lastSuccessAt;
+          if (ended) router.refresh();
+        } catch {
+          // Network blip: keep polling.
+        }
+      },
+      active ? POLL_MS : IDLE_POLL_MS,
+    );
     return () => clearInterval(timer);
-  }, [active, router]);
+  }, [active, lastSuccessAt, router]);
 
   async function start() {
     setSync((s) => ({ ...s, status: "queued", error: null }));
