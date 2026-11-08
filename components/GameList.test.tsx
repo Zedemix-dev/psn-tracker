@@ -28,8 +28,14 @@ const query: GameQuery = { state: "all", platform: "all", sort: "lastPlayed", q:
 
 let trigger: () => void = () => {};
 let observed = 0;
+let observerOptions: IntersectionObserverInit | undefined;
 class FakeObserver {
-  constructor(private cb: IntersectionObserverCallback) {}
+  constructor(
+    private cb: IntersectionObserverCallback,
+    options?: IntersectionObserverInit,
+  ) {
+    observerOptions = options;
+  }
   observe() {
     observed++;
     trigger = () => this.cb([{ isIntersecting: true } as IntersectionObserverEntry], this as never);
@@ -76,6 +82,13 @@ describe("GameList", () => {
     expect(() => trigger()).not.toThrow();
     await act(async () => {});
     expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("also loads when the footer was scrolled past, and a bit before it shows", () => {
+    // Jumping to the page bottom (End key, scrollbar drag) can leave the footer above the
+    // viewport without ever crossing it: the root is extended far upwards, and 600 px down.
+    render(<GameList initial={{ items: games(1, 50), total: 70 }} query={query} />);
+    expect(observerOptions?.rootMargin).toBe("100000px 0px 600px 0px");
   });
 
   it("sends the current filters along with the offset", async () => {

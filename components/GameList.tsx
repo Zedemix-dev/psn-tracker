@@ -43,9 +43,15 @@ export function GameList({ initial, query }: { initial: Page; query: GameQuery }
   useEffect(() => {
     const el = sentinel.current;
     if (!el || !more || failed) return;
-    const observer = new IntersectionObserver((entries) => {
-      if (entries.some((e) => e.isIntersecting)) void loadMore();
-    });
+    // The root reaches far above the viewport: jumping to the page bottom (End key, scrollbar
+    // drag) can leave the footer above the screen without ever crossing it, and that must load
+    // too. 600 px below starts the next page a little before the footer shows.
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) void loadMore();
+      },
+      { rootMargin: "100000px 0px 600px 0px" },
+    );
     observer.observe(el);
     return () => observer.disconnect();
   }, [more, failed, loadMore]);
