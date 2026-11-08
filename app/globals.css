@@ -163,6 +163,7 @@ select.select option{background:#0F1631;color:var(--text)}
 }
 @media (max-width:640px){
   .chips{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .hero-logo{display:none}
 }
 
 /* Side column (mockup v12) */
