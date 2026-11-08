@@ -34,15 +34,15 @@ describe("getValidAuth", () => {
     expect(await getValidAuth(db, gw, key, now)).toBe("missing");
   });
 
-  it("returns the stored access token when valid for more than 5 minutes", async () => {
-    await savePsnTokens(db, key, stored(6), "n", now);
+  it("returns the stored access token when valid for more than 30 minutes", async () => {
+    await savePsnTokens(db, key, stored(31), "n", now);
     const gw = createFakePsn({ tokens: renewed });
     expect(await getValidAuth(db, gw, key, now)).toEqual({ accessToken: "stored-access" });
     expect(gw.calls).toEqual([]);
   });
 
-  it("refreshes and saves new tokens when the access token expires within 5 minutes", async () => {
-    await savePsnTokens(db, key, stored(5), "n", now);
+  it("refreshes and saves new tokens when the access token expires within 30 minutes", async () => {
+    await savePsnTokens(db, key, stored(30), "n", now);
     const gw = createFakePsn({ tokens: renewed });
     expect(await getValidAuth(db, gw, key, now)).toEqual({ accessToken: "new-access" });
     expect(gw.calls).toEqual(["refresh:"]);
@@ -57,6 +57,32 @@ describe("getValidAuth", () => {
     const gw = createFakePsn({ failures: [{ method: "refresh" }] });
     expect(await getValidAuth(db, gw, key, now)).toBe("expired");
     expect((await getSettings(db)).psnAuthStatus).toBe("expired");
+  });
+
+  it("propagates a failed save of the refreshed tokens without flagging the auth as expired", async () => {
+    await savePsnTokens(db, key, stored(-1), "n", now);
+    const gw = createFakePsn({ tokens: renewed });
+    // Only the save of the rotated tokens touches the encrypted token columns.
+    const failingSave = new Proxy(db, {
+      get(target, prop, recv) {
+        if (prop !== "update") return Reflect.get(target, prop, recv);
+        return (table: never) => {
+          const builder = target.update(table);
+          return new Proxy(builder, {
+            get(b, p, r) {
+              if (p !== "set") return Reflect.get(b, p, r);
+              return (v: Record<string, unknown>) => {
+                if ("accessTokenEnc" in v) throw new Error("db down");
+                return b.set(v as never);
+              };
+            },
+          });
+        };
+      },
+    });
+
+    await expect(getValidAuth(failingSave, gw, key, now)).rejects.toThrow("db down");
+    expect((await getSettings(db)).psnAuthStatus).toBe("valid");
   });
 });
 

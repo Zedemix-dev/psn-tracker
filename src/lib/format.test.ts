@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   formatDate,
   formatDateTime,
+  formatDuration,
   formatHoursTotal,
   formatInt,
   formatLastPlayedLine,
@@ -28,6 +29,15 @@ describe("format", () => {
     expect(formatPlayTime(187)).toBe("3m");
     expect(formatPlayTime(1234 * 3600 + 5 * 60 + 59)).toBe("1,234h 05m");
   });
+  it("formats durations, in seconds under a minute", () => {
+    expect(formatDuration(42.4)).toBe("42s");
+    expect(formatDuration(0.2)).toBe("0s");
+    expect(formatDuration(-1.5)).toBe("0s");
+    expect(formatDuration(59.4)).toBe("59s");
+    expect(formatDuration(59.6)).toBe("1m");
+    expect(formatDuration(187)).toBe("3m");
+    expect(formatDuration(33 * 3600 + 27 * 60 + 25)).toBe("33h 27m");
+  });
   it("builds the third game line", () => {
     expect(formatLastPlayedLine(new Date("2026-11-05T10:00:00Z"), 120420)).toBe("Last played 5 Nov 2026 | 33h 27m played");
     expect(formatLastPlayedLine(new Date("2026-11-05T10:00:00Z"), null)).toBe("Last played 5 Nov 2026");
@@ -44,5 +54,17 @@ describe("format", () => {
     expect(formatRelative(new Date("2026-06-14T12:00:00Z"), now)).toBe("5 months ago");
     expect(formatRelative(new Date("2022-03-04T12:00:00Z"), now)).toBe("5 years ago");
     expect(formatRelative(new Date("2022-08-24T12:00:00Z"), now)).toBe("4 years ago");
+  });
+  it("picks the relative unit after rounding", () => {
+    const now = new Date("2026-11-07T12:00:00Z");
+    const ago = (seconds: number) => formatRelative(new Date(now.getTime() - seconds * 1000), now);
+    expect(ago(59.6 * 60)).toBe("1 hour ago");
+    expect(ago(23.6 * 3600)).toBe("1 day ago");
+    expect(ago(6.6 * 86_400)).toBe("1 week ago");
+    expect(ago(360 * 86_400)).toBe("1 year ago");
+    expect(ago(59.4 * 60)).toBe("59 minutes ago");
+    expect(ago(6.4 * 86_400)).toBe("6 days ago");
+    expect(ago(29 * 86_400)).toBe("4 weeks ago");
+    expect(ago(340 * 86_400)).toBe("11 months ago");
   });
 });

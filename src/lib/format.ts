@@ -47,6 +47,12 @@ export function formatPlayTime(seconds: number): string {
   return `${formatInt(h)}h ${String(m).padStart(2, "0")}m`;
 }
 
+/** Like formatPlayTime, but a duration under a minute reads in seconds ("42s"). */
+export function formatDuration(seconds: number): string {
+  const rounded = Math.max(0, Math.round(seconds));
+  return rounded < 60 ? `${rounded}s` : formatPlayTime(rounded);
+}
+
 export function formatHoursTotal(seconds: number): string {
   return `${formatInt(Math.floor(seconds / 3600))} h`;
 }
@@ -61,11 +67,13 @@ export function formatRelative(d: Date, now: Date): string {
   const hours = minutes / 60;
   const days = hours / 24;
   if (minutes < 1) return "just now";
-  if (hours < 1) return plural(Math.round(minutes), "minute");
-  if (days < 1) return plural(Math.round(hours), "hour");
-  if (days < 7) return plural(Math.round(days), "day");
+  // The unit is picked after rounding: 59.6 minutes reads "1 hour ago", not "60 minutes ago".
+  if (Math.round(minutes) < 60) return plural(Math.round(minutes), "minute");
+  if (Math.round(hours) < 24) return plural(Math.round(hours), "hour");
+  if (Math.round(days) < 7) return plural(Math.round(days), "day");
+  // At most 4 weeks below 30 days, so a rounded week count never reaches the month boundary.
   if (days < 30) return plural(Math.round(days / 7), "week");
-  if (days < 365) return plural(Math.round(days / 30.44), "month");
+  if (Math.round(days / 30.44) < 12) return plural(Math.round(days / 30.44), "month");
   return plural(Math.round(days / 365.25), "year");
 }
 

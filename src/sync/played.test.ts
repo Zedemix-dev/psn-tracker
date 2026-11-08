@@ -100,6 +100,22 @@ describe("syncPlayedGames", () => {
     expect(t.playSeconds).toBe(77);
   });
 
+  it("keeps the first of two entries with the same npTitleId", async () => {
+    const gw = createFakePsn({
+      playedGames: [
+        makePlayedGame({ npTitleId: "A", playSeconds: 100 }),
+        makePlayedGame({ npTitleId: "A", playSeconds: 200 }),
+      ],
+      npTitleMap: { A: [ID] },
+    });
+
+    await syncPlayedGames(db, gw, auth);
+
+    const rows = await db.select().from(playedGames);
+    expect(rows).toHaveLength(1);
+    expect(rows[0].playSeconds).toBe(100);
+  });
+
   it("ignores links to titles that do not exist", async () => {
     const gw = createFakePsn({
       playedGames: [makePlayedGame({ npTitleId: "A" })],

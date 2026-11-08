@@ -2,6 +2,7 @@ import { eq, isNull, sql } from "drizzle-orm";
 import type { Db } from "@/src/db/client";
 import { playedGames, titles } from "@/src/db/schema";
 import type { PsnAuth, PsnGateway } from "@/src/psn/gateway";
+import type { RemotePlayedGame } from "@/src/psn/types";
 
 // Postgres caps bind parameters per statement.
 const CHUNK = 500;
@@ -21,7 +22,12 @@ type TitleTotals = {
  * A title without any linked played game keeps its previous values.
  */
 export async function syncPlayedGames(db: Db, gw: PsnGateway, auth: PsnAuth): Promise<void> {
-  const remote = await gw.getPlayedGames(auth);
+  // A reordered page can list a game twice, and one upsert cannot touch a row twice: keep the first.
+  const byId = new Map<string, RemotePlayedGame>();
+  for (const game of await gw.getPlayedGames(auth)) {
+    if (!byId.has(game.npTitleId)) byId.set(game.npTitleId, game);
+  }
+  const remote = [...byId.values()];
 
   for (let i = 0; i < remote.length; i += CHUNK) {
     await db

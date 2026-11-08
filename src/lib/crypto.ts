@@ -3,6 +3,8 @@ import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
 const VERSION = "v1";
 const ALGORITHM = "aes-256-gcm";
 const IV_BYTES = 12;
+// Pinned so that a truncated tag is rejected instead of being checked on fewer bytes.
+const TAG_BYTES = 16;
 
 export function encrypt(plain: string, key: Buffer): string {
   const iv = randomBytes(IV_BYTES);
@@ -18,7 +20,7 @@ export function decrypt(token: string, key: Buffer): string {
     throw new Error("Unsupported ciphertext format");
   }
   const [iv, tag, data] = parts.slice(1).map((p) => Buffer.from(p, "base64url"));
-  const decipher = createDecipheriv(ALGORITHM, key, iv);
+  const decipher = createDecipheriv(ALGORITHM, key, iv, { authTagLength: TAG_BYTES });
   decipher.setAuthTag(tag);
   return Buffer.concat([decipher.update(data), decipher.final()]).toString("utf8");
 }

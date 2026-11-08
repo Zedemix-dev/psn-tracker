@@ -23,6 +23,11 @@ describe("crypto", () => {
   it("throws with a different key", () => {
     expect(() => decrypt(encrypt("hello", key), randomBytes(32))).toThrow();
   });
+  it("throws on a truncated tag", () => {
+    const [v, iv, tag, data] = encrypt("hello world", key).split(".");
+    const short = Buffer.from(tag, "base64url").subarray(0, 12).toString("base64url");
+    expect(() => decrypt([v, iv, short, data].join("."), key)).toThrow();
+  });
   it("throws on a wrong prefix", () => {
     expect(() => decrypt(encrypt("hello", key).replace("v1.", "v2."), key)).toThrow();
   });

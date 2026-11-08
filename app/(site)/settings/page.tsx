@@ -4,7 +4,7 @@ import { BannerForm, NpssoForm } from "@/components/SettingsForms";
 import { requireSession } from "@/src/auth/require-session";
 import { getDb } from "@/src/db/client";
 import { syncRuns } from "@/src/db/schema";
-import { formatDate, formatDateTime, formatPlayTime } from "@/src/lib/format";
+import { formatDate, formatDateTime, formatDuration } from "@/src/lib/format";
 import { getSettings } from "@/src/settings/repo";
 import { getSyncStatus } from "@/src/sync/requests";
 import { logout } from "./actions";
@@ -96,7 +96,7 @@ export default async function SettingsPage() {
                     <td>{formatDateTime(r.startedAt)}</td>
                     <td>
                       {r.finishedAt
-                        ? formatPlayTime((r.finishedAt.getTime() - r.startedAt.getTime()) / 1000)
+                        ? formatDuration((r.finishedAt.getTime() - r.startedAt.getTime()) / 1000)
                         : "—"}
                     </td>
                     <td>{r.status}</td>

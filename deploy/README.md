@@ -67,7 +67,7 @@ Préparez trois valeurs :
 
 1. **Panneau de configuration → Portail de connexion → Avancé → Proxy inversé → Créer** :
    - Source : protocole **HTTPS**, nom d'hôte `psn.<votre-nom>.synology.me`, port **443**.
-   - Destination : protocole **HTTP**, nom d'hôte `localhost`, port **8080**.
+   - Destination : protocole **HTTP**, nom d'hôte `127.0.0.1`, port **8080** (pas `localhost`, qui peut se résoudre en `::1` alors que le port n'est publié que sur `127.0.0.1`).
 2. Certificat : **Panneau de configuration → Sécurité → Certificat → Ajouter** → Let's Encrypt pour `psn.<votre-nom>.synology.me`, puis *Configurer* pour associer ce certificat à la règle de proxy.
 3. Le site doit être servi **à la racine** du nom d'hôte (pas de sous-chemin comme `/psn`).
 4. Vérification fonctionnelle : après connexion en HTTPS, le cookie `psnt_session` doit porter le drapeau **Secure** (outils du navigateur → Stockage/Application → Cookies, ou en-tête de réponse `Set-Cookie … Secure`). Sinon, ajoutez manuellement l'en-tête `X-Forwarded-Proto` (valeur `$scheme`) dans la règle DSM (onglet *En-têtes personnalisés* → Créer → personnalisé). Sans lui, le cookie n'est pas sécurisé.

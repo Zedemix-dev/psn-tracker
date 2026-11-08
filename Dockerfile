@@ -2,13 +2,12 @@
 
 ARG SHARP_VERSION=0.35.5
 
-# ---- build: install, test, build the app, bundle the worker ----
+# ---- build: install, build the app, bundle the worker (tests run in the CI test job) ----
 FROM node:22-alpine AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .
-RUN npm test
 RUN npm run build
 # PGlite (dev/test only) stays external: it is never loaded in production.
 # sharp stays external too: its native binary comes from the worker-deps stage.
