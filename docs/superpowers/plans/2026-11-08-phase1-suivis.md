@@ -33,6 +33,9 @@ Relevés pendant la phase 1 (relectures par tâche, relecture finale de la branc
 ## Divers
 - **Données de dev** : `seed:dev` ne crée aucun `played_games`, donc « Hours played » affiche 0 h sur ces données.
 - **`rare_category`** n'est pas protégé comme `earned_rate`. Sans effet visible : les paliers de rareté viennent de `earned_rate`.
+- **Objectif des trophées à paliers** (relevé le 8 novembre 2026) : `trophies.progress_target` est vide pour les 12 434 trophées, alors que la spec (7) demande de le stocker.
+  - La synchro le lit dans l'état utilisateur (`trophyProgressTargetValue` de `getUserTrophiesEarnedForTitle`). Le champ est sans doute à prendre dans la définition des trophées (`getTitleTrophies`), à vérifier.
+  - Le compteur de l'utilisateur (« 214/300 ») n'est pas stocké non plus. La page d'un jeu ne l'affiche donc pas (spec 8.9).
 - **Miniatures** :
   - `src/sync/images.ts` importe `thumbs.ts` de façon statique, et l'isolation de sharp repose sur la liste d'exclusion par défaut de Next ;
   - le nombre de miniatures créées n'est pas affiché dans le journal de synchro.

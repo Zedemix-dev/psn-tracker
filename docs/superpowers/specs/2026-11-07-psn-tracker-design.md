@@ -144,10 +144,11 @@ Le site doit reprendre **la lisibilité épurée de psnprofiles** et **la prése
   - Une image est retéléchargée si son adresse côté Sony change.
   - Si un téléchargement échoue, on réessaie à la synchro suivante. En attendant, on affiche une vignette neutre.
   - Ordre de grandeur : ~12 400 icônes de trophées, soit quelques centaines de Mo.
-- **[mon choix, 8 novembre 2026]** Bannière et logo d'un jeu (8.9) :
-  - les originaux sont très lourds (bannière en 3 840 × 2 160, ~1 Mo ; logo jusqu'à 2 400 px de large, ~600 Ko) ;
-  - le serveur d'images de Sony les redimensionne à la demande avec le paramètre `?w=` (vérifié : `?w=1920` donne ~0,25 Mo) ;
-  - la bannière est donc téléchargée en **1 920 px de large** et le logo en **800 px de large** au plus, puis stockés en local comme les autres images.
+- Bannière et logo d'un jeu (8.9), stockés en local comme les autres images :
+  - **[décidé, 8 novembre 2026] La bannière est gardée en taille originale**, en 4K (3 840 × 2 160) : l'utilisateur la veut parfaitement nette, et une version en 1 920 px risquait de paraître floue.
+    - Elle pèse ~1 Mo, soit ~260 Mo pour les ~260 jeux qui en ont une.
+  - **[décidé]** Le logo est réduit à **800 px de large** au plus. L'original va jusqu'à 2 400 px de large (~600 Ko), alors qu'il s'affiche sur 400 px au plus.
+    - Le serveur d'images de Sony redimensionne à la demande avec le paramètre `?w=800`, vérifié le 8 novembre 2026 avec `?w=1920`.
 
 ## 7. Données
 
@@ -437,11 +438,15 @@ C'est un panneau translucide qui chevauche le bas de la bannière, comme le band
   - la date et la rareté d'un trophée passent sous son nom, sur une seule ligne.
 - La liste adapte ses lignes à sa propre largeur : sous 720 px de liste, les en-têtes de groupe passent sur deux lignes, et la date et la rareté s'empilent à droite.
 
-**Exclu** : guides intégrés, notes, vues et favoris, développeur, thèmes, modes de jeu, autres noms, dates de sortie par plateforme, boutons de partage, listes « to-do ».
-- Les chiffres des autres joueurs sont exclus aussi (propriétaires, rang, classements), car ce sont des non-objectifs (2).
-- Sont aussi exclus **[mon choix]** :
-  - la progression des trophées à paliers (« 23/50 »), qui n'est pas stockée ;
-  - un lien vers la version de l'autre plateforme.
+**Ce que la page n'a pas**, alors que la page d'un jeu sur psnprofiles l'a :
+- **[décidé]** Tout ce qui ne sert pas à l'utilisateur, ou que le PSN ne fournit pas :
+  - les guides écrits sur psnprofiles même, que remplacent les deux liens de recherche ;
+  - les notes, vues et favoris des guides, les boutons de partage et les listes « to-do » ;
+  - le développeur, les thèmes, les modes de jeu, les autres noms du jeu et les dates de sortie par plateforme, qui viennent d'IGDB ;
+  - les chiffres des autres joueurs (propriétaires, rang, classements, joueurs récents), qui sont des non-objectifs (2).
+- **[mon choix]** Deux fonctions laissées de côté pour cette page, qui pourront venir plus tard :
+  - **Le compteur des trophées à paliers.** Certains trophées PS5 demandent d'atteindre un nombre, par exemple « Kill 300 enemies ». La console montre alors où en est le joueur, par exemple « 214/300 ». La synchro de la phase 1 ne stocke pas ce compteur. L'afficher demanderait de modifier la synchro, ce qui sort du cadre de cette page.
+  - **Le lien vers l'autre version du jeu.** Un jeu sorti sur PS4 et sur PS5 a deux listes de trophées, donc deux pages (Cyberpunk 2077 : PS4 à 100 %, PS5 à 86 %). psnprofiles relie les deux dans un encart « Other platforms and regions ». Ici, pour passer de l'une à l'autre, on repasse par la liste des jeux.
 
 ## 9. Page Settings
 - **Banner [décidé]** :
