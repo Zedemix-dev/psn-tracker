@@ -1,10 +1,15 @@
 import { GameFilters } from "@/components/GameFilters";
 import { GameList } from "@/components/GameList";
 import { HideZeroToggle } from "@/components/HideZeroToggle";
+import { CabinetPanel } from "@/components/CabinetPanel";
+import { MilestonesPanel } from "@/components/MilestonesPanel";
+import { RarestPanel } from "@/components/RarestPanel";
 import { ProfileBand } from "@/components/ProfileBand";
 import { StatTiles } from "@/components/StatTiles";
 import { TrophyCarousel, type CarouselTrophy } from "@/components/TrophyCarousel";
 import { requireSession } from "@/src/auth/require-session";
+import { toTrophyItem } from "@/src/cabinet/item";
+import { getCabinet } from "@/src/cabinet/repo";
 import { getDb } from "@/src/db/client";
 import { profile } from "@/src/db/schema";
 import { parseGameQuery, queryGames } from "@/src/games/query";
@@ -12,7 +17,8 @@ import { formatDateTime, formatInt, formatPercent } from "@/src/lib/format";
 import { rarityTier } from "@/src/lib/rarity";
 import { getSettings } from "@/src/settings/repo";
 import { getProfileStats } from "@/src/stats/profile-stats";
-import { getLatestTrophies } from "@/src/stats/trophies";
+import { getMilestones } from "@/src/stats/milestones";
+import { getLatestTrophies, getRarest, getRarityBreakdown } from "@/src/stats/trophies";
 import { loadImageMap, mediaSrc } from "@/src/sync/images";
 import { getSyncStatus } from "@/src/sync/requests";
 
@@ -29,13 +35,18 @@ export default async function Home({ searchParams }: { searchParams: Promise<Sea
   const query = { ...parseGameQuery(params), offset: 0 };
   const db = await getDb();
   const { hideZero } = await getSettings(db);
-  const [[row], stats, imageMap, sync, latest, games] = await Promise.all([
+  const now = new Date();
+  const [[row], stats, imageMap, sync, latest, games, cabinet, rarest, breakdown, milestones] = await Promise.all([
     db.select().from(profile).limit(1),
     getProfileStats(db, { hideZero }),
     loadImageMap(db),
     getSyncStatus(db),
     getLatestTrophies(db, 20),
     queryGames(db, query, { hideZero }),
+    getCabinet(db),
+    getRarest(db, 5),
+    getRarityBreakdown(db),
+    getMilestones(db, now),
   ]);
   // JSON-safe for the client component: no Date crosses the boundary.
   const carousel: CarouselTrophy[] = latest.map((t) => ({
@@ -70,8 +81,17 @@ export default async function Home({ searchParams }: { searchParams: Promise<Sea
             query={query}
           />
         </section>
-        {/* Task 18 fills the sidebar. */}
-        <aside className="side" />
+        <aside className="side">
+          <CabinetPanel items={cabinet.map((t) => toTrophyItem(t, imageMap))} />
+          <RarestPanel items={rarest.map((t) => toTrophyItem(t, imageMap))} breakdown={breakdown} />
+          <MilestonesPanel
+            rows={milestones.map((milestone) => ({
+              milestone,
+              iconSrc: mediaSrc(milestone.trophy.iconUrl, imageMap),
+            }))}
+            now={now}
+          />
+        </aside>
       </div>
     </main>
   );

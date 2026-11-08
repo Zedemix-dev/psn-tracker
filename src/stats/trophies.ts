@@ -15,7 +15,7 @@ export type EarnedTrophy = {
   gameName: string;
 };
 
-const selection = {
+export const trophySelection = {
   titleId: trophies.titleId,
   trophyId: trophies.trophyId,
   name: trophies.name,
@@ -39,7 +39,7 @@ type Row = {
   gameName: string;
 };
 
-function toEarned(r: Row): EarnedTrophy {
+export function toEarned(r: Row): EarnedTrophy {
   return {
     titleId: r.titleId,
     trophyId: r.trophyId,
@@ -57,7 +57,7 @@ function toEarned(r: Row): EarnedTrophy {
 const earnedVisible = and(eq(trophies.earned, true), isNotNull(trophies.earnedAt), eq(titles.hidden, false));
 
 function baseQuery(db: Db) {
-  return db.select(selection).from(trophies).innerJoin(titles, eq(trophies.titleId, titles.npCommunicationId));
+  return db.select(trophySelection).from(trophies).innerJoin(titles, eq(trophies.titleId, titles.npCommunicationId));
 }
 
 /** Within the same second the platinum sorts first (the reverse of milestone numbering). */
