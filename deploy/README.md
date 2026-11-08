@@ -49,7 +49,109 @@ Préparez trois valeurs :
    npm run hash-password -- "<votre mot de passe>"
    ```
 
-   Le hash bcrypt contient des `$` (forme `$2b$12$...`). Docker Compose interprète `$` comme une variable : dans les variables d'environnement de la stack Portainer, **écrivez chaque `$` du hash en `$$`**. Exemple avec un faux hash : `$2b$12$AbCdEf...` devient `$$2b$$12$$AbCdEf...`. Symptôme si c'est faux : « Wrong username or password. » même avec le bon mot de passe. Dans un fichier `.env`/`.env.local` en local, il faut au contraire échapper chaque `$` en `$`.
+   Le hash bcrypt contient des `$` (forme `$2b$12$...`). Docker Compose interprète `$` comme une variable : dans les variables d'environnement de la stack Portainer, **écrivez chaque `$` du hash en `$$`**. Exemple avec un faux hash : `$2b$12$AbCdEf...` devient `$$2b$$12$$AbCdEf...`. Symptôme si c'est faux : « Wrong username or password. » même avec le bon mot de passe. Dans un fichier `.env`/`.env.local` en local, il faut au contraire échapper chaque `# Déploiement sur le NAS Synology (Portainer)
+
+Guide pas à pas. Architecture : le reverse proxy DSM (HTTPS) → conteneur `nginx` (port 8080) → conteneur `app` (Next.js, port 3000). Le conteneur `worker` synchronise les trophées, `postgres` stocke les données.
+
+Deux stacks Portainer : **infra** (`stack-infra.yml` : postgres + nginx) et **site** (`stack-site.yml` : app + worker).
+
+## 1. GitHub
+
+1. Le dépôt `Zedemix-dev/psn-tracker` est **privé**. GitHub Actions est activé par défaut : rien à configurer.
+2. Après le premier push sur `main`, le workflow « CI » construit l'image et la publie. Elle apparaît dans l'onglet **Packages** du dépôt (`ghcr.io/zedemix-dev/psn-tracker`, étiquettes `latest` et `sha-<court>`).
+3. Portainer doit pouvoir télécharger l'image. Deux options :
+   - **Package privé (recommandé)** : créer un *Personal Access Token (classic)* sur GitHub (Settings → Developer settings → Personal access tokens → Tokens (classic)) avec **uniquement** la permission `read:packages`. Puis dans Portainer : **Registries → Add registry → Custom registry** (ou GitHub/GHCR), URL `ghcr.io`, avec authentification : nom d'utilisateur GitHub + le token.
+   - **Package public** : sur la page du package → Package settings → Change visibility → Public. Aucun token n'est alors nécessaire (mais l'image est visible de tous : elle ne contient aucun secret, ceux-ci sont dans les variables d'environnement).
+4. Quotas gratuits : pour un dépôt privé, GitHub Actions offre un nombre limité de minutes par mois et GHCR un espace de stockage limité (les plafonds exacts sont sur la page de facturation GitHub). Chaque push lance les tests ; l'image n'est publiée que sur `main`. Pour économiser le stockage, ne gardez que les dernières versions de l'image (page du package → supprimer les anciennes versions, en conservant les 3 à 5 dernières).
+
+## 2. Dossiers sur le NAS
+
+1. Dans File Station (ou en SSH), créer :
+   - `/volume1/docker/psn-tracker/postgres`
+   - `/volume1/docker/psn-tracker/media`
+   - `/volume1/docker/psn-tracker/nginx`
+2. Copier `deploy/nginx/default.conf` du dépôt dans `/volume1/docker/psn-tracker/nginx/default.conf`.
+3. Donner les droits d'écriture au dossier `media` pour l'utilisateur du conteneur (`node`, uid 1000). En SSH :
+
+   ```sh
+   sudo chown -R 1000:1000 /volume1/docker/psn-tracker/media
+   ```
+
+## 3. Réseau Docker
+
+Créer une fois le réseau partagé par les deux stacks :
+
+- Portainer → **Networks → Add network** : nom `psn-net`, driver `bridge` ; ou
+- en SSH : `sudo docker network create psn-net`.
+
+## 4. Secrets
+
+Préparez trois valeurs :
+
+1. `APP_SECRET` (32 octets aléatoires) :
+
+   ```sh
+   openssl rand -base64 32
+   ```
+
+2. `ADMIN_PASSWORD_HASH` : sur votre PC, dans le dépôt :
+
+   ```sh
+   npm run hash-password -- "<votre mot de passe>"
+   ```
+
+   Le hash bcrypt contient des `$` (forme `$2b$12$...`). Docker Compose interprète `$` comme une variable : dans les variables d'environnement de la stack Portainer, **écrivez chaque `$` du hash en `$$`**. Exemple avec un faux hash : `$2b$12$AbCdEf...` devient `$$2b$$12$$AbCdEf...`. Symptôme si c'est faux : « Wrong username or password. » même avec le bon mot de passe. Dans un fichier `.env`/`.env.local` en local, il faut au contraire  en `# Déploiement sur le NAS Synology (Portainer)
+
+Guide pas à pas. Architecture : le reverse proxy DSM (HTTPS) → conteneur `nginx` (port 8080) → conteneur `app` (Next.js, port 3000). Le conteneur `worker` synchronise les trophées, `postgres` stocke les données.
+
+Deux stacks Portainer : **infra** (`stack-infra.yml` : postgres + nginx) et **site** (`stack-site.yml` : app + worker).
+
+## 1. GitHub
+
+1. Le dépôt `Zedemix-dev/psn-tracker` est **privé**. GitHub Actions est activé par défaut : rien à configurer.
+2. Après le premier push sur `main`, le workflow « CI » construit l'image et la publie. Elle apparaît dans l'onglet **Packages** du dépôt (`ghcr.io/zedemix-dev/psn-tracker`, étiquettes `latest` et `sha-<court>`).
+3. Portainer doit pouvoir télécharger l'image. Deux options :
+   - **Package privé (recommandé)** : créer un *Personal Access Token (classic)* sur GitHub (Settings → Developer settings → Personal access tokens → Tokens (classic)) avec **uniquement** la permission `read:packages`. Puis dans Portainer : **Registries → Add registry → Custom registry** (ou GitHub/GHCR), URL `ghcr.io`, avec authentification : nom d'utilisateur GitHub + le token.
+   - **Package public** : sur la page du package → Package settings → Change visibility → Public. Aucun token n'est alors nécessaire (mais l'image est visible de tous : elle ne contient aucun secret, ceux-ci sont dans les variables d'environnement).
+4. Quotas gratuits : pour un dépôt privé, GitHub Actions offre un nombre limité de minutes par mois et GHCR un espace de stockage limité (les plafonds exacts sont sur la page de facturation GitHub). Chaque push lance les tests ; l'image n'est publiée que sur `main`. Pour économiser le stockage, ne gardez que les dernières versions de l'image (page du package → supprimer les anciennes versions, en conservant les 3 à 5 dernières).
+
+## 2. Dossiers sur le NAS
+
+1. Dans File Station (ou en SSH), créer :
+   - `/volume1/docker/psn-tracker/postgres`
+   - `/volume1/docker/psn-tracker/media`
+   - `/volume1/docker/psn-tracker/nginx`
+2. Copier `deploy/nginx/default.conf` du dépôt dans `/volume1/docker/psn-tracker/nginx/default.conf`.
+3. Donner les droits d'écriture au dossier `media` pour l'utilisateur du conteneur (`node`, uid 1000). En SSH :
+
+   ```sh
+   sudo chown -R 1000:1000 /volume1/docker/psn-tracker/media
+   ```
+
+## 3. Réseau Docker
+
+Créer une fois le réseau partagé par les deux stacks :
+
+- Portainer → **Networks → Add network** : nom `psn-net`, driver `bridge` ; ou
+- en SSH : `sudo docker network create psn-net`.
+
+## 4. Secrets
+
+Préparez trois valeurs :
+
+1. `APP_SECRET` (32 octets aléatoires) :
+
+   ```sh
+   openssl rand -base64 32
+   ```
+
+2. `ADMIN_PASSWORD_HASH` : sur votre PC, dans le dépôt :
+
+   ```sh
+   npm run hash-password -- "<votre mot de passe>"
+   ```
+
+   Le hash bcrypt contient des `$` (forme `$2b$12$...`). Docker Compose interprète `$` comme une variable : dans les variables d'environnement de la stack Portainer, **écrivez chaque `$` du hash en `$$`**. Exemple avec un faux hash : `$2b$12$AbCdEf...` devient `$$2b$$12$$AbCdEf...`. Symptôme si c'est faux : « Wrong username or password. » même avec le bon mot de passe. Dans un fichier `.env`/`.env.local` en local, il faut au contraire .
 3. `POSTGRES_PASSWORD` : un mot de passe fort au choix (évitez les caractères `@`, `:`, `/`, `#` qui cassent l'URL de connexion ; préférez des lettres et chiffres).
 
 ## 5. Stacks Portainer
