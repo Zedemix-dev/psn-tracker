@@ -275,6 +275,7 @@ Chaque case contient un libellé et une valeur, **sans texte en dessous [décid�
 - Changer un filtre, un tri ou la recherche relance le chargement à partir des 50 premiers jeux.
 - **Une ligne par jeu**, sur une hauteur d'environ 80 px, **cliquable [décidé]** : elle ouvre la page du jeu (8.9).
   - **jaquette carrée [décidé]** (60 px), celle du jeu telle qu'on la voit sur l'écran d'accueil de la console, et non l'icône de la liste de trophées (rectangulaire sur PS4) ;
+    - **[décidé, 8 novembre 2026]** une liste sans jaquette prend celle d'une autre version du même jeu, ou à défaut l'icône carrée de sa version PS5 (8.9, « Emprunt à l'autre version du même jeu ») ;
   - **[décidé] trois lignes de texte, sans rien de tronqué** :
     1. le nom du jeu, suivi du badge PS4/PS5 **sur la même ligne** ;
     2. « 47 / 47 trophies » (obtenus / total) ;
@@ -358,7 +359,13 @@ Maquette validée : [2026-11-08-psn-tracker-maquette-jeu.html](2026-11-08-psn-tr
   - Comme sur Games, la même image, floutée et assombrie, sert de fond à toute la page.
 - **[décidé] Le logo du jeu** (image `LOGO` du concept, PNG transparent) est posé sur la bannière.
   - **[mon choix]** Il est placé en bas à gauche, aligné sur le bord gauche du contenu, juste au-dessus du bandeau du jeu, avec une ombre portée. Il fait au plus 400 px de large (38 % de la page) et 42 % de la hauteur de la bannière, et il est masqué sur téléphone.
-- **[mon choix]** Sans image au PSN (6.3, 7 jeux sur 266), la bannière de Games de l'utilisateur (ou son dégradé neutre) prend sa place, sans logo.
+- **[décidé, 8 novembre 2026] Une page de jeu sans bannière n'en affiche aucune** : la bannière de Games n'y est jamais reprise (elle montrait par exemple Cyberpunk sur la page de Dauntless).
+  - **[mon choix]** L'espace de la bannière garde sa hauteur habituelle, mais il est vide, sans lien « Choose a banner in Settings ». Le fond de la page est uni, sans image floutée. Le bandeau du jeu reste ainsi à la même place que sur les autres pages de jeu.
+- **[décidé, 8 novembre 2026] Emprunt à l'autre version du même jeu** : une liste de trophées sans jeu joué relié (6.3) n'a ni jaquette, ni bannière, ni logo, ni infos du catalogue. Elle les prend chez une autre liste **du même nom** qui les a, en préférant la version PS5.
+  - Exemple : Gran Turismo 7 PS4 prend la jaquette, la bannière, le logo, l'éditeur, le genre et la date de sortie de Gran Turismo 7 PS5.
+  - Si aucune version n'a de jaquette, une liste PS4 prend l'**icône de la liste PS5** du même jeu, qui est carrée, plutôt que sa propre icône rectangulaire. C'est le cas de Dauntless PS4.
+  - Sans autre version (Game of Thrones, Minecraft: Story Mode, Tales from the Borderlands), la liste garde son icône, affichée en entier, et sa page n'a pas de bannière.
+  - **[mon choix]** « Du même nom » veut dire même nom en minuscules, sans ™ ® ©, avec les espaces multiples réduits à un.
 - La mise en page commune affiche aujourd'hui la bannière de l'utilisateur sur toutes les pages. Elle doit donc laisser la page d'un jeu fournir sa propre bannière et son propre fond.
 
 **Bandeau du jeu** **[mon choix]**

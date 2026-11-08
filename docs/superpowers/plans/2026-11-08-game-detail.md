@@ -655,3 +655,35 @@ Ordre d'exécution : avec la Task 13, avant la Task 14.
 - [ ] **Step 3 :** changer la valeur par défaut dans `parseGameQuery` et dans `gameQueryParams`, et mettre `["lastTrophy", "Last trophy"]` en tête de `SORTS` dans `GameFilters`, suivi de `Last played` puis des autres options inchangées. Adapter les tests existants qui supposaient `lastPlayed` par défaut.
 - [ ] **Step 4 :** `npx vitest run` → PASS ; `npx tsc --noEmit`.
 - [ ] **Step 5 :** commit `feat(games): default sort is last trophy`, puis push.
+
+### Task 16 : Pas de bannière de repli, et emprunt à l'autre version du même jeu (spec 8.7 et 8.9)
+
+Ordre d'exécution : après la Task 11, avant la Task 12. Elle **remplace** le repli de la Task 10 vers `getPageBanner` : une page de jeu sans bannière n'en affiche aucune.
+
+**Files:**
+- Modify: `src/sync/played.ts`, `app/(site)/games/[id]/page.tsx`, `components/Banner.tsx`, `app/globals.css` (si besoin)
+- Test: `src/sync/played.test.ts`, `components/Banner.test.tsx`
+
+**Interfaces:**
+- `Banner` reçoit `settingsLink?: boolean` (vrai par défaut). Sans image et avec `settingsLink={false}`, il affiche un `.hero` vide, de la même hauteur et sans lien.
+- La page d'un jeu :
+  - n'appelle plus `getPageBanner` ;
+  - sans bannière téléchargée, elle utilise `bannerVars(null, 50)`, sans `PageBackground` et sans logo, avec `<Banner hasImage={false} settingsLink={false} label={nom du jeu} />`.
+- `syncPlayedGames` traite aussi les titres **sans jeu joué relié** :
+  - Clé de jeu : `name` en minuscules, sans ™ ® ©, espaces multiples réduits à un, rogné.
+  - Un titre sans jeu relié prend, chez un titre de même clé **qui a un jeu relié**, ses `coverUrl`, `conceptId`, `bannerUrl` et `logoUrl`. On préfère un titre PS5, puis le plus récemment joué.
+  - Si le `conceptId` change, les champs du catalogue sont remis à `null`, comme dans la Task 4. Le catalogue les remplit ensuite par `conceptId`.
+  - Si aucun titre de même clé n'a de jaquette, un titre PS4 prend comme `coverUrl` l'`iconUrl` d'un titre PS5 de même clé, s'il en existe un.
+  - Sinon, rien ne change.
+
+- [ ] **Step 1 : tests qui échouent.**
+  - `played.test.ts` :
+    - `it("lends a linked PS5 version's cover, concept, banner and logo to an unlinked list of the same game")` : « Gran Turismo 7 » PS4 sans jeu relié, et « Gran Turismo 7 » PS5 relié avec concept et images. Après `syncPlayedGames`, le PS4 a les mêmes `coverUrl`, `conceptId`, `bannerUrl` et `logoUrl`.
+    - `it("uses the PS5 list icon as the cover when no version has one")` : « Dauntless » PS4 et PS5, aucun relié. Le PS4 a `coverUrl` égal à l'`iconUrl` du PS5, et le PS5 garde `coverUrl` nul.
+    - `it("leaves an unlinked game without another version untouched")`.
+    - La clé ignore ™ et la casse : « ELDEN RING™ » et « Elden Ring » sont le même jeu.
+  - `Banner.test.tsx` : avec `hasImage={false}` et `settingsLink={false}`, il n'y a pas de lien « Choose a banner in Settings », mais il y a bien un `.hero`.
+- [ ] **Step 2 :** lancer → FAIL.
+- [ ] **Step 3 :** implémenter, puis retirer le repli `getPageBanner` de la page d'un jeu.
+- [ ] **Step 4 :** `npx vitest run` → PASS ; `npx tsc --noEmit` ; `npm run build`.
+- [ ] **Step 5 :** commit `feat(game): no fallback banner; borrow cover and info from the other version of the same game`, puis push.
