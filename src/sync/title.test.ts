@@ -5,7 +5,7 @@ import { titles, trophies, trophyGroups } from "@/src/db/schema";
 import { loadTitleState, titleNeedsReload } from "@/src/sync/diff";
 import { syncTitle, upsertTitleRow } from "@/src/sync/title";
 import { createFakePsn } from "@/tests/fakes/psn";
-import { makeGroup, makeRemoteTitle, makeTrophies } from "@/tests/fixtures/titles";
+import { makeGroup, makeRemoteTitle, makeTrophies, ZERO_COUNTS } from "@/tests/fixtures/titles";
 import { createTestDb } from "@/tests/helpers/db";
 
 const auth = { accessToken: "tok" };
@@ -153,9 +153,46 @@ describe("syncTitle", () => {
     expect(t0.rareCategory).toBe(0);
     expect(await read(1)).toEqual(before1);
 
-    await syncTitle(db, mk(true), auth, makeRemoteTitle(), now);
-    expect(await read(0)).toEqual(t0);
+    // PSN now reports trophy 0 as unearned (with its usual rate): it stays earned.
+    await syncTitle(db, mk(false), auth, makeRemoteTitle(), now);
+    expect(await read(0)).toEqual({ ...t0, earnedRate: "12.35", rareCategory: 2 });
     expect((await read(1)).earned).toBe(true);
+  });
+
+  it("keeps a trophy earned, with its date and rate, when a later response reports it unearned", async () => {
+    const remote = makeRemoteTitle({ earned: { ...ZERO_COUNTS, bronze: 2 } });
+    const first = makeTrophies(2, { earnedIds: [0, 1] });
+    await syncTitle(db, createFakePsn({ titleData: { [ID]: { groups: [makeGroup("default")], ...first } } }), auth, remote, now);
+    const [before] = await db.select().from(trophies).where(eq(trophies.trophyId, 0));
+
+    const second = makeTrophies(2, { earnedIds: [1] });
+    second.userTrophies[0] = { ...second.userTrophies[0], earnedRate: null, rareCategory: null };
+    await syncTitle(db, createFakePsn({ titleData: { [ID]: { groups: [makeGroup("default")], ...second } } }), auth, remote, now);
+
+    const [after] = await db.select().from(trophies).where(eq(trophies.trophyId, 0));
+    expect(after.earned).toBe(true);
+    expect(after.earnedAt).toEqual(before.earnedAt);
+    expect(after.earnedAt).not.toBeNull();
+    expect(after.earnedRate).toBe("12.35");
+  });
+
+  it("throws on a user list without earned trophies when PSN counts some, and leaves stored data intact", async () => {
+    const remote = makeRemoteTitle({ earned: { ...ZERO_COUNTS, bronze: 2 } });
+    const { defs, userTrophies } = makeTrophies(3, { earnedIds: [0, 1] });
+    const full = { groups: [makeGroup("default")], defs, userTrophies };
+    await syncTitle(db, createFakePsn({ titleData: { [ID]: full } }), auth, remote, now);
+    const storedTitles = await db.select().from(titles);
+    const storedTrophies = await db.select().from(trophies).orderBy(trophies.trophyId);
+
+    const later = new Date("2026-02-01T00:00:00Z");
+    const empty = createFakePsn({ titleData: { [ID]: { ...full, userTrophies: [] } } });
+    await expect(syncTitle(db, empty, auth, remote, later)).rejects.toThrow("Empty user trophy list");
+    const unearned = makeTrophies(3).userTrophies;
+    const noneEarned = createFakePsn({ titleData: { [ID]: { ...full, userTrophies: unearned } } });
+    await expect(syncTitle(db, noneEarned, auth, remote, later)).rejects.toThrow("Empty user trophy list");
+
+    expect(await db.select().from(titles)).toEqual(storedTitles);
+    expect(await db.select().from(trophies).orderBy(trophies.trophyId)).toEqual(storedTrophies);
   });
 
   it("throws on an empty trophy or group list and leaves stored rows intact", async () => {

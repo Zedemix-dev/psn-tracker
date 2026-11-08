@@ -56,8 +56,10 @@ export async function syncTitle(
   const defs = await gw.getTrophyDefs(auth, ref);
   const userTrophies = await gw.getUserTrophies(auth, ref);
   const definedTotal = Object.values(remote.defined).reduce((a, b) => a + b, 0);
+  const earnedTotal = Object.values(remote.earned).reduce((a, b) => a + b, 0);
   if (definedTotal > 0 && defs.length === 0) throw new Error(`Empty trophy list for ${titleId}`);
   if (definedTotal > 0 && groups.length === 0) throw new Error(`Empty group list for ${titleId}`);
+  if (earnedTotal > 0 && !userTrophies.some((u) => u.earned)) throw new Error("Empty user trophy list");
   const userById = new Map(userTrophies.map((u) => [u.trophyId, u]));
 
   const groupRows = groups.map((g) => ({
@@ -131,9 +133,10 @@ export async function syncTitle(
             detail: sqlExcluded("detail"),
             iconUrl: sqlExcluded("icon_url"),
             hidden: sqlExcluded("hidden"),
-            earned: sqlExcluded("earned"),
-            earnedAt: sqlExcluded("earned_at"),
-            earnedRate: sqlExcluded("earned_rate"),
+            // Trophies cannot be revoked on PSN: an earned trophy stays earned, with its date and rate.
+            earned: sql`${trophies.earned} or ${sqlExcluded("earned")}`,
+            earnedAt: sql`coalesce(${sqlExcluded("earned_at")}, ${trophies.earnedAt})`,
+            earnedRate: sql`coalesce(${sqlExcluded("earned_rate")}, ${trophies.earnedRate})`,
             rareCategory: sqlExcluded("rare_category"),
             progressTarget: sqlExcluded("progress_target"),
           },
