@@ -1,10 +1,11 @@
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import type { Db } from "@/src/db/client";
-import { titles, trophies, trophyGroups } from "@/src/db/schema";
+import { titles, trophyGroups } from "@/src/db/schema";
 import type { AppConfig } from "@/src/lib/config";
 import type { PsnGateway } from "@/src/psn/gateway";
 import { describeFailure, executeRun, type SyncDeps, type SyncRunResult } from "@/src/sync/run";
 import { syncTitle } from "@/src/sync/title";
+import { refreshUserState } from "@/src/sync/user-state";
 
 /**
  * Daily refresh: updates earnedRate / rareCategory of every stored, non-hidden
@@ -29,7 +30,6 @@ export async function runDailyRefresh(
       let updated = 0;
       try {
         const ref = { npCommunicationId: id, npServiceName: service as "trophy" | "trophy2" };
-        const user = await paced.getUserTrophies(auth, ref);
         const groups = await paced.getGroups(auth, ref);
         const knownRows = await db
           .select({ groupId: trophyGroups.groupId })
@@ -41,18 +41,7 @@ export async function runDailyRefresh(
         if (!sameGroups && remote) {
           updated = (await syncTitle(db, paced, auth, remote, now)).trophiesUpdated;
         } else {
-          await db.transaction(async (tx) => {
-            for (const u of user) {
-              await tx
-                .update(trophies)
-                .set({
-                  earnedRate: u.earnedRate == null ? null : u.earnedRate.toFixed(2),
-                  rareCategory: u.rareCategory,
-                })
-                .where(and(eq(trophies.titleId, id), eq(trophies.trophyId, u.trophyId)));
-            }
-          });
-          updated = user.length;
+          updated = await refreshUserState(db, paced, auth, ref);
         }
         await db.update(titles).set({ groupsCheckedAt: now }).where(eq(titles.npCommunicationId, id));
       } catch (err) {
