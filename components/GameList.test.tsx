@@ -24,7 +24,7 @@ const game = (n: number): GameRowData => ({
 });
 const games = (from: number, count: number) => Array.from({ length: count }, (_, i) => game(from + i));
 
-const query: GameQuery = { state: "all", platform: "all", sort: "lastPlayed", q: "", offset: 0 };
+const query: GameQuery = { state: "all", platform: "all", sort: "lastTrophy", q: "", offset: 0 };
 
 let trigger: () => void = () => {};
 let observed = 0;

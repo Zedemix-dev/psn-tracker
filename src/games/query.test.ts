@@ -32,7 +32,12 @@ describe("parseGameQuery", () => {
     const q = parseGameQuery(
       new URLSearchParams("state=bogus&platform=PS3&sort=nope&offset=-5&q=%20zelda%20"),
     );
-    expect(q).toEqual({ state: "all", platform: "all", sort: "lastPlayed", q: "zelda", offset: 0 });
+    expect(q).toEqual({ state: "all", platform: "all", sort: "lastTrophy", q: "zelda", offset: 0 });
+  });
+
+  it("defaults to the last trophy sort, and keeps an explicit lastPlayed", () => {
+    expect(parseGameQuery(new URLSearchParams("")).sort).toBe("lastTrophy");
+    expect(parseGameQuery(new URLSearchParams("sort=lastPlayed")).sort).toBe("lastPlayed");
   });
 
   it("reads valid values", () => {

@@ -40,7 +40,7 @@ export function parseGameQuery(params: URLSearchParams): GameQuery {
   return {
     state: pick(GAME_STATES, params.get("state"), "all"),
     platform: pick(GAME_PLATFORMS, params.get("platform"), "all"),
-    sort: pick(GAME_SORTS, params.get("sort"), "lastPlayed"),
+    sort: pick(GAME_SORTS, params.get("sort"), "lastTrophy"),
     q: (params.get("q") ?? "").trim(),
     offset: Number.isFinite(offset) && offset > 0 ? offset : 0,
   };

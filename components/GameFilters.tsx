@@ -20,8 +20,8 @@ const PLATFORMS: [GamePlatform, string][] = [
   ["PS5", "PS5"],
 ];
 const SORTS: [GameSort, string][] = [
-  ["lastPlayed", "Last played"],
   ["lastTrophy", "Last trophy"],
+  ["lastPlayed", "Last played"],
   ["alphabetical", "Alphabetical"],
   ["percent", "Percent completion"],
   ["timePlayed", "Time played"],
