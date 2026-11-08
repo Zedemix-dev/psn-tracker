@@ -479,7 +479,7 @@
   - `requireSession()`, puis `notFound()` si `getGameDetail` renvoie `null` ;
   - enveloppe `<div className="game-page" style={bannerVars(...)}>` :
     - `bannerVars(detail.bannerPath, 25)` si la bannière du jeu est là ;
-    - sinon `bannerVars(settings.bannerPath, settings.bannerPosY)` ;
+    - sinon la bannière de Games, `getPageBanner(db)` (Task 14) : `bannerVars(banner?.path ?? null, banner?.posY ?? 50)` ;
   - `PageBackground` s'il y a une image ;
   - `Banner` avec `label` = nom du jeu, et `logo` seulement si la bannière du jeu **et** le logo sont là ;
   - `main.wrap` : `GameBand`, puis `.layout` avec `TrophyList` et `aside.side` (jaquette, `GameInfoPanel`, `TimelinePanel`) ;
@@ -579,3 +579,61 @@
   - **Page Games** : la répartition par rareté est centrée.
 - [ ] **Step 5 :** mettre à jour `docs/ETAT-DU-PROJET.md`. La page de détail est faite, et la phase 1 est terminée une fois la PR fusionnée. La suite est le déploiement et les pages suivantes.
 - [ ] **Step 6 :** commit `docs: game detail page done`, puis push.
+
+---
+
+## Tâches ajoutées pendant l'exécution (8 novembre 2026)
+
+Ordre d'exécution : Task 13 et Task 14 passent **après la Task 9 et avant la Task 10**.
+
+### Task 13 : Rattrapage des objectifs des trophées à paliers
+
+Les objectifs viennent des définitions des trophées, qui ne sont lues qu'au rechargement d'un jeu (`syncTitle`). Les listes déjà synchronisées et inchangées n'auraient donc jamais d'objectif, ni de compteur.
+
+**Files:**
+- Create: `src/db/migrations/0005_*.sql` et son snapshot (via `npx drizzle-kit generate --custom --name=reload_ps5_lists`)
+
+- [ ] **Step 1 :** générer une migration vide avec `--custom`, puis y écrire seulement :
+  ```sql
+  UPDATE "titles" SET "synced_at" = NULL WHERE "np_service_name" = 'trophy2';
+  ```
+  `titleNeedsReload` traite un `syncedAt` nul comme « à recharger ». La synchro suivante recharge donc une fois chaque liste PS5 (environ 130), et lit leurs objectifs. `syncedAt` ne sert à rien d'autre.
+- [ ] **Step 2 :** `npx vitest run` (les migrations s'appliquent sur PGlite) et `npx tsc --noEmit` → PASS. Pas de test unitaire dédié : c'est une mise à jour de données, vérifiée sur les vraies données en Task 12.
+- [ ] **Step 3 :** commit `fix(db): reload PS5 lists once to read their tiered trophy targets`, puis push.
+
+### Task 14 : Bannière automatique de Games (spec 8.2 et 9)
+
+**Files:**
+- Create: `src/settings/page-banner.ts`
+- Modify: `app/(site)/(banner)/layout.tsx`, `app/(site)/(banner)/settings/page.tsx`, `components/SettingsForms.tsx`
+- Test: `src/settings/page-banner.test.ts`, `components/SettingsForms.test.tsx` (nouveau ou existant)
+
+**Interfaces:**
+- Produces :
+  ```ts
+  // src/settings/page-banner.ts
+  export type PageBanner = { path: string; posY: number; source: "custom" | "auto"; gameName: string | null };
+  export async function getPageBanner(db: Db): Promise<PageBanner | null>;
+  ```
+- Règles de `getPageBanner` :
+  - une bannière personnalisée (`settings.bannerPath`) donne `{ path, posY: settings.bannerPosY, source: "custom", gameName: null }` ;
+  - sinon, le titre non caché le plus récemment joué (`lastPlayedAt` décroissant, nuls en dernier) dont la bannière (`titles.bannerUrl`) est **téléchargée** (ligne `images` avec `localPath` non nul) donne `{ path: images.localPath, posY: 25, source: "auto", gameName: titles.name }`. Une seule requête avec jointure : ne pas charger toute la table `images` ;
+  - sinon `null`.
+- `(banner)/layout.tsx` : `bannerVars(banner?.path ?? null, banner?.posY ?? 50)`, `PageBackground` et `Banner hasImage={banner !== null}`.
+- La page d'un jeu (Task 10) prend `getPageBanner` comme repli quand le jeu n'a pas de bannière téléchargée.
+- **Settings** : `BannerForm` reçoit en plus `auto: { url: string; gameName: string } | null`, la bannière automatique du moment.
+  - Sans bannière personnalisée, l'aperçu montre `auto`, avec la mention exacte `Automatic — last played game (<gameName>)`.
+  - Le bouton de remise à zéro s'appelle `Use automatic banner`.
+  - Le curseur de position reste désactivé sans bannière personnalisée.
+
+- [ ] **Step 1 : tests qui échouent.**
+  - `page-banner.test.ts` :
+    - une bannière personnalisée gagne, avec sa position ;
+    - sinon, le jeu joué le plus récemment qui a une bannière téléchargée, avec `posY: 25` et son nom ;
+    - un jeu caché, ou dont la bannière n'est pas téléchargée, est ignoré au profit du suivant ;
+    - aucun candidat → `null`.
+  - `SettingsForms.test.tsx` : sans bannière personnalisée et avec `auto`, la mention `Automatic — last played game (Cyberpunk 2077)` et le bouton `Use automatic banner` sont présents.
+- [ ] **Step 2 :** lancer → FAIL.
+- [ ] **Step 3 :** implémenter.
+- [ ] **Step 4 :** `npx vitest run` → PASS ; `npx tsc --noEmit` ; `npm run build`.
+- [ ] **Step 5 :** commit `feat(site): automatic Games banner from the last played game`, puis push.

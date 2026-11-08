@@ -193,7 +193,12 @@ Référence visuelle : la maquette v11. Elle utilise des images empruntées à p
   - Elle ne se fond dans la page que sur son dernier quart.
   - La même image, floutée et assombrie, sert de fond à toute la page (style « Console »).
 - **[mon choix]** Si l'image envoyée n'a pas ce format, l'utilisateur choisit dans Settings la partie verticale à garder (haut, centre, bas, ou un curseur).
-- **[mon choix]** Tant qu'aucune image n'est choisie, un dégradé neutre s'affiche avec un lien « Choose a banner in Settings ».
+- **[décidé, 8 novembre 2026] Bannière automatique** : sans bannière personnalisée, Games affiche la bannière du **dernier jeu joué**. C'est la même image 4K que sur la page de ce jeu (8.9), avec le même fond flouté.
+  - Une bannière envoyée dans Settings a toujours la priorité. Si l'utilisateur la retire, Games revient tout seul à la bannière automatique.
+  - **[mon choix]** Le « dernier jeu joué » est le jeu non masqué dont la date de dernière partie est la plus récente et dont la bannière est déjà téléchargée. La bannière change donc d'elle-même après une synchro, quand l'utilisateur joue à un autre jeu.
+  - **[mon choix]** Elle est cadrée comme sur la page d'un jeu, à 25 % depuis le haut, et sans le logo du jeu.
+  - Les pages qui partagent la bannière de Games (Settings et « Coming soon ») suivent la même règle.
+- **[mon choix]** Si aucun jeu n'a encore de bannière, sur une installation neuve par exemple, un dégradé neutre s'affiche avec un lien « Choose a banner in Settings ».
 
 ### 8.3 Bandeau profil
 Il s'agit d'un panneau translucide qui chevauche le bas de la bannière.
@@ -467,7 +472,11 @@ C'est un panneau translucide qui chevauche le bas de la bannière, comme le band
   - envoi d'une image **depuis le PC** (JPEG, PNG ou WebP, 10 Mo maximum **[mon choix]**), avec aperçu ;
   - choix de la partie verticale à garder (8.2) ;
   - l'image est stockée sur un volume Docker ;
-  - un bouton permet de revenir à la bannière par défaut.
+  - un bouton permet de revenir à la bannière par défaut, qui est la bannière automatique du dernier jeu joué (8.2).
+  - **[mon choix, 8 novembre 2026]** Sans bannière personnalisée :
+    - l'aperçu montre la bannière automatique, avec la mention « Automatic — last played game (<nom du jeu>) » ;
+    - le bouton s'appelle « Use automatic banner » ;
+    - le curseur de position ne s'applique qu'à une bannière personnalisée.
 - **PSN token [décidé]** : un encart pour **renouveler le NPSSO**, accompagné d'un **mini tuto** pour le récupérer :
   1. Se connecter sur https://www.playstation.com dans son navigateur.
   2. Dans le même navigateur, ouvrir https://ca.account.sony.com/api/v1/ssocookie.
