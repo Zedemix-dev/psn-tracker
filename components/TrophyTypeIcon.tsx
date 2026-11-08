@@ -7,9 +7,24 @@ const LABEL: Record<TrophyType, string> = {
   bronze: "Bronze",
 };
 
-export function TrophyTypeIcon({ type, size = 20 }: { type: TrophyType; size?: number }) {
+export function TrophyTypeIcon({
+  type,
+  size = 20,
+  className,
+}: {
+  type: TrophyType;
+  size?: number;
+  className?: string;
+}) {
   return (
     // eslint-disable-next-line @next/next/no-img-element
-    <img src={`/icons/40-${type}.png`} alt={LABEL[type]} title={LABEL[type]} width={size} height={size} />
+    <img
+      src={`/icons/40-${type}.png`}
+      alt={LABEL[type]}
+      title={LABEL[type]}
+      width={size}
+      height={size}
+      className={className}
+    />
   );
 }

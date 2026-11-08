@@ -1,10 +1,14 @@
+import { GameFilters } from "@/components/GameFilters";
+import { GameList } from "@/components/GameList";
+import { HideZeroToggle } from "@/components/HideZeroToggle";
 import { ProfileBand } from "@/components/ProfileBand";
 import { StatTiles } from "@/components/StatTiles";
 import { TrophyCarousel, type CarouselTrophy } from "@/components/TrophyCarousel";
 import { requireSession } from "@/src/auth/require-session";
 import { getDb } from "@/src/db/client";
 import { profile } from "@/src/db/schema";
-import { formatDateTime, formatPercent } from "@/src/lib/format";
+import { parseGameQuery, queryGames } from "@/src/games/query";
+import { formatDateTime, formatInt, formatPercent } from "@/src/lib/format";
 import { rarityTier } from "@/src/lib/rarity";
 import { getSettings } from "@/src/settings/repo";
 import { getProfileStats } from "@/src/stats/profile-stats";
@@ -12,16 +16,26 @@ import { getLatestTrophies } from "@/src/stats/trophies";
 import { loadImageMap, mediaSrc } from "@/src/sync/images";
 import { getSyncStatus } from "@/src/sync/requests";
 
-export default async function Home() {
+type SearchParams = Record<string, string | string[] | undefined>;
+
+export default async function Home({ searchParams }: { searchParams: Promise<SearchParams> }) {
   await requireSession();
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(await searchParams)) {
+    const first = Array.isArray(value) ? value[0] : value;
+    if (first !== undefined) params.set(key, first);
+  }
+  // The first page always starts at 0; further pages come from /api/games.
+  const query = { ...parseGameQuery(params), offset: 0 };
   const db = await getDb();
   const { hideZero } = await getSettings(db);
-  const [[row], stats, imageMap, sync, latest] = await Promise.all([
+  const [[row], stats, imageMap, sync, latest, games] = await Promise.all([
     db.select().from(profile).limit(1),
     getProfileStats(db, { hideZero }),
     loadImageMap(db),
     getSyncStatus(db),
     getLatestTrophies(db, 20),
+    queryGames(db, query, { hideZero }),
   ]);
   // JSON-safe for the client component: no Date crosses the boundary.
   const carousel: CarouselTrophy[] = latest.map((t) => ({
@@ -40,7 +54,25 @@ export default async function Home() {
       <ProfileBand profile={row} imageMap={imageMap} sync={sync} />
       <StatTiles stats={stats} />
       <TrophyCarousel trophies={carousel} />
-      {/* Later tasks: games list and sidebar go below. */}
+      <div className="layout">
+        <section className="panel glass" aria-label="Games">
+          <div className="panel-head">
+            <div className="ph-left">
+              <h2>Games</h2>
+              <HideZeroToggle checked={hideZero} />
+            </div>
+            <span className="aside">{formatInt(games.total)} games</span>
+          </div>
+          <GameFilters query={query} />
+          <GameList
+            key={`${hideZero}|${query.state}|${query.platform}|${query.sort}|${query.q}`}
+            initial={games}
+            query={query}
+          />
+        </section>
+        {/* Task 18 fills the sidebar. */}
+        <aside className="side" />
+      </div>
     </main>
   );
 }

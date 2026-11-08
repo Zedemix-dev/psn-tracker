@@ -1,0 +1,138 @@
+// @vitest-environment jsdom
+import "@testing-library/jest-dom/vitest";
+import { act, cleanup, render, screen } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { GameList } from "@/components/GameList";
+import type { GameQuery } from "@/src/games/query";
+import type { GameRowData } from "@/src/games/row";
+
+vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: vi.fn(), refresh: vi.fn() }) }));
+
+const game = (n: number): GameRowData => ({
+  id: `NPWR${n}`,
+  name: `Game ${n}`,
+  platforms: ["PS5"],
+  coverSrc: "/c.png",
+  coverIsIcon: false,
+  earnedTotal: 1,
+  definedTotal: 2,
+  counts: { platinum: [0, 0], gold: [0, 0], silver: [0, 0], bronze: [1, 2] },
+  progress: 50,
+  rank: "C",
+  lastPlayedLine: "",
+  status: "incomplete",
+});
+const games = (from: number, count: number) => Array.from({ length: count }, (_, i) => game(from + i));
+
+const query: GameQuery = { state: "all", platform: "all", sort: "lastPlayed", q: "", offset: 0 };
+
+let trigger: () => void = () => {};
+let observed = 0;
+class FakeObserver {
+  constructor(private cb: IntersectionObserverCallback) {}
+  observe() {
+    observed++;
+    trigger = () => this.cb([{ isIntersecting: true } as IntersectionObserverEntry], this as never);
+  }
+  disconnect() {
+    trigger = () => {};
+  }
+  unobserve() {}
+}
+
+const fetchMock = vi.fn<typeof fetch>();
+const reply = (items: GameRowData[], total: number) =>
+  new Response(JSON.stringify({ items, total }), { status: 200 });
+const intersect = () => act(async () => trigger());
+
+beforeEach(() => {
+  observed = 0;
+  vi.stubGlobal("IntersectionObserver", FakeObserver);
+  vi.stubGlobal("fetch", fetchMock);
+});
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+  fetchMock.mockReset();
+});
+
+const rows = () => document.querySelectorAll(".game").length;
+const FOOTER = "The next 50 games load as you scroll down";
+
+describe("GameList", () => {
+  it("loads the next page on intersection, appends it, then stops at total", async () => {
+    fetchMock.mockResolvedValueOnce(reply(games(51, 20), 70));
+    render(<GameList initial={{ items: games(1, 50), total: 70 }} query={query} />);
+    expect(rows()).toBe(50);
+    expect(screen.getByText(FOOTER)).toBeInTheDocument();
+
+    await intersect();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledWith("/api/games?offset=50");
+    expect(rows()).toBe(70);
+    expect(screen.queryByText(FOOTER)).toBeNull();
+
+    // Everything is loaded: no observer left to fire, no further fetch.
+    expect(() => trigger()).not.toThrow();
+    await act(async () => {});
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("sends the current filters along with the offset", async () => {
+    fetchMock.mockResolvedValueOnce(reply(games(51, 1), 51));
+    render(
+      <GameList
+        initial={{ items: games(1, 50), total: 51 }}
+        query={{ ...query, state: "notFinished", platform: "PS5", sort: "alphabetical", q: "dark souls" }}
+      />,
+    );
+    await intersect();
+    const url = new URL(String(fetchMock.mock.calls[0][0]), "http://x");
+    expect(url.pathname).toBe("/api/games");
+    expect(Object.fromEntries(url.searchParams)).toEqual({
+      state: "notFinished",
+      platform: "PS5",
+      sort: "alphabetical",
+      q: "dark souls",
+      offset: "50",
+    });
+  });
+
+  it("never runs two fetches at once", async () => {
+    let resolve!: (r: Response) => void;
+    fetchMock.mockReturnValueOnce(new Promise<Response>((r) => (resolve = r)));
+    render(<GameList initial={{ items: games(1, 50), total: 100 }} query={query} />);
+    await intersect();
+    await intersect();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    await act(async () => resolve(reply(games(51, 50), 100)));
+    expect(rows()).toBe(100);
+  });
+
+  it("does not observe anything when the first page already holds every game", () => {
+    render(<GameList initial={{ items: games(1, 3), total: 3 }} query={query} />);
+    expect(observed).toBe(0);
+    expect(screen.queryByText(FOOTER)).toBeNull();
+  });
+
+  it("offers a retry after a failed fetch and appends on success", async () => {
+    fetchMock.mockResolvedValueOnce(new Response("{}", { status: 500 }));
+    render(<GameList initial={{ items: games(1, 50), total: 60 }} query={query} />);
+    await intersect();
+    expect(screen.getByText(/Couldn't load more games\./)).toBeInTheDocument();
+    expect(rows()).toBe(50);
+
+    fetchMock.mockResolvedValueOnce(reply(games(51, 10), 60));
+    await act(async () => screen.getByRole("button", { name: "Retry" }).click());
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(rows()).toBe(60);
+    expect(screen.queryByRole("button", { name: "Retry" })).toBeNull();
+  });
+
+  it("does not duplicate a game already shown", async () => {
+    fetchMock.mockResolvedValueOnce(reply([game(50), ...games(51, 2)], 52));
+    render(<GameList initial={{ items: games(1, 50), total: 52 }} query={query} />);
+    await intersect();
+    expect(rows()).toBe(52);
+  });
+});
