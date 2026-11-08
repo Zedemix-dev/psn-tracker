@@ -141,6 +141,7 @@ export function CabinetEditor({ initial }: { initial: TrophyItem[] }) {
                   placeholder="Search earned trophies"
                   aria-label="Search earned trophies"
                   value={query}
+                  maxLength={100}
                   onChange={(e) => setQuery(e.target.value)}
                 />
                 {searchError && <p className="ce-note">Search failed. Try again.</p>}

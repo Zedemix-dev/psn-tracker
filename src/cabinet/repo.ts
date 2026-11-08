@@ -4,6 +4,13 @@ import { cabinet, titles, trophies } from "@/src/db/schema";
 import { toEarned, trophySelection, type EarnedTrophy } from "@/src/stats/trophies";
 
 export const CABINET_SIZE = 10;
+export class CabinetValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "CabinetValidationError";
+  }
+}
+
 export type CabinetEntry = { titleId: string; trophyId: number };
 
 const earnedVisible = and(eq(trophies.earned, true), isNotNull(trophies.earnedAt), eq(titles.hidden, false));
@@ -22,23 +29,24 @@ export async function getCabinet(db: Db): Promise<EarnedTrophy[]> {
 
 /** Replaces the cabinet with `entries` (positions 1..n) in one transaction. */
 export async function saveCabinet(db: Db, entries: CabinetEntry[]): Promise<void> {
-  if (entries.length > CABINET_SIZE) throw new Error(`At most ${CABINET_SIZE} trophies fit in the cabinet`);
+  if (entries.length > CABINET_SIZE) throw new CabinetValidationError(`At most ${CABINET_SIZE} trophies fit in the cabinet`);
   const keys = new Set(entries.map(keyOf));
-  if (keys.size !== entries.length) throw new Error("The same trophy appears twice");
+  if (keys.size !== entries.length) throw new CabinetValidationError("The same trophy appears twice");
   if (entries.length > 0) {
     const found = await db
       .select({ titleId: trophies.titleId, trophyId: trophies.trophyId })
       .from(trophies)
+      .innerJoin(titles, eq(trophies.titleId, titles.npCommunicationId))
       .where(
         and(
-          eq(trophies.earned, true),
+          earnedVisible,
           inArray(trophies.titleId, [...new Set(entries.map((e) => e.titleId))]),
           inArray(trophies.trophyId, [...new Set(entries.map((e) => e.trophyId))]),
         ),
       );
     const earned = new Set(found.map(keyOf));
     if (entries.some((e) => !earned.has(keyOf(e)))) {
-      throw new Error("Only earned trophies can be in the cabinet");
+      throw new CabinetValidationError("Only earned trophies can be in the cabinet");
     }
   }
   await db.transaction(async (tx) => {
@@ -55,7 +63,7 @@ const escapeLike = (s: string) => s.replace(/[\\%_]/g, "\\$&");
 
 /** Earned trophies of visible titles whose name or game name contains `q`; rarest first. */
 export async function searchEarnedTrophies(db: Db, q: string, limit = 20): Promise<EarnedTrophy[]> {
-  const term = q.trim();
+  const term = q.trim().slice(0, 100);
   const pattern = `%${escapeLike(term)}%`;
   const match = term
     ? or(

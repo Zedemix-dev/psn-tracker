@@ -96,3 +96,17 @@ describe("searchEarnedTrophies", () => {
     expect(await searchEarnedTrophies(db, "  ", 3)).toHaveLength(3);
   });
 });
+
+describe("saveCabinet hidden titles and search cap", () => {
+  it("rejects trophies of hidden titles with a CabinetValidationError", async () => {
+    const { CabinetValidationError } = await import("@/src/cabinet/repo");
+    await expect(saveCabinet(db, [{ titleId: "H", trophyId: 1 }])).rejects.toBeInstanceOf(
+      CabinetValidationError,
+    );
+  });
+
+  it("caps the search text at 100 characters", async () => {
+    expect(await searchEarnedTrophies(db, `${"x".repeat(5000)}`)).toEqual([]);
+    expect((await searchEarnedTrophies(db, `Trophy 5${" ".repeat(200)}`)).map((t) => t.trophyId)).toEqual([5]);
+  });
+});
