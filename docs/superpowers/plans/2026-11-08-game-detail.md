@@ -517,6 +517,8 @@
 
 ### Task 11 : Retour sur la liste Games à la même position
 
+> **Note d'exécution (8 novembre 2026)** : la conception ci-dessous, avec un indicateur `popstate` au niveau du module et un instantané effacé à la lecture, s'est révélée fausse. Une visite neuve pouvait restaurer la liste après un « précédent » sans rapport. Elle a été remplacée à la relecture par un **marquage de l'entrée d'historique** : `history.state.gamesSnapshot` reçoit un identifiant au clic sur un jeu, et l'instantané n'est restauré que si l'entrée retrouvée porte cet identifiant. L'instantané n'est plus effacé à la lecture. Voir `components/list-snapshot.ts`.
+
 **Files:**
 - Create: `components/list-snapshot.ts`
 - Modify: `components/GameList.tsx`, `app/(site)/(banner)/page.tsx`

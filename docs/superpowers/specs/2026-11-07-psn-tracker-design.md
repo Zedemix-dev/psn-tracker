@@ -365,7 +365,7 @@ Maquette validée : [2026-11-08-psn-tracker-maquette-jeu.html](2026-11-08-psn-tr
   - Les informations concernées : jaquette, bannière, logo, éditeur, genre(s) et date de sortie.
   - Cela vaut pour toutes les listes, qu'elles soient reliées à un jeu joué ou non. Une liste sans jeu joué relié (6.3) n'a rien de tout cela par elle-même : c'est le cas le plus courant.
   - Exemple : Gran Turismo 7 PS4 prend la jaquette, la bannière, le logo, l'éditeur, le genre et la date de sortie de Gran Turismo 7 PS5.
-  - **[mon choix]** Une information propre à la liste n'est jamais remplacée. Une information empruntée est recalculée à chaque synchro, pour suivre la version qui la prête.
+  - **[mon choix]** Une information propre à la liste n'est jamais remplacée. L'emprunt se fait à l'affichage : rien d'emprunté n'est stocké, et une information empruntée suit donc toujours la version qui la prête.
 - **[décidé, 8 novembre 2026] Bannières ajoutées à la main, écrites dans le code** : pour les rares jeux dont aucune version n'a de bannière au PSN, une liste écrite dans le code associe le jeu (par son nom, comme pour l'emprunt) à une bannière choisie par l'utilisateur.
   - L'utilisateur préfère une liste dans le code à un réglage dans l'interface. Ces cas sont des jeux anciens, joués avant que le site existe, et de nouveaux cas sont peu probables.
   - Ces bannières sont téléchargées par la synchro et **servies en local** comme les autres images : le site ne charge jamais d'image depuis psnprofiles à l'affichage.
@@ -560,7 +560,7 @@ Il choisit :
 Il doit aussi vérifier en pratique la détection des nouveaux DLC (6.4).
 
 ## 13. Points restants
-- **Page de détail d'un jeu :** sa maquette a été validée le 8 novembre 2026 (8.9). Il reste à la construire, sur la branche `feat/game-detail`. C'est la dernière étape de la phase 1.
+- **Page de détail d'un jeu :** maquette validée le 8 novembre 2026 (8.9), construite et vérifiée avec les vraies données sur la branche `feat/game-detail`. Il reste à fusionner la Pull Request ; c'est la dernière étape de la phase 1.
 - **Jeux aux trophées non obtenables :** fonctionnalité demandée le 8 novembre 2026, décrite en 14. Elle sera faite à part, après la page de détail d'un jeu.
 
 ## 14. Jeux aux trophées non obtenables (à venir)
