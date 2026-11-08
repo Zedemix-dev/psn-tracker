@@ -366,6 +366,19 @@ Maquette validée : [2026-11-08-psn-tracker-maquette-jeu.html](2026-11-08-psn-tr
   - Cela vaut pour toutes les listes, qu'elles soient reliées à un jeu joué ou non. Une liste sans jeu joué relié (6.3) n'a rien de tout cela par elle-même : c'est le cas le plus courant.
   - Exemple : Gran Turismo 7 PS4 prend la jaquette, la bannière, le logo, l'éditeur, le genre et la date de sortie de Gran Turismo 7 PS5.
   - **[mon choix]** Une information propre à la liste n'est jamais remplacée. Une information empruntée est recalculée à chaque synchro, pour suivre la version qui la prête.
+- **[décidé, 8 novembre 2026] Bannières ajoutées à la main, écrites dans le code** : pour les rares jeux dont aucune version n'a de bannière au PSN, une liste écrite dans le code associe le jeu (par son nom, comme pour l'emprunt) à une bannière choisie par l'utilisateur.
+  - L'utilisateur préfère une liste dans le code à un réglage dans l'interface. Ces cas sont des jeux anciens, joués avant que le site existe, et de nouveaux cas sont peu probables.
+  - Ces bannières sont téléchargées par la synchro et **servies en local** comme les autres images : le site ne charge jamais d'image depuis psnprofiles à l'affichage.
+  - **[mon choix]** Ordre de priorité : la bannière propre de la liste, puis celle d'une autre version du même jeu, puis celle de cette liste, puis l'espace vide sur fond uni. Une bannière qui arriverait plus tard au PSN reprendrait donc la main d'elle-même.
+  - Le 8 novembre 2026, la liste contient 5 jeux, avec la bannière de leur page psnprofiles (format 1 920 × 520, exactement celui de la bannière) :
+
+    | Jeu | Page psnprofiles fournie par l'utilisateur | Image |
+    |---|---|---|
+    | Dauntless (PS4 et PS5) | https://psnprofiles.com/trophies/14795-dauntless/Zmx969 | https://img.psnprofiles.com/hero/l/14795/05bf48f1-d893-41d8-b1f7-1ea0bfcc3bc0.jpg |
+    | Game of Thrones | https://psnprofiles.com/trophies/3220-game-of-thrones/Zmx969 | https://img.psnprofiles.com/hero/l/3220/31500c21-cc5e-4d31-bfcc-9c10cbb55249.jpg |
+    | Marvel Heroes Omega | https://psnprofiles.com/trophies/6161-marvel-heroes-omega/Zmx969 | https://img.psnprofiles.com/hero/l/6161/6206b90b-f266-4134-9f8c-5ff112d3d403.jpg |
+    | Minecraft: Story Mode | https://psnprofiles.com/trophies/3955-minecraft-story-mode/Zmx969 | https://img.psnprofiles.com/hero/l/3955/c7fb42f7-3b15-4f07-99c5-eb92fcdeee57.jpg |
+    | Tales from the Borderlands | https://psnprofiles.com/trophies/3188-tales-from-the-borderlands/Zmx969 | https://img.psnprofiles.com/hero/l/3188/a4a61b38-7893-4131-b936-5cb8effce3e1.jpg |
   - Si aucune version n'a de jaquette, une liste PS4 prend l'**icône de la liste PS5** du même jeu, qui est carrée, plutôt que sa propre icône rectangulaire. C'est le cas de Dauntless PS4.
   - Sans autre version (Game of Thrones, Minecraft: Story Mode, Tales from the Borderlands), la liste garde son icône, affichée en entier, et sa page n'a pas de bannière.
   - **[mon choix]** « Du même nom » veut dire même nom en minuscules, sans ™ ® ©, avec les espaces multiples réduits à un.

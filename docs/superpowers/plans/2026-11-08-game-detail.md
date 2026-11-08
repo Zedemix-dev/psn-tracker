@@ -703,3 +703,39 @@ Ordre d'exécution : après la Task 11, avant la Task 12. Elle **remplace** le r
 - [ ] **Step 3 :** implémenter, puis retirer le repli `getPageBanner` de la page d'un jeu.
 - [ ] **Step 4 :** `npx vitest run` → PASS ; `npx tsc --noEmit` ; `npm run build`.
 - [ ] **Step 5 :** commit `feat(game): no fallback banner; borrow missing info from the other versions of the same game`, puis push.
+
+### Task 17 : Bannières ajoutées à la main pour 5 jeux (spec 8.9)
+
+Ordre d'exécution : après la Task 16, avant la Task 12.
+
+**Files:**
+- Create: `src/games/banner-overrides.ts`
+- Modify: `src/sync/images.ts`, `src/games/siblings.ts` (ou l'endroit où la Task 16 résout la bannière), `src/games/detail.ts`
+- Test: `src/games/banner-overrides.test.ts` ou les tests de la Task 16, `src/sync/images.test.ts`, `src/games/detail.test.ts`
+
+**Interfaces:**
+- Produces (`src/games/banner-overrides.ts`) :
+  ```ts
+  /** Banners chosen by hand for games no PSN version has a banner for (spec 8.9), keyed by gameKey(name). */
+  export const BANNER_OVERRIDES: Record<string, string>;
+  export function bannerOverrideFor(name: string): string | null; // via gameKey (Task 16)
+  ```
+- Contenu exact, une entrée par jeu, clé = `gameKey` du nom :
+  - « Dauntless » → `https://img.psnprofiles.com/hero/l/14795/05bf48f1-d893-41d8-b1f7-1ea0bfcc3bc0.jpg`
+  - « Game of Thrones » → `https://img.psnprofiles.com/hero/l/3220/31500c21-cc5e-4d31-bfcc-9c10cbb55249.jpg`
+  - « Marvel Heroes Omega » → `https://img.psnprofiles.com/hero/l/6161/6206b90b-f266-4134-9f8c-5ff112d3d403.jpg`
+  - « Minecraft: Story Mode » → `https://img.psnprofiles.com/hero/l/3955/c7fb42f7-3b15-4f07-99c5-eb92fcdeee57.jpg`
+  - « Tales from the Borderlands » → `https://img.psnprofiles.com/hero/l/3188/a4a61b38-7893-4131-b936-5cb8effce3e1.jpg`
+- `collectUrls` (`cacheImages`) ajoute l'adresse de remplacement de chaque titre **non caché** dont le nom a une entrée. Elle est ainsi téléchargée et servie en local par `/media`, sans jamais charger psnprofiles à l'affichage.
+- La résolution de la bannière d'une page de jeu devient : bannière propre → bannière d'une autre version (Task 16) → `bannerOverrideFor(nom)`, si elle est téléchargée → aucune (fond uni). Cadrage à 50 %, car l'image est déjà au format 1920 × 520. Pas de logo dans ce cas.
+
+- [ ] **Step 1 : tests qui échouent.**
+  - `bannerOverrideFor("Dauntless")` et `bannerOverrideFor("DAUNTLESS™")` renvoient l'adresse de Dauntless ; `bannerOverrideFor("Cyberpunk 2077")` renvoie `null`.
+  - `images.test.ts` : un titre « Game of Thrones » non caché fait télécharger son adresse de remplacement ; un titre caché ne la fait pas télécharger.
+  - `detail.test.ts` :
+    - un titre « Dauntless » sans bannière, dont l'image de remplacement est téléchargée, a `bannerPath` égal à son chemin local, et `logoSrc` nul ;
+    - un titre qui a sa propre bannière la garde, même s'il a une entrée de remplacement.
+- [ ] **Step 2 :** lancer → FAIL.
+- [ ] **Step 3 :** implémenter.
+- [ ] **Step 4 :** `npx vitest run` → PASS ; `npx tsc --noEmit` ; `npm run build`.
+- [ ] **Step 5 :** commit `feat(game): hand-picked banners for the five games no PSN version has one for`, puis push.
