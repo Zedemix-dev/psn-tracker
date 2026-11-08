@@ -56,6 +56,33 @@ describe("getGameDetail borrowing", () => {
   });
 });
 
+describe("getGameDetail hand-picked banner", () => {
+  const URL_ = "https://img.psnprofiles.com/hero/l/14795/05bf48f1-d893-41d8-b1f7-1ea0bfcc3bc0.jpg";
+  const map: ImageMap = new Map([[URL_, { path: "psn/dauntless.jpg", thumb: null }]]);
+
+  it("uses the downloaded override when no version has a banner, without logo", async () => {
+    await addTitle({ name: "Dauntless" });
+    const d = await getGameDetail(db, "NPWR1", map, NOW);
+    expect(d!.bannerPath).toBe("psn/dauntless.jpg");
+    expect(d!.logoSrc).toBeNull();
+    expect(d!.bannerIsOverride).toBe(true);
+  });
+
+  it("has no banner while the override is not downloaded", async () => {
+    await addTitle({ name: "Dauntless" });
+    expect((await getGameDetail(db, "NPWR1", empty, NOW))!.bannerPath).toBeNull();
+  });
+
+  it("keeps its own banner over the override", async () => {
+    const own = "https://img.example/own.png";
+    await addTitle({ name: "Dauntless", bannerUrl: own });
+    const both: ImageMap = new Map([...map, [own, { path: "psn/own.png", thumb: null }]]);
+    const d = await getGameDetail(db, "NPWR1", both, NOW);
+    expect(d!.bannerPath).toBe("psn/own.png");
+    expect(d!.bannerIsOverride).toBe(false);
+  });
+});
+
 describe("getGameDetail", () => {
   it("builds the Cyberpunk-like detail", async () => {
     await addTitle({ progress: 7 });

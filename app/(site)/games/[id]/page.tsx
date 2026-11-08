@@ -34,7 +34,7 @@ export default async function GamePage({
   if (!detail) notFound();
   const hasImage = detail.bannerPath !== null;
   const sync = await getSyncStatus(db);
-  const vars = hasImage ? bannerVars(detail.bannerPath, 25) : bannerVars(null, 50);
+  const vars = hasImage ? bannerVars(detail.bannerPath, detail.bannerIsOverride ? 50 : 25) : bannerVars(null, 50);
   const view = parseTrophyView(query);
 
   return (

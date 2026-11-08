@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import type { Db } from "@/src/db/client";
 import { titles } from "@/src/db/schema";
+import { bannerOverrideFor } from "@/src/games/banner-overrides";
 import type { GameTitle } from "@/src/games/row";
 
 export type SiblingTitle = GameTitle;
@@ -48,7 +49,7 @@ function compareLenders(a: SiblingTitle, b: SiblingTitle): number {
 export function withSiblings(
   title: GameTitle,
   index: SiblingIndex,
-): GameInfo & { coverIsIcon: boolean; coverFallbackUrl: string } {
+): GameInfo & { coverIsIcon: boolean; coverFallbackUrl: string; bannerIsOverride: boolean } {
   const others = (index.get(gameKey(title.name)) ?? [])
     .filter((t) => t.npCommunicationId !== title.npCommunicationId)
     .sort(compareLenders);
@@ -75,10 +76,15 @@ export function withSiblings(
     }
   }
 
+  // Banner priority: own, another version's, then the hand-picked one (shown without logo).
+  const psnBannerUrl = pick(title.bannerUrl, (t) => t.bannerUrl);
+  const overrideUrl = psnBannerUrl == null ? bannerOverrideFor(title.name) : null;
+
   return {
     coverUrl,
-    bannerUrl: pick(title.bannerUrl, (t) => t.bannerUrl),
-    logoUrl: pick(title.logoUrl, (t) => t.logoUrl),
+    bannerUrl: psnBannerUrl ?? overrideUrl,
+    bannerIsOverride: overrideUrl != null,
+    logoUrl: overrideUrl != null ? null : pick(title.logoUrl, (t) => t.logoUrl),
     publisher: pick(title.publisher, (t) => t.publisher),
     genres: pick(title.genres, (t) => t.genres),
     releaseDate: pick(title.releaseDate, (t) => t.releaseDate),

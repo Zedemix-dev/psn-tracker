@@ -54,6 +54,27 @@ describe("cacheImages", () => {
     expect(urls).toContain(LOGO);
   });
 
+  it("downloads the hand-picked banner of a visible game, not of a hidden one", async () => {
+    const GOT = "https://img.psnprofiles.com/hero/l/3220/31500c21-cc5e-4d31-bfcc-9c10cbb55249.jpg";
+    await db
+      .update(titles)
+      .set({ name: "Game of Thrones" })
+      .where(eq(titles.npCommunicationId, "NPWR00001_00"));
+    const f = okFetch();
+    await cacheImages(db, dir, f);
+    expect(f.mock.calls.map((c) => String(c[0]))).toContain(GOT);
+
+    const dir2 = await fs.mkdtemp(path.join(os.tmpdir(), "media-"));
+    await db
+      .update(titles)
+      .set({ hidden: true })
+      .where(eq(titles.npCommunicationId, "NPWR00001_00"));
+    const g = okFetch();
+    await cacheImages(db, dir2, g);
+    await fs.rm(dir2, { recursive: true, force: true });
+    expect(g.mock.calls.map((c) => String(c[0]))).not.toContain(GOT);
+  });
+
   it("downloads each url once across two calls", async () => {
     const f = okFetch();
     const first = await cacheImages(db, dir, f);

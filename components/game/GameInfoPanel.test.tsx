@@ -14,6 +14,7 @@ const detail = (o: Partial<GameDetail> = {}): GameDetail => ({
   coverSrc: "/c.png",
   coverIsIcon: false,
   bannerPath: null,
+  bannerIsOverride: false,
   logoSrc: null,
   metaParts: [],
   counts: { platinum: [1, 1], gold: [5, 6], silver: [10, 11], bronze: [31, 40] },

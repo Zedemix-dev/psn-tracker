@@ -56,6 +56,8 @@ export type GameDetail = {
   coverIsIcon: boolean;
   /** Path relative to MEDIA_DIR; null when not downloaded yet. */
   bannerPath: string | null;
+  /** The banner is a hand-picked one (already 1920x520, shown without logo). */
+  bannerIsOverride: boolean;
   logoSrc: string | null;
   metaParts: string[];
   counts: Record<TrophyType, [number, number]>;
@@ -165,6 +167,7 @@ export async function getGameDetail(
     coverSrc: mediaSrc(info.coverUrl ?? info.coverFallbackUrl, imageMap, "full"),
     coverIsIcon: info.coverIsIcon,
     bannerPath: info.bannerUrl ? (imageMap.get(info.bannerUrl)?.path ?? null) : null,
+    bannerIsOverride: info.bannerIsOverride,
     logoSrc: info.logoUrl && imageMap.has(info.logoUrl) ? mediaSrc(info.logoUrl, imageMap, "full") : null,
     metaParts,
     counts: {
