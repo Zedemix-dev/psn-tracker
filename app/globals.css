@@ -180,12 +180,13 @@ select.select option{background:#0F1631;color:var(--text)}
 .tlist .m{color:var(--accent);font-weight:600}
 .tlist.typed li{grid-template-columns:56px minmax(0,1fr) auto 30px}
 .tlist img.ti{width:30px;height:30px;border-radius:0;background:none;object-fit:contain}
+.hero-logo{position:absolute;z-index:1;left:max(24px,calc((100% - 1400px)/2));bottom:104px;max-width:min(400px,38%);max-height:42%;object-fit:contain;object-position:left bottom;filter:drop-shadow(0 4px 22px rgba(0,0,0,.65))}
 .rarity{padding:10px 16px 14px;border-top:1px solid var(--line)}
 .rbar{display:flex;height:6px;border-radius:3px;overflow:hidden;gap:2px}
 .rbar i{display:block;height:100%}
-.rgrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-top:10px}
+.rgrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-top:10px;text-align:center}
 .rgrid div{min-width:0}
-.rgrid b{display:flex;align-items:center;gap:5px;font-size:14px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums}
+.rgrid b{display:flex;align-items:center;justify-content:center;gap:5px;font-size:14px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums}
 .rgrid b i{width:7px;height:7px;border-radius:2px;flex:none}
 .rgrid span{display:block;font-size:10px;line-height:1.25;color:var(--muted);margin-top:2px}
 .t1{background:var(--accent)} .t2{background:color-mix(in srgb,var(--accent) 75%,transparent)} .t3{background:color-mix(in srgb,var(--accent) 52%,transparent)} .t4{background:color-mix(in srgb,var(--accent) 32%,transparent)} .t5{background:color-mix(in srgb,var(--accent) 16%,transparent)}

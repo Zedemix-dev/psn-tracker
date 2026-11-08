@@ -13,17 +13,29 @@ export function bannerVars(
   };
 }
 
-export function Banner({ hasImage }: { hasImage: boolean }) {
+export function Banner({
+  hasImage,
+  label = "Custom banner",
+  logo,
+}: {
+  hasImage: boolean;
+  label?: string;
+  logo?: { src: string; alt: string } | null;
+}) {
   return (
     <div className="hero">
       {hasImage ? (
-        <div className="hero-img" role="img" aria-label="Custom banner" />
+        <div className="hero-img" role="img" aria-label={label} />
       ) : (
         <div className="hero-img hero-empty">
           <Link className="pill" href="/settings">
             Choose a banner in Settings
           </Link>
         </div>
+      )}
+      {logo && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img className="hero-logo" src={logo.src} alt={logo.alt} />
       )}
     </div>
   );

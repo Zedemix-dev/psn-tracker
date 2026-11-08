@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState, useTransition } from "react";
-import { resetBanner, saveBannerPosition, saveNpsso, uploadBanner } from "@/app/(site)/settings/actions";
+import { resetBanner, saveBannerPosition, saveNpsso, uploadBanner } from "@/app/(site)/(banner)/settings/actions";
 import type { FormResult } from "@/src/settings/npsso";
 
 function Message({ result }: { result: FormResult | null }) {
