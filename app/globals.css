@@ -72,8 +72,8 @@ svg.ico{width:14px;height:14px;flex:none}
 .stats{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-top:12px}
 .stat{padding:12px 16px;border-radius:12px;min-width:0}
 .stat .label{font-size:12px;color:var(--muted)}
-.stat .value{font-size:28px;font-weight:300;line-height:1.15;margin-top:2px;font-variant-numeric:tabular-nums;white-space:nowrap}
-.stat .value small{font-size:18px;font-weight:300;color:var(--muted)}
+.stat .value{font-size:28px;font-weight:700;line-height:1.15;margin-top:2px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.stat .value small{font-size:18px;font-weight:600;color:var(--muted)}
 
 @media (max-width:1180px){
   .profile{grid-template-columns:auto minmax(0,1fr)}
@@ -87,6 +87,8 @@ svg.ico{width:14px;height:14px;flex:none}
   .profile{gap:14px;padding:12px;margin-top:-48px}
   .avatar{width:68px;height:68px}
   .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  /* Bold digits are wide: keep "20,927 h" inside a half-width tile down to 320 px phones */
+  .stat .value{font-size:24px}
 }
 @media (prefers-reduced-motion:reduce){.btn-sync.busy svg{animation:none}}
 
