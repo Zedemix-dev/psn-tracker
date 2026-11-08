@@ -160,15 +160,23 @@ describe("GameList", () => {
 
   describe("coming back from a game page", () => {
     const scrollTo = vi.fn();
+    const realScrollTo = window.scrollTo;
     beforeEach(() => {
       scrollTo.mockReset();
       window.scrollTo = scrollTo as never;
+      history.replaceState(null, "");
       saveListSnapshot({ key: "k", items: games(1, 120), total: 200, scrollY: 4200 });
     });
-    const mount = () => render(<GameList snapshotKey="k" initial={{ items: games(1, 50), total: 200 }} query={query} />);
+    afterEach(() => {
+      window.scrollTo = realScrollTo;
+      delete (window as { scrollY?: number }).scrollY;
+      vi.restoreAllMocks();
+    });
+    const mount = (key = "k") =>
+      render(<GameList snapshotKey={key} initial={{ items: games(1, 50), total: 200 }} query={query} />);
 
     it("restores the loaded games and the scroll position after a back navigation", async () => {
-      window.dispatchEvent(new PopStateEvent("popstate"));
+      // Back to the tagged entry: it is still the current one.
       await act(async () => {
         mount();
       });
@@ -176,25 +184,53 @@ describe("GameList", () => {
       expect(scrollTo).toHaveBeenCalledWith(0, 4200);
     });
 
+    it("restores again after leaving and coming back a second time", async () => {
+      await act(async () => {
+        mount();
+      });
+      cleanup();
+      await act(async () => {
+        mount();
+      });
+      expect(rows()).toBe(120);
+    });
+
     it("starts from the top on a fresh visit", async () => {
+      history.pushState(null, ""); // a new entry, as a menu link would push
       await act(async () => {
         mount();
       });
       expect(rows()).toBe(50);
       expect(scrollTo).not.toHaveBeenCalled();
-      expect(sessionStorage.getItem("games-list")).toBeNull();
     });
 
-    it("ignores a snapshot taken with other filters or before a sync", async () => {
-      window.dispatchEvent(new PopStateEvent("popstate"));
+    it("starts from the top on a fresh visit after a back that mounted no list", async () => {
+      window.dispatchEvent(new PopStateEvent("popstate")); // back to a game page: no GameList
+      history.pushState(null, ""); // then the Games menu entry
       await act(async () => {
-        render(<GameList snapshotKey="other" initial={{ items: games(1, 50), total: 200 }} query={query} />);
+        mount();
       });
       expect(rows()).toBe(50);
       expect(scrollTo).not.toHaveBeenCalled();
     });
 
+    it("ignores a snapshot taken with other filters or before a sync", async () => {
+      await act(async () => {
+        mount("other");
+      });
+      expect(rows()).toBe(50);
+      expect(scrollTo).not.toHaveBeenCalled();
+    });
+
+    it("keeps Next's own history state when tagging the entry", () => {
+      history.replaceState({ __NA: true }, "");
+      saveListSnapshot({ key: "k", items: games(1, 2), total: 2, scrollY: 1 });
+      expect(history.state.__NA).toBe(true);
+      expect(history.state.gamesSnapshot).toBeTruthy();
+    });
+
     it("saves the loaded games and scroll position when a game is opened", async () => {
+      history.pushState(null, "");
       mount();
       sessionStorage.clear();
       Object.defineProperty(window, "scrollY", { value: 900, configurable: true });
@@ -204,6 +240,37 @@ describe("GameList", () => {
       const saved = JSON.parse(sessionStorage.getItem("games-list")!);
       expect(saved).toMatchObject({ key: "k", total: 200, scrollY: 900 });
       expect(saved.items).toHaveLength(50);
+    });
+
+    it("does not save on modified or non-primary clicks", async () => {
+      mount();
+      sessionStorage.clear();
+      const link = document.querySelector<HTMLAnchorElement>("a.game")!;
+      link.addEventListener("click", (e) => e.preventDefault());
+      await act(async () => {
+        link.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, ctrlKey: true }));
+        link.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, metaKey: true }));
+        link.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, shiftKey: true }));
+        link.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, button: 1 }));
+      });
+      expect(sessionStorage.getItem("games-list")).toBeNull();
+    });
+
+    it("does not crash when sessionStorage throws", async () => {
+      vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
+        throw new Error("denied");
+      });
+      vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+        throw new Error("quota");
+      });
+      await act(async () => {
+        mount();
+      });
+      expect(rows()).toBe(50);
+      const link = document.querySelector<HTMLAnchorElement>("a.game")!;
+      link.addEventListener("click", (e) => e.preventDefault());
+      await act(async () => link.click());
+      expect(rows()).toBe(50);
     });
   });
 });

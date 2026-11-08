@@ -54,6 +54,7 @@ export function GameList({
   }, [items]);
 
   const rememberPlace = (e: React.MouseEvent) => {
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
     if ((e.target as HTMLElement).closest("a.game")) {
       saveListSnapshot({ key: snapshotKey, items, total, scrollY: window.scrollY });
     }
