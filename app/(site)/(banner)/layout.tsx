@@ -1,14 +1,14 @@
 import type { CSSProperties } from "react";
 import { Banner, PageBackground, bannerVars } from "@/components/Banner";
 import { getDb } from "@/src/db/client";
-import { getSettings } from "@/src/settings/repo";
+import { getPageBanner } from "@/src/settings/page-banner";
 
 export default async function BannerLayout({ children }: { children: React.ReactNode }) {
-  const s = await getSettings(await getDb());
+  const banner = await getPageBanner(await getDb());
   return (
-    <div style={bannerVars(s.bannerPath, s.bannerPosY) as CSSProperties}>
-      {s.bannerPath && <PageBackground />}
-      <Banner hasImage={Boolean(s.bannerPath)} />
+    <div style={bannerVars(banner?.path ?? null, banner?.posY ?? 50) as CSSProperties}>
+      {banner && <PageBackground />}
+      <Banner hasImage={banner !== null} />
       {children}
     </div>
   );

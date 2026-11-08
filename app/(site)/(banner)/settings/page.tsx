@@ -5,6 +5,7 @@ import { requireSession } from "@/src/auth/require-session";
 import { getDb } from "@/src/db/client";
 import { syncRuns } from "@/src/db/schema";
 import { formatDate, formatDateTime, formatDuration } from "@/src/lib/format";
+import { getPageBanner } from "@/src/settings/page-banner";
 import { getSettings } from "@/src/settings/repo";
 import { getSyncStatus } from "@/src/sync/requests";
 import { logout } from "./actions";
@@ -15,10 +16,11 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 export default async function SettingsPage() {
   await requireSession();
   const db = await getDb();
-  const [s, runs, sync] = await Promise.all([
+  const [s, runs, sync, pageBanner] = await Promise.all([
     getSettings(db),
     db.select().from(syncRuns).orderBy(desc(syncRuns.startedAt), desc(syncRuns.id)).limit(20),
     getSyncStatus(db),
+    getPageBanner(db),
   ]);
   const age = s.npssoSetAt ? Math.floor((Date.now() - s.npssoSetAt.getTime()) / DAY_MS) : null;
 
@@ -33,6 +35,11 @@ export default async function SettingsPage() {
         <BannerForm
           bannerUrl={s.bannerPath ? `/media/${encodeURI(s.bannerPath)}` : null}
           posY={s.bannerPosY}
+          auto={
+            pageBanner?.source === "auto" && pageBanner.gameName
+              ? { url: `/media/${encodeURI(pageBanner.path)}`, gameName: pageBanner.gameName }
+              : null
+          }
         />
       </section>
 
