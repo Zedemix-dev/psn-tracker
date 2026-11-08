@@ -13,7 +13,12 @@
     "worker:dev": "tsx src/worker/index.ts",
     "hash-password": "tsx scripts/hash-password.ts",
     "db:generate": "drizzle-kit generate",
-    "seed:dev": "tsx scripts/seed-dev.ts"
+    "seed:dev": "tsx scripts/seed-dev.ts",
+    "e2e:env": "node scripts/e2e/make-env.mjs",
+    "e2e:db": "node scripts/e2e/db.mjs",
+    "e2e:worker": "node --env-file=.data/e2e.env node_modules/tsx/dist/cli.mjs src/worker/index.ts",
+    "e2e:web": "node scripts/e2e/web.mjs",
+    "e2e:sql": "node scripts/e2e/sql.mjs"
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.5.15",
