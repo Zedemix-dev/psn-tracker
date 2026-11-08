@@ -119,6 +119,7 @@ export const playedGames = pgTable("played_games", {
 export const images = pgTable("images", {
   url: text("url").primaryKey(),
   localPath: text("local_path"),
+  thumbPath: text("thumb_path"),
   attempts: integer("attempts").notNull().default(0),
   fetchedAt: ts("fetched_at"),
 });

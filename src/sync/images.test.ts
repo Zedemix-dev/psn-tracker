@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { eq } from "drizzle-orm";
+import sharp from "sharp";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Db } from "@/src/db/client";
 import { images, profile, titles } from "@/src/db/schema";
@@ -48,7 +49,7 @@ describe("cacheImages", () => {
     expect(first.downloaded).toBeGreaterThanOrEqual(2);
     expect(calls).toBe(first.downloaded);
     expect(f.mock.calls.length).toBe(calls);
-    expect(second).toEqual({ downloaded: 0, failed: 0 });
+    expect(second).toMatchObject({ downloaded: 0, failed: 0 });
   });
 
   it("stores files under psn/<sha256>.<ext> with a relative localPath", async () => {
@@ -129,20 +130,84 @@ describe("cacheImages", () => {
   });
 });
 
+const pngFetch = async () => {
+  const bytes = await sharp({
+    create: { width: 400, height: 400, channels: 3, background: "#aa5522" },
+  })
+    .png()
+    .toBuffer();
+  return vi.fn(
+    async (_url: string | URL | Request) =>
+      new Response(new Uint8Array(bytes), { status: 200, headers: { "content-type": "image/png" } }),
+  );
+};
+
+describe("cacheImages thumbnails", () => {
+  it("creates psn/thumb/<hash>.webp after a download", async () => {
+    const r = await cacheImages(db, dir, await pngFetch());
+    const [row] = await db.select().from(images).where(eq(images.url, ICON));
+    expect(row.thumbPath).toBe(`psn/thumb/${imageHash(ICON)}.webp`);
+    const meta = await sharp(await fs.readFile(path.join(dir, row.thumbPath!))).metadata();
+    expect(meta.format).toBe("webp");
+    expect(meta.width).toBe(192);
+    expect(r.thumbs).toBe(r.downloaded);
+    expect(r.thumbsFailed).toBe(0);
+  });
+
+  it("catches up rows that have a file but no thumbnail, without downloading", async () => {
+    const f = await pngFetch();
+    const first = await cacheImages(db, dir, f);
+    await db.update(images).set({ thumbPath: null });
+    await fs.rm(path.join(dir, "psn", "thumb"), { recursive: true });
+    const r = await cacheImages(db, dir, f);
+    expect(f.mock.calls.length).toBe(first.downloaded);
+    expect(r.downloaded).toBe(0);
+    expect(r.thumbs).toBe(first.downloaded);
+    const [row] = await db.select().from(images).where(eq(images.url, ICON));
+    expect(row.thumbPath).toBe(`psn/thumb/${imageHash(ICON)}.webp`);
+    await expect(fs.stat(path.join(dir, row.thumbPath!))).resolves.toBeTruthy();
+  });
+
+  it("keeps thumbPath null for a corrupt image and does not throw", async () => {
+    const junk = Uint8Array.from({ length: 200 }, (_, i) => (i * 37) % 251);
+    const f = vi.fn(
+      async () => new Response(junk, { status: 200, headers: { "content-type": "image/png" } }),
+    );
+    await db.update(titles).set({ coverUrl: null });
+    const r = await cacheImages(db, dir, f);
+    expect(r).toEqual({ downloaded: 1, failed: 0, thumbs: 0, thumbsFailed: 1 });
+    const [row] = await db.select().from(images).where(eq(images.url, ICON));
+    expect(row.localPath).not.toBeNull();
+    expect(row.thumbPath).toBeNull();
+  });
+});
+
 describe("loadImageMap / mediaSrc", () => {
   it("maps only cached images", async () => {
     await cacheImages(db, dir, okFetch());
     await db.insert(images).values({ url: "https://x/pending.png" });
     const map = await loadImageMap(db);
-    expect(map.get(ICON)).toBe(`psn/${imageHash(ICON)}.png`);
+    expect(map.get(ICON)).toEqual({ path: `psn/${imageHash(ICON)}.png`, thumb: null });
     expect(map.has("https://x/pending.png")).toBe(false);
   });
 
-  it("builds /media urls and falls back to the placeholder", () => {
-    const map = new Map([[ICON, "psn/ab.png"]]);
-    expect(mediaSrc(ICON, map)).toBe("/media/psn/ab.png");
+  it("serves the thumbnail by default, the original when absent or when asked", () => {
+    const map = new Map([
+      [ICON, { path: "psn/ab.png", thumb: "psn/thumb/ab.webp" }],
+      [COVER, { path: "psn/cd.jpg", thumb: null }],
+    ]);
+    expect(mediaSrc(ICON, map)).toBe("/media/psn/thumb/ab.webp");
+    expect(mediaSrc(ICON, map, "thumb")).toBe("/media/psn/thumb/ab.webp");
+    expect(mediaSrc(ICON, map, "full")).toBe("/media/psn/ab.png");
+    expect(mediaSrc(COVER, map)).toBe("/media/psn/cd.jpg");
+    expect(mediaSrc(COVER, map, "full")).toBe("/media/psn/cd.jpg");
+  });
+
+  it("falls back to the placeholder for unknown or null urls", () => {
+    const map = new Map([[ICON, { path: "psn/ab.png", thumb: null }]]);
     expect(mediaSrc("https://other/x.png", map)).toBe("/icons/placeholder.svg");
     expect(mediaSrc(null, map)).toBe("/icons/placeholder.svg");
+    expect(mediaSrc("https://other/x.png", map, "full")).toBe("/icons/placeholder.svg");
   });
 });
 

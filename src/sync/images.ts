@@ -1,9 +1,10 @@
 import { createHash } from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { and, inArray, isNotNull, sql } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
 import type { Db } from "@/src/db/client";
 import { images, profile, titles, trophies, trophyGroups } from "@/src/db/schema";
+import { makeThumb } from "@/src/sync/thumbs";
 
 const PLACEHOLDER = "/icons/placeholder.svg";
 const CONCURRENCY = 4;
@@ -21,19 +22,26 @@ const CONTENT_TYPE_EXT: Record<string, string> = {
 
 export const imageHash = (url: string) => createHash("sha256").update(url).digest("hex");
 
-/** Local `/media/...` url of a cached image, else the placeholder. */
-export function mediaSrc(url: string | null, cached: Map<string, string>): string {
-  const local = url ? cached.get(url) : undefined;
-  return local ? `/media/${local}` : PLACEHOLDER;
+export type ImageMap = Map<string, { path: string; thumb: string | null }>;
+
+/** Local `/media/...` url of a cached image (its thumbnail by default), else the placeholder. */
+export function mediaSrc(
+  url: string | null,
+  cached: ImageMap,
+  size: "thumb" | "full" = "thumb",
+): string {
+  const entry = url ? cached.get(url) : undefined;
+  if (!entry) return PLACEHOLDER;
+  return `/media/${size === "thumb" && entry.thumb ? entry.thumb : entry.path}`;
 }
 
-/** url -> path relative to mediaDir, for downloaded images only. */
-export async function loadImageMap(db: Db): Promise<Map<string, string>> {
+/** url -> files relative to mediaDir, for downloaded images only. */
+export async function loadImageMap(db: Db): Promise<ImageMap> {
   const rows = await db
-    .select({ url: images.url, localPath: images.localPath })
+    .select({ url: images.url, localPath: images.localPath, thumbPath: images.thumbPath })
     .from(images)
     .where(isNotNull(images.localPath));
-  return new Map(rows.map((r) => [r.url, r.localPath!]));
+  return new Map(rows.map((r) => [r.url, { path: r.localPath!, thumb: r.thumbPath }]));
 }
 
 /**
@@ -109,15 +117,37 @@ async function downloadOne(
   }
 }
 
+async function thumbOne(db: Db, mediaDir: string, url: string, localPath: string): Promise<boolean> {
+  try {
+    const rel = `psn/thumb/${imageHash(url)}.webp`;
+    await makeThumb(path.join(mediaDir, localPath), path.join(mediaDir, rel));
+    await db.update(images).set({ thumbPath: rel }).where(eq(images.url, url));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Runs `task` over `items`, `CONCURRENCY` at a time. */
+async function inPool<T>(items: T[], task: (item: T) => Promise<void>): Promise<void> {
+  const queue = [...items];
+  const worker = async () => {
+    for (let item = queue.pop(); item !== undefined; item = queue.pop()) await task(item);
+  };
+  await Promise.all(Array.from({ length: Math.min(CONCURRENCY, queue.length) }, worker));
+}
+
 /**
- * Downloads every known PSN image that is not cached yet (4 at a time).
- * Failures only bump `attempts`; the next sync retries them.
+ * Downloads every known PSN image that is not cached yet (4 at a time), then gives a
+ * thumbnail to every cached image that lacks one (new downloads and earlier syncs alike).
+ * Failures only bump `attempts` (download) or leave `thumb_path` null (thumbnail):
+ * the next sync retries both.
  */
 export async function cacheImages(
   db: Db,
   mediaDir: string,
   fetchImpl: typeof fetch = fetch,
-): Promise<{ downloaded: number; failed: number }> {
+): Promise<{ downloaded: number; failed: number; thumbs: number; thumbsFailed: number }> {
   const urls = await collectUrls(db);
   const cached = new Set<string>();
   for (let i = 0; i < urls.length; i += CHUNK) {
@@ -127,15 +157,25 @@ export async function cacheImages(
       .where(and(inArray(images.url, urls.slice(i, i + CHUNK)), isNotNull(images.localPath)));
     for (const r of rows) cached.add(r.url);
   }
-  const queue = urls.filter((u) => !cached.has(u));
   let downloaded = 0;
   let failed = 0;
-  const worker = async () => {
-    for (let url = queue.pop(); url; url = queue.pop()) {
+  await inPool(
+    urls.filter((u) => !cached.has(u)),
+    async (url) => {
       if (await downloadOne(db, mediaDir, url, fetchImpl)) downloaded++;
       else failed++;
-    }
-  };
-  await Promise.all(Array.from({ length: Math.min(CONCURRENCY, queue.length) }, worker));
-  return { downloaded, failed };
+    },
+  );
+
+  const missing = await db
+    .select({ url: images.url, localPath: images.localPath })
+    .from(images)
+    .where(and(isNotNull(images.localPath), isNull(images.thumbPath)));
+  let thumbs = 0;
+  let thumbsFailed = 0;
+  await inPool(missing, async ({ url, localPath }) => {
+    if (await thumbOne(db, mediaDir, url, localPath!)) thumbs++;
+    else thumbsFailed++;
+  });
+  return { downloaded, failed, thumbs, thumbsFailed };
 }

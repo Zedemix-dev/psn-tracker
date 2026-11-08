@@ -62,7 +62,7 @@ const title = (over: Partial<GameTitle> = {}): GameTitle => ({
 
 describe("toGameRow", () => {
   it("maps counts, platforms, cover and the played line", () => {
-    const row = toGameRow(title(), new Map([["https://img/cover.png", "psn/c.png"]]));
+    const row = toGameRow(title(), new Map([["https://img/cover.png", { path: "psn/c.png", thumb: null }]]));
     expect(row).toEqual({
       id: "NPWR1",
       name: "Game",

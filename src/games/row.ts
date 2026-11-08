@@ -1,6 +1,6 @@
 import type { titles, TrophyType } from "@/src/db/schema";
 import { formatLastPlayedLine } from "@/src/lib/format";
-import { mediaSrc } from "@/src/sync/images";
+import { type ImageMap, mediaSrc } from "@/src/sync/images";
 
 export type GameStatus = "plat-earned" | "plat-missing" | "complete" | "incomplete";
 export type GameRank = "S" | "A" | "B" | "C" | "D" | "E" | "F";
@@ -41,7 +41,7 @@ export function gameStatus(
   return t.progress >= 100 ? "complete" : "incomplete";
 }
 
-export function toGameRow(title: GameTitle, imageMap: Map<string, string>): GameRowData {
+export function toGameRow(title: GameTitle, imageMap: ImageMap): GameRowData {
   const earnedTotal =
     title.earnedPlatinum + title.earnedGold + title.earnedSilver + title.earnedBronze;
   const definedTotal =

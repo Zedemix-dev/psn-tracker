@@ -1,7 +1,7 @@
 import type { TrophyType } from "@/src/db/schema";
 import { formatPercent } from "@/src/lib/format";
 import { rarityTier, type RarityTier } from "@/src/lib/rarity";
-import { mediaSrc } from "@/src/sync/images";
+import { type ImageMap, mediaSrc } from "@/src/sync/images";
 import type { EarnedTrophy } from "@/src/stats/trophies";
 
 /** JSON-safe trophy for the side panels, the editor and the search route (no Date, no raw url). */
@@ -17,7 +17,7 @@ export type TrophyItem = {
   tier: RarityTier | null;
 };
 
-export function toTrophyItem(t: EarnedTrophy, imageMap: Map<string, string>): TrophyItem {
+export function toTrophyItem(t: EarnedTrophy, imageMap: ImageMap): TrophyItem {
   return {
     key: `${t.titleId}-${t.trophyId}`,
     titleId: t.titleId,

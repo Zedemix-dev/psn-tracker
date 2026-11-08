@@ -3,7 +3,7 @@ import { TrophyTypeIcon } from "@/components/TrophyTypeIcon";
 import { levelSpriteStyle } from "@/components/levelSprite";
 import type { profile } from "@/src/db/schema";
 import { formatInt } from "@/src/lib/format";
-import { mediaSrc } from "@/src/sync/images";
+import { type ImageMap, mediaSrc } from "@/src/sync/images";
 import type { SyncStatus } from "@/src/sync/requests";
 
 type Profile = typeof profile.$inferSelect;
@@ -23,7 +23,7 @@ export function ProfileBand({
   sync,
 }: {
   profile: Profile;
-  imageMap: Map<string, string>;
+  imageMap: ImageMap;
   sync: SyncStatus;
 }) {
   const name = profile.onlineId ?? "PSN profile";
