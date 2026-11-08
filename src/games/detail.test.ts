@@ -67,11 +67,13 @@ describe("getGameDetail", () => {
     await addTrophy(1, { progressTarget: 5000, progress: 3626 });
     await addTrophy(2, { progressTarget: 5000, progress: 5000, earned: true, earnedAt: NOW });
     await addTrophy(3, { progressTarget: 5000, progress: null });
+    await addTrophy(4, { progressTarget: 4, progress: 0 });
     const d = await getGameDetail(db, "NPWR1", empty, NOW);
     const by = (id: number) => d!.trophies.find((t) => t.id === id)!;
     expect(by(1).counter).toBe("3,626/5,000");
     expect(by(2).counter).toBeNull();
     expect(by(3).counter).toBeNull();
+    expect(by(4).counter).toBe("0/4");
   });
 
   it("falls back cleanly without concept, catalog or downloaded images", async () => {

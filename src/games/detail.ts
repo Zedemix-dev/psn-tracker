@@ -107,7 +107,7 @@ export async function getGameDetail(
       rateLabel: rate == null ? null : formatPercent(rate),
       tier: rate == null ? null : rarityTier(rate),
       counter:
-        !r.earned && r.progressTarget != null && r.progress != null && r.progress > 0
+        !r.earned && r.progressTarget != null && r.progress != null
           ? `${formatInt(r.progress)}/${formatInt(r.progressTarget)}`
           : null,
     };
