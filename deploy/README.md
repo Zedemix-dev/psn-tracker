@@ -49,7 +49,7 @@ Préparez trois valeurs :
    npm run hash-password -- "<votre mot de passe>"
    ```
 
-   Le hash bcrypt contient des `$` (par exemple `$2b$12$...`). Docker Compose interprète `$` comme une variable : si Portainer utilise la valeur dans un fichier compose avec interpolation, **chaque `$` doit être doublé** (`$$2b$$12$$...`). Si la valeur est saisie dans l'éditeur de variables d'environnement de Portainer (« Environment variables » de la stack), la valeur est substituée telle quelle : testez la connexion, et si elle échoue doublez les `$`. Dans un fichier `.env`/`.env.local` en local, il faut les échapper en `\$`.
+   Le hash bcrypt contient des `$` (forme `$2b$12$...`). Docker Compose interprète `$` comme une variable : dans les variables d'environnement de la stack Portainer, **écrivez chaque `$` du hash en `$$`**. Exemple avec un faux hash : `$2b$12$AbCdEf...` devient `$$2b$$12$$AbCdEf...`. Symptôme si c'est faux : « Wrong username or password. » même avec le bon mot de passe. Dans un fichier `.env`/`.env.local` en local, il faut au contraire échapper chaque `$` en `$`.
 3. `POSTGRES_PASSWORD` : un mot de passe fort au choix (évitez les caractères `@`, `:`, `/`, `#` qui cassent l'URL de connexion ; préférez des lettres et chiffres).
 
 ## 5. Stacks Portainer
@@ -65,7 +65,7 @@ Préparez trois valeurs :
    - Destination : protocole **HTTP**, nom d'hôte `localhost`, port **8080**.
 2. Certificat : **Panneau de configuration → Sécurité → Certificat → Ajouter** → Let's Encrypt pour `psn.<votre-nom>.synology.me`, puis *Configurer* pour associer ce certificat à la règle de proxy.
 3. Le site doit être servi **à la racine** du nom d'hôte (pas de sous-chemin comme `/psn`).
-4. DSM ajoute par défaut les en-têtes `X-Forwarded-Proto` et `X-Forwarded-For` : vérifiez dans la règle → *En-têtes personnalisés*. Sans `X-Forwarded-Proto: https`, le cookie de session n'est pas marqué sécurisé ; sans `X-Forwarded-For`, l'adresse IP du client est fausse.
+4. Vérification fonctionnelle : après connexion en HTTPS, le cookie `psnt_session` doit porter le drapeau **Secure** (outils du navigateur → Stockage/Application → Cookies, ou en-tête de réponse `Set-Cookie … Secure`). Sinon, ajoutez manuellement l'en-tête `X-Forwarded-Proto` (valeur `$scheme`) dans la règle DSM (onglet *En-têtes personnalisés* → Créer → personnalisé). Sans lui, le cookie n'est pas sécurisé.
 5. Redirection du port 443 de votre box vers le NAS si vous voulez y accéder depuis l'extérieur.
 
 ## 7. Premier démarrage
@@ -85,4 +85,4 @@ Préparez trois valeurs :
 - **Erreur « Invalid Server Actions request » / origine refusée** : l'en-tête `Host` n'est pas transmis jusqu'à l'app. Vérifier que le proxy DSM conserve le nom d'hôte et que `default.conf` contient `proxy_set_header Host $host;` et `X-Forwarded-Host $host;`.
 - **Erreur 413 (Request Entity Too Large)** sur l'envoi d'une bannière : limite `client_max_body_size 12m` dans `default.conf` (mise à jour du fichier sur le NAS + redémarrage de `nginx`). Le reverse proxy DSM n'impose pas de limite par défaut.
 - **« Syncing… » bloqué** : regarder les logs du conteneur `worker` (Portainer → Containers → `worker` → Logs). Un `npsso` expiré (Settings) ou une erreur réseau PSN sont les causes habituelles.
-- **Échec de connexion en visitant `http://<ip-du-nas>:8080`** : normal si le cookie de session est marqué sécurisé (il n'est accepté que via HTTPS). Utilisez l'adresse HTTPS du proxy DSM. Un échec de connexion sur l'adresse HTTPS signale plutôt un `ADMIN_PASSWORD_HASH` mal échappé (voir étape 4).
+- **`http://<ip-du-nas>:8080` ne répond pas** : voulu. Le port 8080 n'est publié que sur `127.0.0.1` du NAS (le proxy DSM y accède en local), afin qu'un appareil du réseau local ne puisse pas contourner le proxy et falsifier `X-Forwarded-For`. Utilisez l'adresse HTTPS. Une connexion qui échoue sur l'adresse HTTPS signale plutôt un `ADMIN_PASSWORD_HASH` mal échappé (voir étape 4).
