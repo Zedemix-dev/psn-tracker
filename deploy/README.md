@@ -49,7 +49,7 @@ Préparez trois valeurs :
    npm run hash-password -- "<votre mot de passe>"
    ```
 
-   Le hash bcrypt contient des `$` (forme `$2b$12$...`). Docker Compose interprète `$` comme une variable : dans les variables d'environnement de la stack Portainer, **écrivez chaque `$` du hash en `$$`**. Exemple avec un faux hash : `$2b$12$AbCdEf...` devient `$$2b$$12$$AbCdEf...`. Symptôme si c'est faux : « Wrong username or password. » même avec le bon mot de passe. Dans un fichier `.env`/`.env.local` en local, il faut au contraire échapper chaque `$` en `$`.
+   Le hash bcrypt contient des `$` (forme `$2b$12$...`). Docker Compose interprète `$` comme une variable : dans les variables d'environnement de la stack Portainer, **écrivez chaque `$` du hash en `$$`**. Exemple avec un faux hash : `$2b$12$AbCdEf...` devient `$$2b$$12$$AbCdEf...`. Symptôme si c'est faux : « Wrong username or password. » même avec le bon mot de passe. Dans un fichier `.env`/`.env.local` en local, il faut au contraire échapper chaque `$` en `\$`.
 3. `POSTGRES_PASSWORD` : un mot de passe fort au choix (évitez les caractères `@`, `:`, `/`, `#` qui cassent l'URL de connexion ; préférez des lettres et chiffres).
 
 ## 5. Stacks Portainer
