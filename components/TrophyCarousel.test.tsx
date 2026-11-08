@@ -32,6 +32,8 @@ const trophies: CarouselTrophy[] = [1, 2, 3].map((n) => ({
   tier: n === 3 ? null : "Ultra rare",
 }));
 
+let resizeCallback: (() => void) | null = null;
+
 const mockMatchMedia = (reduce: boolean) =>
   vi.stubGlobal(
     "matchMedia",
@@ -48,6 +50,9 @@ beforeEach(() => {
   vi.stubGlobal(
     "ResizeObserver",
     class {
+      constructor(cb: () => void) {
+        resizeCallback = cb;
+      }
       observe() {}
       unobserve() {}
       disconnect() {}
@@ -57,6 +62,7 @@ beforeEach(() => {
 });
 afterEach(() => {
   cleanup();
+  vi.restoreAllMocks();
   vi.useRealTimers();
   vi.unstubAllGlobals();
 });
@@ -100,11 +106,61 @@ describe("<TrophyCarousel>", () => {
     expect(pressed()).toBe(1);
   });
 
-  it("does not advance while focused", () => {
+  const keyboardFocus = (visible: boolean) => {
+    const real = HTMLElement.prototype.matches;
+    vi.spyOn(HTMLElement.prototype, "matches").mockImplementation(function (this: HTMLElement, sel: string) {
+      return sel === ":focus-visible" ? visible : real.call(this, sel);
+    });
+  };
+
+  it("does not advance while keyboard-focused", () => {
+    keyboardFocus(true);
     render(<TrophyCarousel trophies={trophies} />);
     fireEvent.focusIn(screen.getAllByRole("button")[0]);
     act(() => void vi.advanceTimersByTime(20000));
     expect(pressed()).toBe(0);
+  });
+
+  it("stays paused when focus leaves while still hovered", () => {
+    keyboardFocus(true);
+    render(<TrophyCarousel trophies={trophies} />);
+    const strip = screen.getByLabelText("Latest trophies");
+    const first = screen.getAllByRole("button")[0];
+    fireEvent.mouseEnter(strip);
+    fireEvent.focusIn(first);
+    fireEvent.focusOut(first, { relatedTarget: document.body });
+    act(() => void vi.advanceTimersByTime(20000));
+    expect(pressed()).toBe(0);
+  });
+
+  it("stays paused on mouseleave while keyboard focus remains", () => {
+    keyboardFocus(true);
+    render(<TrophyCarousel trophies={trophies} />);
+    const strip = screen.getByLabelText("Latest trophies");
+    fireEvent.mouseEnter(strip);
+    fireEvent.focusIn(screen.getAllByRole("button")[0]);
+    fireEvent.mouseLeave(strip);
+    act(() => void vi.advanceTimersByTime(20000));
+    expect(pressed()).toBe(0);
+  });
+
+  it("resumes after a mouse click once the pointer leaves", () => {
+    keyboardFocus(false);
+    render(<TrophyCarousel trophies={trophies} />);
+    const strip = screen.getByLabelText("Latest trophies");
+    const second = screen.getAllByRole("button")[1];
+    fireEvent.mouseEnter(strip);
+    fireEvent.focusIn(second);
+    fireEvent.click(second);
+    fireEvent.mouseLeave(strip);
+    act(() => void vi.advanceTimersByTime(6000));
+    expect(pressed()).toBe(2);
+  });
+
+  it("leaves no pending timer after unmount", () => {
+    const { unmount } = render(<TrophyCarousel trophies={trophies} />);
+    unmount();
+    expect(vi.getTimerCount()).toBe(0);
   });
 
   it("selects a trophy on click and restarts the timer", () => {
@@ -129,5 +185,36 @@ describe("<TrophyCarousel>", () => {
     render(<TrophyCarousel trophies={trophies} />);
     fireEvent.click(screen.getAllByRole("button")[2]);
     expect(screen.queryByText(/%/)).not.toBeInTheDocument();
+  });
+
+  describe("when the strip is resized", () => {
+    const setWidth = (w: number) => {
+      vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(w);
+      act(() => resizeCallback?.());
+    };
+    const hiddenCount = () => screen.getAllByRole("button", { hidden: true }).filter((b) => b.hidden).length;
+
+    beforeEach(() => {
+      const vars: Record<string, string> = { "--icon": "56px", "--gap": "8px", "--card": "380px" };
+      vi.spyOn(window, "getComputedStyle").mockReturnValue({ getPropertyValue: (v: string) => vars[v] ?? "" } as CSSStyleDeclaration);
+    });
+
+    it("hides overflowing items, resets a stale active index and cycles over the new count only", () => {
+      vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(1400);
+      render(<TrophyCarousel trophies={trophies} />);
+      expect(hiddenCount()).toBe(0);
+      fireEvent.click(screen.getAllByRole("button")[2]);
+      expect(pressed()).toBe(2);
+      setWidth(444); // card + 1 icon -> 2 visible
+      expect(hiddenCount()).toBe(1);
+      expect(pressed()).toBe(0);
+      act(() => void vi.advanceTimersByTime(6000));
+      expect(pressed()).toBe(1);
+      act(() => void vi.advanceTimersByTime(6000));
+      expect(pressed()).toBe(0);
+      setWidth(1400);
+      expect(hiddenCount()).toBe(0);
+      expect(pressed()).toBe(0);
+    });
   });
 });

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, type FocusEvent } from "react";
+import { useEffect, useRef, useState, type FocusEvent } from "react";
 import { fitCount } from "@/components/carousel-fit";
 import { TrophyTypeIcon } from "@/components/TrophyTypeIcon";
 import type { TrophyType } from "@/src/db/schema";
@@ -33,7 +33,9 @@ export function TrophyCarousel({ trophies }: { trophies: CarouselTrophy[] }) {
   const stripRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
   const [visible, setVisible] = useState(trophies.length);
-  const [paused, setPaused] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  const [keyboardFocused, setKeyboardFocused] = useState(false);
+  const paused = hovered || keyboardFocused;
   // Bumped on every manual restart so the timer and its bar start over.
   const [cycle, setCycle] = useState(0);
 
@@ -49,7 +51,9 @@ export function TrophyCarousel({ trophies }: { trophies: CarouselTrophy[] }) {
       const css = getComputedStyle(strip);
       const num = (v: string) => parseFloat(css.getPropertyValue(v));
       const narrow = window.matchMedia?.("(max-width:980px)").matches ?? false;
-      setVisible(fitCount(width, { icon: num("--icon"), gap: num("--gap"), card: num("--card"), narrow }, trophies.length));
+      const n = fitCount(width, { icon: num("--icon"), gap: num("--gap"), card: num("--card"), narrow }, trophies.length);
+      setVisible(n);
+      setActive((a) => (a >= n ? 0 : a));
     };
     fit();
     const observer = new ResizeObserver(fit);
@@ -63,13 +67,21 @@ export function TrophyCarousel({ trophies }: { trophies: CarouselTrophy[] }) {
     return () => clearTimeout(id);
   }, [paused, shown, current, cycle]);
 
-  const pause = useCallback(() => setPaused(true), []);
-  const resume = useCallback(() => {
-    setPaused(false);
-    setCycle((c) => c + 1);
-  }, []);
+  const restart = () => setCycle((c) => c + 1);
+  // Only keyboard focus pauses: a mouse click also focuses the button, but must not freeze the carousel.
+  const onFocus = (e: FocusEvent<HTMLDivElement>) => {
+    let visibleFocus = false;
+    try {
+      visibleFocus = (e.target as Element).matches?.(":focus-visible") ?? false;
+    } catch {
+      // :focus-visible unsupported
+    }
+    setKeyboardFocused(visibleFocus);
+  };
   const onBlur = (e: FocusEvent<HTMLDivElement>) => {
-    if (!e.currentTarget.contains(e.relatedTarget as Node | null)) resume();
+    if (e.currentTarget.contains(e.relatedTarget as Node | null)) return;
+    setKeyboardFocused(false);
+    restart();
   };
 
   if (trophies.length === 0) return null;
@@ -80,9 +92,12 @@ export function TrophyCarousel({ trophies }: { trophies: CarouselTrophy[] }) {
       className={styles.strip}
       aria-label="Latest trophies"
       role="group"
-      onMouseEnter={pause}
-      onMouseLeave={resume}
-      onFocus={pause}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => {
+        setHovered(false);
+        restart();
+      }}
+      onFocus={onFocus}
       onBlur={onBlur}
     >
       {trophies.map((t, i) => {
