@@ -254,6 +254,8 @@ dialog.ce::backdrop{background:rgba(5,8,20,.65)}
 .game-page .gmeta{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:7px;font-size:12.5px;color:var(--muted)}
 .game-page .sep{width:1px;height:11px;background:rgba(255,255,255,.28)}
 .game-page .platform{padding:3px 6px}
+/* Guard: the Games list's 980px rules place .chips/.progress/.status by grid line; here they must auto-place */
+.game-page .chips,.game-page .progress,.game-page .status{grid-column:auto;grid-row:auto}
 .game-page .right{display:flex;flex-direction:column;gap:9px;min-width:0}
 .game-page .chips{display:flex;justify-content:center;gap:4px;padding-right:44px}
 .game-page .chip{min-width:58px;padding:3px 5px}
@@ -293,7 +295,7 @@ dialog.ce::backdrop{background:rgba(5,8,20,.65)}
 .game-page .totals .lbl{font-size:12px;color:var(--muted)}
 .game-page .totals .val{font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
 .game-page .totals .val span{color:var(--muted);font-weight:400}
-.game-page .totals .chips{justify-content:flex-start;padding:0;grid-column:2}
+.game-page .totals .chips{justify-content:flex-start;padding:0;grid-column:2;grid-row:auto}
 .game-page .totals .chip{min-width:48px}
 .game-page .rgrid{gap:2px}
 .game-page .rgrid span{font-size:9.5px;white-space:nowrap}
