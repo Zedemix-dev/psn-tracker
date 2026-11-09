@@ -142,7 +142,7 @@ Le site doit reprendre **la lisibilité épurée de psnprofiles** et **la prése
 - **[mon choix]** Infos du catalogue (éditeur, date de sortie, genres) : récupérées pour tout concept qui n'en a pas encore, puis rafraîchies une fois par jour avec les raretés. Un échec sur un concept n'arrête pas la synchro : il est retenté la fois suivante.
 - Les jaquettes carrées et le temps de jeu viennent de `getUserPlayedGames`, rechargé à chaque synchro.
   - Le lien `titleId` → `npCommunicationId` n'est calculé qu'une fois par nouveau `titleId`, puis mis en cache.
-  - Si un jeu n'a pas de correspondance, on affiche l'icône de sa liste de trophées dans un cadre carré, sans la rogner.
+  - Si un jeu n'a pas de correspondance, on affiche l'icône de sa liste de trophées dans un cadre carré, sans la rogner, sur une **tuile carrée sombre** (`#0B1022`) : la ligne reste carrée.
 - **[mon choix]** Aucune limite de débit n'est documentée. Les appels sont faits l'un après l'autre avec une petite pause, et réessayés avec un délai croissant en cas d'erreur 429 ou 5xx.
 
 ### 6.5 Images
@@ -414,6 +414,7 @@ C'est un panneau translucide qui chevauche le bas de la bannière, comme le band
       - pour une liste **PS4**, dont les icônes de groupe sont rectangulaires, c'est **la même image que la ligne du jeu dans la liste Games** (sa jaquette carrée, empruntée au besoin à une autre version), répétée sur le jeu de base et sur chaque DLC ;
       - le but est la cohérence : une image carrée partout ;
       - **[décidé, 9 novembre 2026]** une liste PS4 sans aucune jaquette (ni chez elle, ni chez une autre version) met elle aussi, sur le jeu de base et sur **chaque** DLC, l'image de sa ligne dans la liste Games : l'icône de sa liste de trophées, affichée en entier. Les DLC n'affichent donc jamais leur propre icône rectangulaire. Cas concernés au 9 novembre 2026 : Marvel Heroes Omega et Minecraft: Story Mode ;
+      - **[décidé, 9 novembre 2026] Aucune image rectangulaire, nulle part** (ni la jaquette, ni les groupes). Une image qui n'est pas carrée est posée, entière, sur **la même tuile carrée sombre que dans la liste Games** (`#0B1022`). Elle se lit donc comme un carré, exactement comme sa ligne dans Games. Cela vaut pour l'en-tête de chaque groupe et pour la grande jaquette de la colonne latérale. Au 9 novembre 2026, quatre listes PS4 n'ont aucune jaquette carrée : Game of Thrones, Marvel Heroes Omega, Minecraft: Story Mode et Tales from the Borderlands. L'utilisateur a demandé de reprendre l'image de la liste Games faute d'autre image carrée ;
     - un sur-titre en petites capitales : « Base game » pour le groupe `default`, puis « DLC 1 », « DLC 2 »… dans l'ordre des groupes ;
     - le nom : celui du jeu pour le jeu de base, celui du pack pour un DLC ;
     - « 45 of 45 trophies » ;
@@ -443,7 +444,7 @@ C'est un panneau translucide qui chevauche le bas de la bannière, comme le band
 - **[décidé] Les trophées secrets sont tous affichés en entier**, nom et description compris, qu'ils soient obtenus ou non. Le PSN fournit ces textes. Il n'y a pas de bouton « Hide secret trophies ».
 
 **Colonne latérale** (320 px, 10)
-1. **[décidé] La jaquette en grand**, en 320 × 320 : la même jaquette carrée que dans la liste des jeux (8.7), ou à défaut l'icône de la liste de trophées, sans la rogner.
+1. **[décidé] La jaquette en grand**, en 320 × 320 : la même jaquette carrée que dans la liste des jeux (8.7), ou à défaut l'icône de la liste de trophées, sans la rogner, sur la même tuile carrée sombre que dans la liste Games (**[décidé, 9 novembre 2026]**, aucune image rectangulaire).
 2. **Infos du jeu**, dans un panneau :
    - **[décidé] Deux lignes de totaux** :
      - « Total 58 trophies · 1,485 points », avec les pastilles du nombre de trophées par type ;

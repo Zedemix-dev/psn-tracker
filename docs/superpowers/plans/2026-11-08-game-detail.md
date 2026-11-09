@@ -786,3 +786,20 @@ Retour de l'utilisateur, 9 novembre 2026 : Marvel Heroes Omega montrait encore d
 - [ ] **Step 3 :** implémenter.
 - [ ] **Step 4 :** `npx vitest run` → PASS ; `npx tsc --noEmit`.
 - [ ] **Step 5 :** commit `fix(game): PS4 lists without a cover show the Games-list image on every group`, puis push.
+
+### Task 20 : Aucune image rectangulaire sur la page d'un jeu (spec 8.9)
+
+Retour de l'utilisateur, 9 novembre 2026 : sur Marvel Heroes Omega, la grande jaquette était encore un rectangle, et les groupes aussi. Il ne veut aucune image rectangulaire, ni en jaquette ni sur les groupes, et demande de reprendre l'image de la liste Games. Dans Games, l'icône est entière, posée sur une tuile carrée sombre (`.game-cover.icon`, fond `#0B1022`). Sur la page du jeu, la jaquette n'avait pas de fond, et les groupes avaient un fond translucide (`rgba(0,0,0,.25)`), si bien que le rectangle se voyait.
+
+**Files:**
+- Modify: `app/globals.css`
+
+**Règle:**
+- `.game-page .cover.icon` : `object-fit: contain` sur fond `#0B1022`, comme `.game-cover.icon`.
+- `.game-page .group-head > img` (image de groupe qui n'est pas une jaquette) : fond `#0B1022` au lieu de `rgba(0,0,0,.25)`. `img.sq` (jaquette qui remplit le cadre) ne change pas.
+- L'icône de platine de l'en-tête reste sans fond (règle « direct child » inchangée).
+
+- [ ] **Step 1 :** modifier les deux règles CSS.
+- [ ] **Step 2 :** `npx vitest run` → PASS ; `npx tsc --noEmit`.
+- [ ] **Step 3 :** vérifier en local, avec les vraies données, Marvel Heroes Omega, Minecraft: Story Mode, Game of Thrones et Tales from the Borderlands, puis les 168 listes PS4 : aucune image de jaquette ni de groupe sans tuile carrée.
+- [ ] **Step 4 :** commit `fix(game): non-square images sit on the Games-list dark square tile`, puis push.
