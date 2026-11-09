@@ -39,6 +39,8 @@ COPY --from=build --chown=node:node /app/src/db/migrations ./migrations
 RUN mkdir -p /data/media && chown node:node /data/media
 # Fail the build if the native module does not load on Alpine/musl.
 RUN node -e "require('/app/dist/node_modules/sharp')"
+# The Plat Wall PNG route runs sharp inside the Next app: check its traced copy too.
+RUN node -e "require('/app/node_modules/sharp')(Buffer.from('<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"1\" height=\"1\"/>')).png().toBuffer()"
 USER node
 EXPOSE 3000
 CMD ["node", "server.js"]

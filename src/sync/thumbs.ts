@@ -6,7 +6,7 @@ const THUMB_QUALITY = 80;
 
 /**
  * Writes a WebP thumbnail (fits in 192x192, never enlarged) of `source` to `target`,
- * atomically. sharp is imported here only so the Next app never loads it.
+ * atomically. sharp is imported dynamically so it is only loaded on the paths that use it.
  */
 export async function makeThumb(source: string, target: string): Promise<void> {
   const { default: sharp } = await import("sharp");
