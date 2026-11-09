@@ -28,6 +28,15 @@ describe("text engine", () => {
     );
   });
 
+  it("sets tabular digits on demand, as font-variant-numeric does on the site", () => {
+    const proportional = { size: 17, weight: 700 } as const;
+    const tabular = { ...proportional, tabular: true };
+    expect(engine.measure("11,630", tabular)).toBeCloseTo(62.08, 1);
+    expect(engine.measure("11,630", proportional)).toBeLessThan(engine.measure("11,630", tabular));
+    const at = { x: 0, y: 20, fill: "#fff" };
+    expect(engine.path("1", tabular, at)).not.toBe(engine.path("1", proportional, at));
+  });
+
   it("draws ō with the real font", () => {
     const at = { x: 0, y: 20, fill: "#fff" };
     expect(engine.path("Yōtei", regular, at)).not.toBe(engine.path("Yotei", regular, at));

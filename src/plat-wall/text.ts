@@ -2,7 +2,8 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { create, type Font } from "fontkit";
 
-export type TextStyle = { size: number; weight: 400 | 500 | 600 | 700 };
+/** `tabular` is CSS's font-variant-numeric: tabular-nums. */
+export type TextStyle = { size: number; weight: 400 | 500 | 600 | 700; tabular?: boolean };
 export type TextEngine = {
   measure(text: string, style: TextStyle): number;
   wrap(text: string, style: TextStyle, maxWidth: number, maxLines: number): string[];
@@ -44,11 +45,14 @@ function buildEngine(fonts: Map<number, Font>): TextEngine {
   const drawable = (text: string, font: Font) =>
     toDrawable(text, (cp) => font.hasGlyphForCodePoint(cp));
 
+  const shape = (text: string, font: Font, style: TextStyle) =>
+    font.layout(text, style.tabular ? ["tnum"] : undefined);
+
   const measureRaw = (text: string, style: TextStyle) => {
     const font = fontFor(style);
     const scale = style.size / font.unitsPerEm;
     let width = 0;
-    for (const p of font.layout(text).positions) width += p.xAdvance * scale;
+    for (const p of shape(text, font, style).positions) width += p.xAdvance * scale;
     return width;
   };
   const measure = (text: string, style: TextStyle) =>
@@ -103,7 +107,7 @@ function buildEngine(fonts: Map<number, Font>): TextEngine {
     const clean = drawable(text, font);
     if (clean === "") return "";
     const scale = style.size / font.unitsPerEm;
-    const { glyphs, positions } = font.layout(clean);
+    const { glyphs, positions } = shape(clean, font, style);
     const total = positions.reduce((sum, p) => sum + p.xAdvance * scale, 0);
     let pen = at.x - (at.anchor === "middle" ? total / 2 : at.anchor === "end" ? total : 0);
     let d = "";

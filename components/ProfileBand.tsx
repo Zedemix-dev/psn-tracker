@@ -2,20 +2,13 @@ import { SyncButton } from "@/components/SyncButton";
 import { TrophyTypeIcon } from "@/components/TrophyTypeIcon";
 import { levelSpriteStyle } from "@/components/levelSprite";
 import type { profile } from "@/src/db/schema";
-import { formatInt } from "@/src/lib/format";
+import { profileCounterValues } from "@/src/stats/stat-tile-values";
 import { type ImageMap, mediaSrc } from "@/src/sync/images";
 import type { SyncStatus } from "@/src/sync/requests";
 
 type Profile = typeof profile.$inferSelect;
 
-const COUNTS = [
-  { type: "platinum", key: "earnedPlatinum", cls: "plat" },
-  { type: "gold", key: "earnedGold", cls: "gold" },
-  { type: "silver", key: "earnedSilver", cls: "silver" },
-  { type: "bronze", key: "earnedBronze", cls: "bronze" },
-] as const;
-
-const LABEL = { platinum: "Platinum", gold: "Gold", silver: "Silver", bronze: "Bronze" } as const;
+const COUNT_CLASS = { platinum: "plat", gold: "gold", silver: "silver", bronze: "bronze" } as const;
 
 export function ProfileBand({
   profile,
@@ -27,7 +20,12 @@ export function ProfileBand({
   sync: SyncStatus;
 }) {
   const name = profile.onlineId ?? "PSN profile";
-  const total = COUNTS.reduce((sum, c) => sum + profile[c.key], 0);
+  const counters = profileCounterValues({
+    platinum: profile.earnedPlatinum,
+    gold: profile.earnedGold,
+    silver: profile.earnedSilver,
+    bronze: profile.earnedBronze,
+  });
   const progress = profile.levelProgress ?? 0;
   return (
     <section className="profile glass" aria-label="Profile">
@@ -38,16 +36,12 @@ export function ProfileBand({
         <SyncButton initial={sync} />
       </div>
       <div className="counts">
-        <div className="count">
-          <b>{formatInt(total)}</b>
-          <span>Trophies</span>
-        </div>
-        {COUNTS.map((c) => (
-          <div key={c.type} className={`count ${c.cls}`}>
-            <b>{formatInt(profile[c.key])}</b>
+        {counters.map((c) => (
+          <div key={c.label} className={c.type ? `count ${COUNT_CLASS[c.type]}` : "count"}>
+            <b>{c.value}</b>
             <span>
-              <TrophyTypeIcon type={c.type} size={11} />
-              {LABEL[c.type]}
+              {c.type && <TrophyTypeIcon type={c.type} size={11} />}
+              {c.label}
             </span>
           </div>
         ))}
