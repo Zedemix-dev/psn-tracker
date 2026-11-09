@@ -71,7 +71,7 @@ Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un aut
 - **Settings** : état du téléchargement et adresse de la liste.
 - **Correction au passage** : la surbrillance verte des trophées obtenus ne s'affichait pas depuis la PR #4 (couleurs jamais définies sur le site).
 - **Vérifié avec les vraies données** le 9 novembre 2026 : Gran Turismo Sport 7, Marvel Heroes Omega 37, Final Fantasy XV 10, Dauntless PS4 45 et PS5 46, aucun autre jeu.
-- 64 fichiers de tests, 549 tests.
+- 64 fichiers de tests, 552 tests.
 
 ## 3. Ce qui reste à faire, dans l'ordre
 1. **Déployer sur le NAS** en suivant `deploy/README.md`.
