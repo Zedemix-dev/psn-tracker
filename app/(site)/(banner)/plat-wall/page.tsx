@@ -1,3 +1,4 @@
+import { PlatWallControls } from "@/components/plat-wall/PlatWallControls";
 import { PlatGrid, type PlatTile } from "@/components/plat-wall/PlatGrid";
 import { ProfileBand } from "@/components/ProfileBand";
 import { StatTiles } from "@/components/StatTiles";
@@ -6,7 +7,7 @@ import { getDb } from "@/src/db/client";
 import { profile } from "@/src/db/schema";
 import { formatDate, formatInt, formatPercent } from "@/src/lib/format";
 import { loadPlatinums } from "@/src/plat-wall/load";
-import { applyPlatQuery, parsePlatQuery } from "@/src/plat-wall/query";
+import { applyPlatQuery, parsePlatQuery, platinumYears } from "@/src/plat-wall/query";
 import { getSettings } from "@/src/settings/repo";
 import { getProfileStats } from "@/src/stats/profile-stats";
 import { loadImageMap, mediaSrc } from "@/src/sync/images";
@@ -54,6 +55,7 @@ export default async function PlatWallPage({ searchParams }: { searchParams: Pro
               Showing {formatInt(shown.length)} of {formatInt(all.length)} platinum trophies
             </div>
           </div>
+          <PlatWallControls query={query} years={platinumYears(all)} />
         </div>
         {tiles.length > 0 ? (
           <PlatGrid tiles={tiles} show={query.show} />
