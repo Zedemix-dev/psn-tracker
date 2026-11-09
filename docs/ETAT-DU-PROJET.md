@@ -70,7 +70,7 @@ Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un aut
    - Juste après la première publication, donner une seule fois le rôle **Admin** au dépôt dans « Manage Actions access » du package GHCR (étape 1.5).
    - Faire les vérifications du premier déploiement listées dans `docs/superpowers/plans/2026-11-08-phase1-suivis.md`.
    - À la première synchro de cette version, toutes les listes PS5 sont rechargées une fois (migration 0005), ce qui la rallonge de quelques minutes.
-2. **Jeux aux trophées non obtenables** : en cours sur la branche `feat/unobtainable`. Cadrage fait le 9 novembre 2026, maquette validée, décisions dans la **spec, section 14**. Étape suivante : le plan dans `docs/superpowers/plans/`, après relecture de la section 14 par l'utilisateur.
+2. **Jeux aux trophées non obtenables** : en cours sur la branche `feat/unobtainable`. Cadrage fait le 9 novembre 2026, maquette validée, décisions dans la **spec, section 14**. Plan écrit : `docs/superpowers/plans/2026-11-09-unobtainable.md` (13 tâches). Étape suivante : l'exécution « subagent-driven », après relecture du plan par l'utilisateur.
    - Un bouton dans l'en-tête de la liste Games pour afficher tous les jeux d'un coup, sans défiler.
    - Un filtre séparé « With unobtainable » / « Without unobtainable », désactivé par défaut, qui s'ajoute aux autres filtres.
    - Un « ! » après le badge PS4/PS5 des jeux concernés dans la liste Games, avec une infobulle qui donne le nombre de trophées non obtenables et la cause.

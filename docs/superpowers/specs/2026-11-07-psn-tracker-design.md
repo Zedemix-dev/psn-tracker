@@ -629,7 +629,7 @@ Elle sert aussi à **retirer ces jeux de la liste** : par exemple « Not 100% »
 Tout ce paragraphe est **[choix de Claude]**, vérifié sur les vraies données : il redonne exactement les 5 jeux ci-dessus.
 - **Clé de nom**, dans cet ordre : suppression de ™ ® © (sans rien laisser à leur place), décomposition Unicode NFKD, suppression des accents, minuscules, toute suite de caractères qui ne sont ni lettres ni chiffres (au sens Unicode) devient une espace, espaces de bord retirées. Une clé vide ne correspond à rien. L'ordre compte : NFKD transforme ™ en « TM », et 42 des 266 jeux du profil portent l'un de ces signes alors qu'aucun titre de la liste n'en a.
 - **Plateforme** : il faut au moins une plateforme commune. `PSVITA` du PSN équivaut à `Vita` de la liste et `PSPC` à `PC` ; `PS3`, `PS4`, `PS5` sont identiques ; `VR` n'équivaut à rien.
-- **Plusieurs entrées pour un même jeu** (une par région : Final Fantasy XV en a 4) : on prend **l'union** de leurs numéros, et si l'une vaut `[0]`, tout le jeu est concerné. Elles divergent dans 9 groupes sur 186 de la liste, aucun chez l'utilisateur. La note retenue est celle de l'entrée au `timestamp` le plus récent (sans `timestamp` : après les autres ; à égalité : le plus petit identifiant).
+- **Plusieurs entrées pour un même jeu** (une par région : Final Fantasy XV en a 4) : on prend **l'union** de leurs numéros, et si l'une vaut `[0]`, tout le jeu est concerné. Elles divergent dans 9 groupes sur 186 de la liste, aucun chez l'utilisateur. La note retenue est, parmi les entrées qui en ont une, celle de l'entrée au `timestamp` le plus récent (sans `timestamp` : après les autres ; à égalité : le plus petit identifiant).
 - **Du numéro au trophée** : `trophyId = numéro − 1`. Un numéro qui ne correspond à aucun trophée du jeu est ignoré.
 - **Un jeu est « concerné » dès que la liste marque au moins un de ses trophées existants**, même si l'utilisateur les a déjà tous. Le « ! » et le filtre utilisent cette même définition.
 - **Nombre affiché** : le nombre de trophées réellement marqués dans le jeu (N). Cela remplace « la taille du tableau » du cadrage du 8 novembre, faux pour `[0]`.
@@ -639,7 +639,7 @@ Tout ce paragraphe est **[choix de Claude]**, vérifié sur les vraies données 
 ### 14.5 Téléchargement de la liste
 **[choix de Claude]**, sauf le comportement en cas d'échec, montré dans la maquette validée.
 - Fait par le worker, **indépendamment du token PSN et des synchros** : il n'apparaît pas dans « Sync history ».
-- À faire si : jamais téléchargée ; ou dernier succès il y a 24 h ou plus et dernière tentative il y a 1 h ou plus ; ou demandé par « Save » dans Settings. Vérifié à chaque itération du worker, avant les travaux PSN. Son échec n'empêche pas ceux-ci.
+- À faire si « Save » dans Settings l'a demandé. Sinon, au plus une tentative par heure, si la liste n'a jamais été téléchargée ou si le dernier succès date de 24 h ou plus. Vérifié à chaque itération du worker, avant les travaux PSN. Son échec n'empêche pas ceux-ci.
 - Garde-fous, parce que l'adresse et le contenu viennent de l'extérieur : `http` ou `https` seulement, délai maximum de 30 s, taille maximum de 10 Mo.
 - La réponse est refusée si ce n'est pas du JSON, si `version` n'est pas `2`, ou s'il ne reste aucune entrée valide. Une entrée mal formée est ignorée individuellement.
 - **En cas d'échec, l'ancienne liste et toutes les marques restent en place.** L'échec est affiché dans Settings.
@@ -668,9 +668,8 @@ Tout ce paragraphe est **[choix de Claude]**, vérifié sur les vraies données 
 - **Non obtenable mais obtenu** : surbrillance verte inchangée, seulement le « ! ».
 
 ### 14.8 Notes de la liste
-Texte venu de l'extérieur, jamais interprété comme du HTML. 591 notes contiennent un lien Markdown, quelques-unes `**` ou des accents graves.
+Texte venu de l'extérieur, jamais interprété comme du HTML. 591 notes contiennent un lien Markdown. Seuls ces liens sont interprétés : les `**` et accents graves présents dans deux notes ne sont pas de la mise en forme (un nom censuré « b****** », une apostrophe tapée avec un accent grave) et restent tels quels.
 - `[libellé](adresse)` : dans l'infobulle, seulement le libellé ; sur la page d'un jeu, un lien qui s'ouvre dans un nouvel onglet, si l'adresse est en `http` ou `https`.
-- `**` et les accents graves sont retirés.
 - Note vide : pas de seconde ligne.
 
 ### 14.9 Settings (9)
