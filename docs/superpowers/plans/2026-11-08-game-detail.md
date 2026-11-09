@@ -767,3 +767,22 @@ Décidé le 9 novembre 2026, après la maquette v6 (`.superpowers/brainstorm/maq
 - [ ] **Step 3 :** implémenter. Le CSS de la page applique `object-fit:cover` et retire le fond sombre quand l'image est la jaquette.
 - [ ] **Step 4 :** `npx vitest run` → PASS ; `npx tsc --noEmit` ; `npm run build`.
 - [ ] **Step 5 :** commit `feat(game): square group images on PS4 lists; Last trophy sort follows the console`, puis push.
+
+### Task 19 : Image de la liste Games sur tous les groupes d'une liste PS4, même sans jaquette (spec 8.9)
+
+Retour de l'utilisateur, 9 novembre 2026 : Marvel Heroes Omega montrait encore des images rectangulaires. Une vérification sur les 37 listes PS4 avec DLC en trouve 2 en défaut, Marvel Heroes Omega et Minecraft: Story Mode. Ce sont les seules listes PS4 sans aucune jaquette (`coverIsIcon` vrai).
+
+**Files:**
+- Modify: `src/games/detail.ts`
+- Test: `src/games/detail.test.ts`
+
+**Règle:**
+- Pour une liste PS4 (sans `PS5`), **tous** les groupes prennent `iconSrc = GameDetail.coverSrc`, quelle que soit la valeur de `coverIsIcon`.
+- `iconIsCover` vaut vrai seulement si `coverIsIcon` est faux : l'image remplit alors son cadre. Sinon, c'est une icône, affichée en entière (`object-fit: contain`, comme dans la liste Games).
+- Les listes PS5 ne changent pas.
+
+- [ ] **Step 1 : test qui échoue.** Dans `detail.test.ts`, une liste PS4 sans jaquette, avec deux groupes qui ont chacun leur icône : les deux `iconSrc` valent `coverSrc` (l'icône du titre), avec `iconIsCover` faux.
+- [ ] **Step 2 :** lancer → FAIL.
+- [ ] **Step 3 :** implémenter.
+- [ ] **Step 4 :** `npx vitest run` → PASS ; `npx tsc --noEmit`.
+- [ ] **Step 5 :** commit `fix(game): PS4 lists without a cover show the Games-list image on every group`, puis push.

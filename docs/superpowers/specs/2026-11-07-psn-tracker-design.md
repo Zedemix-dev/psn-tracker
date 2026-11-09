@@ -412,7 +412,8 @@ C'est un panneau translucide qui chevauche le bas de la bannière, comme le band
     - une image carrée de 100 × 100 ;
       - **[décidé, 9 novembre 2026, maquette v6]** pour une liste **PS5**, c'est l'icône d'origine de chaque groupe, qui est carrée ;
       - pour une liste **PS4**, dont les icônes de groupe sont rectangulaires, c'est **la même image que la ligne du jeu dans la liste Games** (sa jaquette carrée, empruntée au besoin à une autre version), répétée sur le jeu de base et sur chaque DLC ;
-      - le but est la cohérence : une image carrée partout. Une liste PS4 sans aucune jaquette garde son icône, affichée en entier, comme dans la liste Games ;
+      - le but est la cohérence : une image carrée partout ;
+      - **[décidé, 9 novembre 2026]** une liste PS4 sans aucune jaquette (ni chez elle, ni chez une autre version) met elle aussi, sur le jeu de base et sur **chaque** DLC, l'image de sa ligne dans la liste Games : l'icône de sa liste de trophées, affichée en entier. Les DLC n'affichent donc jamais leur propre icône rectangulaire. Cas concernés au 9 novembre 2026 : Marvel Heroes Omega et Minecraft: Story Mode ;
     - un sur-titre en petites capitales : « Base game » pour le groupe `default`, puis « DLC 1 », « DLC 2 »… dans l'ordre des groupes ;
     - le nom : celui du jeu pour le jeu de base, celui du pack pour un DLC ;
     - « 45 of 45 trophies » ;
