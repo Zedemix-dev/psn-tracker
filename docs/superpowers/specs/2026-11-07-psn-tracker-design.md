@@ -769,9 +769,9 @@ Elle remplace la page « Coming soon » de cet onglet.
 - Nom du fichier **[choix de Claude]** : `Zmx969-plat-wall.png`, ou avec les filtres actifs : `Zmx969-plat-wall-2026-PS5.png`. Le tri et Display n'y figurent pas.
 
 **Contenu de l'image**
-- **Double résolution, 2896 px de large** [décidé : l'image est faite pour être gardée], la même quelle que soit la fenêtre ou l'appareil. Toujours 13 cases par ligne. La hauteur dépend du nombre de platines et de Display (2896 × 4560 px environ pour les 230 avec Art seul, autour de 14 Mo).
+- **Double résolution, 2896 px de large** [décidé : l'image est faite pour être gardée], la même quelle que soit la fenêtre ou l'appareil. Toujours 13 cases par ligne. La hauteur dépend du nombre de platines et de Display : mesuré sur les vraies données, 2896 × 4560 px et 16 Mo pour les 230 avec Art seul, 2896 × 6789 px et 17 Mo avec Rarity et Name.
 - En haut, la bannière du site derrière le bandeau, comme sur la page, et la même image floutée en fond de toute l'image. Sans bannière, le fond uni du site.
-- Le bandeau profil : avatar, pseudo, compteurs, niveau PSN. **Sans le bouton Sync** [décidé] et sans « Last synced » **[choix de Claude]**.
+- Le bandeau profil : avatar, pseudo, compteurs, niveau PSN. **Sans le bouton Sync** [décidé] et sans « Last synced » **[choix de Claude]**. Les compteurs ont la hauteur de la vraie page : dans la maquette, celui du platine était déformé par un style du mur, défaut corrigé à la construction.
 - Les 6 cases, avec les **stats de tout le profil**, jamais filtrées **[choix de Claude]**.
 - Le mur, avec les réglages en cours : filtres, tri, Display.
 - **Rien d'autre** [décidé, retiré de la maquette v1] : ni menu du site, ni titre, ni « Showing… », ni rappel des filtres.
@@ -787,7 +787,7 @@ Elle remplace la page « Coming soon » de cet onglet.
 - Le texte est en **Sora**, la police du site, dont le fichier est ajouté au dépôt : l'image Docker Alpine n'a aucune police.
   - Trois noms de jeux contiennent aujourd'hui un caractère absent des jeux de glyphes publiés de Sora : `Ⅱ`, `Ⅻ` et `～`. Dans l'image, tout caractère absent de la police est remplacé par son équivalent (`II`, `XII`, `~`), ou retiré s'il n'en a pas **[choix de Claude]**. La page, elle, garde le nom exact du PSN.
   - Les écritures non latines ne sont pas traitées : le site demande les noms en anglais (8.1).
-- La fabrication doit rester largement sous la limite de 60 s de nginx sur le NAS. PNG sans perte.
+- La fabrication doit rester largement sous la limite de 60 s de nginx sur le NAS. PNG sans perte. Mesuré en production sur le PC de développement : environ 9 s pour les 230 platines.
 - L'adresse d'export est protégée par la session, comme les autres API, et refuse les paramètres invalides.
 
 ### 15.7 Laissé au builder
