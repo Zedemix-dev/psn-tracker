@@ -182,6 +182,17 @@ describe("renderPlatWallPng", () => {
     expect(closeTo(await pixel(png, 175, 650 + 12), RED, 20)).toBe(false);
   });
 
+  it("sizes the counters like the page: 48.4 px, centred in the band", async () => {
+    const png = await renderPlatWallPng(input());
+    // Inside the last counter, away from its text: real pixels 275 to 372.
+    const [above, top, bottom, below] = await Promise.all(
+      [271, 279, 368, 376].map((y) => pixel(png, 2336, y)),
+    );
+    expect(top[0]).toBeGreaterThan(above[0] + 10);
+    expect(closeTo(bottom, top)).toBe(true);
+    expect(closeTo(below, above)).toBe(true);
+  });
+
   it("leaves out the level block when the profile has no level", async () => {
     const withLevel = await renderPlatWallPng(input());
     const without = await renderPlatWallPng(input({ profile: { ...input().profile, level: null } }));

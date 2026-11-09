@@ -389,18 +389,18 @@ button.select{font-family:inherit;cursor:pointer;padding-right:26px;background-i
 .btn-export{display:inline-flex;align-items:center;gap:6px;height:30px;border:0;background:#fff;color:#0F1631;padding:0 12px;border-radius:999px;cursor:pointer;font-size:12px;font-weight:600;margin-left:6px;white-space:nowrap}
 .btn-export:hover{background:#E4ECFF}
 
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:14px 13px;padding:16px}
-.plat{display:flex;flex-direction:column;align-items:center;gap:6px;text-decoration:none;min-width:0}
-.plat .art{width:100%;aspect-ratio:1;border-radius:12px;object-fit:cover;transition:transform .12s ease}
-.plat:hover .art{transform:translateY(-2px) scale(1.05)}
-.plat .pct{font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1}
-.plat .nm{width:100%;font-size:10.5px;line-height:1.25;color:var(--muted);text-align:center;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.plat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:14px 13px;padding:16px}
+.plat-tile{display:flex;flex-direction:column;align-items:center;gap:6px;text-decoration:none;min-width:0}
+.plat-tile .art{width:100%;aspect-ratio:1;border-radius:12px;object-fit:cover;transition:transform .12s ease}
+.plat-tile:hover .art{transform:translateY(-2px) scale(1.05)}
+.plat-tile .pct{font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1}
+.plat-tile .nm{width:100%;font-size:10.5px;line-height:1.25;color:var(--muted);text-align:center;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 /* Art unticked: text-only card */
-.plat.textonly{justify-content:center;gap:5px;min-height:92px;padding:8px 6px;border-radius:12px;background:var(--surface)}
+.plat-tile.textonly{justify-content:center;gap:5px;min-height:92px;padding:8px 6px;border-radius:12px;background:var(--surface)}
 .wall-panel .empty{padding:40px 16px;text-align:center;color:var(--muted);font-size:13px}
 .panel.wall-panel{overflow:visible}
 @media (max-width:640px){
-  .grid{grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:10px 8px;padding:12px}
+  .plat-grid{grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:10px 8px;padding:12px}
   .btn-export{margin-left:0}
 }
 .plat-tip{position:fixed;z-index:60;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:#0B1022;box-shadow:0 8px 22px rgba(0,0,0,.5);color:var(--text);font-size:12px;line-height:1.4;pointer-events:none}

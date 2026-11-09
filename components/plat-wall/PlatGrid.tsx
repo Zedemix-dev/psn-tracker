@@ -42,20 +42,20 @@ export function PlatGrid({ tiles, show }: { tiles: PlatTile[]; show: PlatShow[] 
   }, [tip]);
 
   const open = (e: SyntheticEvent<HTMLElement>) => {
-    const el = (e.target as HTMLElement).closest<HTMLElement>("a.plat");
+    const el = (e.target as HTMLElement).closest<HTMLElement>("a.plat-tile");
     const tile = el?.dataset.key ? byKey.get(el.dataset.key) : undefined;
     if (el && tile) setTip(placeTip(tile, el.getBoundingClientRect()));
   };
   const close = () => setTip(null);
 
   return (
-    <div className="grid" onMouseOver={open} onFocus={open} onMouseOut={close} onBlur={close}>
+    <div className="plat-grid" onMouseOver={open} onFocus={open} onMouseOut={close} onBlur={close}>
       {tiles.map((t) => (
         <Link
           key={t.key}
           href={t.href}
           data-key={t.key}
-          className={`plat${art ? "" : " textonly"}`}
+          className={`plat-tile${art ? "" : " textonly"}`}
           aria-label={`${t.game}, earned ${t.when}${t.ratePct ? `, ${t.ratePct} of players` : ""}`}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}

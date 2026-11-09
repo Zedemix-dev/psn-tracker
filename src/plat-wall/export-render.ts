@@ -110,10 +110,11 @@ const BAND = { x: 24, y: 118, width: 1400, height: 87.6 };
 const BAND_MIDDLE = BAND.y + BAND.height / 2;
 const BAND_FILL: Fill = { colour: "#141828", opacity: 0.55 };
 const AVATAR = { x: 45, y: 95.8, size: 92, border: 3 };
-const COUNTERS = { right: 1202, rightWithoutLevel: 1403, gap: 6, top: 134.6, height: 54.4, minWidth: 64, padding: 8 };
+// A counter's height: padding 6, value 17, gap 4, label 15.4, padding 6. Centred in the band.
+const COUNTERS = { right: 1202, rightWithoutLevel: 1403, gap: 6, height: 48.4, minWidth: 64, padding: 8 };
+const COUNTERS_TOP = BAND_MIDDLE - COUNTERS.height / 2;
 const COUNTER_FILL: Fill = { colour: WHITE, opacity: 0.12 };
-// The value and the label are centred together: 17 + 4 + 15.4 in the 54.4 of the counter.
-const COUNTER_VALUE_TOP = COUNTERS.top + 9;
+const COUNTER_VALUE_TOP = COUNTERS_TOP + 6;
 const COUNTER_LABEL_TOP = COUNTER_VALUE_TOP + 17 + 4;
 const COUNTER_ICON = { size: 11, gap: 3 };
 const LEVEL = {
@@ -144,7 +145,7 @@ function counters(engine: TextEngine, counts: TrophyCounts, right: number): { sv
     const width = Math.max(p(COUNTERS.minWidth), content + p(2 * COUNTERS.padding));
     const x = edge - width;
     const centre = x + width / 2;
-    svg += rect({ x, y: p(COUNTERS.top), width, height: p(COUNTERS.height) }, p(10), COUNTER_FILL);
+    svg += rect({ x, y: p(COUNTERS_TOP), width, height: p(COUNTERS.height) }, p(10), COUNTER_FILL);
     svg += line(engine, counter.value, value, {
       x: centre,
       middle: p(COUNTER_VALUE_TOP + 17 / 2),

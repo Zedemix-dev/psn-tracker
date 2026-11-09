@@ -36,7 +36,13 @@ describe("PlatGrid", () => {
   it("draws a text card without the art", () => {
     const { container } = render(<PlatGrid tiles={[tile()]} show={["rarity", "name"]} />);
     expect(container.querySelector("img")).toBeNull();
-    expect(container.querySelector(".plat.textonly")).not.toBeNull();
+    expect(container.querySelector(".plat-tile.textonly")).not.toBeNull();
+  });
+
+  it("keeps clear of the classes used elsewhere on the site", () => {
+    const { container } = render(<PlatGrid tiles={[tile()]} show={["art"]} />);
+    expect(container.querySelector(".plat-grid .plat-tile")).not.toBeNull();
+    expect(container.querySelector(".plat, .grid")).toBeNull();
   });
 
   it("shows no rarity when it is unknown", () => {
