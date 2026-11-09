@@ -125,8 +125,10 @@ export async function getGameDetail(
     a === "default" ? -1 : b === "default" ? 1 : a < b ? -1 : a > b ? 1 : 0,
   );
   const coverSrc = mediaSrc(info.coverUrl ?? info.coverFallbackUrl, imageMap, "full");
-  // PS4 lists show the cover on every group (as the Games list row does); PS5 lists keep each group icon.
-  const groupsUseCover = !title.platforms.includes("PS5") && !info.coverIsIcon;
+  // PS4 lists show the Games-list image on every group (the cover, or the list icon when there is no cover);
+  // PS5 lists keep each group icon.
+  const groupsUseListImage = !title.platforms.includes("PS5");
+  const groupsFillFrame = groupsUseListImage && !info.coverIsIcon;
   const groups: GroupData[] = groupIds.map((gid, i) => {
     const members = rows.filter((r) => r.groupId === gid);
     const counts = typeCounts(members);
@@ -144,10 +146,10 @@ export async function getGameDetail(
       id: gid,
       kicker: i === 0 ? "Base game" : `DLC ${i}`,
       name: gid === "default" ? title.name : (info?.name ?? gid),
-      iconSrc: groupsUseCover
+      iconSrc: groupsUseListImage
         ? coverSrc
         : mediaSrc(gid === "default" ? title.iconUrl : (info?.iconUrl ?? null), imageMap),
-      iconIsCover: groupsUseCover,
+      iconIsCover: groupsFillFrame,
       earned: members.filter((m) => m.earned).length,
       total: members.length,
       counts,

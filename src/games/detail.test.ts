@@ -166,6 +166,18 @@ describe("getGameDetail group images", () => {
     }
   });
 
+  it("shows the list icon, contained, on every group of a PS4 list without a cover", async () => {
+    await addTitle({ platforms: ["PS4"] });
+    await addGroups();
+    const d = await getGameDetail(db, "NPWR1", map, NOW);
+    expect(d!.coverIsIcon).toBe(true);
+    expect(d!.groups).toHaveLength(2);
+    for (const g of d!.groups) {
+      expect(g.iconSrc).toBe(d!.coverSrc);
+      expect(g.iconIsCover).toBe(false);
+    }
+  });
+
   it("keeps each group's own icon on a PS5 list", async () => {
     await addTitle({ platforms: ["PS5"], coverUrl: cover });
     await addGroups();
