@@ -6,6 +6,7 @@ import { GameBand } from "@/components/game/GameBand";
 import { GameInfoPanel } from "@/components/game/GameInfoPanel";
 import { TimelinePanel } from "@/components/game/TimelinePanel";
 import { TrophyList } from "@/components/game/TrophyList";
+import { TileImage } from "@/components/TileImage";
 import { requireSession } from "@/src/auth/require-session";
 import { getDb } from "@/src/db/client";
 import { getGameDetail } from "@/src/games/detail";
@@ -58,8 +59,8 @@ export default async function GamePage({
           />
           <aside className="side">
             <section className="panel glass" aria-label="Cover">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <TileImage
+                tile={detail.coverIsIcon}
                 className={`cover${detail.coverIsIcon ? " icon" : ""}`}
                 src={detail.coverSrc}
                 alt={`${detail.name} cover`}

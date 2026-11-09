@@ -803,3 +803,29 @@ Retour de l'utilisateur, 9 novembre 2026 : sur Marvel Heroes Omega, la grande ja
 - [ ] **Step 2 :** `npx vitest run` → PASS ; `npx tsc --noEmit`.
 - [ ] **Step 3 :** vérifier en local, avec les vraies données, Marvel Heroes Omega, Minecraft: Story Mode, Game of Thrones et Tales from the Borderlands, puis les 168 listes PS4 : aucune image de jaquette ni de groupe sans tuile carrée.
 - [ ] **Step 4 :** commit `fix(game): non-square images sit on the Games-list dark square tile`, puis push.
+
+### Task 21 : La tuile prend la couleur du bord de l'image (spec 8.9)
+
+Retour de l'utilisateur, 9 novembre 2026 : sur Marvel Heroes Omega, l'icône a son propre fond noir, et ce noir se distingue du bleu nuit (`#0B1022`) des bandes du haut et du bas. Les trois autres listes sans jaquette (Game of Thrones, Minecraft: Story Mode, Tales from the Borderlands) ont un logo à fond transparent : elles se fondent déjà dans la tuile.
+
+**Files:**
+- Create: `src/lib/tile-bg.ts`, `src/lib/tile-bg.test.ts`
+- Create: `components/TileImage.tsx`, `components/TileImage.test.tsx`
+- Modify: `components/GameRow.tsx`, `components/game/TrophyList.tsx`, `app/(site)/games/[id]/page.tsx`
+
+**Interfaces:**
+- `edgeBackground(data: ArrayLike<number>, width: number, height: number): string | null` : `data` en RGBA (4 octets par pixel).
+  - Image carrée, ou vide : `null` (pas de bande).
+  - Plus large que haute : bords = première et dernière **ligne** ; plus haute que large : première et dernière **colonne**.
+  - Un bord est « uni » si tous ses pixels ont une opacité ≥ 250 et qu'aucun canal ne s'écarte de plus de 16 de la moyenne du bord. Sa couleur est la moyenne arrondie, en `#rrggbb` minuscule.
+  - Si un bord n'est pas uni : `null`.
+  - Si les deux bords ont la même couleur : cette couleur (`"#000000"`). Sinon : `"linear-gradient(#aaaaaa 50%, #bbbbbb 50%)"` (bords haut/bas), ou `"linear-gradient(to right, #aaaaaa 50%, #bbbbbb 50%)"` (bords gauche/droite).
+- `<TileImage tile={boolean} className src alt loading? />` (client) : un `<img>`. Si `tile` est vrai, une fois l'image chargée (événement `load`, ou image déjà chargée à l'hydratation : `complete` et `naturalWidth > 0`), il la dessine sur un canevas, lit ses pixels, et met `style.background = edgeBackground(...)` quand ce n'est pas `null`. Toute erreur (pas de contexte 2D, canevas protégé) laisse la tuile par défaut.
+- Utilisé pour : la jaquette d'une ligne Games (`tile = coverIsIcon`), la grande jaquette de la page d'un jeu (`tile = coverIsIcon`), l'image d'un en-tête de groupe (`tile = !iconIsCover`).
+
+- [ ] **Step 1 : tests qui échouent** pour `edgeBackground` : noir uni → `"#000000"` ; bords transparents → `null` ; bord bruité (écart 40) → `null` ; haut rouge et bas bleu → dégradé haut/bas ; image plus haute que large → dégradé `to right` ; image carrée → `null` ; écart de 4 (bruit WebP) → couleur moyenne.
+- [ ] **Step 2 :** lancer → FAIL.
+- [ ] **Step 3 :** implémenter `edgeBackground`, puis `TileImage`, et l'utiliser aux trois endroits.
+- [ ] **Step 4 :** test de `TileImage` : sans `tile`, ni style ni lecture ; avec `tile`, rendu sans erreur sous jsdom (pas de canevas). `npx vitest run` → PASS ; `npx tsc --noEmit`.
+- [ ] **Step 5 :** vérifier en local : Marvel Heroes Omega (jaquette, groupes, ligne Games) a des bandes noires ; les trois autres gardent `#0B1022`.
+- [ ] **Step 6 :** commit `fix(game): the square tile takes the image's own edge colour`, puis push.

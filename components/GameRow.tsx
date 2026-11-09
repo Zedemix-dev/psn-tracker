@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { ProgressStack, StatusIcon } from "@/components/ProgressStack";
+import { TileImage } from "@/components/TileImage";
 import type { GameRowData } from "@/src/games/row";
 
 export function GameRow({ row }: { row: GameRowData }) {
   const played = row.lastPlayedLine ? row.lastPlayedLine.split(" | ") : [];
   return (
     <Link href={`/games/${encodeURIComponent(row.id)}`} className="game">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+      <TileImage
+        tile={row.coverIsIcon}
         className={`game-cover${row.coverIsIcon ? " icon" : ""}`}
         src={row.coverSrc}
         alt=""

@@ -2,6 +2,7 @@
 
 import { Fragment, useState } from "react";
 import { ProgressStack, StatusIcon } from "@/components/ProgressStack";
+import { TileImage } from "@/components/TileImage";
 import { TrophyTypeIcon } from "@/components/TrophyTypeIcon";
 import type { GroupData, TrophyRowData } from "@/src/games/detail";
 import {
@@ -110,8 +111,13 @@ export function TrophyList({
           <Fragment key={g.id}>
             {multi && (
               <div className="group-head">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img className={g.iconIsCover ? "sq" : undefined} src={g.iconSrc} alt="" loading="lazy" />
+                <TileImage
+                  tile={!g.iconIsCover}
+                  className={g.iconIsCover ? "sq" : undefined}
+                  src={g.iconSrc}
+                  alt=""
+                  loading="lazy"
+                />
                 <div>
                   <div className="kicker">{g.kicker}</div>
                   <h3>{g.name}</h3>
