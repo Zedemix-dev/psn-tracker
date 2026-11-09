@@ -1,5 +1,7 @@
 # PSN Tracker — Page de détail d'un jeu Implementation Plan
 
+> **Statut :** terminé et fusionné dans `main` le 9 novembre 2026 (PR #4), tâches 1 à 21. Les cases ne sont pas cochées : la progression se lit dans `git log` et dans `docs/ETAT-DU-PROJET.md`.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal :** remplacer l'emplacement provisoire de `/games/[id]` par la page de détail d'un jeu validée (maquette v5). Il faut aussi :
