@@ -4,6 +4,7 @@
   --bg:#0F1631; --surface:rgba(255,255,255,.07); --surface-2:rgba(255,255,255,.12); --line:rgba(255,255,255,.13);
   --text:#F3F5FB; --muted:#A9B3CB; --accent:#5AA9FF; --done:#D3E2FF;
   --plat:#D3E2FF; --gold:#F2C462; --silver:#C9D0DA; --bronze:#DE9563;
+  --earned:#3DBE6B; --earned-text:#93E2AE;
   --font:var(--font-sora),"Sora",sans-serif; --r-panel:14px; --r-chip:8px;
   --icon:56px; --gap:8px; --card:380px;
   --rank-s:#667FB2; --rank-a:#008000; --rank-b:#7B9E00; --rank-c:#A68E00; --rank-d:#A66A00; --rank-e:#FF4100; --rank-f:#EE0000;

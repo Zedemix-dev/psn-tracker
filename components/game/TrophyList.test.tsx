@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { TrophyList } from "@/components/game/TrophyList";
 import type { GroupData, TrophyRowData } from "@/src/games/detail";
@@ -188,5 +190,13 @@ describe("TrophyList", () => {
     const { container } = setup(one, list, { ...band, note: [{ text: "<img src=x>" }] });
     expect(screen.getByText("<img src=x>")).toBeInTheDocument();
     expect(container.querySelector("img[src='x']")).toBeNull();
+  });
+});
+
+describe("earned highlight CSS", () => {
+  it("defines the earned highlight colours", () => {
+    const css = readFileSync(path.resolve(import.meta.dirname, "../../app/globals.css"), "utf8");
+    expect(css).toMatch(/:root\{[^}]*--earned:#3DBE6B/);
+    expect(css).toMatch(/:root\{[^}]*--earned-text:#93E2AE/);
   });
 });
