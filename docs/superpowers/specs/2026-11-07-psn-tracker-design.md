@@ -578,6 +578,7 @@ Il doit aussi vérifier en pratique la détection des nouveaux DLC (6.4).
 - **Page de détail d'un jeu :** maquette validée le 8 novembre 2026 (8.9), construite, vérifiée avec les vraies données et fusionnée dans `main` le 9 novembre 2026 (PR #4). La phase 1 est terminée.
 - **Jeux aux trophées non obtenables :** fonctionnalité demandée le 8 novembre 2026, cadrée, maquette validée, construite et vérifiée avec les vraies données le 9 novembre 2026, décrite en 14. Fusionnée dans `main` le 9 novembre 2026 (PR #6).
 - **Ordre de la suite [décidé, 9 novembre 2026] :** les pages Plat Wall, Trophy Log, Trophy Advisor et Stats sont construites **avant** le déploiement sur le NAS.
+- **Page Plat Wall :** cadrée et maquette validée le 9 novembre 2026, décrite en 15.
 
 ## 14. Jeux aux trophées non obtenables
 **[décidé, cadrage du 9 novembre 2026]** Fonctionnalité construite à part, sur la branche `feat/unobtainable`. Maquette validée le 9 novembre 2026 : `docs/superpowers/specs/2026-11-09-psn-tracker-maquette-nonobt.html`, référence pour l'aspect et le CSS. Les choix que l'utilisateur n'a pas faits lui-même sont marqués **[choix de Claude]**.
@@ -694,3 +695,111 @@ Nouveau bloc « Unobtainable trophies », après « PSN token ».
 - « Not 100% » avec « Without unobtainable » donne le nombre de jeux non terminés moins les jeux concernés non terminés (39 le jour de la vérification, Cyberpunk 2077 venant de passer à 100 %), « With unobtainable » 5.
 - « Show all » affiche les 266 jeux.
 - Une adresse invalide ou inaccessible affiche l'échec et ne change aucun repère.
+
+## 15. Page Plat Wall
+**[décidé, brainstorming du 9 novembre 2026]** Page construite à part, sur la branche `feat/plat-wall`. Maquette validée le 9 novembre 2026 (v3) : `docs/superpowers/specs/2026-11-09-psn-tracker-maquette-platwall.html`, référence pour l'aspect et le CSS. Les choix que l'utilisateur n'a pas faits lui-même sont marqués **[choix de Claude]**. Il les a vus sur la maquette ou lus dans la conversation, et ne les a pas contestés.
+
+### 15.1 Intention
+L'utilisateur veut **voir tous ses platines d'un seul coup d'œil**, sur le modèle du Plat Wall de pocketpsn, et **fabriquer une image PNG de ce mur, avec ses stats en haut**, pour la garder.
+
+Différence voulue avec pocketpsn : pocketpsn montre les jaquettes des jeux. Ici, chaque case montre **la miniature du trophée platine lui-même**, celle de la liste des trophées du jeu (pour Cyberpunk 2077, l'image de « Never Fade Away »), et non le pictogramme générique du platine.
+
+### 15.2 Objectifs, non-objectifs, anti-objectifs
+**Objectifs**
+- Tous les platines obtenus sur une seule page, sans limite d'affichage.
+- Choisir ce qui s'affiche (image, rareté, nom), filtrer par année et par plateforme, trier.
+- Un export PNG qui reprend exactement les réglages en cours, et qui se télécharge **sur n'importe quel appareil**, téléphone compris.
+
+**Non-objectifs**
+- Le menu « 160 » de pocketpsn : tout s'affiche, toujours.
+- Les platines non obtenus (Trophy Advisor s'en occupera).
+- Un partage en ligne depuis le site : l'image est faite pour être gardée.
+- Une recherche, un choix de résolution, un historique des exports.
+
+**Anti-objectifs** (ce qui serait un échec même si tout fonctionne)
+- **Des images qui s'accumulent sur le serveur** (15.6).
+- Un fond, une ombre ou une couleur ajoutés derrière une miniature à fond transparent.
+- Une image rectangulaire (8.9).
+- Un PNG qui ne correspond pas à ce que montre la page (filtres, tri, Display).
+- Un téléchargement qui marche sur PC mais pas sur téléphone.
+- Un nombre de platines différent de celui de la console.
+
+### 15.3 Ce qu'on a vérifié sur les vraies données (9 novembre 2026)
+- 230 platines obtenus, tous datés, tous avec une rareté PSN, aucun dans un jeu masqué.
+- Les 230 miniatures sont déjà téléchargées, avec leur version WebP de 192 px. Toutes sont **carrées** : 138 en 240 × 240, 92 en 512 × 512.
+- **134 ont de la transparence**, conservée dans les miniatures WebP.
+- Par année (Europe/Paris) : 2026 : 42, 2025 : 4, 2024 : 1, 2022 : 30, 2021 : 56, 2020 : 35, 2018 : 30, 2017 : 31, 2016 : 1.
+- Par plateforme : PS4 : 138, PS5 : 92. Les listes PS3+PS4 et Vita+PS4 comptent comme PS4, et PS5+PC comme PS5.
+
+### 15.4 La page `/plat-wall`
+Elle remplace la page « Coming soon » de cet onglet.
+- **Haut de page [choix de Claude]** : la bannière (8.2), le bandeau profil avec « Sync now » (8.3) et les 6 cases (8.4), comme sur Games. Ni carrousel ni colonne latérale.
+- **Panneau du mur**, en pleine largeur :
+  - à gauche, « Zmx969's Plat Wall » (avec le pseudo du profil), et dessous « Showing X of Y platinum trophies », Y étant le total sans filtre ;
+  - à droite, dans cet ordre : Display, années, plateformes, tri, puis le bouton blanc « Export PNG ».
+- **Grille** : 13 cases par ligne en pleine largeur (cases d'environ 93 px), et moins si la fenêtre est plus étroite. En dessous de 640 px : 4 par ligne **[choix de Claude]**.
+- **Case** :
+  - la miniature, à coins arrondis de 12 px, **sans fond ni ombre** ; un léger agrandissement au survol ;
+  - si Rarity est coché, le pourcentage dessous, au format du site (`17.76%`) ;
+  - si Name est coché, le **nom du jeu** dessous, en 3 lignes au maximum, tel que le donne le PSN ;
+  - si Art est décoché, une carte texte de la même largeur **[choix de Claude]**.
+- **Au survol, une bulle** : nom du jeu, date d'obtention, rareté. **Au clic** : la page du jeu (8.9) **[choix de Claude]**.
+- Le mur montre les platines obtenus des jeux non masqués, comme le reste du site. Une pile PS4 et PS5 du même jeu donne deux cases, puisque ce sont deux platines.
+- Sans résultat : « No platinum trophies match these filters. »
+- Un nouveau platine apparaît après une synchro sans recharger la page, comme sur Games **[choix de Claude]**.
+
+### 15.5 Réglages
+- **Display** [décidé] : trois cases à cocher, Art, Rarity, Name. Par défaut, seul Art est coché. Au moins une reste cochée **[choix de Claude]**.
+- **All years** [décidé] : « All years » par défaut, puis chaque année où l'utilisateur a un platine, de la plus récente à la plus ancienne **[choix de Claude pour n'afficher que celles-là]**. L'année est celle de la date d'obtention, en Europe/Paris.
+- **All platforms** [décidé] : « All platforms » par défaut, PS4, PS5. Même règle que le filtre de Games : un jeu est retenu si la plateforme fait partie de sa liste.
+- **Tri** [décidé] : Newest par défaut, Rarity, Alphabetical.
+  - Rarity va du plus rare au moins rare **[choix de Claude]**.
+  - Alphabetical trie sur le nom du jeu, sans tenir compte de la casse **[choix de Claude]**.
+  - À égalité, le plus récent passe devant **[choix de Claude]**.
+- Année et plateforme prennent le contour d'accent quand ils sont actifs, comme les filtres de Games.
+- **[choix de Claude]** Comme sur Games, les réglages vivent dans l'adresse de la page, sans être enregistrés en base. « Précédent » ramène au même affichage, une nouvelle visite repart des valeurs par défaut.
+
+### 15.6 Export PNG
+**Parcours [décidé]** : « Export PNG » ouvre un aperçu par-dessus la page, et c'est depuis cet aperçu qu'on télécharge.
+- Pendant la fabrication : « Generating your image… » avec une icône qui tourne, et « Download PNG » inactif.
+- Image prête : l'image entière à la largeur de l'écran, qu'on fait défiler. Une barre reste visible en haut : « PNG preview », les dimensions, « Download PNG », « Close ».
+- « Close » ou Échap ramène à la page, avec les mêmes réglages **[choix de Claude pour Échap]**.
+- En cas d'échec : un message et un bouton pour réessayer **[choix de Claude]**.
+- **« Download PNG » doit fonctionner sur PC, Android et iPhone** [décidé]. C'est donc un vrai fichier envoyé par le serveur en téléchargement.
+- Nom du fichier **[choix de Claude]** : `Zmx969-plat-wall.png`, ou avec les filtres actifs : `Zmx969-plat-wall-2026-PS5.png`. Le tri et Display n'y figurent pas.
+
+**Contenu de l'image**
+- **Double résolution, 2896 px de large** [décidé : l'image est faite pour être gardée], la même quelle que soit la fenêtre ou l'appareil. Toujours 13 cases par ligne. La hauteur dépend du nombre de platines et de Display (2896 × 4560 px environ pour les 230 avec Art seul, autour de 14 Mo).
+- En haut, la bannière du site derrière le bandeau, comme sur la page, et la même image floutée en fond de toute l'image. Sans bannière, le fond uni du site.
+- Le bandeau profil : avatar, pseudo, compteurs, niveau PSN. **Sans le bouton Sync** [décidé] et sans « Last synced » **[choix de Claude]**.
+- Les 6 cases, avec les **stats de tout le profil**, jamais filtrées **[choix de Claude]**.
+- Le mur, avec les réglages en cours : filtres, tri, Display.
+- **Rien d'autre** [décidé, retiré de la maquette v1] : ni menu du site, ni titre, ni « Showing… », ni rappel des filtres.
+
+**Stockage [décidé] : aucune image n'est écrite sur le disque du serveur.**
+- Pas de fichier, pas de dossier temporaire, pas de ligne en base. L'image est fabriquée en mémoire à la demande.
+- Le serveur garde **uniquement la dernière image en mémoire vive**, pour que « Download PNG » n'ait pas à la refabriquer. Elle est remplacée par l'export suivant et oubliée au bout de 10 minutes ou au redémarrage **[choix de Claude pour la durée]**. Si elle a disparu, le téléchargement la refabrique.
+
+**Fabrication [choix de Claude]**
+- Faite par le serveur et non par le navigateur. Safari sur iPhone refuse de dessiner dans une page une image de plus de 16,7 millions de pixels environ, et les 230 platines avec Rarity et Name en font environ 20 millions.
+- Avec `sharp`, déjà dans le projet pour le worker. Aujourd'hui l'application Next ne le charge jamais (`src/sync/thumbs.ts`). L'adresse d'export sera le seul endroit de l'application à le charger, et le build Docker doit échouer si elle ne peut pas le faire sur Alpine.
+- Elle assemble les miniatures WebP de 192 px, assez grandes pour les cases de 186 px réels.
+- Le texte est en **Sora**, la police du site, dont le fichier est ajouté au dépôt : l'image Docker Alpine n'a aucune police.
+  - Trois noms de jeux contiennent aujourd'hui un caractère absent des jeux de glyphes publiés de Sora : `Ⅱ`, `Ⅻ` et `～`. Dans l'image, tout caractère absent de la police est remplacé par son équivalent (`II`, `XII`, `~`), ou retiré s'il n'en a pas **[choix de Claude]**. La page, elle, garde le nom exact du PSN.
+  - Les écritures non latines ne sont pas traitées : le site demande les noms en anglais (8.1).
+- La fabrication doit rester largement sous la limite de 60 s de nginx sur le NAS. PNG sans perte.
+- L'adresse d'export est protégée par la session, comme les autres API, et refuse les paramètres invalides.
+
+### 15.7 Laissé au builder
+- L'organisation du code, le découpage des composants, l'adresse de l'API.
+- La façon de dessiner le texte, à condition que le rendu soit en Sora sur Alpine.
+- Le mécanisme de la bulle (elle ne doit pas être coupée par le panneau) et son accès au clavier.
+- Le niveau de compression du PNG.
+
+### 15.8 Vérification avec les vraies données
+- « Showing 230 of 230 », et les nombres par année et par plateforme du 15.3. 2026 avec PS5 donne 40.
+- Cyberpunk 2077 montre « Never Fade Away ». Arknights: Endfield n'a aucun fond derrière le trophée.
+- Export sans filtre : 2896 px de large, 230 cases, en Sora, sans bouton Sync ni titre. Export filtré, trié, avec Rarity et Name : identique à la page, et sans case vide à la place d'un caractère sur Dark Souls II, Final Fantasy XII et Code: Realize (15.6).
+- « Download PNG » enregistre le bon fichier avec le bon nom, sur PC et en affichage téléphone.
+- Après plusieurs exports, le nombre de fichiers du dossier des images n'a pas changé.
+- **À vérifier au premier déploiement**, car impossible ici : le texte en Sora dans l'image Docker, la durée de fabrication sur le NAS, et le téléchargement sur un vrai iPhone.
