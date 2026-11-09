@@ -6,6 +6,7 @@ Relevés pendant la phase 1 (relectures par tâche, relecture finale de la branc
 - **Arrêt propre du worker** (`docker stop`) : jamais testé dans un conteneur. Le log doit montrer la fin de la synchro en cours, ou un run marqué « Interrupted » au redémarrage.
 - **Réglage des en-têtes du reverse proxy DSM** : après la première connexion en https, le cookie `psnt_session` doit avoir l'option Secure. La procédure est dans `deploy/README.md`, étape 6.4.
 - **Rôle Admin du package GHCR**, à donner une seule fois pour que le nettoyage des anciennes images fonctionne (`deploy/README.md`, étape 1.5).
+- **Export PNG du Plat Wall** (spec 15.8), impossible à vérifier sans Docker ni NAS : le texte s'affiche bien en Sora dans l'image Docker ; la fabrication reste largement sous la limite de 60 s de nginx, avec Rarity et Name cochés sur les 230 platines ; « Download PNG » enregistre le fichier sur un vrai iPhone (vérifier avec Art + Rarity + Name sur les 230 platines, soit environ 20 millions de pixels, car « Download PNG » ne devient actif qu'une fois l'image d'aperçu chargée).
 
 ## Robustesse et sécurité
 - **En-têtes de protection** : `X-Frame-Options` / `frame-ancestors`. `/media` sert sans CSP sandbox les SVG venant de Sony.

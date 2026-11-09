@@ -9,16 +9,17 @@ export type TitleSeed = {
   progress?: number;
   hidden?: boolean;
   playSeconds?: number | null;
+  platforms?: string[];
 };
 
 export async function insertTitle(db: Db, seed: TitleSeed): Promise<void> {
-  const { id, name = `Game ${id}`, defined = 0, earned = 0, hidden = false, playSeconds = null } = seed;
+  const { id, name = `Game ${id}`, defined = 0, earned = 0, hidden = false, playSeconds = null, platforms = ["PS5"] } = seed;
   await db.insert(titles).values({
     npCommunicationId: id,
     npServiceName: "trophy",
     name,
     iconUrl: "https://img.example/icon.png",
-    platforms: ["PS5"],
+    platforms,
     trophySetVersion: "1.00",
     definedBronze: defined,
     earnedBronze: earned,

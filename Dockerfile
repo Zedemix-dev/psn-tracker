@@ -39,6 +39,10 @@ COPY --from=build --chown=node:node /app/src/db/migrations ./migrations
 RUN mkdir -p /data/media && chown node:node /data/media
 # Fail the build if the native module does not load on Alpine/musl.
 RUN node -e "require('/app/dist/node_modules/sharp')"
+# The Plat Wall PNG route runs sharp and fontkit inside the Next app, through the
+# Turbopack aliases in .next/node_modules: load them for real, as the route does.
+COPY scripts/check-export-deps.cjs /tmp/check-export-deps.cjs
+RUN node /tmp/check-export-deps.cjs /app && rm /tmp/check-export-deps.cjs
 USER node
 EXPOSE 3000
 CMD ["node", "server.js"]

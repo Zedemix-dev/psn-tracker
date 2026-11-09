@@ -1,6 +1,6 @@
 # PSN Tracker : état du projet et feuille de route
 
-*Mis à jour le 9 novembre 2026 : les trophées non obtenables sont fusionnés dans `main` (PR #6). La phase 1 est terminée. Prochaine étape : la page Plat Wall, puis Trophy Log, Trophy Advisor et Stats. Le déploiement sur le NAS vient après ces quatre pages.*
+*Mis à jour le 9 novembre 2026 : la page Plat Wall est construite et vérifiée sur la branche `feat/plat-wall`, Pull Request à créer. Prochaine étape après sa fusion : Trophy Log, puis Trophy Advisor et Stats. Le déploiement sur le NAS vient après ces pages.*
 
 Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un autre PC, commence par le lire. Le fichier `CLAUDE.md` à la racine le demande automatiquement.
 
@@ -20,8 +20,10 @@ Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un aut
 | `docs/superpowers/plans/2026-11-08-phase1-suivis.md` | Points mis de côté et vérifications au premier déploiement. |
 | `docs/superpowers/specs/2026-11-09-psn-tracker-maquette-nonobt.html` | Maquette validée des trophées non obtenables (v1). |
 | `docs/superpowers/plans/2026-11-09-unobtainable.md` | Le plan des trophées non obtenables (13 tâches, plus une correction de la surbrillance verte). Terminé. |
+| `docs/superpowers/specs/2026-11-09-psn-tracker-maquette-platwall.html` | Maquette validée du Plat Wall (v3). |
+| `docs/superpowers/plans/2026-11-09-plat-wall.md` | Le plan du Plat Wall (8 tâches). |
 | `deploy/README.md` | Guide pas à pas du déploiement sur le NAS. |
-| `.superpowers/brainstorm/maquettes/` | Toutes les maquettes intermédiaires : `accueil-v1` à `v12`, `jeu-v1` à `v6` (la v6 compare les images de groupe : carrées ou absentes). |
+| `.superpowers/brainstorm/maquettes/` | Toutes les maquettes intermédiaires : `accueil-v1` à `v12`, `jeu-v1` à `v6` (la v6 compare les images de groupe : carrées ou absentes), `platwall-v1` à `v3`. |
 
 ## 2. Ce qui est fait (dans `main`)
 
@@ -74,13 +76,20 @@ Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un aut
 - **Vérifié avec les vraies données** le 9 novembre 2026 : Gran Turismo Sport 7, Marvel Heroes Omega 37, Final Fantasy XV 10, Dauntless PS4 45 et PS5 46, aucun autre jeu.
 - 64 fichiers de tests, 552 tests.
 
+### Page Plat Wall (branche `feat/plat-wall`, spec section 15)
+- **Page `/plat-wall`** : la miniature du trophée de chaque platine obtenu, sans limite d'affichage, avec Display (Art, Rarity, Name), année, plateforme et tri. Bulle au survol, clic vers la page du jeu.
+- **Export PNG** : le bouton ouvre un aperçu, et « Download PNG » enregistre l'image (2896 px de large, 13 colonnes), avec le bandeau, les 6 cases et le mur filtré.
+- **Fabrication** : faite par le serveur avec `sharp`. Le texte est dessiné en Sora avec `fontkit` et la police du dépôt (`public/fonts/`), car l'image Docker n'a aucune police.
+- **Stockage** : aucune image n'est écrite sur le disque. Seule la dernière reste en mémoire vive, 10 minutes au maximum.
+- **Vérifié avec les vraies données** le 9 novembre 2026 : 230 platines, nombres par année et par plateforme, Never Fade Away pour Cyberpunk 2077, Endfield sans fond, noms à caractères spéciaux, aperçu sur PC et en affichage téléphone, aucun fichier ajouté après plusieurs exports.
+- 78 fichiers de tests, 662 tests.
+
 ## 3. Ce qui reste à faire, dans l'ordre
 1. **Pages restantes**, chacune avec **son propre brainstorming** (spec, section 3), dans cet ordre :
-   - **Plat Wall** ;
    - **Trophy Log** ;
    - **Trophy Advisor** : les trophées non obtenus sont déjà stockés avec leur rareté. Le toggle « Hide 0% games » doit aussi en retirer les jeux à 0 %. Son filtre des trophées non obtenables s'appuie sur la colonne `trophies.unobtainable`, déjà remplie (spec 14.2) ;
    - **Stats** : elle reçoit le calendrier « Last 60 days », déjà décrit dans la spec, section 3.
-2. **Déployer sur le NAS** en suivant `deploy/README.md`, **une fois ces quatre pages terminées** (décidé le 9 novembre 2026).
+2. **Déployer sur le NAS** en suivant `deploy/README.md`, **une fois ces pages terminées** (décidé le 9 novembre 2026).
    - Avant tout, vérifier sur github.com (onglet Actions, le dépôt est privé) que la CI de `main` est verte après la dernière fusion, et que l'image a été publiée.
    - Juste après la première publication, donner une seule fois le rôle **Admin** au dépôt dans « Manage Actions access » du package GHCR (étape 1.5).
    - Faire les vérifications du premier déploiement listées dans `docs/superpowers/plans/2026-11-08-phase1-suivis.md`.
