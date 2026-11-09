@@ -61,6 +61,13 @@ export const titles = pgTable("titles", {
   lastPlayedAt: ts("last_played_at"),
   syncedAt: ts("synced_at"),
   groupsCheckedAt: ts("groups_checked_at"),
+  conceptId: integer("concept_id"),
+  bannerUrl: text("banner_url"),
+  logoUrl: text("logo_url"),
+  publisher: text("publisher"),
+  genres: text("genres").array(),
+  releaseDate: ts("release_date"),
+  catalogCheckedAt: ts("catalog_checked_at"),
 });
 
 export const trophyGroups = pgTable(
@@ -97,7 +104,9 @@ export const trophies = pgTable(
     earnedAt: ts("earned_at"),
     earnedRate: numeric("earned_rate", { precision: 6, scale: 2 }),
     rareCategory: integer("rare_category"),
-    progressTarget: text("progress_target"),
+    progressTarget: integer("progress_target"),
+    progress: integer("progress"),
+    progressedAt: ts("progressed_at"),
   },
   (t) => [
     primaryKey({ columns: [t.titleId, t.trophyId] }),
@@ -114,6 +123,9 @@ export const playedGames = pgTable("played_games", {
   playCount: integer("play_count").notNull().default(0),
   firstPlayedAt: ts("first_played_at"),
   lastPlayedAt: ts("last_played_at"),
+  conceptId: integer("concept_id"),
+  bannerUrl: text("banner_url"),
+  logoUrl: text("logo_url"),
 });
 
 export const images = pgTable("images", {

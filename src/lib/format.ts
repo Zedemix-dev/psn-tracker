@@ -82,3 +82,9 @@ export function formatLastPlayedLine(lastPlayedAt: Date | null, playSeconds: num
   const base = `Last played ${formatDate(lastPlayedAt)}`;
   return playSeconds == null ? base : `${base} | ${formatPlayTime(playSeconds)} played`;
 }
+
+/** Paris wall-clock time, "01:21". */
+export function formatTime(d: Date): string {
+  const p = parts(d);
+  return `${p.hour}:${p.minute}`;
+}

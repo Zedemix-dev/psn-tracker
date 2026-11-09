@@ -124,4 +124,66 @@ describe("syncPlayedGames", () => {
     await syncPlayedGames(db, gw, auth);
     expect(await db.select().from(titles)).toHaveLength(1);
   });
+
+  it("gives a title the concept, banner and logo of its most recently played linked game", async () => {
+    const gw = createFakePsn({
+      playedGames: [
+        makePlayedGame({ npTitleId: "A", lastPlayedAt: new Date("2025-03-01T00:00:00Z") }),
+        makePlayedGame({
+          npTitleId: "B",
+          lastPlayedAt: new Date("2025-05-01T00:00:00Z"),
+          concept: { id: 42, bannerUrl: "https://img.example/banner.png", logoUrl: "https://img.example/logo.png?w=800" },
+        }),
+      ],
+      npTitleMap: { A: [ID], B: [ID] },
+    });
+
+    await syncPlayedGames(db, gw, auth);
+
+    const t = await getTitle();
+    expect(t.conceptId).toBe(42);
+    expect(t.bannerUrl).toBe("https://img.example/banner.png");
+    expect(t.logoUrl).toBe("https://img.example/logo.png?w=800");
+  });
+
+  it("clears the catalog fields when a title's concept changes", async () => {
+    const concept = (id: number) => ({ id, bannerUrl: null, logoUrl: null });
+    const gw1 = createFakePsn({
+      playedGames: [makePlayedGame({ npTitleId: "A", concept: concept(1) })],
+      npTitleMap: { A: [ID] },
+    });
+    await syncPlayedGames(db, gw1, auth);
+    await db
+      .update(titles)
+      .set({ publisher: "Pub", genres: ["RPG"], releaseDate: now, catalogCheckedAt: now })
+      .where(eq(titles.npCommunicationId, ID));
+
+    await syncPlayedGames(db, gw1, auth);
+    expect((await getTitle()).publisher).toBe("Pub");
+
+    const gw2 = createFakePsn({
+      playedGames: [makePlayedGame({ npTitleId: "A", concept: concept(2) })],
+      npTitleMap: { A: [ID] },
+    });
+    await syncPlayedGames(db, gw2, auth);
+
+    const t = await getTitle();
+    expect(t.conceptId).toBe(2);
+    expect(t.publisher).toBeNull();
+    expect(t.genres).toBeNull();
+    expect(t.releaseDate).toBeNull();
+    expect(t.catalogCheckedAt).toBeNull();
+  });
+
+  it("reports the titles whose last played date changed", async () => {
+    const make = (date: string) =>
+      createFakePsn({
+        playedGames: [makePlayedGame({ npTitleId: "A", lastPlayedAt: new Date(date) })],
+        npTitleMap: { A: [ID] },
+      });
+
+    expect((await syncPlayedGames(db, make("2025-03-01T00:00:00Z"), auth)).replayedTitleIds).toEqual([ID]);
+    expect((await syncPlayedGames(db, make("2025-03-01T00:00:00Z"), auth)).replayedTitleIds).toEqual([]);
+    expect((await syncPlayedGames(db, make("2025-04-01T00:00:00Z"), auth)).replayedTitleIds).toEqual([ID]);
+  });
 });

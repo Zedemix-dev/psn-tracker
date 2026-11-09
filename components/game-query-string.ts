@@ -5,7 +5,7 @@ export function gameQueryParams(query: Omit<GameQuery, "offset">): URLSearchPara
   const params = new URLSearchParams();
   if (query.state !== "all") params.set("state", query.state);
   if (query.platform !== "all") params.set("platform", query.platform);
-  if (query.sort !== "lastPlayed") params.set("sort", query.sort);
+  if (query.sort !== "lastTrophy") params.set("sort", query.sort);
   if (query.q) params.set("q", query.q);
   return params;
 }

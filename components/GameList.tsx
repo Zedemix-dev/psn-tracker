@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { GameRow } from "@/components/GameRow";
 import { gameQueryParams } from "@/components/game-query-string";
+import { saveListSnapshot, takeListSnapshot } from "@/components/list-snapshot";
 import type { GameQuery } from "@/src/games/query";
 import type { GameRowData } from "@/src/games/row";
 
@@ -11,10 +12,13 @@ type Page = { items: GameRowData[]; total: number };
 export function GameList({
   initial,
   query,
+  snapshotKey,
   empty = "No games match these filters.",
 }: {
   initial: Page;
   query: GameQuery;
+  /** Identifies the filters, sort, search and last sync this list was built for. */
+  snapshotKey: string;
   /** Shown instead of the list when no game matches. */
   empty?: string;
 }) {
@@ -23,9 +27,38 @@ export function GameList({
   const [failed, setFailed] = useState(false);
   const busy = useRef(false);
   const sentinel = useRef<HTMLDivElement>(null);
+  const pendingScroll = useRef<number | null>(null);
   const loaded = items.length;
   const more = loaded < total;
   const { state, platform, sort, q } = query;
+
+  // Back from a game page: put the loaded rows and the scroll position back. Done after mount, so
+  // the server-rendered first page still hydrates cleanly.
+  useEffect(() => {
+    const snap = takeListSnapshot(snapshotKey);
+    if (!snap) return;
+    pendingScroll.current = snap.scrollY;
+    setItems(snap.items);
+    setTotal(snap.total);
+  }, [snapshotKey]);
+
+  // Once the restored rows are in the DOM (the page is tall enough), scroll. Again on the next
+  // frame, in case the router's own scroll handling ran in between.
+  useLayoutEffect(() => {
+    const y = pendingScroll.current;
+    if (y === null) return;
+    pendingScroll.current = null;
+    window.scrollTo(0, y);
+    const frame = requestAnimationFrame(() => window.scrollTo(0, y));
+    return () => cancelAnimationFrame(frame);
+  }, [items]);
+
+  const rememberPlace = (e: React.MouseEvent) => {
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    if ((e.target as HTMLElement).closest("a.game")) {
+      saveListSnapshot({ key: snapshotKey, items, total, scrollY: window.scrollY });
+    }
+  };
 
   const loadMore = useCallback(async () => {
     if (busy.current) return;
@@ -68,7 +101,7 @@ export function GameList({
   return (
     <>
       {items.length === 0 && !more && <p className="empty">{empty}</p>}
-      <div className="stacked">
+      <div className="stacked" onClickCapture={rememberPlace}>
         {items.map((row) => (
           <GameRow key={row.id} row={row} />
         ))}

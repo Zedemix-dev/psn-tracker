@@ -3,6 +3,8 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { and, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
 import type { Db } from "@/src/db/client";
+import { BANNER_OVERRIDES } from "@/src/games/banner-overrides";
+import { gameKey } from "@/src/games/siblings";
 import { images, profile, titles, trophies, trophyGroups } from "@/src/db/schema";
 import { makeThumb } from "@/src/sync/thumbs";
 
@@ -75,11 +77,19 @@ async function collectUrls(db: Db): Promise<string[]> {
     db.select({ u: profile.avatarUrl }).from(profile),
     db.select({ u: titles.iconUrl }).from(titles),
     db.select({ u: titles.coverUrl }).from(titles),
+    db.select({ u: titles.bannerUrl }).from(titles),
+    db.select({ u: titles.logoUrl }).from(titles),
     db.select({ u: trophyGroups.iconUrl }).from(trophyGroups),
     db.select({ u: trophies.iconUrl }).from(trophies),
   ]);
   const all = new Set<string>();
   for (const rows of sources) for (const { u } of rows) if (u) all.add(u);
+  // Hand-picked banners (spec 8.9) of visible games.
+  const visible = await db.select({ name: titles.name }).from(titles).where(eq(titles.hidden, false));
+  for (const { name } of visible) {
+    const url = BANNER_OVERRIDES[gameKey(name)];
+    if (url) all.add(url);
+  }
   return [...all];
 }
 

@@ -60,6 +60,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Sea
     ratePct: t.earnedRate === null ? null : formatPercent(t.earnedRate),
     tier: t.earnedRate === null ? null : rarityTier(t.earnedRate),
   }));
+  const listKey = `${hideZero}|${query.state}|${query.platform}|${query.sort}|${query.q}|${sync.lastSuccessAt}`;
   return (
     <main className="wrap">
       <ProfileBand profile={row} imageMap={imageMap} sync={sync} />
@@ -79,7 +80,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<Sea
           <GameFilters query={query} />
           {/* lastSuccessAt in the key: after a sync, the list restarts from the fresh first page. */}
           <GameList
-            key={`${hideZero}|${query.state}|${query.platform}|${query.sort}|${query.q}|${sync.lastSuccessAt}`}
+            key={listKey}
+            snapshotKey={listKey}
             initial={games}
             query={query}
             empty={

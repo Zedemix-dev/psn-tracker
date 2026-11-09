@@ -83,6 +83,27 @@ describe("runDailyRefresh", () => {
     expect(await db.select().from(trophies).where(eq(trophies.titleId, ID))).toHaveLength(4);
   });
 
+  it("refreshes tiered trophy progress daily", async () => {
+    const gwAt = (progress: number) => {
+      const { defs, userTrophies } = makeTrophies(2);
+      defs[0].progressTarget = 4;
+      userTrophies[0].progress = progress;
+      return createFakePsn({
+        titles: [makeRemoteTitle({ defined: { platinum: 0, gold: 0, silver: 0, bronze: 2 } })],
+        titleData: { [ID]: { groups: [makeGroup("default")], defs, userTrophies } },
+      });
+    };
+    // The title is already synced (beforeEach); seed a stored progress of 1.
+    await db.update(trophies).set({ progressTarget: 4, progress: 1 }).where(eq(trophies.trophyId, 0));
+    const [before] = await db.select().from(trophies).where(eq(trophies.trophyId, 0));
+    expect(before.progress).toBe(1);
+
+    await runDailyRefresh(db, gwAt(2), cfg, later, deps);
+
+    const [after] = await db.select().from(trophies).where(eq(trophies.trophyId, 0));
+    expect(after).toMatchObject({ progress: 2, progressTarget: 4 });
+  });
+
   it("skips hidden titles", async () => {
     await db.update(titles).set({ hidden: true });
     const gw = gwWith(1.28);

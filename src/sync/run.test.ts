@@ -10,6 +10,7 @@ import { savePsnTokens, getSettings } from "@/src/settings/repo";
 import { isRetryable, withPacing } from "@/src/sync/retry";
 import { runSync } from "@/src/sync/run";
 import { createFakePsn } from "@/tests/fakes/psn";
+import { makePlayedGame } from "@/tests/fixtures/played";
 import { makeGroup, makeRemoteTitle, makeTrophies } from "@/tests/fixtures/titles";
 import { createTestDb } from "@/tests/helpers/db";
 
@@ -202,6 +203,37 @@ describe("runSync", () => {
     const res = await runSync(db, gw, cfg, "manual", now, deps);
     expect(res.status).toBe("error");
     expect(res.error).toContain("getTitles");
+  });
+
+  it("refreshes the user state of a replayed PS5 title that was not reloaded", async () => {
+    const ps4 = "NPWR00009_00";
+    const build = (lastPlayed: string) => {
+      const remote = [
+        makeRemoteTitle({ npCommunicationId: ids[0], npServiceName: "trophy2" }),
+        makeRemoteTitle({ npCommunicationId: ps4, npServiceName: "trophy" }),
+      ];
+      const titleData = Object.fromEntries(
+        [ids[0], ps4].map((id) => [id, { groups: [makeGroup("default")], ...makeTrophies(3, { earnedIds: [0] }) }]),
+      );
+      const when = new Date(lastPlayed);
+      return createFakePsn({
+        titles: remote,
+        titleData,
+        playedGames: [
+          makePlayedGame({ npTitleId: "A", lastPlayedAt: when }),
+          makePlayedGame({ npTitleId: "B", lastPlayedAt: when }),
+        ],
+        npTitleMap: { A: [ids[0]], B: [ps4] },
+      });
+    };
+    await runSync(db, build("2025-03-01T00:00:00Z"), cfg, "manual", now, deps);
+
+    const gw = build("2025-04-01T00:00:00Z");
+    const res = await runSync(db, gw, cfg, "scheduled", now, deps);
+
+    expect(res.status).toBe("success");
+    expect(gw.calls.filter((c) => c === `getUserTrophies:${ids[0]}`)).toHaveLength(1);
+    expect(gw.calls.filter((c) => c === `getUserTrophies:${ps4}`)).toHaveLength(0);
   });
 });
 

@@ -32,7 +32,12 @@ describe("parseGameQuery", () => {
     const q = parseGameQuery(
       new URLSearchParams("state=bogus&platform=PS3&sort=nope&offset=-5&q=%20zelda%20"),
     );
-    expect(q).toEqual({ state: "all", platform: "all", sort: "lastPlayed", q: "zelda", offset: 0 });
+    expect(q).toEqual({ state: "all", platform: "all", sort: "lastTrophy", q: "zelda", offset: 0 });
+  });
+
+  it("defaults to the last trophy sort, and keeps an explicit lastPlayed", () => {
+    expect(parseGameQuery(new URLSearchParams("")).sort).toBe("lastTrophy");
+    expect(parseGameQuery(new URLSearchParams("sort=lastPlayed")).sort).toBe("lastPlayed");
   });
 
   it("reads valid values", () => {
@@ -161,6 +166,15 @@ describe("sorts", () => {
     await addTitle({ id: "b", lastTrophyAt: new Date("2024-02-01Z") });
     await addTitle({ id: "c" });
     expect(await ids({ sort: "lastTrophy" })).toEqual(["b", "a", "c"]);
+  });
+});
+
+describe("lastTrophy follows the console", () => {
+  it("sorts by psnLastUpdatedAt, falling back to lastTrophyAt", async () => {
+    await addTitle({ id: "c", lastTrophyAt: new Date("2024-11-04Z"), psnLastUpdatedAt: new Date("2024-11-04Z") });
+    await addTitle({ id: "b", psnLastUpdatedAt: new Date("2024-11-05Z") });
+    await addTitle({ id: "a", lastTrophyAt: new Date("2024-11-08Z"), psnLastUpdatedAt: new Date("2024-11-08Z") });
+    expect(await ids({ sort: "lastTrophy" })).toEqual(["a", "b", "c"]);
   });
 });
 

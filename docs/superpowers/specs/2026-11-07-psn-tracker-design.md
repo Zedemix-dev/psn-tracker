@@ -1,7 +1,9 @@
 # PSN Tracker — Design, phase 1 (socle + page principale + page jeu + Settings)
 
 Date : 2026-11-07
-Maquette validée : [2026-11-07-psn-tracker-maquette-accueil.html](2026-11-07-psn-tracker-maquette-accueil.html) (style « Console », v12)
+Maquettes validées :
+- page Games : [2026-11-07-psn-tracker-maquette-accueil.html](2026-11-07-psn-tracker-maquette-accueil.html) (style « Console », v12) ;
+- page d'un jeu : [2026-11-08-psn-tracker-maquette-jeu.html](2026-11-08-psn-tracker-maquette-jeu.html) (v5, validée le 8 novembre 2026, section 8.9).
 
 Légende : **[décidé]** = choix explicite de l'utilisateur. **[mon choix]** = décision prise pendant la conception, que l'utilisateur peut contester. Tout le reste découle directement de ce qu'il a dit.
 
@@ -46,7 +48,7 @@ Le site doit reprendre **la lisibilité épurée de psnprofiles** et **la prése
 2. La page principale « Games » (section 8).
 3. La page Settings (section 9).
 4. **[décidé]** La page de détail d'un jeu, ouverte au clic sur une ligne de la liste (section 8.9).
-   - **[décidé]** Son design détaillé sera fait plus tard, quand on en sera là. **[mon choix]** Il passera par une maquette validée par l'utilisateur avant d'être construit, comme pour la page principale.
+   - **[décidé]** Son design détaillé a été fait à part, par une maquette validée par l'utilisateur le 8 novembre 2026 (v5), avant toute construction.
 
 **Hors phase 1** (chacune fera l'objet de son propre brainstorming une fois l'accueil terminé) : Plat Wall, Trophy Log, Trophy Advisor, Stats.
 - **[décidé]** Leurs onglets apparaissent déjà dans le menu et mènent à une page « Coming soon ».
@@ -102,11 +104,25 @@ Le site doit reprendre **la lisibilité épurée de psnprofiles** et **la prése
 | Niveau, % vers le niveau suivant, palier (1–10), compteurs par type | `getUserTrophyProfileSummary` |
 | Liste des jeux (listes de trophées), compteurs définis/obtenus, progression PSN | `getUserTitles` (pagination `limit`/`offset`, 800 max par appel) |
 | Groupes de trophées (jeu de base + DLC), avec nom et icône | `getTitleTrophyGroups` |
-| Définition des trophées : nom, description, icône, type, groupe, caché | `getTitleTrophies(..., "all")` |
-| État utilisateur par trophée : obtenu, date, rareté mondiale (`trophyEarnedRate`), catégorie de rareté | `getUserTrophiesEarnedForTitle(..., "all")` |
-| Progression par groupe | `getUserTrophyGroupEarningsForTitle` |
+| Définition des trophées : nom, description, icône, type, groupe, caché, **objectif d'un trophée à paliers** (`trophyProgressTargetValue`, listes PS5) | `getTitleTrophies(..., "all")` |
+| État utilisateur par trophée : obtenu, date, rareté mondiale (`trophyEarnedRate`), catégorie de rareté, **progression d'un trophée à paliers non obtenu** (`progress`, et sa date `progressedDateTime`) | `getUserTrophiesEarnedForTitle(..., "all")` |
+| Progression par groupe | `getUserTrophyGroupEarningsForTitle` (**[mon choix, 8 novembre 2026]** non utilisé : le pourcentage d'un groupe est calculé avec la règle du PSN, 8.9) |
 | Temps de jeu, nombre de sessions, dernière partie, **jaquette carrée** | `getUserPlayedGames` (PS4/PS5) |
 | Lien entre jeu joué (`titleId`) et liste de trophées (`npCommunicationId`) | `getUserTrophiesForSpecificTitle` (5 `npTitleIds` max par appel) |
+| Concept du jeu (page d'un jeu, 8.9) : identifiant, **bannière** (image `GAMEHUB_COVER_ART`) et **logo** (image `LOGO`) | `getUserPlayedGames`, champ `concept` (`id`, `media.images[].type` / `url`), déjà appelé à chaque synchro |
+| **Éditeur, date de sortie, genres** (page d'un jeu, 8.9) | catalogue PSN, par `call` : `GET https://m.np.playstation.com/api/catalog/v2/concepts/{conceptId}?country=GB&language=en&age=99` → `publisherName`, `releaseDate.date`, `localizedGenres[].value` |
+
+- **Trophées à paliers**, vérifié en pratique le 8 novembre 2026 sur 14 listes PS5 :
+  - l'objectif (`trophyProgressTargetValue`) est dans la **définition** des trophées (`getTitleTrophies`), pas dans l'état utilisateur. La synchro de la phase 1 le cherchait dans l'état utilisateur : la colonne est restée vide pour les 12 434 trophées, et c'est à corriger ;
+  - la progression de l'utilisateur (`progress`) n'est renvoyée que pour les trophées **non obtenus** qui ont un objectif. Elle vaut `0` tant que rien n'est fait ;
+  - les listes PS4 n'en ont jamais.
+- **[décidé, 8 novembre 2026] PSN seul** pour les infos d'un jeu : pas d'IGDB. Le PSN ne fournit pas le **développeur**, qui n'est donc pas affiché.
+- Catalogue PSN, vérifié en pratique le 8 novembre 2026 :
+  - les paramètres `country`, `language` et `age` doivent être tous présents ou tous absents, sinon l'API répond une erreur ;
+  - `country` et `language` découlent de la langue PSN (`en-GB` → `GB` et `en`) ; `age=99` évite tout filtrage par âge ;
+  - `localizedGenres` peut contenir des doublons (FFXIV Online : deux fois « Role Playing Games »).
+- **[mon choix]** Le concept d'une liste de trophées est celui du jeu joué relié le plus récemment joué, comme pour la jaquette.
+- **[mon choix]** Une liste de trophées sans jeu joué relié n'a ni concept, ni bannière, ni logo, ni infos du catalogue : 7 jeux sur 266 au 8 novembre 2026 (Dauntless PS4 et PS5, Game of Thrones, Gran Turismo 7 PS4, Marvel Heroes Omega, Minecraft: Story Mode, Tales from the Borderlands).
 
 - Il faut transmettre le `npServiceName` renvoyé par `getUserTitles` aux appels par jeu (`trophy` pour les jeux PS4, `trophy2` pour les jeux PS5).
 - Pour chaque jeu, la définition et l'état utilisateur des trophées viennent de deux appels distincts, à rapprocher par `trophyId`.
@@ -119,9 +135,14 @@ Le site doit reprendre **la lisibilité épurée de psnprofiles** et **la prése
   - Le builder doit le vérifier en pratique (`trophySetVersion` et `definedTrophies` sont les candidats).
   - Par sécurité, il prévoit aussi une revérification des groupes de tous les jeux **une fois par jour [décidé]**.
 - **[décidé] Rareté :** le pourcentage mondial d'un trophée évolue même quand l'utilisateur ne joue plus au jeu. Une synchro uniquement incrémentale laisserait donc dériver la rareté moyenne et le classement des trophées les plus rares. Les raretés de tous les jeux sont donc **rafraîchies une fois par jour**.
+- **[mon choix] Compteurs des trophées à paliers** (8.9) : une progression peut avancer sans qu'aucun trophée ne soit obtenu, et un tel jeu n'est alors pas vu comme modifié. Les compteurs sont donc rafraîchis :
+  - quand le jeu est rechargé ;
+  - par le rafraîchissement quotidien, qui lit déjà l'état utilisateur de chaque jeu pour les raretés ;
+  - à chaque synchro, pour les jeux dont la date de dernière partie (`getUserPlayedGames`) a changé depuis la synchro précédente. Un « Sync now » après une session de jeu met donc à jour les compteurs du jeu joué.
+- **[mon choix]** Infos du catalogue (éditeur, date de sortie, genres) : récupérées pour tout concept qui n'en a pas encore, puis rafraîchies une fois par jour avec les raretés. Un échec sur un concept n'arrête pas la synchro : il est retenté la fois suivante.
 - Les jaquettes carrées et le temps de jeu viennent de `getUserPlayedGames`, rechargé à chaque synchro.
   - Le lien `titleId` → `npCommunicationId` n'est calculé qu'une fois par nouveau `titleId`, puis mis en cache.
-  - Si un jeu n'a pas de correspondance, on affiche l'icône de sa liste de trophées dans un cadre carré, sans la rogner.
+  - Si un jeu n'a pas de correspondance, on affiche l'icône de sa liste de trophées dans un cadre carré, sans la rogner, sur une **tuile carrée sombre** (`#0B1022`) : la ligne reste carrée. La tuile prend la couleur du bord de l'icône quand ce bord est uni et opaque (8.9).
 - **[mon choix]** Aucune limite de débit n'est documentée. Les appels sont faits l'un après l'autre avec une petite pause, et réessayés avec un délai croissant en cas d'erreur 429 ou 5xx.
 
 ### 6.5 Images
@@ -131,15 +152,21 @@ Le site doit reprendre **la lisibilité épurée de psnprofiles** et **la prése
   - Une image est retéléchargée si son adresse côté Sony change.
   - Si un téléchargement échoue, on réessaie à la synchro suivante. En attendant, on affiche une vignette neutre.
   - Ordre de grandeur : ~12 400 icônes de trophées, soit quelques centaines de Mo.
+- Bannière et logo d'un jeu (8.9), stockés en local comme les autres images :
+  - **[décidé, 8 novembre 2026] La bannière est gardée en taille originale**, en 4K (3 840 × 2 160) : l'utilisateur la veut parfaitement nette, et une version en 1 920 px risquait de paraître floue.
+    - Elle pèse ~1 Mo, soit ~260 Mo pour les ~260 jeux qui en ont une.
+  - **[décidé]** Le logo est réduit à **800 px de large** au plus. L'original va jusqu'à 2 400 px de large (~600 Ko), alors qu'il s'affiche sur 400 px au plus.
+    - Le serveur d'images de Sony redimensionne à la demande avec le paramètre `?w=800`, vérifié le 8 novembre 2026 avec `?w=1920`.
 
 ## 7. Données
 
 Le schéma exact est laissé au builder. Il doit au minimum permettre :
 - **un profil unique** : pseudo, avatar, niveau, progression, palier, compteurs ;
 - **les listes de trophées** : identifiant PSN, service, plateforme(s), nom, icône, jaquette carrée, compteurs définis et obtenus par type, progression PSN, caché, dates, `trophySetVersion`, temps de jeu, sessions, dernière partie ;
+  - et, pour la page d'un jeu (8.9) : l'identifiant du concept, la bannière et le logo (adresses Sony), l'éditeur, les genres et la date de sortie, avec la date de leur dernière récupération ;
   - Les versions PS4 et PS5 d'un même jeu sont **deux listes distinctes**, comme sur le PSN. **[mon choix]**
 - **les groupes** (base et DLC) avec leurs compteurs ;
-- **les trophées** : définition, état obtenu ou non, date d'obtention, rareté mondiale (en nombre), catégorie de rareté PSN, objectif de progression éventuel ;
+- **les trophées** : définition, état obtenu ou non, date d'obtention, rareté mondiale (en nombre), catégorie de rareté PSN, objectif de progression éventuel, et la progression de l'utilisateur vers cet objectif avec sa date (8.9) ;
 - **les fichiers d'images locaux**, avec l'adresse Sony d'origine ;
 - **l'historique des synchros** et **les sessions** ;
 - **les réglages** : bannière et sa position verticale, Trophy cabinet ordonné (10 trophées au plus), réglage « Hide 0% games », identifiants PSN chiffrés.
@@ -166,7 +193,12 @@ Référence visuelle : la maquette v11. Elle utilise des images empruntées à p
   - Elle ne se fond dans la page que sur son dernier quart.
   - La même image, floutée et assombrie, sert de fond à toute la page (style « Console »).
 - **[mon choix]** Si l'image envoyée n'a pas ce format, l'utilisateur choisit dans Settings la partie verticale à garder (haut, centre, bas, ou un curseur).
-- **[mon choix]** Tant qu'aucune image n'est choisie, un dégradé neutre s'affiche avec un lien « Choose a banner in Settings ».
+- **[décidé, 8 novembre 2026] Bannière automatique** : sans bannière personnalisée, Games affiche la bannière du **dernier jeu joué**. C'est la même image 4K que sur la page de ce jeu (8.9), avec le même fond flouté.
+  - Une bannière envoyée dans Settings a toujours la priorité. Si l'utilisateur la retire, Games revient tout seul à la bannière automatique.
+  - **[mon choix]** Le « dernier jeu joué » est le jeu non masqué dont la date de dernière partie est la plus récente et dont la bannière est déjà téléchargée. La bannière change donc d'elle-même après une synchro, quand l'utilisateur joue à un autre jeu.
+  - **[mon choix]** Elle est cadrée comme sur la page d'un jeu, à 25 % depuis le haut, et sans le logo du jeu.
+  - Les pages qui partagent la bannière de Games (Settings et « Coming soon ») suivent la même règle.
+- **[mon choix]** Si aucun jeu n'a encore de bannière, sur une installation neuve par exemple, un dégradé neutre s'affiche avec un lien « Choose a banner in Settings ».
 
 ### 8.3 Bandeau profil
 Il s'agit d'un panneau translucide qui chevauche le bas de la bannière.
@@ -232,7 +264,11 @@ Chaque case contient un libellé et une valeur, **sans texte en dessous [décid�
     - Platinum, not 100% (platine obtenu mais il manque des trophées, en général des DLC) ;
   - **plateforme** : All / PS4 / PS5 ;
   - **recherche** par nom.
-- **Tri [décidé]** : Last played (par défaut), Last trophy, Alphabetical, Percent completion, Time played, Total trophies, Earned trophies, Unearned trophies, Platinum rarity.
+- **Tri [décidé]** : Last trophy (par défaut), Last played, Alphabetical, Percent completion, Time played, Total trophies, Earned trophies, Unearned trophies, Platinum rarity.
+  - **[décidé, 8 novembre 2026] Le tri par défaut est « Last trophy »** (auparavant « Last played »), et il passe **en tête du menu**. Sans paramètre `sort` dans l'adresse, la liste est triée par dernier trophée.
+  - **[décidé, 9 novembre 2026] « Last trophy » suit l'ordre de la console** : la liste est triée sur la date de dernière mise à jour de la liste de trophées donnée par le PSN (`lastUpdatedDateTime`), la plus récente d'abord, et à défaut sur la date du dernier trophée.
+    - Cette date est celle du dernier trophée obtenu ou, sans trophée, celle du premier lancement du jeu. Un jeu commencé sans trophée (Phantom Blade Zero) se place donc au moment où il a été lancé, entre Cyberpunk 2077 et MAGICKA 2, comme sur la console et psnprofiles.
+    - Pour les autres jeux, l'ordre ne change pas en pratique : la date est celle du dernier trophée, à quelques minutes près.
   - **[mon choix]** Chaque tri a son sens naturel :
     - les plus récents d'abord pour les deux tris par date ;
     - de A à Z pour Alphabetical ;
@@ -242,6 +278,7 @@ Chaque case contient un libellé et une valeur, **sans texte en dessous [décid�
 - Changer un filtre, un tri ou la recherche relance le chargement à partir des 50 premiers jeux.
 - **Une ligne par jeu**, sur une hauteur d'environ 80 px, **cliquable [décidé]** : elle ouvre la page du jeu (8.9).
   - **jaquette carrée [décidé]** (60 px), celle du jeu telle qu'on la voit sur l'écran d'accueil de la console, et non l'icône de la liste de trophées (rectangulaire sur PS4) ;
+    - **[décidé, 8 novembre 2026]** une liste sans jaquette prend celle d'une autre version du même jeu, ou à défaut l'icône carrée de sa version PS5 (8.9, « Emprunt à l'autre version du même jeu ») ;
   - **[décidé] trois lignes de texte, sans rien de tronqué** :
     1. le nom du jeu, suivi du badge PS4/PS5 **sur la même ligne** ;
     2. « 47 / 47 trophies » (obtenus / total) ;
@@ -268,6 +305,13 @@ Chaque case contient un libellé et une valeur, **sans texte en dessous [décid�
 - **Chargement [décidé]** :
   - les 50 premiers jeux sont rendus côté serveur ;
   - les 50 suivants se chargent quand on approche du bas de la liste, et ainsi de suite jusqu'à ce que tous les jeux soient affichés.
+- **[décidé, 8 novembre 2026] Retour depuis la page d'un jeu** : quand on revient sur Games, la liste revient **à l'endroit où on l'avait laissée**, avec les mêmes jeux chargés.
+  - Sans cela, après avoir ouvert le 120e jeu puis être revenu en arrière, la liste repartait des 50 premiers jeux.
+  - **[mon choix]**
+    - Ce retour vaut pour le bouton « précédent » du navigateur, et le geste équivalent sur téléphone.
+    - Une nouvelle visite de Games repart du haut de la liste : un clic sur l'entrée « Games » du menu, par exemple.
+    - Le nombre de jeux chargés et la position de défilement sont gardés le temps de l'onglet, pour les mêmes filtres, tri et recherche.
+    - Si une synchro a eu lieu entre-temps, la liste repart du haut, comme c'est déjà le cas après une synchro.
 
 ### 8.8 Colonne latérale (droite, ~450 px)
 - **[décidé] Les listes sont propres comme sur psnprofiles** : aucun nom tronqué, et toutes les lignes à la même hauteur.
@@ -286,6 +330,7 @@ Chaque case contient un libellé et une valeur, **sans texte en dessous [décid�
 2. **Rarest trophies [décidé]** : les 5 trophées obtenus les plus rares au niveau mondial, puis **le décompte par catégorie de rareté**, comme sur psnprofiles (barre empilée et 5 chiffres).
    - **[mon choix]** Chaque trophée porte lui aussi l'icône officielle de son type tout à droite, comme dans le Trophy cabinet et sur psnprofiles.
    - **[décidé] Catégories :** les 5 paliers de psnprofiles, appliqués aux pourcentages mondiaux du PSN : Ultra rare < 5 %, Very rare 5–10 %, Rare 10–20 %, Uncommon 20–50 %, Common ≥ 50 %.
+   - **[mon choix, 8 novembre 2026]** Le décompte a ses 5 colonnes de même largeur, avec le chiffre et le libellé **centrés** dans chacune, comme sur la page d'un jeu où l'utilisateur l'a demandé (8.9). Les deux pages partagent le même composant.
 3. **Milestones [décidé]** : **toutes** les étapes franchies, de la plus récente à la plus ancienne, **sans limite ni lien « View all »**, même si la liste est longue (32 étapes aujourd'hui).
    - Chaque étape montre l'icône du trophée, son nom et le jeu en entier, le libellé (« 225th platinum ») et la date.
    - **[mon choix]** La date s'affiche en temps relatif comme sur psnprofiles (« 9 years ago »), et la date exacte apparaît en infobulle.
@@ -296,29 +341,175 @@ Chaque case contient un libellé et une valeur, **sans texte en dessous [décid�
      - Pour le comptage, les trophées sont numérotés dans l'ordre de leur date d'obtention.
 
 ### 8.9 Page de détail d'un jeu
-- **[décidé]** Elle s'ouvre au clic sur une ligne de la liste. Elle s'inspire de la page d'un jeu sur psnprofiles : **la liste des trophées**, plus **un panneau latéral avec les infos du jeu**.
-- **[décidé]** Son design détaillé sera fait plus tard, par une maquette, avant de construire la page. Ce qui suit n'est qu'un **point de départ [mon choix]**, limité aux données que le PSN fournit vraiment.
-- **Liste des trophées**, une ligne par trophée :
-  - icône, nom, description ;
-  - date et heure d'obtention (ou rien si non obtenu) ;
-  - rareté mondiale en % et sa catégorie ;
-  - icône officielle du type.
-  - Les trophées obtenus sont mis en évidence, comme le fond vert de psnprofiles.
-  - Les trophées sont regroupés par jeu de base puis par pack DLC, chaque groupe ayant son nom, son icône et sa progression.
-- **Panneau latéral :**
-  - jaquette carrée, plateforme ;
-  - compteurs par type, progression PSN ;
-  - temps de jeu et dernière partie ;
-  - date du premier trophée, date du platine et temps mis pour l'obtenir (« 3 weeks, 3 days, 5 hours ») ;
-  - rareté moyenne du jeu, et répartition par catégorie de rareté.
-- **Exclu**, car non fourni par le PSN ou inutile pour l'utilisateur : guides, notes, vues et favoris, éditeur, développeur, genres et dates de sortie, boutons de partage, listes « to-do ».
+Maquette validée : [2026-11-08-psn-tracker-maquette-jeu.html](2026-11-08-psn-tracker-maquette-jeu.html) (v5, 8 novembre 2026). Les versions intermédiaires sont dans `.superpowers/brainstorm/maquettes/` (`jeu-v1` à `jeu-v5`).
+- Elle affiche les vraies données de Cyberpunk 2077 (PS5, avec DLC), Gran Turismo 7 (PS5, platine non obtenu, sans DLC) FINAL FANTASY XIV Online (17 groupes, 247 trophées, compteurs de trophées à paliers) et Phantom Blade Zero (aucun trophée obtenu, compteurs à 0).
+- Un sélecteur en bas de page, **propre à la maquette**, passe d'un jeu à l'autre et masque le logo. Il ne fait pas partie du site.
+- Elle charge les images depuis le CDN de Sony. Le site, lui, les sert depuis son stockage local (6.5).
+
+**Accès et principe**
+- **[décidé]** Elle s'ouvre au clic sur une ligne de la liste des jeux, à l'adresse `/games/[id]`, où `id` est le `npCommunicationId`. Elle s'inspire de la page d'un jeu sur psnprofiles : la liste des trophées, plus une colonne latérale avec les infos du jeu.
+- Une page par **liste de trophées** : les versions PS4 et PS5 d'un même jeu ont chacune la leur (7).
+- **[mon choix]**
+  - Le menu du haut est celui de toutes les pages, avec l'entrée « Games » marquée comme page affichée.
+  - La page se met à jour toute seule après une synchro, comme Games.
+  - Une adresse inconnue mène à la page 404.
+
+**Bannière et fond**
+- **[décidé]** En haut, une bannière du jeu récupérée automatiquement au PSN : l'image `GAMEHUB_COVER_ART` de son concept (6.3), c'est-à-dire l'image de fond du jeu sur l'écran d'accueil de la PS5.
+- **[décidé] Elle a exactement la hauteur de la bannière de Games** (8.2), par cohérence entre les pages : format 1 920 × 520, entre 240 et 560 px de haut, fondu sur son dernier quart.
+- **[mon choix]**
+  - Le cadrage vertical est fixe, à 25 % depuis le haut : sur les images testées, il garde les visages et les personnages.
+  - Comme sur Games, la même image, floutée et assombrie, sert de fond à toute la page.
+- **[décidé] Le logo du jeu** (image `LOGO` du concept, PNG transparent) est posé sur la bannière.
+  - **[mon choix]** Il est placé en bas à gauche, aligné sur le bord gauche du contenu, juste au-dessus du bandeau du jeu, avec une ombre portée. Il fait au plus 400 px de large (38 % de la page) et 42 % de la hauteur de la bannière, et il est masqué sur téléphone.
+- **[décidé, 8 novembre 2026] Une page de jeu sans bannière n'en affiche aucune** : la bannière de Games n'y est jamais reprise (elle montrait par exemple Cyberpunk sur la page de Dauntless).
+  - **[mon choix]** L'espace de la bannière garde sa hauteur habituelle, mais il est vide, sans lien « Choose a banner in Settings ». Le fond de la page est uni, sans image floutée. Le bandeau du jeu reste ainsi à la même place que sur les autres pages de jeu.
+- **[décidé, 8 novembre 2026] Emprunt à l'autre version du même jeu, information par information** : pour toute information qui manque à une liste de trophées, le site la cherche chez les autres listes **du même nom**, en préférant la version PS5. S'il la trouve, il la copie. Il ne laisse le manque (et donc, pour la bannière, l'espace vide sur fond uni) que si **aucune** version ne l'a.
+  - Les informations concernées : jaquette, bannière, logo, éditeur, genre(s) et date de sortie.
+  - Cela vaut pour toutes les listes, qu'elles soient reliées à un jeu joué ou non. Une liste sans jeu joué relié (6.3) n'a rien de tout cela par elle-même : c'est le cas le plus courant.
+  - Exemple : Gran Turismo 7 PS4 prend la jaquette, la bannière, le logo, l'éditeur, le genre et la date de sortie de Gran Turismo 7 PS5.
+  - **[mon choix]** Une information propre à la liste n'est jamais remplacée. L'emprunt se fait à l'affichage : rien d'emprunté n'est stocké, et une information empruntée suit donc toujours la version qui la prête.
+- **[décidé, 8 novembre 2026] Bannières ajoutées à la main, écrites dans le code** : pour les rares jeux dont aucune version n'a de bannière au PSN, une liste écrite dans le code associe le jeu (par son nom, comme pour l'emprunt) à une bannière choisie par l'utilisateur.
+  - L'utilisateur préfère une liste dans le code à un réglage dans l'interface. Ces cas sont des jeux anciens, joués avant que le site existe, et de nouveaux cas sont peu probables.
+  - Ces bannières sont téléchargées par la synchro et **servies en local** comme les autres images : le site ne charge jamais d'image depuis psnprofiles à l'affichage.
+  - **[mon choix]** Ordre de priorité : la bannière propre de la liste, puis celle d'une autre version du même jeu, puis celle de cette liste, puis l'espace vide sur fond uni. Une bannière qui arriverait plus tard au PSN reprendrait donc la main d'elle-même.
+  - Le 8 novembre 2026, la liste contient 5 jeux, avec la bannière de leur page psnprofiles (format 1 920 × 520, exactement celui de la bannière) :
+
+    | Jeu | Page psnprofiles fournie par l'utilisateur | Image |
+    |---|---|---|
+    | Dauntless (PS4 et PS5) | https://psnprofiles.com/trophies/14795-dauntless/Zmx969 | https://img.psnprofiles.com/hero/l/14795/05bf48f1-d893-41d8-b1f7-1ea0bfcc3bc0.jpg |
+    | Game of Thrones | https://psnprofiles.com/trophies/3220-game-of-thrones/Zmx969 | https://img.psnprofiles.com/hero/l/3220/31500c21-cc5e-4d31-bfcc-9c10cbb55249.jpg |
+    | Marvel Heroes Omega | https://psnprofiles.com/trophies/6161-marvel-heroes-omega/Zmx969 | https://img.psnprofiles.com/hero/l/6161/6206b90b-f266-4134-9f8c-5ff112d3d403.jpg |
+    | Minecraft: Story Mode | https://psnprofiles.com/trophies/3955-minecraft-story-mode/Zmx969 | https://img.psnprofiles.com/hero/l/3955/c7fb42f7-3b15-4f07-99c5-eb92fcdeee57.jpg |
+    | Tales from the Borderlands | https://psnprofiles.com/trophies/3188-tales-from-the-borderlands/Zmx969 | https://img.psnprofiles.com/hero/l/3188/a4a61b38-7893-4131-b936-5cb8effce3e1.jpg |
+  - Si aucune version n'a de jaquette, une liste PS4 prend l'**icône de la liste PS5** du même jeu, qui est carrée, plutôt que sa propre icône rectangulaire. C'est le cas de Dauntless PS4.
+  - Sans autre version (Game of Thrones, Minecraft: Story Mode, Tales from the Borderlands), la liste garde son icône, affichée en entier, et sa page n'a pas de bannière.
+  - **[mon choix]** « Du même nom » veut dire même nom en minuscules, sans ™ ® ©, avec les espaces multiples réduits à un.
+- La mise en page commune affiche aujourd'hui la bannière de l'utilisateur sur toutes les pages. Elle doit donc laisser la page d'un jeu fournir sa propre bannière et son propre fond.
+
+**Bandeau du jeu** **[mon choix]**
+C'est un panneau translucide qui chevauche le bas de la bannière, comme le bandeau profil de Games (8.3). Il contient :
+- le nom du jeu (24 px, gras) et le badge de plateforme, le même que dans la liste des jeux ;
+- en dessous : « 47 of 58 trophies | Last played 8 Nov 2026 | 71h 24m played ». Une information inconnue est omise, avec son séparateur ;
+- à droite, sur environ 40 % de la largeur, la progression « empilée » de la liste des jeux (8.7) :
+  - les pastilles obtenus / définis par type, centrées ;
+  - en dessous, la barre aux couleurs de rang et le **pourcentage PSN** de la liste ;
+- tout à droite, l'icône d'état de la liste des jeux : platine en couleur ou grisé, ou bien coche.
+
+**Liste des trophées** (colonne principale)
+- En-tête : le titre « Trophies », et à droite « 47 of 58 earned ».
+- **[mon choix] Deux menus**, du même style que les filtres de Games :
+  - affichage : All trophies (par défaut), Earned, Unearned ;
+  - tri, avec l'étiquette « Sort by » pour les lecteurs d'écran : PSN order (par défaut, ordre des `trophyId`), Date earned, Rarest first.
+    - **Date earned** : les obtenus du plus ancien au plus récent, puis les non obtenus dans l'ordre PSN.
+    - **Rarest first** : rareté PSN croissante, les trophées sans rareté à la fin.
+  - **[décidé] Les options du tri ne répètent pas le mot « Order »**, comme sur Games, dont les options n'ont pas de préfixe non plus.
+  - Les groupes sont gardés quels que soient l'affichage et le tri : le tri s'applique à l'intérieur de chaque groupe. Un groupe sans trophée visible disparaît. S'il ne reste rien, la liste affiche « No trophy matches this filter. »
+  - L'affichage et le tri sont repris dans l'adresse de la page, comme les filtres de Games.
+- **Groupes** (jeu de base, puis packs DLC)
+  - **[mon choix]** Ils n'apparaissent que si la liste a plus d'un groupe. Sans DLC, les trophées s'enchaînent directement.
+  - L'en-tête d'un groupe fait ~110 px (mesuré sur psnprofiles). Il contient :
+    - une image carrée de 100 × 100 ;
+      - **[décidé, 9 novembre 2026, maquette v6]** pour une liste **PS5**, c'est l'icône d'origine de chaque groupe, qui est carrée ;
+      - pour une liste **PS4**, dont les icônes de groupe sont rectangulaires, c'est **la même image que la ligne du jeu dans la liste Games** (sa jaquette carrée, empruntée au besoin à une autre version), répétée sur le jeu de base et sur chaque DLC ;
+      - le but est la cohérence : une image carrée partout ;
+      - **[décidé, 9 novembre 2026]** une liste PS4 sans aucune jaquette (ni chez elle, ni chez une autre version) met elle aussi, sur le jeu de base et sur **chaque** DLC, l'image de sa ligne dans la liste Games : l'icône de sa liste de trophées, affichée en entier. Les DLC n'affichent donc jamais leur propre icône rectangulaire. Cas concernés au 9 novembre 2026 : Marvel Heroes Omega et Minecraft: Story Mode ;
+      - **[décidé, 9 novembre 2026] Aucune image rectangulaire, nulle part** (ni la jaquette, ni les groupes). Une image qui n'est pas carrée est posée, entière, sur **la même tuile carrée sombre que dans la liste Games** (`#0B1022`). Elle se lit donc comme un carré, exactement comme sa ligne dans Games. Cela vaut pour l'en-tête de chaque groupe et pour la grande jaquette de la colonne latérale. Au 9 novembre 2026, quatre listes PS4 n'ont aucune jaquette carrée : Game of Thrones, Marvel Heroes Omega, Minecraft: Story Mode et Tales from the Borderlands. L'utilisateur a demandé de reprendre l'image de la liste Games faute d'autre image carrée ;
+        - **[décidé, 9 novembre 2026] La tuile prend la couleur du bord de l'image** quand ce bord est uni et opaque. Retour de l'utilisateur : sur Marvel Heroes Omega, le noir de l'icône se distinguait du bleu nuit des bandes du haut et du bas. Pour une image plus large que haute, on lit sa première et sa dernière ligne de pixels (pour une image plus haute que large, sa première et sa dernière colonne). Si chacune est opaque et d'une seule couleur, la bande correspondante prend cette couleur : l'image et ses bandes ne font plus qu'un seul carré. Sinon (logo transparent, bord dessiné), la tuile reste en `#0B1022`. Même règle dans la liste Games. **[mon choix]** La couleur est lue par le navigateur une fois l'image chargée, sur un canevas : la bibliothèque d'images (sharp) reste réservée au worker, et aucune donnée n'est ajoutée à la base. Marges : une couleur est « unie » si aucun pixel du bord ne s'écarte de plus de 16 de la moyenne sur un canal, et « opaque » si tous ont une opacité d'au moins 250/255 ;
+    - un sur-titre en petites capitales : « Base game » pour le groupe `default`, puis « DLC 1 », « DLC 2 »… dans l'ordre des groupes ;
+    - le nom : celui du jeu pour le jeu de base, celui du pack pour un DLC ;
+    - « 45 of 45 trophies » ;
+    - les pastilles, la barre et le pourcentage du groupe, puis l'icône d'état du groupe : le platine s'il contient le platine, sinon la coche.
+  - **[mon choix] Pourcentage d'un groupe** : il suit la règle du PSN, vérifiée le 8 novembre 2026 sur les 266 jeux contre le pourcentage PSN de chaque liste.
+    - Il vaut les points obtenus hors platine, divisés par les points du groupe hors platine (bronze 15, argent 30, or 90), arrondi **à l'inférieur**.
+    - Il vaut **au moins 1 %** dès qu'un trophée est obtenu. Monster Hunter Rise : 0,69 % donne 1 %.
+    - Cyberpunk donne 100 % pour le jeu de base et 15 % pour Phantom Liberty, comme psnprofiles.
+  - **[décidé]** L'icône de platine d'un en-tête de groupe n'a **aucun fond ni ombre**. Le fond sombre est réservé à l'icône du groupe (défaut de la v3, corrigé).
+- **Ligne de trophée** : ~66 px, icône de 56 px (mesuré sur psnprofiles). De gauche à droite :
+  - l'icône ;
+  - le nom (15 px, gras) et la description en dessous, **en entier**. Une description longue agrandit la ligne, rien n'est coupé ;
+  - si le trophée est obtenu : la date (« 18 Jul 2022 ») et l'heure (« 01:21 ») sur deux lignes, en vert clair ;
+  - la rareté PSN (« 2.30% ») et sa catégorie (« Ultra rare »), avec les paliers de 8.8 ;
+  - l'icône officielle du type.
+- **[décidé, 8 novembre 2026] Compteur des trophées à paliers**, comme sur psnprofiles (capture de l'utilisateur, Phantom Blade Zero) :
+  - Certains trophées demandent d'atteindre un nombre, par exemple « Defeat the Four Great Puppets » (4) ou « Synthesize 5,000 collectables ».
+  - Tant qu'un tel trophée n'est pas obtenu, sa progression s'affiche **à la place de la date** : « 0/4 », « 3,626/5,000 ».
+  - Le compteur est en 15 px, gras, de la couleur du texte, avec les séparateurs de milliers de 8.1.
+  - Un trophée obtenu affiche sa date, jamais de compteur.
+  - Seules les listes PS5 ont des compteurs. Au 8 novembre 2026, il en restait par exemple 60 dans FFXIV Online, 7 dans Phantom Blade Zero, 8 dans The Last of Us Part II Remastered et 5 dans Nioh 3.
+  - **[mon choix]** Si la progression de l'utilisateur est inconnue, rien n'est affiché : pas de « 0 » supposé (2, anti-objectifs).
+  - La maquette v5 (`jeu-v5.html`) montre ces compteurs sur FFXIV Online et Phantom Blade Zero.
+- **[décidé] Un trophée obtenu se distingue** par un fond vert, comme sur psnprofiles, et par sa date.
+  - **[mon choix]** Le fond est le vert `#3DBE6B` à 14 %, avec un liseré de 2 px de ce vert autour de l'icône. La date est en `#93E2AE`.
+  - Un trophée non obtenu n'a ni fond, ni liseré, ni date. Son icône reste en couleur.
+- **[décidé] Les trophées secrets sont tous affichés en entier**, nom et description compris, qu'ils soient obtenus ou non. Le PSN fournit ces textes. Il n'y a pas de bouton « Hide secret trophies ».
+
+**Colonne latérale** (320 px, 10)
+1. **[décidé] La jaquette en grand**, en 320 × 320 : la même jaquette carrée que dans la liste des jeux (8.7), ou à défaut l'icône de la liste de trophées, sans la rogner, sur la même tuile carrée sombre que dans la liste Games (**[décidé, 9 novembre 2026]**, aucune image rectangulaire).
+2. **Infos du jeu**, dans un panneau :
+   - **[décidé] Deux lignes de totaux** :
+     - « Total 58 trophies · 1,485 points », avec les pastilles du nombre de trophées par type ;
+     - « Earned 47 trophies · 1,320 points », avec les pastilles du nombre obtenu par type.
+     - Points PSN : bronze 15, argent 30, or 90, platine 300. On retrouve les totaux de psnprofiles pour Cyberpunk.
+   - **[décidé] Récapitulatif des raretés** : la barre empilée et les 5 chiffres de 8.8, sur **tous** les trophées de la liste, DLC compris.
+     - **[décidé]** Les 5 colonnes ont la même largeur, avec le chiffre et le libellé **centrés** dans chacune.
+   - **[décidé] Publisher, Genre, Release date**, venus du PSN seul (6.3) :
+     - l'éditeur tel que le store le nomme (« CD PROJEKT RED S.A. ») ;
+     - les genres en clair, sans doublon, séparés par des virgules (« Role Playing Games ») ;
+     - la date de sortie du concept, au format de 8.1 (« 10 Dec 2020 »).
+     - **[décidé] Pas de développeur** : le PSN ne le fournit pas, et IGDB a été écarté.
+     - **[mon choix]** Une ligne dont la valeur est inconnue est masquée.
+   - **[décidé] Avg. rarity** : la moyenne des raretés PSN de tous les trophées de la liste (« 25.81% »).
+     - Juste en dessous, **sur une seule ligne**, les valeurs seules : la plus basse, la médiane et la plus haute (« 0.50% · 19.05% · 86.20% »).
+     - **[décidé]** Les libellés « Lowest », « Median » et « Highest » n'apparaissent qu'**au survol** de chaque valeur, qu'un fin pointillé signale.
+     - Les trophées sans rareté connue sont exclus de ces calculs.
+   - **[décidé] Guides** : deux liens, ouverts dans un nouvel onglet.
+     - « **PowerPyx roadmap** » ouvre `https://www.powerpyx.com/?s=<nom>+roadmap`, une recherche du nom du jeu suivi du mot « roadmap ». Pour Cyberpunk, le premier résultat est « Cyberpunk 2077 Trophy Guide & Roadmap ».
+     - « **PSNProfiles guides** » ouvre `https://psnprofiles.com/search/guides?q=<nom>`, la recherche des guides de psnprofiles, **sans** « roadmap ». C'est l'adresse qu'utilise le champ de recherche de https://psnprofiles.com/guides.
+     - `<nom>` est le nom de la liste sans ™, ® ni ©, avec les espaces multiples réduits à un, puis encodé pour l'adresse.
+     - **Aucune lettre ni aucun chiffre ne doit disparaître.** La v4 a eu ce défaut : Gran Turismo cherchait « Gran Turi mo ». La règle tient en **une seule fonction**, couverte par des tests sur les « s », ™ / ®, apostrophes droites et typographiques, deux-points et accents. Elle a été vérifiée sur les 266 noms.
+3. **Timeline**, dans un panneau du même nom. Chaque ligne a un libellé en gras, une précision en dessous, et à droite la date et l'heure sur deux lignes.
+   - **[décidé] First trophy** : sa date, avec le temps écoulé en dessous (« 4 years ago », même règle que les milestones, 8.8).
+   - **[décidé] Platinum** : sa date, avec en dessous le temps mis depuis le premier trophée.
+     - Ce temps garde ses **3 plus grandes unités**, comme psnprofiles : « 1 week, 4 days, 3 hours ».
+     - **[mon choix]** Ces 3 unités sont consécutives : elles partent de la plus grande unité non nulle, puis les unités nulles parmi elles sont omises. Par exemple, 1 an, 0 mois, 2 semaines et 3 jours donnent « 1 year, 2 weeks ». C'est le comportement de la maquette validée.
+     - Si le platine n'est pas obtenu, la ligne affiche « Not earned yet ». Si le jeu n'a pas de platine, la ligne n'apparaît pas.
+   - **[mon choix] Latest trophy** : la date du dernier trophée obtenu, avec le temps écoulé en dessous. Elle montre d'où part l'écart.
+   - **[décidé] Gap** : le temps entre le premier et le dernier trophée obtenus, avec **toutes les unités non nulles jusqu'à la minute**. Cyberpunk donne « 4 years, 4 months, 21 hours, 11 minutes ».
+   - Règles communes **[mon choix]** :
+     - unités : years, months, weeks, days, hours, minutes ;
+     - une unité nulle est omise ;
+     - le calcul se fait sur l'heure de Paris, pour qu'un changement d'heure ne décale pas les heures.
+   - Sans aucun trophée obtenu, la Timeline n'a qu'une ligne : « No trophy earned yet ».
+
+**Écrans étroits** **[mon choix]**
+- Sous 980 px :
+  - la page passe sur une colonne ;
+  - les infos du jeu et la Timeline passent **au-dessus** de la liste, côte à côte si la place le permet ;
+  - la jaquette est masquée : la bannière et le bandeau montrent déjà le jeu.
+- Sur téléphone (640 px et moins) :
+  - le logo est masqué ;
+  - la date et la rareté d'un trophée passent sous son nom, sur une seule ligne.
+- La liste adapte ses lignes à sa propre largeur : sous 720 px de liste, les en-têtes de groupe passent sur deux lignes, et la date et la rareté s'empilent à droite.
+
+**Ce que la page n'a pas**, alors que la page d'un jeu sur psnprofiles l'a :
+- **[décidé]** Tout ce qui ne sert pas à l'utilisateur, ou que le PSN ne fournit pas :
+  - les guides écrits sur psnprofiles même, que remplacent les deux liens de recherche ;
+  - les notes, vues et favoris des guides, les boutons de partage et les listes « to-do » ;
+  - le développeur, les thèmes, les modes de jeu, les autres noms du jeu et les dates de sortie par plateforme, qui viennent d'IGDB ;
+  - les chiffres des autres joueurs (propriétaires, rang, classements, joueurs récents), qui sont des non-objectifs (2).
+- **[décidé, 8 novembre 2026] Pas de lien vers l'autre version du jeu.** Un jeu sorti sur PS4 et sur PS5 a deux listes de trophées, donc deux pages (Cyberpunk 2077 : PS4 à 100 %, PS5 à 86 %). psnprofiles relie les deux dans un encart « Other platforms and regions ». Ici, pour passer de l'une à l'autre, on repasse par la liste des jeux.
 
 ## 9. Page Settings
 - **Banner [décidé]** :
   - envoi d'une image **depuis le PC** (JPEG, PNG ou WebP, 10 Mo maximum **[mon choix]**), avec aperçu ;
   - choix de la partie verticale à garder (8.2) ;
   - l'image est stockée sur un volume Docker ;
-  - un bouton permet de revenir à la bannière par défaut.
+  - un bouton permet de revenir à la bannière par défaut, qui est la bannière automatique du dernier jeu joué (8.2).
+  - **[mon choix, 8 novembre 2026]** Sans bannière personnalisée :
+    - l'aperçu montre la bannière automatique, avec la mention « Automatic — last played game (<nom du jeu>) » ;
+    - le bouton s'appelle « Use automatic banner » ;
+    - le curseur de position ne s'applique qu'à une bannière personnalisée.
 - **PSN token [décidé]** : un encart pour **renouveler le NPSSO**, accompagné d'un **mini tuto** pour le récupérer :
   1. Se connecter sur https://www.playstation.com dans son navigateur.
   2. Dans le même navigateur, ouvrir https://ca.account.sony.com/api/v1/ssocookie.
@@ -344,6 +535,12 @@ Chaque case contient un libellé et une valeur, **sans texte en dessous [décid�
   - lignes de jeux ~80 px, lignes des listes latérales ~66 px, icônes du carrousel et des listes 56 px ;
   - texte de base 14 px, chiffres des stats 28 px fins.
   - La v2 était jugée « trop grosse » partout, la v3 avait une bannière trop petite, et la v4 une bannière trop rognée.
+- **[décidé, 8 novembre 2026] Proportions de la page d'un jeu** (8.9), mesurées sur la page Cyberpunk de psnprofiles à 1 630 px :
+  - colonne latérale de **320 px**, avec une jaquette en 320 × 320 ; la liste prend le reste, soit ~1 064 px pour un contenu de 1 400 px (1 046 sur psnprofiles) ;
+  - lignes de trophées de **66 px**, icônes de **56 px**, nom des trophées en 15 px ;
+  - en-têtes de groupe de **110 px**, icônes de groupe de **100 px** ;
+  - la bannière a la même hauteur que celle de Games.
+  - La v1 (colonne de 450 px, comme Games) donnait une jaquette et une colonne jugées trop grosses. La page Games garde sa colonne de 450 px : sur psnprofiles aussi, la page d'un jeu a une colonne plus étroite que la page de profil.
 - Le site s'adapte jusqu'au mobile. Le focus clavier est visible, et la demande de réduction des animations est respectée (sauf pour le défilement du carrousel, voir 8.6).
 
 ## 11. Déploiement
@@ -372,4 +569,45 @@ Il choisit :
 Il doit aussi vérifier en pratique la détection des nouveaux DLC (6.4).
 
 ## 13. Points restants
-- **Page de détail d'un jeu :** sa maquette est à faire et à valider avant de la construire (8.9). C'est la dernière étape de la phase 1.
+- **Page de détail d'un jeu :** maquette validée le 8 novembre 2026 (8.9), construite et vérifiée avec les vraies données sur la branche `feat/game-detail`. Il reste à fusionner la Pull Request ; c'est la dernière étape de la phase 1.
+- **Jeux aux trophées non obtenables :** fonctionnalité demandée le 8 novembre 2026, décrite en 14. Elle sera faite à part, après la page de détail d'un jeu.
+
+## 14. Jeux aux trophées non obtenables (à venir)
+**[décidé, 8 novembre 2026]** Cette fonctionnalité est faite **à part**, après la page de détail d'un jeu, sur sa propre branche (`feat/unobtainable`). Elle suivra le processus habituel : cadrage, maquette validée, spec, plan, construction. Ce qui suit est ce que l'utilisateur a déjà décidé, plus les constats faits le jour même.
+
+**Intention** : repérer les jeux dont certains trophées ne peuvent plus être obtenus (serveurs fermés, jeu plus supporté, jeu retiré du PSN…), pour les mettre de côté ou les cibler.
+
+**Ce que l'utilisateur a décidé** :
+1. **Bouton « tout afficher » dans la liste des jeux** (8.7). Il est placé dans l'en-tête de la liste, à côté du nombre de jeux (« 266 games »). En un clic, il affiche la liste complète des jeux de Games, sans avoir à faire défiler la page pour charger les jeux 50 par 50.
+2. **Filtre « non obtenables »**, dans la barre de filtres de Games, juste après le menu de tri.
+   - C'est un **filtre séparé**, une surcouche qui s'ajoute aux autres : il fonctionne en même temps que l'état, la plateforme, le tri, la recherche et « Hide 0% games ».
+   - Il a deux valeurs : **« With unobtainable »** (seulement les jeux qui ont des trophées non obtenables) et **« Without unobtainable »** (seulement les jeux qui n'en ont pas).
+   - Il est **désactivé par défaut** : la liste n'est filtrée que lorsque l'utilisateur choisit l'une des deux valeurs.
+3. **Repère « ! » dans la liste des jeux** (8.7) : un jeu qui a des trophées non obtenables porte un « ! » sur sa ligne, juste après le badge de plateforme (PS4/PS5).
+   - Au survol du « ! », une infobulle indique que le jeu a des trophées non obtenables, et combien. Ce nombre vient de la liste.
+4. **Sur la page d'un jeu** (8.9), chaque trophée non obtenable porte un « ! » à côté de son nom.
+   - Un trophée non obtenable **et non obtenu** a en plus une **légère surbrillance rouge**, sur le même principe que la surbrillance verte d'un trophée obtenu.
+   - Un trophée non obtenable **mais déjà obtenu** garde sa **surbrillance verte**, avec seulement le « ! » à côté de son nom, sans rouge.
+5. **Source de la liste réglable dans Settings** : un champ permet de saisir l'adresse de la liste des jeux aux trophées non obtenables.
+   - Adresse actuelle, à mettre par défaut : `https://psnp-plus.huskycode.dev/list.json` (liste maintenue pour l'extension PSNP+).
+   - Si l'adresse change un jour, l'utilisateur la met à jour depuis l'interface, sans toucher au code.
+
+**Constats du 8 novembre 2026** (à confirmer au cadrage) :
+- **Format de la liste** : `{ "version": 2, "list": { "<id psnprofiles>": { "title", "platforms", "submitter", "note", "trophies": [numéros], "timestamp" } } }`.
+  - Elle compte 1 622 jeux, dont 1 150 sur PS4 ou PS5.
+  - `note` explique la cause, par exemple « The servers closed on May 29/30, 2025. ».
+  - `trophies` donne les numéros des trophées non obtenables dans la liste psnprofiles du jeu.
+- **Aucun identifiant PSN** (`npCommunicationId`) dans la liste : un jeu doit être rapproché **par son nom et sa plateforme**.
+  - Avec un nom normalisé (minuscules, sans ™ ® ©, ponctuation réduite) et une plateforme commune, 5 des 266 jeux de l'utilisateur sont reconnus : Dauntless (PS4 et PS5), Final Fantasy XV (PS4), Gran Turismo Sport et Marvel Heroes Omega. Aucun faux positif n'a été vu.
+  - Un même jeu peut avoir plusieurs entrées, une par région (Final Fantasy XV en a 4). Pour savoir si un jeu « a des trophées non obtenables », il suffit que l'une d'elles corresponde.
+- **Numéros des trophées** : leur correspondance avec les `trophyId` du PSN est **à vérifier** au cadrage, en comparant avec les pages psnprofiles.
+  - Pour Gran Turismo Sport (`[1, 2, 3, 4, 35, 36, 38]`), la lecture « numéro − 1 = `trophyId` » donne des trophées en ligne plausibles : le platine, les records du Sport Mode, la livrée partagée, le Daily Workout.
+  - Mais l'entrée de Dauntless vaut `[0]`, ce qui ne colle pas avec une numérotation qui part de 1.
+  - Le nombre de trophées non obtenables affiché dans l'infobulle de la liste des jeux est la taille de ce tableau.
+
+**Points à trancher au cadrage** :
+- le libellé du filtre quand il est désactivé, et l'aspect du bouton « tout afficher » une fois tous les jeux chargés ;
+- la fréquence de téléchargement de la liste (par exemple avec le rafraîchissement quotidien, et à l'enregistrement d'une nouvelle adresse), et ce qui s'affiche si elle est inaccessible ;
+- l'effet du filtre sur les stats, comme « Hide 0% games » le fait (8.4), ou non ;
+- l'affichage de la note de la liste (la cause : « Servers closed on… »), dans l'infobulle du « ! » ou sur la page d'un jeu ;
+- une correction manuelle pour un jeu mal reconnu par son nom.

@@ -3,6 +3,7 @@ import "@testing-library/jest-dom/vitest";
 import { act, cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { GameList } from "@/components/GameList";
+import { saveListSnapshot } from "@/components/list-snapshot";
 import type { GameQuery } from "@/src/games/query";
 import type { GameRowData } from "@/src/games/row";
 
@@ -24,7 +25,7 @@ const game = (n: number): GameRowData => ({
 });
 const games = (from: number, count: number) => Array.from({ length: count }, (_, i) => game(from + i));
 
-const query: GameQuery = { state: "all", platform: "all", sort: "lastPlayed", q: "", offset: 0 };
+const query: GameQuery = { state: "all", platform: "all", sort: "lastTrophy", q: "", offset: 0 };
 
 let trigger: () => void = () => {};
 let observed = 0;
@@ -60,6 +61,7 @@ afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
   fetchMock.mockReset();
+  sessionStorage.clear();
 });
 
 const rows = () => document.querySelectorAll(".game").length;
@@ -68,7 +70,7 @@ const FOOTER = "The next 50 games load as you scroll down";
 describe("GameList", () => {
   it("loads the next page on intersection, appends it, then stops at total", async () => {
     fetchMock.mockResolvedValueOnce(reply(games(51, 20), 70));
-    render(<GameList initial={{ items: games(1, 50), total: 70 }} query={query} />);
+    render(<GameList snapshotKey="k" initial={{ items: games(1, 50), total: 70 }} query={query} />);
     expect(rows()).toBe(50);
     expect(screen.getByText(FOOTER)).toBeInTheDocument();
 
@@ -87,12 +89,12 @@ describe("GameList", () => {
   it("also loads when the footer was scrolled past, and a bit before it shows", () => {
     // Jumping to the page bottom (End key, scrollbar drag) can leave the footer above the
     // viewport without ever crossing it: the root is extended far upwards, and 600 px down.
-    render(<GameList initial={{ items: games(1, 50), total: 70 }} query={query} />);
+    render(<GameList snapshotKey="k" initial={{ items: games(1, 50), total: 70 }} query={query} />);
     expect(observerOptions?.rootMargin).toBe("100000px 0px 600px 0px");
   });
 
   it("says so when no game matches", () => {
-    render(<GameList initial={{ items: [], total: 0 }} query={query} empty="No games match these filters." />);
+    render(<GameList snapshotKey="k" initial={{ items: [], total: 0 }} query={query} empty="No games match these filters." />);
     expect(screen.getByText("No games match these filters.")).toBeInTheDocument();
     expect(screen.queryByText(FOOTER)).toBeNull();
   });
@@ -101,6 +103,7 @@ describe("GameList", () => {
     fetchMock.mockResolvedValueOnce(reply(games(51, 1), 51));
     render(
       <GameList
+        snapshotKey="k"
         initial={{ items: games(1, 50), total: 51 }}
         query={{ ...query, state: "notFinished", platform: "PS5", sort: "alphabetical", q: "dark souls" }}
       />,
@@ -120,7 +123,7 @@ describe("GameList", () => {
   it("never runs two fetches at once", async () => {
     let resolve!: (r: Response) => void;
     fetchMock.mockReturnValueOnce(new Promise<Response>((r) => (resolve = r)));
-    render(<GameList initial={{ items: games(1, 50), total: 100 }} query={query} />);
+    render(<GameList snapshotKey="k" initial={{ items: games(1, 50), total: 100 }} query={query} />);
     await intersect();
     await intersect();
     expect(fetchMock).toHaveBeenCalledTimes(1);
@@ -129,14 +132,14 @@ describe("GameList", () => {
   });
 
   it("does not observe anything when the first page already holds every game", () => {
-    render(<GameList initial={{ items: games(1, 3), total: 3 }} query={query} />);
+    render(<GameList snapshotKey="k" initial={{ items: games(1, 3), total: 3 }} query={query} />);
     expect(observed).toBe(0);
     expect(screen.queryByText(FOOTER)).toBeNull();
   });
 
   it("offers a retry after a failed fetch and appends on success", async () => {
     fetchMock.mockResolvedValueOnce(new Response("{}", { status: 500 }));
-    render(<GameList initial={{ items: games(1, 50), total: 60 }} query={query} />);
+    render(<GameList snapshotKey="k" initial={{ items: games(1, 50), total: 60 }} query={query} />);
     await intersect();
     expect(screen.getByText(/Couldn't load more games\./)).toBeInTheDocument();
     expect(rows()).toBe(50);
@@ -150,8 +153,124 @@ describe("GameList", () => {
 
   it("does not duplicate a game already shown", async () => {
     fetchMock.mockResolvedValueOnce(reply([game(50), ...games(51, 2)], 52));
-    render(<GameList initial={{ items: games(1, 50), total: 52 }} query={query} />);
+    render(<GameList snapshotKey="k" initial={{ items: games(1, 50), total: 52 }} query={query} />);
     await intersect();
     expect(rows()).toBe(52);
+  });
+
+  describe("coming back from a game page", () => {
+    const scrollTo = vi.fn();
+    const realScrollTo = window.scrollTo;
+    beforeEach(() => {
+      scrollTo.mockReset();
+      window.scrollTo = scrollTo as never;
+      history.replaceState(null, "");
+      saveListSnapshot({ key: "k", items: games(1, 120), total: 200, scrollY: 4200 });
+    });
+    afterEach(() => {
+      window.scrollTo = realScrollTo;
+      delete (window as { scrollY?: number }).scrollY;
+      vi.restoreAllMocks();
+    });
+    const mount = (key = "k") =>
+      render(<GameList snapshotKey={key} initial={{ items: games(1, 50), total: 200 }} query={query} />);
+
+    it("restores the loaded games and the scroll position after a back navigation", async () => {
+      // Back to the tagged entry: it is still the current one.
+      await act(async () => {
+        mount();
+      });
+      expect(rows()).toBe(120);
+      expect(scrollTo).toHaveBeenCalledWith(0, 4200);
+    });
+
+    it("restores again after leaving and coming back a second time", async () => {
+      await act(async () => {
+        mount();
+      });
+      cleanup();
+      await act(async () => {
+        mount();
+      });
+      expect(rows()).toBe(120);
+    });
+
+    it("starts from the top on a fresh visit", async () => {
+      history.pushState(null, ""); // a new entry, as a menu link would push
+      await act(async () => {
+        mount();
+      });
+      expect(rows()).toBe(50);
+      expect(scrollTo).not.toHaveBeenCalled();
+    });
+
+    it("starts from the top on a fresh visit after a back that mounted no list", async () => {
+      window.dispatchEvent(new PopStateEvent("popstate")); // back to a game page: no GameList
+      history.pushState(null, ""); // then the Games menu entry
+      await act(async () => {
+        mount();
+      });
+      expect(rows()).toBe(50);
+      expect(scrollTo).not.toHaveBeenCalled();
+    });
+
+    it("ignores a snapshot taken with other filters or before a sync", async () => {
+      await act(async () => {
+        mount("other");
+      });
+      expect(rows()).toBe(50);
+      expect(scrollTo).not.toHaveBeenCalled();
+    });
+
+    it("keeps Next's own history state when tagging the entry", () => {
+      history.replaceState({ __NA: true }, "");
+      saveListSnapshot({ key: "k", items: games(1, 2), total: 2, scrollY: 1 });
+      expect(history.state.__NA).toBe(true);
+      expect(history.state.gamesSnapshot).toBeTruthy();
+    });
+
+    it("saves the loaded games and scroll position when a game is opened", async () => {
+      history.pushState(null, "");
+      mount();
+      sessionStorage.clear();
+      Object.defineProperty(window, "scrollY", { value: 900, configurable: true });
+      const link = document.querySelector<HTMLAnchorElement>("a.game")!;
+      link.addEventListener("click", (e) => e.preventDefault());
+      await act(async () => link.click());
+      const saved = JSON.parse(sessionStorage.getItem("games-list")!);
+      expect(saved).toMatchObject({ key: "k", total: 200, scrollY: 900 });
+      expect(saved.items).toHaveLength(50);
+    });
+
+    it("does not save on modified or non-primary clicks", async () => {
+      mount();
+      sessionStorage.clear();
+      const link = document.querySelector<HTMLAnchorElement>("a.game")!;
+      link.addEventListener("click", (e) => e.preventDefault());
+      await act(async () => {
+        link.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, ctrlKey: true }));
+        link.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, metaKey: true }));
+        link.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, shiftKey: true }));
+        link.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, button: 1 }));
+      });
+      expect(sessionStorage.getItem("games-list")).toBeNull();
+    });
+
+    it("does not crash when sessionStorage throws", async () => {
+      vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
+        throw new Error("denied");
+      });
+      vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+        throw new Error("quota");
+      });
+      await act(async () => {
+        mount();
+      });
+      expect(rows()).toBe(50);
+      const link = document.querySelector<HTMLAnchorElement>("a.game")!;
+      link.addEventListener("click", (e) => e.preventDefault());
+      await act(async () => link.click());
+      expect(rows()).toBe(50);
+    });
   });
 });

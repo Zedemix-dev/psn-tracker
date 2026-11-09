@@ -1,13 +1,15 @@
-import { and, eq, gt, lte, notInArray } from "drizzle-orm";
+import { and, eq, gt, inArray, lte, notInArray } from "drizzle-orm";
 import type { Db } from "@/src/db/client";
 import { profile, syncRuns, titles, type SyncKind } from "@/src/db/schema";
 import type { AppConfig } from "@/src/lib/config";
 import type { PsnAuth, PsnGateway } from "@/src/psn/gateway";
 import { getValidAuth } from "@/src/psn/tokens";
 import { loadTitleState, titleNeedsReload } from "@/src/sync/diff";
+import { syncCatalog } from "@/src/sync/catalog";
 import { cacheImages } from "@/src/sync/images";
 import { syncPlayedGames } from "@/src/sync/played";
 import { defaultSleep, withPacing, type Sleep } from "@/src/sync/retry";
+import { refreshUserState } from "@/src/sync/user-state";
 import { syncTitle, upsertTitleRow } from "@/src/sync/title";
 
 export type SyncRunResult = { status: "success" | "error" | "skipped"; runId?: number; error?: string };
@@ -146,12 +148,14 @@ export async function runSync(
     const remoteTitles = await paced.getTitles(auth);
     await progress.setTotal(remoteTitles.length);
 
+    const reloaded = new Set<string>();
     for (const remote of remoteTitles) {
       let updated = 0;
       try {
         const stored = await loadTitleState(db, remote.npCommunicationId);
         if (titleNeedsReload(stored, remote)) {
           updated = (await syncTitle(db, paced, auth, remote, now)).trophiesUpdated;
+          reloaded.add(remote.npCommunicationId);
         } else {
           await upsertTitleRow(db, remote, now);
         }
@@ -170,7 +174,24 @@ export async function runSync(
         .where(notInArray(titles.npCommunicationId, remoteTitles.map((t) => t.npCommunicationId)));
     }
 
-    await syncPlayedGames(db, paced, auth);
+    const { replayedTitleIds } = await syncPlayedGames(db, paced, auth);
+    // A replayed game moves progress counters without touching the title's own change markers.
+    const toRefresh = replayedTitleIds.filter((id) => !reloaded.has(id));
+    if (toRefresh.length > 0) {
+      const rows = await db
+        .select({ id: titles.npCommunicationId, npServiceName: titles.npServiceName })
+        .from(titles)
+        .where(and(inArray(titles.npCommunicationId, toRefresh), eq(titles.hidden, false)));
+      for (const row of rows) {
+        if (row.npServiceName !== "trophy2") continue;
+        try {
+          await refreshUserState(db, paced, auth, { npCommunicationId: row.id, npServiceName: "trophy2" });
+        } catch (err) {
+          failures.push(describeFailure(row.id, err));
+        }
+      }
+    }
+    await syncCatalog(db, paced, auth, "missing", now);
     await cacheImages(db, cfg.mediaDir, deps?.fetchImpl);
   });
 }

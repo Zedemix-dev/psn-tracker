@@ -3,6 +3,7 @@ import {
   formatDate,
   formatDateTime,
   formatDuration,
+  formatTime,
   formatHoursTotal,
   formatInt,
   formatLastPlayedLine,
@@ -66,5 +67,11 @@ describe("format", () => {
     expect(ago(6.4 * 86_400)).toBe("6 days ago");
     expect(ago(29 * 86_400)).toBe("4 weeks ago");
     expect(ago(340 * 86_400)).toBe("11 months ago");
+  });
+});
+
+describe("formatTime", () => {
+  it("formats the Paris wall-clock time", () => {
+    expect(formatTime(new Date("2022-07-17T23:21:00Z"))).toBe("01:21");
   });
 });

@@ -89,7 +89,9 @@ export async function syncTitle(
       earnedAt: earned ? (u?.earnedAt ?? null) : null,
       earnedRate: u?.earnedRate == null ? null : u.earnedRate.toFixed(2),
       rareCategory: u?.rareCategory ?? null,
-      progressTarget: u?.progressTarget ?? null,
+      progressTarget: d.progressTarget,
+      progress: u?.progress ?? null,
+      progressedAt: u?.progressedAt ?? null,
     };
   });
 
@@ -139,6 +141,8 @@ export async function syncTitle(
             earnedRate: sql`coalesce(${sqlExcluded("earned_rate")}, ${trophies.earnedRate})`,
             rareCategory: sqlExcluded("rare_category"),
             progressTarget: sqlExcluded("progress_target"),
+            progress: sqlExcluded("progress"),
+            progressedAt: sqlExcluded("progressed_at"),
           },
         });
     }

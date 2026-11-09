@@ -1,5 +1,6 @@
 import type { titles, TrophyType } from "@/src/db/schema";
 import { formatLastPlayedLine } from "@/src/lib/format";
+import { type SiblingIndex, withSiblings } from "@/src/games/siblings";
 import { type ImageMap, mediaSrc } from "@/src/sync/images";
 
 export type GameStatus = "plat-earned" | "plat-missing" | "complete" | "incomplete";
@@ -41,7 +42,8 @@ export function gameStatus(
   return t.progress >= 100 ? "complete" : "incomplete";
 }
 
-export function toGameRow(title: GameTitle, imageMap: ImageMap): GameRowData {
+export function toGameRow(title: GameTitle, imageMap: ImageMap, siblings: SiblingIndex): GameRowData {
+  const info = withSiblings(title, siblings);
   const earnedTotal =
     title.earnedPlatinum + title.earnedGold + title.earnedSilver + title.earnedBronze;
   const definedTotal =
@@ -50,8 +52,8 @@ export function toGameRow(title: GameTitle, imageMap: ImageMap): GameRowData {
     id: title.npCommunicationId,
     name: title.name,
     platforms: (["PS4", "PS5"] as const).filter((p) => title.platforms.includes(p)),
-    coverSrc: mediaSrc(title.coverUrl ?? title.iconUrl, imageMap),
-    coverIsIcon: title.coverUrl == null,
+    coverSrc: mediaSrc(info.coverUrl ?? info.coverFallbackUrl, imageMap),
+    coverIsIcon: info.coverIsIcon,
     earnedTotal,
     definedTotal,
     counts: {

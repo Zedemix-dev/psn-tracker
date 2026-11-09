@@ -1,6 +1,6 @@
 # PSN Tracker : état du projet et feuille de route
 
-*Mis à jour le 8 novembre 2026, après la fusion de la phase 1 dans `main` (PR #1).*
+*Mis à jour le 8 novembre 2026 au soir : la page de détail d'un jeu est terminée sur la branche `feat/game-detail`, en attente de Pull Request.*
 
 Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un autre PC, commence par le lire. Le fichier `CLAUDE.md` à la racine le demande automatiquement.
 
@@ -15,9 +15,11 @@ Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un aut
 | `docs/superpowers/specs/2026-11-07-psn-tracker-design.md` | **La spec** : toutes les décisions de design. C'est l'autorité. |
 | `docs/superpowers/specs/2026-11-07-psn-tracker-maquette-accueil.html` | Maquette validée de la page Games (v12), référence CSS. |
 | `docs/superpowers/plans/2026-11-07-psn-tracker-phase1.md` | Le plan d'implémentation de la phase 1 (21 tâches). |
+| `docs/superpowers/specs/2026-11-08-psn-tracker-maquette-jeu.html` | Maquette validée de la page d'un jeu (v5). |
+| `docs/superpowers/plans/2026-11-08-game-detail.md` | Le plan de la page d'un jeu (tâches 1 à 17, dont 13 à 17 ajoutées en cours de route). |
 | `docs/superpowers/plans/2026-11-08-phase1-suivis.md` | Points mis de côté et vérifications au premier déploiement. |
 | `deploy/README.md` | Guide pas à pas du déploiement sur le NAS. |
-| `.superpowers/brainstorm/maquettes/` | Toutes les maquettes intermédiaires (v1 à v12). |
+| `.superpowers/brainstorm/maquettes/` | Toutes les maquettes intermédiaires (`accueil-v1` à `v12`, `jeu-v1` à `v5`). |
 
 ## 2. Ce qui est fait (phase 1, dans `main`)
 - **Socle :**
@@ -36,21 +38,44 @@ Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un aut
 - **Page Settings** : bannière (envoi depuis le PC et position), token NPSSO avec tuto, historique des synchros en direct, déconnexion.
 - **Déploiement** : image Docker unique (app + worker), CI (tests, smoke Postgres, build et publication de l'image sur `main`, 3 dernières images gardées), deux stacks Portainer, nginx.
 - **Vérifié avec les vraies données** : 266 jeux et 11 624 trophées, chiffres conformes à la console et à psnprofiles.
-- **Menu** : les onglets Plat Wall, Trophy Log, Trophy Advisor et Stats existent déjà et mènent à une page « Coming soon ». La page de détail d'un jeu (`/games/[id]`) est un simple emplacement.
+- **Menu** : les onglets Plat Wall, Trophy Log, Trophy Advisor et Stats existent déjà et mènent à une page « Coming soon ».
+
+### Sur la branche `feat/game-detail` (en attente de fusion)
+- **Page de détail d'un jeu** (`/games/[id]`, spec 8.9), conforme à la maquette v5 :
+  - bannière du jeu (image 4K du PSN) avec son logo, ou bannière choisie à la main pour 5 jeux anciens, ou rien sur fond uni ;
+  - bandeau, liste des trophées avec groupes DLC (images carrées partout : icônes d’origine en PS5, jaquette du jeu en PS4 ; une image non carrée est posée sur une tuile carrée qui prend la couleur de son bord, comme Marvel Heroes Omega), filtre et tri, compteurs des trophées à paliers ;
+  - colonne de 320 px : jaquette, totaux et points, raretés, éditeur, genre, date de sortie, liens PowerPyx et psnprofiles, Timeline.
+- **Synchro** :
+  - concept du jeu, catalogue PSN (éditeur, genres, date de sortie) ;
+  - objectifs et progression des trophées à paliers ;
+  - rattrapage unique des listes PS5 (migration 0005).
+- **Emprunt** : une info manquante est prise chez une autre version du même jeu, PS5 d'abord.
+- **Games** :
+  - bannière automatique (dernier jeu joué) sans bannière personnalisée ;
+  - tri par défaut « Last trophy », en tête du menu, dans l’ordre de la console (date de mise à jour de la liste au PSN) ;
+  - retour au même endroit de la liste avec « précédent » ;
+  - répartition par rareté centrée.
+- **Vérifié avec les vraies données** le 8 novembre 2026 : Cyberpunk 2077, Gran Turismo 7, FFXIV Online, Phantom Blade Zero, SAROS, Nioh 3, The Last of Us Part II Remastered, Dauntless, et les 5 jeux à bannière manuelle.
 
 ## 3. Ce qui reste à faire, dans l'ordre
 1. **Déployer sur le NAS** en suivant `deploy/README.md`.
    - Juste après la première publication, donner une seule fois le rôle **Admin** au dépôt dans « Manage Actions access » du package GHCR (étape 1.5).
    - Faire les vérifications du premier déploiement listées dans `docs/superpowers/plans/2026-11-08-phase1-suivis.md`.
-2. **Page de détail d'un jeu** : c'est la dernière étape prévue de la phase 1 (spec, sections 3 et 8.9).
-   - La section 8.9 donne un point de départ.
-   - La maquette doit être faite et **validée avant de construire**.
-3. **Pages suivantes**, chacune avec **son propre brainstorming** (spec, section 3) :
+2. **Page de détail d'un jeu** : terminée sur la branche `feat/game-detail` (voir 2). Il reste à **créer la Pull Request** vers `main` sur GitHub, vérifier que la CI est verte, puis la fusionner. La phase 1 sera alors terminée.
+   - Au premier déploiement de cette version, la synchro recharge une fois toutes les listes PS5 (migration 0005), ce qui la rallonge de quelques minutes.
+3. **Jeux aux trophées non obtenables** (demandé le 8 novembre 2026, spec section 14) : à faire **à part**, après la page de détail, sur la branche `feat/unobtainable`, avec son propre cadrage.
+   - Un bouton dans l'en-tête de la liste Games pour afficher tous les jeux d'un coup, sans défiler.
+   - Un filtre séparé « With unobtainable » / « Without unobtainable », désactivé par défaut, qui s'ajoute aux autres filtres.
+   - Un « ! » après le badge PS4/PS5 des jeux concernés dans la liste Games, avec une infobulle qui donne le nombre de trophées non obtenables.
+   - Sur la page d'un jeu, un « ! » à côté de chaque trophée non obtenable. Le trophée a une légère surbrillance rouge s'il n'est pas obtenu, et garde sa surbrillance verte s'il l'est.
+   - Dans Settings, l'adresse de la liste des jeux concernés, modifiable. Adresse actuelle : `https://psnp-plus.huskycode.dev/list.json`.
+   - La liste ne donne pas l'identifiant PSN des jeux : rapprochement par nom et plateforme (5 de tes jeux reconnus le 8 novembre 2026).
+4. **Pages suivantes**, chacune avec **son propre brainstorming** (spec, section 3) :
    - **Plat Wall** ;
    - **Trophy Log** ;
    - **Trophy Advisor** : les trophées non obtenus sont déjà stockés avec leur rareté. Le toggle « Hide 0% games » doit aussi en retirer les jeux à 0 % ;
    - **Stats** : elle reçoit le calendrier « Last 60 days », déjà décrit dans la spec, section 3.
-4. **Points de suivi** : à piocher dans `docs/superpowers/plans/2026-11-08-phase1-suivis.md` quand une page touche le même code.
+5. **Points de suivi** : à piocher dans `docs/superpowers/plans/2026-11-08-phase1-suivis.md` quand une page touche le même code.
 
 ## 4. Comment reprendre dans une nouvelle conversation
 Pour démarrer une page, il suffit de le dire, par exemple « On attaque la page de détail d'un jeu ». Avec le plugin superpowers installé (voir 6), Claude lance de lui-même le bon processus. Pour être sûr, on peut aussi le demander explicitement : « utilise le skill brainstorming ».

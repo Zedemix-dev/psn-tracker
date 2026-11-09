@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Game page v1 — Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --banner:none; --banner-y:25%;
+  --bg:#0F1631; --surface:rgba(255,255,255,.07); --surface-2:rgba(255,255,255,.12); --line:rgba(255,255,255,.13);
+  --text:#F3F5FB; --muted:#A9B3CB; --accent:#5AA9FF; --done:#D3E2FF;
+  --plat:#D3E2FF; --gold:#F2C462; --silver:#C9D0DA; --bronze:#DE9563;
+  --earned:#3DBE6B; --earned-text:#93E2AE;
+  --font:"Sora",sans-serif; --r-panel:14px; --r-chip:8px;
+  --rank-s:#667FB2; --rank-a:#008000; --rank-b:#7B9E00; --rank-c:#A68E00; --rank-d:#A66A00; --rank-e:#FF4100; --rank-f:#EE0000;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.4;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:-60px;background:var(--banner) center/cover;filter:blur(44px) brightness(.4) saturate(1.25);z-index:-1}
+img{display:block}
+button,select{font:inherit;color:inherit}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+svg.ico{width:14px;height:14px;flex:none}
+.wrap{max-width:1448px;margin:0 auto;padding:0 24px}
+.glass{background:var(--surface);border:1px solid var(--line);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+
+/* Top menu (same as the Games page) */
+.topbar{position:absolute;top:0;left:0;right:0;z-index:20}
+.topbar .wrap{display:flex;align-items:center;gap:12px;height:58px}
+.tabs{display:flex;align-items:center;gap:6px;overflow-x:auto;scrollbar-width:none;flex:1;min-width:0}
+.pill{display:inline-flex;align-items:center;gap:7px;padding:6px 13px;border-radius:999px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.16);color:#fff;text-decoration:none;font-size:13px;font-weight:500;white-space:nowrap;flex:none;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.pill:hover{background:rgba(0,0,0,.65)}
+.pill[aria-current]{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.85)}
+
+/* Game banner: the PS5 game hub art from PSN, same proportions as the Games banner */
+.hero{position:relative;width:100%;aspect-ratio:1920/520;min-height:240px;max-height:560px;overflow:hidden}
+.hero.tall{aspect-ratio:1920/760;max-height:780px}
+.hero-img{position:absolute;inset:0;background:var(--banner) center var(--banner-y)/cover no-repeat;-webkit-mask-image:linear-gradient(to bottom,#000 72%,transparent 100%);mask-image:linear-gradient(to bottom,#000 72%,transparent 100%)}
+.hero-logo{position:absolute;z-index:1;left:max(24px,calc((100% - 1400px)/2));bottom:104px;max-width:min(400px,38%);max-height:42%;object-fit:contain;object-position:left bottom;filter:drop-shadow(0 4px 22px rgba(0,0,0,.65))}
+
+/* Game band: overlaps the bottom of the banner, like the profile band */
+.gband{position:relative;z-index:2;margin-top:-72px;display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,40%) 32px;align-items:center;gap:22px;padding:16px 20px;border-radius:var(--r-panel)}
+.gband h1{margin:0;font-size:24px;font-weight:700;line-height:1.15}
+.gtitle{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.gmeta{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:7px;font-size:12.5px;color:var(--muted)}
+.sep{width:1px;height:11px;background:rgba(255,255,255,.28)}
+.platform{font-size:10px;font-weight:700;line-height:1;padding:3px 6px;border-radius:4px;border:1px solid var(--line);color:var(--text)}
+.gband .right{display:flex;flex-direction:column;gap:9px;min-width:0}
+.gband .bar{height:7px}
+.gband .pct{font-size:14px;width:44px}
+.status{display:grid;place-items:center}
+.status svg{width:22px;height:22px}
+.status .check{color:var(--done)} .status .check.miss{color:var(--line)}
+.status img.pi{width:32px;height:32px;object-fit:contain}
+.status img.pi.miss{filter:grayscale(1) brightness(.8);opacity:.35}
+
+/* Chips + progress (same as the Games list) */
+.chips{display:flex;justify-content:center;gap:4px;padding-right:44px}
+.chip{display:inline-flex;align-items:center;justify-content:center;gap:3px;min-width:58px;font-size:12px;font-weight:600;padding:3px 5px;border-radius:6px;background:var(--surface-2);font-variant-numeric:tabular-nums}
+.chip svg{width:11px;height:11px}
+.plat svg{color:var(--plat)} .gold svg{color:var(--gold)} .silver svg{color:var(--silver)} .bronze svg{color:var(--bronze)}
+.progress{display:flex;align-items:center;gap:8px}
+.bar{flex:1;height:5px;border-radius:3px;background:var(--surface-2);overflow:hidden}
+.bar i{display:block;height:100%}
+.bar.zero{background:color-mix(in srgb,var(--rank-f) 38%,transparent)}
+.pct{font-size:12px;font-weight:600;width:36px;text-align:right;font-variant-numeric:tabular-nums}
+
+/* Layout */
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 450px;gap:16px;margin-top:16px;padding-bottom:80px;align-items:start}
+.panel{border-radius:var(--r-panel);overflow:hidden}
+.panel-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:12px 16px 10px}
+.panel-head h2{margin:0;font-size:15px;font-weight:600;line-height:1.2}
+.panel-head .aside{font-size:12px;color:var(--muted)}
+.side{display:flex;flex-direction:column;gap:16px}
+
+/* Trophy list */
+.tools{display:flex;gap:6px;padding:0 16px 12px;flex-wrap:wrap}
+.select{height:30px;border:1px solid var(--line);background:var(--surface-2);color:var(--text);border-radius:var(--r-chip);padding:0 8px;font-size:12px;cursor:pointer}
+.select option{background:#1b2340}
+.group-head{display:grid;grid-template-columns:72px minmax(0,1fr) minmax(260px,40%) 30px;gap:14px;align-items:center;padding:12px 16px;border-top:1px solid var(--line);background:rgba(255,255,255,.05)}
+.group-head img{width:72px;height:72px;object-fit:contain;border-radius:10px;background:rgba(0,0,0,.25)}
+.kicker{font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.group-head h3{margin:1px 0 0;font-size:16px;font-weight:600;line-height:1.25}
+.group-head .sub{font-size:12px;color:var(--muted);margin-top:2px}
+.group-head .right{display:flex;flex-direction:column;gap:8px;min-width:0}
+.group-head .chips{padding-right:44px}
+.trophy{display:grid;grid-template-columns:56px minmax(0,1fr) 116px 92px 30px;gap:14px;align-items:center;padding:8px 16px;border-top:1px solid rgba(255,255,255,.06)}
+.trophy img.ic{width:56px;height:56px;border-radius:10px;object-fit:cover;background:var(--surface-2)}
+.trophy.earned{background:color-mix(in srgb,var(--earned) 14%,transparent)}
+.trophy.earned img.ic{box-shadow:0 0 0 2px var(--earned)}
+.trophy .n{font-size:14px;font-weight:600;line-height:1.3}
+.trophy .d{font-size:12.5px;line-height:1.35;color:var(--muted);margin-top:2px}
+.meta{display:contents}
+.when{text-align:right;font-size:12.5px;line-height:1.3;color:var(--earned-text);font-variant-numeric:tabular-nums}
+.when small{display:block;font-size:11.5px;opacity:.8}
+.rate{text-align:right;font-size:11px;line-height:1.3;color:var(--muted)}
+.rate b{display:block;font-size:15px;font-weight:600;line-height:1.15;color:var(--text);font-variant-numeric:tabular-nums}
+img.ti{width:30px;height:30px;object-fit:contain}
+.empty-list{padding:24px 16px;color:var(--muted);text-align:center;border-top:1px solid var(--line)}
+
+/* Side: cover, game info, dates */
+.cover{display:block;width:100%;aspect-ratio:1;object-fit:cover}
+.block{padding:12px 16px;border-top:1px solid var(--line)}
+.block:first-child{border-top:0}
+.totals{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px 12px;align-items:center}
+.totals .lbl{font-size:12px;color:var(--muted)}
+.totals .val{font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
+.totals .val span{color:var(--muted);font-weight:400}
+.totals .chips{justify-content:flex-start;padding:0;grid-column:2}
+.totals .chip{min-width:52px}
+.rbar{display:flex;height:6px;border-radius:3px;overflow:hidden;gap:2px}
+.rbar i{display:block;height:100%}
+.rgrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-top:10px}
+.rgrid b{display:flex;align-items:center;gap:5px;font-size:14px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums}
+.rgrid b i{width:7px;height:7px;border-radius:2px;flex:none}
+.rgrid span{display:block;font-size:10px;line-height:1.25;color:var(--muted);margin-top:2px}
+.t1{background:var(--accent)} .t2{background:color-mix(in srgb,var(--accent) 75%,transparent)} .t3{background:color-mix(in srgb,var(--accent) 52%,transparent)} .t4{background:color-mix(in srgb,var(--accent) 32%,transparent)} .t5{background:color-mix(in srgb,var(--accent) 16%,transparent)}
+.kv{margin:0}
+.kv div{display:grid;grid-template-columns:104px minmax(0,1fr);gap:12px;padding:8px 0;border-top:1px solid rgba(255,255,255,.07);font-size:13px}
+.kv div:first-child{border-top:0;padding-top:0}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0;min-width:0}
+.kv small{display:block;font-size:11.5px;color:var(--muted);margin-top:2px}
+.kv a{color:var(--accent);text-decoration:none}
+.kv a:hover{text-decoration:underline}
+.dates{list-style:none;margin:0;padding:4px 16px 12px}
+.dates li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:9px 0;border-top:1px solid rgba(255,255,255,.07)}
+.dates li:first-child{border-top:0}
+.dates .k{font-size:13px;font-weight:600}
+.dates .s{font-size:12px;color:var(--muted);margin-top:1px}
+.dates .v{text-align:right;font-size:13px;font-variant-numeric:tabular-nums}
+.dates .v small{display:block;font-size:11.5px;color:var(--muted)}
+
+/* Responsive */
+@media (max-width:1180px){
+  .gband{grid-template-columns:minmax(0,1fr) 32px}
+  .gband .right{grid-column:1/-1;grid-row:2}
+  .gband .chips{justify-content:flex-start}
+}
+@media (max-width:980px){
+  .layout{grid-template-columns:minmax(0,1fr)}
+}
+/* The trophy panel decides from its own width */
+.trophies-panel{container-type:inline-size}
+@container (max-width:720px){
+  .group-head{grid-template-columns:56px minmax(0,1fr) 30px}
+  .group-head img{width:56px;height:56px}
+  .group-head .right{grid-column:1/-1;grid-row:2}
+  .group-head .chips{justify-content:flex-start;padding-right:0}
+  .trophy{grid-template-columns:48px minmax(0,1fr) 92px 26px}
+  .trophy img.ic{width:48px;height:48px}
+  .meta{display:flex;flex-direction:column;gap:4px;align-items:flex-end}
+}
+@media (max-width:640px){
+  .wrap{padding:0 16px}
+  .gband{margin-top:-48px;padding:12px}
+  .gband h1{font-size:19px}
+  .chips{flex-wrap:wrap;padding-right:0}
+  .hero-logo{display:none}
+  .trophy{grid-template-columns:44px minmax(0,1fr) 26px;gap:10px;padding:8px 12px}
+  .trophy img.ic{width:44px;height:44px}
+  .meta{display:flex;grid-column:2;grid-row:2;gap:14px;align-items:baseline}
+  .when,.rate{text-align:left}
+  .when small{display:inline;margin-left:4px}
+  .rate b{display:inline;font-size:13px;margin-right:4px}
+  .trophy img.ti{grid-column:3;grid-row:1;width:26px;height:26px}
+}
+/* Mockup-only switch (not part of the design) */
+.switcher{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:50;display:flex;align-items:center;gap:4px;padding:4px;background:rgba(13,17,23,.92);border-radius:999px;box-shadow:0 6px 24px rgba(0,0,0,.35);font:500 13px/1 system-ui,sans-serif;color:#cfd6df;max-width:calc(100vw - 24px);overflow-x:auto}
+.switcher button{border:0;background:transparent;color:#cfd6df;padding:9px 14px;border-radius:999px;cursor:pointer;white-space:nowrap}
+.switcher button[aria-pressed="true"]{background:#fff;color:#111}
+.switcher .div{width:1px;height:20px;background:#444;margin:0 4px;flex:none}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="cup" viewBox="0 0 24 24"><path fill="currentColor" d="M7 3h10v5a5 5 0 0 1-4 4.9V17h3v3H8v-3h3v-4.1A5 5 0 0 1 7 8V3zM4 5h2v3.4A3 3 0 0 1 4 5.6V5zm14 0h2v.6a3 3 0 0 1-2 2.8V5z"/></symbol>
+  <symbol id="sliders" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></g></symbol>
+  <symbol id="ext" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></symbol>
+</svg>
+
+<header class="topbar">
+  <div class="wrap">
+    <nav class="tabs" aria-label="Pages">
+      <a class="pill" href="#" aria-current="page">Games</a>
+      <a class="pill" href="#">Plat Wall</a>
+      <a class="pill" href="#">Trophy Log</a>
+      <a class="pill" href="#">Trophy Advisor</a>
+      <a class="pill" href="#">Stats</a>
+    </nav>
+    <a class="pill" href="#"><svg class="ico"><use href="#sliders"/></svg>Settings</a>
+  </div>
+</header>
+
+<div class="hero" id="hero">
+  <div class="hero-img" role="img" aria-label="Game art"></div>
+  <img class="hero-logo" id="logo" alt="">
+</div>
+
+<div class="wrap">
+  <section class="gband glass" id="band" aria-label="Game"></section>
+
+  <div class="layout">
+    <section class="panel glass trophies-panel" aria-label="Trophies">
+      <div class="panel-head"><h2>Trophies</h2><span class="aside" id="tcount"></span></div>
+      <div class="tools">
+        <select class="select" id="filter" aria-label="Show">
+          <option value="all">All trophies</option><option value="earned">Earned</option><option value="unearned">Unearned</option>
+        </select>
+        <select class="select" id="order" aria-label="Order">
+          <option value="psn">Order: PSN</option><option value="date">Order: date earned</option><option value="rarity">Order: rarest first</option>
+        </select>
+      </div>
+      <div id="list"></div>
+    </section>
+
+    <aside class="side">
+      <section class="panel glass" aria-label="Cover"><img class="cover" id="cover" alt=""></section>
+      <section class="panel glass" aria-label="Game info" id="info"></section>
+      <section class="panel glass" aria-label="Dates">
+        <div class="panel-head"><h2>Timeline</h2></div>
+        <ul class="dates" id="dates"></ul>
+      </section>
+    </aside>
+  </div>
+</div>
+
+<div class="switcher" id="switcher" role="toolbar" aria-label="Mockup options"></div>
+
+<script src="jeu-data.js"></script>
+<script>
+const TYPE={plat:'Platinum',gold:'Gold',silver:'Silver',bronze:'Bronze'};
+const TICON={plat:'icons/40-platinum.png',gold:'icons/40-gold.png',silver:'icons/40-silver.png',bronze:'icons/40-bronze.png'};
+const POINTS={plat:300,gold:90,silver:30,bronze:15};
+const ORDER=['plat','gold','silver','bronze'];
+const ticon=(t,cls)=>`<img class="ti ${cls||''}" src="${TICON[t]}" alt="${TYPE[t]}" title="${TYPE[t]}">`;
+const cup=()=>`<svg aria-hidden="true"><use href="#cup"/></svg>`;
+const pct=r=>r.toFixed(2)+'%';
+const int=n=>n.toLocaleString('en-US');
+const rankColor=p=>p===100?'var(--rank-s)':p>=80?'var(--rank-a)':p>=60?'var(--rank-b)':p>=40?'var(--rank-c)':p>=20?'var(--rank-d)':p>=1?'var(--rank-e)':'var(--rank-f)';
+const TIERS=[['Ultra rare',r=>r<5,'t1'],['Very rare',r=>r>=5&&r<10,'t2'],['Rare',r=>r>=10&&r<20,'t3'],['Uncommon',r=>r>=20&&r<50,'t4'],['Common',r=>r>=50,'t5']];
+const tier=r=>TIERS.find(t=>t[1](r))[0];
+const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const paris=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Paris',year:'numeric',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit',hourCycle:'h23'});
+const P=d=>Object.fromEntries(paris.formatToParts(d).map(p=>[p.type,p.value]));
+const fDate=d=>{const p=P(d);return `${+p.day} ${MONTHS[p.month-1]} ${p.year}`};
+const fTime=d=>{const p=P(d);return `${p.hour}:${p.minute}`};
+const fPlay=s=>{const h=Math.floor(s/3600),m=Math.floor(s%3600/60);return h?`${int(h)}h ${String(m).padStart(2,'0')}m`:`${m}m`};
+const NOW=new Date();
+function rel(d){const days=(NOW-d)/864e5,pl=(n,u)=>`${n} ${u}${n===1?'':'s'} ago`;
+  if(days<1){const h=Math.round(days*24);return h<1?'just now':pl(h,'hour')}
+  if(Math.round(days)<7)return pl(Math.round(days),'day');
+  if(days<30)return pl(Math.round(days/7),'week');
+  if(Math.round(days/30.44)<12)return pl(Math.round(days/30.44),'month');
+  return pl(Math.round(days/365.25),'year')}
+/* Calendar span, psnprofiles-style: the 3 largest units from the first non-zero one, zeros dropped */
+function span(a,b){
+  const add=(d,y,m)=>{const x=new Date(d);x.setUTCFullYear(x.getUTCFullYear()+y,x.getUTCMonth()+m);return x};
+  let y=0,m=0;while(add(a,y+1,0)<=b)y++;while(add(a,y,m+1)<=b)m++;
+  let rest=(b-add(a,y,m))/1000;const w=Math.floor(rest/604800);rest-=w*604800;const dd=Math.floor(rest/86400);rest-=dd*86400;
+  const h=Math.floor(rest/3600);rest-=h*3600;const mi=Math.floor(rest/60);
+  const u=[[y,'year'],[m,'month'],[w,'week'],[dd,'day'],[h,'hour'],[mi,'minute']];
+  const i=u.findIndex(x=>x[0]>0);if(i<0)return 'less than a minute';
+  return u.slice(i,i+3).filter(x=>x[0]>0).map(([n,s])=>`${n} ${s}${n===1?'':'s'}`).join(', ')}
+/* PSN progress leaves the platinum out: earned points / total points, without the platinum */
+const progressOf=ts=>{const pts=t=>t.type==='plat'?0:POINTS[t.type];const tot=ts.reduce((s,t)=>s+pts(t),0);return tot?Math.floor(ts.filter(t=>t.earned).reduce((s,t)=>s+pts(t),0)*100/tot):0};
+const counts=ts=>ORDER.map(k=>[k,ts.filter(t=>t.type===k&&t.earned).length,ts.filter(t=>t.type===k).length]);
+const chips=(c,mode)=>`<div class="chips">${c.filter(([,,n])=>n).map(([k,e,n])=>`<span class="chip ${k}">${cup()}${mode==='defined'?n:mode==='earned'?e:`${e}/${n}`}</span>`).join('')}</div>`;
+const bar=p=>`<div class="progress"><div class="bar${p===0?' zero':''}"><i style="width:${p}%;background:${rankColor(p)}"></i></div><span class="pct">${p}%</span></div>`;
+const tick=miss=>`<svg class="check${miss?' miss':''}" viewBox="0 0 24 24" aria-label="${miss?'Not completed':'Completed'}"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const statusIcon=(ts,p)=>{const pl=ts.find(t=>t.type==='plat');return pl?ticon('plat','pi'+(pl.earned?'':' miss')):tick(p!==100)};
+
+let gi=0, logoOn=true, tall=false;
+function game(){const g=GAMES[gi];
+  const trophies=g.trophies.map(([id,group,type,name,detail,icon,hidden,at,rate])=>({id,group,type,name,detail,icon,hidden:!!hidden,earned:!!at,at:at?new Date(at):null,rate}));
+  return {...g,trophies}}
+
+function render(){
+  const g=game(), ts=g.trophies, earned=ts.filter(t=>t.earned);
+  document.documentElement.style.setProperty('--banner',`url("${g.banner}")`);
+  document.getElementById('hero').classList.toggle('tall',tall);
+  const logo=document.getElementById('logo');logo.src=g.logo;logo.alt=g.name+' logo';logo.hidden=!logoOn||!g.logo;
+  document.title=g.name+' — Game page v1';
+
+  /* Band */
+  document.getElementById('band').innerHTML=`
+    <div><div class="gtitle"><h1>${g.name}</h1><span class="platform">${g.platform}</span></div>
+      <div class="gmeta"><span>${earned.length} of ${ts.length} trophies</span><span class="sep"></span><span>Last played ${fDate(new Date(g.lastPlayedAt))}</span><span class="sep"></span><span>${fPlay(g.playSeconds)} played</span></div></div>
+    <div class="right">${chips(counts(ts))}${bar(g.progress)}</div>
+    <div class="status">${statusIcon(ts,g.progress)}</div>`;
+
+  /* Trophy list */
+  const f=document.getElementById('filter').value, o=document.getElementById('order').value;
+  document.getElementById('tcount').textContent=`${earned.length} of ${ts.length} earned`;
+  const keep=t=>f==='all'||(f==='earned')===t.earned;
+  const sort=a=>o==='psn'?a.sort((x,y)=>x.id-y.id):o==='rarity'?a.sort((x,y)=>x.rate-y.rate):a.sort((x,y)=>(x.at?0:1)-(y.at?0:1)||(x.at&&y.at?x.at-y.at:x.id-y.id));
+  const row=t=>`<div class="trophy${t.earned?' earned':''}">
+      <img class="ic" src="${t.icon}" alt="" loading="lazy">
+      <div><div class="n">${t.name}</div><div class="d">${t.detail}</div></div>
+      <div class="meta"><div class="when">${t.earned?`${fDate(t.at)}<small>${fTime(t.at)}</small>`:''}</div>
+      <div class="rate"><b>${pct(t.rate)}</b>${tier(t.rate)}</div></div>
+      ${ticon(t.type)}</div>`;
+  const multi=g.groups.length>1;
+  let html='';
+  g.groups.forEach((gr,k)=>{
+    const all=ts.filter(t=>t.group===gr.id), shown=sort(all.filter(keep));
+    if(!shown.length)return;
+    if(multi){const p=progressOf(all),e=all.filter(t=>t.earned).length;
+      html+=`<div class="group-head"><img src="${gr.icon}" alt="" loading="lazy">
+        <div><div class="kicker">${k===0?'Base game':'DLC '+k}</div><h3>${k===0?g.name:gr.name}</h3><div class="sub">${e} of ${all.length} trophies</div></div>
+        <div class="right">${chips(counts(all))}${bar(p)}</div><div class="status">${statusIcon(all,p)}</div></div>`}
+    html+=shown.map(row).join('');
+  });
+  document.getElementById('list').innerHTML=html||'<div class="empty-list">No trophy matches this filter.</div>';
+
+  /* Side: cover */
+  const cover=document.getElementById('cover');cover.src=g.cover;cover.alt=g.name+' cover';
+
+  /* Side: info */
+  const c=counts(ts), pts=a=>a.reduce((s,t)=>s+POINTS[t.type],0);
+  const rates=ts.map(t=>t.rate).sort((a,b)=>a-b), avg=rates.reduce((s,r)=>s+r,0)/rates.length;
+  const med=rates.length%2?rates[(rates.length-1)/2]:(rates[rates.length/2-1]+rates[rates.length/2])/2;
+  const tiers=TIERS.map(([n,fn,cls])=>[n,ts.filter(t=>fn(t.rate)).length,cls]);
+  const search='https://www.powerpyx.com/?s='+encodeURIComponent(g.name.replace(/[™®©]/g,'').trim()).replace(/%20/g,'+');
+  document.getElementById('info').innerHTML=`
+    <div class="block"><div class="totals">
+      <span class="lbl">Total</span><span class="val">${ts.length} trophies <span>· ${int(pts(ts))} points</span></span>
+      ${chips(c,'defined')}
+      <span class="lbl">Earned</span><span class="val">${earned.length} trophies <span>· ${int(pts(earned))} points</span></span>
+      ${chips(c,'earned')}
+    </div></div>
+    <div class="block"><div class="rbar">${tiers.filter(t=>t[1]).map(t=>`<i class="${t[2]}" style="flex:${t[1]}"></i>`).join('')}</div>
+      <div class="rgrid">${tiers.map(t=>`<div><b><i class="${t[2]}"></i>${t[1]}</b><span>${t[0]}</span></div>`).join('')}</div></div>
+    <div class="block"><dl class="kv">
+      <div><dt>Publisher</dt><dd>${g.publisher??'—'}</dd></div>
+      <div><dt>Genre</dt><dd>${g.genres.join(', ')||'—'}</dd></div>
+      <div><dt>Release date</dt><dd>${g.releaseDate?fDate(new Date(g.releaseDate)):'—'}</dd></div>
+      <div><dt>Avg. rarity</dt><dd>${pct(avg)}<small>lowest ${pct(rates[0])} · median ${pct(med)} · highest ${pct(rates[rates.length-1])}</small></dd></div>
+      <div><dt>Guide</dt><dd><a href="${search}" target="_blank" rel="noopener">Search on PowerPyx <svg class="ico" style="width:11px;height:11px;display:inline;vertical-align:-1px"><use href="#ext"/></svg></a></dd></div>
+    </dl></div>`;
+
+  /* Side: timeline */
+  const byDate=[...earned].sort((a,b)=>a.at-b.at), first=byDate[0], last=byDate[byDate.length-1], plat=ts.find(t=>t.type==='plat');
+  const li=(k,s,d)=>`<li><div><div class="k">${k}</div>${s?`<div class="s">${s}</div>`:''}</div><div class="v">${d}</div></li>`;
+  const when=d=>`${fDate(d)}<small>${fTime(d)}</small>`;
+  let rows='';
+  if(first){
+    rows+=li('First trophy',rel(first.at),when(first.at));
+    if(plat)rows+=plat.earned?li('Platinum',`in ${span(first.at,plat.at)}`,when(plat.at)):li('Platinum','Not earned yet','—');
+    rows+=li('Latest trophy',rel(last.at),when(last.at));
+    rows+=li('Gap','first to latest trophy',span(first.at,last.at));
+  } else rows=li('No trophy earned yet','','—');
+  document.getElementById('dates').innerHTML=rows;
+}
+
+/* Mockup switcher */
+const sw=document.getElementById('switcher');
+function drawSwitcher(){
+  sw.innerHTML=GAMES.map((g,k)=>`<button data-g="${k}" aria-pressed="${k===gi}">${g.name.replace('FINAL FANTASY XIV Online','FFXIV Online')}</button>`).join('')
+   +`<span class="div"></span><button data-o="logo" aria-pressed="${logoOn}">Logo on banner</button><button data-o="tall" aria-pressed="${tall}">Taller banner</button>`;
+}
+sw.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.g){gi=+b.dataset.g;document.getElementById('filter').value='all';document.getElementById('order').value='psn';scrollTo(0,0)}
+  if(b.dataset.o==='logo')logoOn=!logoOn; if(b.dataset.o==='tall')tall=!tall;
+  drawSwitcher();render()});
+document.getElementById('filter').onchange=render; document.getElementById('order').onchange=render;
+drawSwitcher(); render();
+</script>
+</body>
+</html>

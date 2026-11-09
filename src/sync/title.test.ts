@@ -35,6 +35,25 @@ describe("syncTitle", () => {
     expect(gw.calls.filter((c) => c === `getUserTrophies:${ID}`)).toHaveLength(3);
   });
 
+  it("stores the progress target from definitions and the user's progress", async () => {
+    const { defs, userTrophies } = makeTrophies(2, { earnedIds: [1] });
+    defs.forEach((d) => (d.progressTarget = 4));
+    userTrophies[0].progress = 1;
+    userTrophies[0].progressedAt = new Date("2025-03-04T05:06:07Z");
+    const gw = createFakePsn({ titleData: { [ID]: { groups: [makeGroup("default")], defs, userTrophies } } });
+
+    await syncTitle(db, gw, auth, makeRemoteTitle({ earned: { ...ZERO_COUNTS, bronze: 1 } }), now);
+
+    const rows = await db.select().from(trophies).where(eq(trophies.titleId, ID)).orderBy(trophies.trophyId);
+    expect(rows[0]).toMatchObject({
+      earned: false,
+      progressTarget: 4,
+      progress: 1,
+      progressedAt: new Date("2025-03-04T05:06:07Z"),
+    });
+    expect(rows[1]).toMatchObject({ earned: true, progressTarget: 4, progress: null, progressedAt: null });
+  });
+
   it("stores a new DLC group with zero earned", async () => {
     const base = makeTrophies(2, { earnedIds: [0, 1] });
     const dlc = makeTrophies(2, { groupId: "001", start: 2 });
@@ -133,7 +152,8 @@ describe("syncTitle", () => {
           earnedAt: new Date("2025-02-02T02:02:02Z"),
           earnedRate: 1.3,
           rareCategory: 0,
-          progressTarget: null,
+          progress: null,
+          progressedAt: null,
         };
       }
       return createFakePsn({ titleData: { [ID]: { groups: [makeGroup("default")], defs, userTrophies } } });

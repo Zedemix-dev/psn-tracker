@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState, useTransition } from "react";
-import { resetBanner, saveBannerPosition, saveNpsso, uploadBanner } from "@/app/(site)/settings/actions";
+import { resetBanner, saveBannerPosition, saveNpsso, uploadBanner } from "@/app/(site)/(banner)/settings/actions";
 import type { FormResult } from "@/src/settings/npsso";
 
 function Message({ result }: { result: FormResult | null }) {
@@ -13,12 +13,21 @@ function Message({ result }: { result: FormResult | null }) {
   );
 }
 
-export function BannerForm({ bannerUrl, posY }: { bannerUrl: string | null; posY: number }) {
+export function BannerForm({
+  bannerUrl,
+  posY,
+  auto,
+}: {
+  bannerUrl: string | null;
+  posY: number;
+  auto: { url: string; gameName: string } | null;
+}) {
   const [pos, setPos] = useState(posY);
   const [local, setLocal] = useState<string | null>(null);
   const [result, setResult] = useState<FormResult | null>(null);
   const [pending, start] = useTransition();
-  const preview = local ?? bannerUrl;
+  const custom = local ?? bannerUrl;
+  const preview = custom ?? auto?.url ?? null;
 
   function run(fn: () => Promise<FormResult>) {
     start(async () => setResult(await fn()));
@@ -30,9 +39,10 @@ export function BannerForm({ bannerUrl, posY }: { bannerUrl: string | null; posY
         className="set-preview"
         role="img"
         aria-label="Banner preview"
-        style={preview ? { backgroundImage: `url("${preview}")`, backgroundPositionY: `${pos}%` } : undefined}
+        style={preview ? { backgroundImage: `url("${preview}")`, backgroundPositionY: `${custom ? pos : 25}%` } : undefined}
       >
         {!preview && <span>Default banner</span>}
+        {!custom && auto && <span>Automatic — last played game ({auto.gameName})</span>}
       </div>
       <form
         className="set-row"
@@ -74,6 +84,7 @@ export function BannerForm({ bannerUrl, posY }: { bannerUrl: string | null; posY
           max={100}
           step={1}
           value={pos}
+          disabled={!custom}
           onChange={(e) => setPos(Number(e.target.value))}
         />
         <div className="set-actions">
@@ -95,7 +106,7 @@ export function BannerForm({ bannerUrl, posY }: { bannerUrl: string | null; posY
               run(resetBanner);
             }}
           >
-            Use default banner
+            Use automatic banner
           </button>
         </div>
         <Message result={result} />

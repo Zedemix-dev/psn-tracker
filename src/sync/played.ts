@@ -13,15 +13,23 @@ type TitleTotals = {
   lastPlayedAt: Date | null;
   coverUrl: string | null;
   coverPlayedAt: Date | null;
+  concept: { id: number; bannerUrl: string | null; logoUrl: string | null } | null;
+  conceptPlayedAt: Date | null;
 };
 
 /**
  * Stores PSN's played-games list, links new npTitleIds to their trophy lists
  * (cached in npCommunicationIds; [] = looked up, no trophy list) and
- * recomputes cover and play time of every linked title from the full table.
- * A title without any linked played game keeps its previous values.
+ * recomputes cover, concept and play time of every linked title from the full table.
+ * A title without any linked played game keeps its previous values, and so does one
+ * whose linked games have no concept. Returns the titles whose last played date changed
+ * (and is not null) during the call.
  */
-export async function syncPlayedGames(db: Db, gw: PsnGateway, auth: PsnAuth): Promise<void> {
+export async function syncPlayedGames(
+  db: Db,
+  gw: PsnGateway,
+  auth: PsnAuth,
+): Promise<{ replayedTitleIds: string[] }> {
   // A reordered page can list a game twice, and one upsert cannot touch a row twice: keep the first.
   const byId = new Map<string, RemotePlayedGame>();
   for (const game of await gw.getPlayedGames(auth)) {
@@ -32,7 +40,20 @@ export async function syncPlayedGames(db: Db, gw: PsnGateway, auth: PsnAuth): Pr
   for (let i = 0; i < remote.length; i += CHUNK) {
     await db
       .insert(playedGames)
-      .values(remote.slice(i, i + CHUNK))
+      .values(
+        remote.slice(i, i + CHUNK).map((g) => ({
+          npTitleId: g.npTitleId,
+          name: g.name,
+          imageUrl: g.imageUrl,
+          playSeconds: g.playSeconds,
+          playCount: g.playCount,
+          firstPlayedAt: g.firstPlayedAt,
+          lastPlayedAt: g.lastPlayedAt,
+          conceptId: g.concept?.id ?? null,
+          bannerUrl: g.concept?.bannerUrl ?? null,
+          logoUrl: g.concept?.logoUrl ?? null,
+        })),
+      )
       .onConflictDoUpdate({
         target: playedGames.npTitleId,
         set: {
@@ -42,6 +63,9 @@ export async function syncPlayedGames(db: Db, gw: PsnGateway, auth: PsnAuth): Pr
           playCount: sql.raw('excluded."play_count"'),
           firstPlayedAt: sql.raw('excluded."first_played_at"'),
           lastPlayedAt: sql.raw('excluded."last_played_at"'),
+          conceptId: sql.raw('excluded."concept_id"'),
+          bannerUrl: sql.raw('excluded."banner_url"'),
+          logoUrl: sql.raw('excluded."logo_url"'),
         },
       });
   }
@@ -73,6 +97,8 @@ export async function syncPlayedGames(db: Db, gw: PsnGateway, auth: PsnAuth): Pr
         lastPlayedAt: null,
         coverUrl: null,
         coverPlayedAt: null,
+        concept: null,
+        conceptPlayedAt: null,
       };
       t.playSeconds += game.playSeconds;
       t.playCount += game.playCount;
@@ -88,12 +114,36 @@ export async function syncPlayedGames(db: Db, gw: PsnGateway, auth: PsnAuth): Pr
         t.coverUrl = game.imageUrl;
         t.coverPlayedAt = game.lastPlayedAt;
       }
+      // Concept: same rule, among the linked games that have one.
+      if (game.conceptId !== null) {
+        const newerConcept =
+          t.conceptPlayedAt === null
+            ? t.concept === null || game.lastPlayedAt !== null
+            : game.lastPlayedAt !== null && game.lastPlayedAt > t.conceptPlayedAt;
+        if (newerConcept) {
+          t.concept = { id: game.conceptId, bannerUrl: game.bannerUrl, logoUrl: game.logoUrl };
+          t.conceptPlayedAt = game.lastPlayedAt;
+        }
+      }
       totals.set(titleId, t);
     }
   }
 
+  const before = new Map(
+    (await db.select({ id: titles.npCommunicationId, lastPlayedAt: titles.lastPlayedAt, conceptId: titles.conceptId }).from(titles)).map(
+      (r) => [r.id, r] as const,
+    ),
+  );
+  const replayedTitleIds: string[] = [];
   await db.transaction(async (tx) => {
     for (const [titleId, t] of totals) {
+      const prev = before.get(titleId);
+      if (!prev) continue;
+      if (t.lastPlayedAt && t.lastPlayedAt.getTime() !== prev.lastPlayedAt?.getTime()) {
+        replayedTitleIds.push(titleId);
+      }
+      // A new concept invalidates what the catalog said about the old one.
+      const conceptChanged = t.concept !== null && t.concept.id !== prev.conceptId;
       await tx
         .update(titles)
         .set({
@@ -101,8 +151,15 @@ export async function syncPlayedGames(db: Db, gw: PsnGateway, auth: PsnAuth): Pr
           playCount: t.playCount,
           lastPlayedAt: t.lastPlayedAt,
           ...(t.coverUrl ? { coverUrl: t.coverUrl } : {}),
+          ...(t.concept
+            ? { conceptId: t.concept.id, bannerUrl: t.concept.bannerUrl, logoUrl: t.concept.logoUrl }
+            : {}),
+          ...(conceptChanged
+            ? { publisher: null, genres: null, releaseDate: null, catalogCheckedAt: null }
+            : {}),
         })
         .where(eq(titles.npCommunicationId, titleId));
     }
   });
+  return { replayedTitleIds };
 }

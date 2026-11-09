@@ -8,7 +8,7 @@ import type { GameQuery } from "@/src/games/query";
 const replace = vi.fn();
 vi.mock("next/navigation", () => ({ useRouter: () => ({ replace }) }));
 
-const query = (q: string): GameQuery => ({ state: "all", platform: "all", sort: "lastPlayed", q, offset: 0 });
+const query = (q: string): GameQuery => ({ state: "all", platform: "all", sort: "lastTrophy", q, offset: 0 });
 const input = () => screen.getByPlaceholderText("Search games") as HTMLInputElement;
 
 beforeEach(() => vi.useFakeTimers());
@@ -16,6 +16,16 @@ afterEach(() => {
   cleanup();
   vi.useRealTimers();
   replace.mockReset();
+});
+
+describe("GameFilters sort menu", () => {
+  it("lists Last trophy first and selects it by default", () => {
+    render(<GameFilters query={query("")} />);
+    const select = screen.getByLabelText("Sort by") as HTMLSelectElement;
+    expect(select.options[0].textContent).toBe("Last trophy");
+    expect(select.options[1].textContent).toBe("Last played");
+    expect(select.value).toBe("lastTrophy");
+  });
 });
 
 describe("GameFilters search", () => {
