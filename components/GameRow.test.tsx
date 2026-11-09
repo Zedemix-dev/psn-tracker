@@ -128,6 +128,24 @@ describe("GameRow", () => {
     rerender(<GameRow row={game({ coverIsIcon: true })} />);
     expect(container.querySelector(".game-cover")).toHaveClass("icon");
   });
+
+  it("shows the mark after the platform badge", () => {
+    const { container } = render(
+      <GameRow row={game({ unobtainable: { label: "7 unobtainable trophies", note: "Closed." } })} />,
+    );
+    const mark = container.querySelector(".unob")!;
+    expect(mark).not.toBeNull();
+    expect(mark).toHaveAttribute("aria-label", "7 unobtainable trophies Closed.");
+    expect(mark.textContent).toContain("7 unobtainable trophies");
+    expect(mark.textContent).toContain("Closed.");
+    const platform = container.querySelector(".platform")!;
+    expect(platform.compareDocumentPosition(mark) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("shows no mark otherwise", () => {
+    const { container } = render(<GameRow row={game({ unobtainable: null })} />);
+    expect(container.querySelector(".unob")).toBeNull();
+  });
 });
 
 describe("game row CSS", () => {

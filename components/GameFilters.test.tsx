@@ -65,3 +65,36 @@ describe("GameFilters search", () => {
     expect(replace).not.toHaveBeenCalled();
   });
 });
+
+describe("GameFilters unobtainable filter", () => {
+  const select = () => screen.getByLabelText("Filter by unobtainable trophies") as HTMLSelectElement;
+
+  it("lists the three values", () => {
+    render(<GameFilters query={query("")} />);
+    expect([...select().options].map((o) => o.textContent)).toEqual([
+      "Unobtainable",
+      "With unobtainable",
+      "Without unobtainable",
+    ]);
+  });
+
+  it("sits between the sort menu and the search", () => {
+    render(<GameFilters query={query("")} />);
+    const sort = screen.getByLabelText("Sort by");
+    expect(sort.compareDocumentPosition(select()) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(select().compareDocumentPosition(input()) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("puts the value in the address", () => {
+    render(<GameFilters query={query("")} />);
+    fireEvent.change(select(), { target: { value: "with" } });
+    expect(replace).toHaveBeenCalledWith("/?unobtainable=with", { scroll: false });
+  });
+
+  it("outlines the select only when active", () => {
+    const { rerender } = render(<GameFilters query={query("")} />);
+    expect(select()).not.toHaveClass("on");
+    rerender(<GameFilters query={{ ...query(""), unobtainable: "with" }} />);
+    expect(select()).toHaveClass("on");
+  });
+});

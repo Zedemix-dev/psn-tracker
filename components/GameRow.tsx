@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ProgressStack, StatusIcon } from "@/components/ProgressStack";
 import { TileImage } from "@/components/TileImage";
+import { UnobtainableMark } from "@/components/UnobtainableMark";
 import type { GameRowData } from "@/src/games/row";
 
 export function GameRow({ row }: { row: GameRowData }) {
@@ -22,6 +23,9 @@ export function GameRow({ row }: { row: GameRowData }) {
               {p}
             </span>
           ))}
+          {row.unobtainable && (
+            <UnobtainableMark label={row.unobtainable.label} detail={row.unobtainable.note} />
+          )}
         </div>
         <div className="game-meta">
           <span>
