@@ -43,7 +43,7 @@ Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un aut
 ### Sur la branche `feat/game-detail` (en attente de fusion)
 - **Page de détail d'un jeu** (`/games/[id]`, spec 8.9), conforme à la maquette v5 :
   - bannière du jeu (image 4K du PSN) avec son logo, ou bannière choisie à la main pour 5 jeux anciens, ou rien sur fond uni ;
-  - bandeau, liste des trophées avec groupes DLC, filtre et tri, compteurs des trophées à paliers ;
+  - bandeau, liste des trophées avec groupes DLC (images carrées partout : icônes d’origine en PS5, jaquette du jeu en PS4), filtre et tri, compteurs des trophées à paliers ;
   - colonne de 320 px : jaquette, totaux et points, raretés, éditeur, genre, date de sortie, liens PowerPyx et psnprofiles, Timeline.
 - **Synchro** :
   - concept du jeu, catalogue PSN (éditeur, genres, date de sortie) ;
@@ -52,7 +52,7 @@ Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un aut
 - **Emprunt** : une info manquante est prise chez une autre version du même jeu, PS5 d'abord.
 - **Games** :
   - bannière automatique (dernier jeu joué) sans bannière personnalisée ;
-  - tri par défaut « Last trophy », en tête du menu ;
+  - tri par défaut « Last trophy », en tête du menu, dans l’ordre de la console (date de mise à jour de la liste au PSN) ;
   - retour au même endroit de la liste avec « précédent » ;
   - répartition par rareté centrée.
 - **Vérifié avec les vraies données** le 8 novembre 2026 : Cyberpunk 2077, Gran Turismo 7, FFXIV Online, Phantom Blade Zero, SAROS, Nioh 3, The Last of Us Part II Remastered, Dauntless, et les 5 jeux à bannière manuelle.
