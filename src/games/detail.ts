@@ -40,6 +40,8 @@ export type GroupData = {
   kicker: string;
   name: string;
   iconSrc: string;
+  /** The image is the page cover (PS4 list): fills its square frame instead of being contained. */
+  iconIsCover: boolean;
   earned: number;
   total: number;
   counts: Record<TrophyType, [number, number]>;
@@ -122,6 +124,9 @@ export async function getGameDetail(
   const groupIds = [...new Set([...groupInfo.keys(), ...rows.map((r) => r.groupId)])].sort((a, b) =>
     a === "default" ? -1 : b === "default" ? 1 : a < b ? -1 : a > b ? 1 : 0,
   );
+  const coverSrc = mediaSrc(info.coverUrl ?? info.coverFallbackUrl, imageMap, "full");
+  // PS4 lists show the cover on every group (as the Games list row does); PS5 lists keep each group icon.
+  const groupsUseCover = !title.platforms.includes("PS5") && !info.coverIsIcon;
   const groups: GroupData[] = groupIds.map((gid, i) => {
     const members = rows.filter((r) => r.groupId === gid);
     const counts = typeCounts(members);
@@ -139,7 +144,10 @@ export async function getGameDetail(
       id: gid,
       kicker: i === 0 ? "Base game" : `DLC ${i}`,
       name: gid === "default" ? title.name : (info?.name ?? gid),
-      iconSrc: mediaSrc(gid === "default" ? title.iconUrl : (info?.iconUrl ?? null), imageMap),
+      iconSrc: groupsUseCover
+        ? coverSrc
+        : mediaSrc(gid === "default" ? title.iconUrl : (info?.iconUrl ?? null), imageMap),
+      iconIsCover: groupsUseCover,
       earned: members.filter((m) => m.earned).length,
       total: members.length,
       counts,
@@ -164,7 +172,7 @@ export async function getGameDetail(
     id: title.npCommunicationId,
     name: title.name,
     platforms: (["PS4", "PS5"] as const).filter((p) => title.platforms.includes(p)),
-    coverSrc: mediaSrc(info.coverUrl ?? info.coverFallbackUrl, imageMap, "full"),
+    coverSrc,
     coverIsIcon: info.coverIsIcon,
     bannerPath: info.bannerUrl ? (imageMap.get(info.bannerUrl)?.path ?? null) : null,
     bannerIsOverride: info.bannerIsOverride,

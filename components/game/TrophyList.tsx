@@ -111,7 +111,7 @@ export function TrophyList({
             {multi && (
               <div className="group-head">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={g.iconSrc} alt="" loading="lazy" />
+                <img className={g.iconIsCover ? "sq" : undefined} src={g.iconSrc} alt="" loading="lazy" />
                 <div>
                   <div className="kicker">{g.kicker}</div>
                   <h3>{g.name}</h3>

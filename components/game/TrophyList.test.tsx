@@ -33,6 +33,7 @@ const group = (id: string, kicker: string, name: string): GroupData => ({
   kicker,
   name,
   iconSrc: "/g.png",
+  iconIsCover: false,
   earned: 1,
   total: 2,
   counts: { platinum: [0, 0], gold: [0, 0], silver: [0, 0], bronze: [1, 2] },

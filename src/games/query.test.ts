@@ -169,6 +169,15 @@ describe("sorts", () => {
   });
 });
 
+describe("lastTrophy follows the console", () => {
+  it("sorts by psnLastUpdatedAt, falling back to lastTrophyAt", async () => {
+    await addTitle({ id: "c", lastTrophyAt: new Date("2024-11-04Z"), psnLastUpdatedAt: new Date("2024-11-04Z") });
+    await addTitle({ id: "b", psnLastUpdatedAt: new Date("2024-11-05Z") });
+    await addTitle({ id: "a", lastTrophyAt: new Date("2024-11-08Z"), psnLastUpdatedAt: new Date("2024-11-08Z") });
+    expect(await ids({ sort: "lastTrophy" })).toEqual(["a", "b", "c"]);
+  });
+});
+
 describe("pagination", () => {
   it("returns the remaining 20 at offset 100 of 120, with total 120", async () => {
     await db.insert(titles).values(

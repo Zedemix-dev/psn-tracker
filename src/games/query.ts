@@ -61,7 +61,7 @@ function orderFor(sort: GameSort): SQL {
     case "lastPlayed":
       return desc(sql`coalesce(${titles.lastPlayedAt}, ${titles.lastTrophyAt})`);
     case "lastTrophy":
-      return desc(sql`${titles.lastTrophyAt}`);
+      return desc(sql`coalesce(${titles.psnLastUpdatedAt}, ${titles.lastTrophyAt})`);
     case "alphabetical":
       return ascNullsLast(sql`lower(${titles.name})`);
     case "percent":

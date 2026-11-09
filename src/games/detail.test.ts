@@ -138,3 +138,42 @@ describe("getGameDetail", () => {
     expect(await getGameDetail(db, "nope", empty, NOW)).toBeNull();
   });
 });
+
+describe("getGameDetail group images", () => {
+  const cover = "https://img.example/cover.png";
+  const map: ImageMap = new Map([
+    [cover, { path: "psn/cover.png", thumb: null }],
+    ["https://img.example/icon.png", { path: "psn/icon.png", thumb: null }],
+    ["https://img.example/dlc.png", { path: "psn/dlc.png", thumb: null }],
+  ]);
+  async function addGroups() {
+    await db.insert(trophyGroups).values({ titleId: "NPWR1", groupId: "default", name: "Base" });
+    await db
+      .insert(trophyGroups)
+      .values({ titleId: "NPWR1", groupId: "001", name: "DLC", iconUrl: "https://img.example/dlc.png" });
+    await addTrophy(1, { groupId: "default" });
+    await addTrophy(2, { groupId: "001" });
+  }
+
+  it("shows the square cover on every group of a PS4 list", async () => {
+    await addTitle({ platforms: ["PS4"], coverUrl: cover });
+    await addGroups();
+    const d = await getGameDetail(db, "NPWR1", map, NOW);
+    expect(d!.groups).toHaveLength(2);
+    for (const g of d!.groups) {
+      expect(g.iconSrc).toBe(d!.coverSrc);
+      expect(g.iconIsCover).toBe(true);
+    }
+  });
+
+  it("keeps each group's own icon on a PS5 list", async () => {
+    await addTitle({ platforms: ["PS5"], coverUrl: cover });
+    await addGroups();
+    const d = await getGameDetail(db, "NPWR1", map, NOW);
+    expect(d!.groups.map((g) => g.iconSrc)).toEqual([
+      expect.stringContaining("icon.png"),
+      expect.stringContaining("dlc.png"),
+    ]);
+    expect(d!.groups.every((g) => !g.iconIsCover)).toBe(true);
+  });
+});
