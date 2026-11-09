@@ -1,6 +1,6 @@
 # PSN Tracker : état du projet et feuille de route
 
-*Mis à jour le 9 novembre 2026 : les trophées non obtenables sont construits et vérifiés sur la branche `feat/unobtainable`, la Pull Request reste à créer et à fusionner. La phase 1 est terminée. Prochaine étape après la fusion : le déploiement sur le NAS.*
+*Mis à jour le 9 novembre 2026 : les trophées non obtenables sont fusionnés dans `main` (PR #6). La phase 1 est terminée. Prochaine étape : le déploiement sur le NAS.*
 
 Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un autre PC, commence par le lire. Le fichier `CLAUDE.md` à la racine le demande automatiquement.
 
@@ -19,6 +19,7 @@ Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un aut
 | `docs/superpowers/plans/2026-11-08-game-detail.md` | Le plan de la page d'un jeu (tâches 1 à 21, dont 13 à 21 ajoutées en cours de route). Terminé. |
 | `docs/superpowers/plans/2026-11-08-phase1-suivis.md` | Points mis de côté et vérifications au premier déploiement. |
 | `docs/superpowers/specs/2026-11-09-psn-tracker-maquette-nonobt.html` | Maquette validée des trophées non obtenables (v1). |
+| `docs/superpowers/plans/2026-11-09-unobtainable.md` | Le plan des trophées non obtenables (13 tâches, plus une correction de la surbrillance verte). Terminé. |
 | `deploy/README.md` | Guide pas à pas du déploiement sur le NAS. |
 | `.superpowers/brainstorm/maquettes/` | Toutes les maquettes intermédiaires : `accueil-v1` à `v12`, `jeu-v1` à `v6` (la v6 compare les images de groupe : carrées ou absentes). |
 
@@ -64,7 +65,7 @@ Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un aut
   - le 9 novembre 2026 : les 168 listes PS4, sans aucune image rognée ni rectangulaire. Seules 4 n'ont pas de jaquette carrée et utilisent la tuile : Game of Thrones, Marvel Heroes Omega, Minecraft: Story Mode et Tales from the Borderlands.
 - 57 fichiers de tests, 422 tests.
 
-### Trophées non obtenables (branche `feat/unobtainable`, spec section 14)
+### Trophées non obtenables (PR #6, fusionnée le 9 novembre 2026, spec section 14)
 - **Données** : le worker télécharge la liste une fois par jour, indépendamment du token PSN, et marque chaque trophée concerné en base (`trophies.unobtainable`). Trophy Advisor pourra s'en servir tel quel.
 - **Games** : bouton « Show all », filtre « With / Without unobtainable », « ! » avec infobulle (nombre et cause).
 - **Page d'un jeu** : bandeau avec le nombre et la cause, « ! » sur chaque trophée concerné, rouge s'il n'est pas obtenu, vert s'il l'est.
@@ -75,20 +76,20 @@ Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un aut
 
 ## 3. Ce qui reste à faire, dans l'ordre
 1. **Déployer sur le NAS** en suivant `deploy/README.md`.
-   - Avant tout, vérifier sur github.com (onglet Actions, le dépôt est privé) que la CI de `main` est verte après la fusion de la PR #4, et que l'image a été publiée.
+   - Avant tout, vérifier sur github.com (onglet Actions, le dépôt est privé) que la CI de `main` est verte après la fusion de la PR #6, et que l'image a été publiée.
    - Juste après la première publication, donner une seule fois le rôle **Admin** au dépôt dans « Manage Actions access » du package GHCR (étape 1.5).
    - Faire les vérifications du premier déploiement listées dans `docs/superpowers/plans/2026-11-08-phase1-suivis.md`.
    - À la première synchro de cette version, toutes les listes PS5 sont rechargées une fois (migration 0005), ce qui la rallonge de quelques minutes.
-2. **Jeux aux trophées non obtenables** : construits et vérifiés sur la branche `feat/unobtainable` (voir section 2). Il reste à créer la Pull Request vers `main` depuis github.com, à vérifier que la CI est verte, puis à fusionner. Plan : `docs/superpowers/plans/2026-11-09-unobtainable.md`.
-3. **Pages suivantes**, chacune avec **son propre brainstorming** (spec, section 3) :
+   - Au premier démarrage du worker, la migration 0006 s'applique et la liste des trophées non obtenables se télécharge. Vérifier dans Settings que le bloc « Unobtainable trophies » indique « Up to date » et « 5 of yours ».
+2. **Pages suivantes**, chacune avec **son propre brainstorming** (spec, section 3) :
    - **Plat Wall** ;
    - **Trophy Log** ;
-   - **Trophy Advisor** : les trophées non obtenus sont déjà stockés avec leur rareté. Le toggle « Hide 0% games » doit aussi en retirer les jeux à 0 % ;
+   - **Trophy Advisor** : les trophées non obtenus sont déjà stockés avec leur rareté. Le toggle « Hide 0% games » doit aussi en retirer les jeux à 0 %. Son filtre des trophées non obtenables s'appuie sur la colonne `trophies.unobtainable`, déjà remplie (spec 14.2) ;
    - **Stats** : elle reçoit le calendrier « Last 60 days », déjà décrit dans la spec, section 3.
-4. **Points de suivi** : à piocher dans `docs/superpowers/plans/2026-11-08-phase1-suivis.md` quand une page touche le même code.
+3. **Points de suivi** : à piocher dans `docs/superpowers/plans/2026-11-08-phase1-suivis.md` quand une page touche le même code.
 
 ## 4. Comment reprendre dans une nouvelle conversation
-Pour démarrer une page, il suffit de le dire, par exemple « On attaque les trophées non obtenables ». Avec le plugin superpowers installé (voir 6), Claude lance de lui-même le bon processus. Pour être sûr, on peut aussi le demander explicitement : « utilise le skill brainstorming ».
+Pour démarrer une page, il suffit de le dire, par exemple « On attaque le Plat Wall ». Avec le plugin superpowers installé (voir 6), Claude lance de lui-même le bon processus. Pour être sûr, on peut aussi le demander explicitement : « utilise le skill brainstorming ».
 
 Avant de créer une branche : `git switch main` puis `git pull`, pour partir de la dernière version.
 
