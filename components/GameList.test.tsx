@@ -3,6 +3,7 @@ import "@testing-library/jest-dom/vitest";
 import { act, cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { GameList } from "@/components/GameList";
+import { SHOW_ALL_SLOT_ID } from "@/components/game-query-string";
 import { saveListSnapshot } from "@/components/list-snapshot";
 import type { GameQuery } from "@/src/games/query";
 import type { GameRowData } from "@/src/games/row";
@@ -273,6 +274,71 @@ describe("GameList", () => {
       link.addEventListener("click", (e) => e.preventDefault());
       await act(async () => link.click());
       expect(rows()).toBe(50);
+    });
+  });
+
+  describe("Show all", () => {
+    let slot: HTMLSpanElement;
+    beforeEach(() => {
+      slot = document.createElement("span");
+      slot.id = SHOW_ALL_SLOT_ID;
+      document.body.append(slot);
+    });
+    afterEach(() => slot.remove());
+
+    const showAll = () => screen.getByRole("button", { name: /Show all|Loading…/ });
+
+    it("offers Show all while games remain", () => {
+      render(<GameList snapshotKey="k" initial={{ items: games(1, 50), total: 60 }} query={query} />);
+      const button = screen.getByRole("button", { name: "Show all" });
+      expect(slot).toContainElement(button);
+      expect(button).toBeEnabled();
+    });
+
+    it("offers nothing when everything is loaded", () => {
+      render(<GameList snapshotKey="k" initial={{ items: games(1, 50), total: 50 }} query={query} />);
+      expect(screen.queryByRole("button", { name: "Show all" })).toBeNull();
+      expect(slot).toBeEmptyDOMElement();
+    });
+
+    it("loads the rest in one request", async () => {
+      let resolve!: (r: Response) => void;
+      fetchMock.mockReturnValueOnce(new Promise<Response>((r) => (resolve = r)));
+      render(<GameList snapshotKey="k" initial={{ items: games(1, 50), total: 60 }} query={query} />);
+      await act(async () => showAll().click());
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      const url = new URL(String(fetchMock.mock.calls[0][0]), "http://x");
+      expect(url.searchParams.get("offset")).toBe("50");
+      expect(url.searchParams.get("all")).toBe("1");
+      expect(screen.getByRole("button", { name: "Loading…" })).toBeDisabled();
+
+      await act(async () => resolve(reply(games(51, 10), 60)));
+      expect(rows()).toBe(60);
+      expect(screen.queryByRole("button", { name: /Show all|Loading…/ })).toBeNull();
+      expect(screen.queryByText(FOOTER)).toBeNull();
+    });
+
+    it("gives the button back when it fails", async () => {
+      fetchMock.mockResolvedValueOnce(new Response("{}", { status: 500 }));
+      render(<GameList snapshotKey="k" initial={{ items: games(1, 50), total: 60 }} query={query} />);
+      await act(async () => showAll().click());
+      const button = screen.getByRole("button", { name: "Show all" });
+      expect(button).toBeEnabled();
+      expect(screen.getByText(/Couldn't load more games\./)).toBeInTheDocument();
+      expect(rows()).toBe(50);
+    });
+
+    it("makes one request when scrolling races with Show all", async () => {
+      let resolve!: (r: Response) => void;
+      fetchMock.mockReturnValueOnce(new Promise<Response>((r) => (resolve = r)));
+      render(<GameList snapshotKey="k" initial={{ items: games(1, 50), total: 60 }} query={query} />);
+      await act(async () => showAll().click());
+      await intersect();
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      await act(async () => resolve(reply(games(51, 10), 60)));
+      const ids = [...document.querySelectorAll("a.game")].map((a) => a.getAttribute("href"));
+      expect(ids).toHaveLength(60);
+      expect(new Set(ids).size).toBe(60);
     });
   });
 });

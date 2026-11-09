@@ -1,5 +1,8 @@
 import type { GameQuery } from "@/src/games/query";
 
+/** Where the Games list puts its "Show all" button: a slot in the server-rendered panel header. */
+export const SHOW_ALL_SLOT_ID = "games-show-all";
+
 /** URL parameters for a games query; default values and the offset are left out. */
 export function gameQueryParams(query: Omit<GameQuery, "offset">): URLSearchParams {
   const params = new URLSearchParams();
