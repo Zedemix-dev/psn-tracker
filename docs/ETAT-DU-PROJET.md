@@ -1,6 +1,6 @@
 # PSN Tracker : état du projet et feuille de route
 
-*Mis à jour le 8 novembre 2026 au soir : la page de détail d'un jeu est terminée sur la branche `feat/game-detail`, en attente de Pull Request.*
+*Mis à jour le 9 novembre 2026 : la page de détail d'un jeu est fusionnée dans `main` (PR #4). La phase 1 est terminée. Prochaines étapes : le déploiement sur le NAS, puis les jeux aux trophées non obtenables.*
 
 Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un autre PC, commence par le lire. Le fichier `CLAUDE.md` à la racine le demande automatiquement.
 
@@ -14,14 +14,16 @@ Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un aut
 |---|---|
 | `docs/superpowers/specs/2026-11-07-psn-tracker-design.md` | **La spec** : toutes les décisions de design. C'est l'autorité. |
 | `docs/superpowers/specs/2026-11-07-psn-tracker-maquette-accueil.html` | Maquette validée de la page Games (v12), référence CSS. |
-| `docs/superpowers/plans/2026-11-07-psn-tracker-phase1.md` | Le plan d'implémentation de la phase 1 (21 tâches). |
+| `docs/superpowers/plans/2026-11-07-psn-tracker-phase1.md` | Le plan d'implémentation de la phase 1 (21 tâches). Terminé. |
 | `docs/superpowers/specs/2026-11-08-psn-tracker-maquette-jeu.html` | Maquette validée de la page d'un jeu (v5). |
-| `docs/superpowers/plans/2026-11-08-game-detail.md` | Le plan de la page d'un jeu (tâches 1 à 17, dont 13 à 17 ajoutées en cours de route). |
+| `docs/superpowers/plans/2026-11-08-game-detail.md` | Le plan de la page d'un jeu (tâches 1 à 21, dont 13 à 21 ajoutées en cours de route). Terminé. |
 | `docs/superpowers/plans/2026-11-08-phase1-suivis.md` | Points mis de côté et vérifications au premier déploiement. |
 | `deploy/README.md` | Guide pas à pas du déploiement sur le NAS. |
-| `.superpowers/brainstorm/maquettes/` | Toutes les maquettes intermédiaires (`accueil-v1` à `v12`, `jeu-v1` à `v5`). |
+| `.superpowers/brainstorm/maquettes/` | Toutes les maquettes intermédiaires : `accueil-v1` à `v12`, `jeu-v1` à `v6` (la v6 compare les images de groupe : carrées ou absentes). |
 
-## 2. Ce qui est fait (phase 1, dans `main`)
+## 2. Ce qui est fait (dans `main`)
+
+### Phase 1 (PR #1)
 - **Socle :**
   - connexion unique avec session glissante, limite de tentatives par IP ;
   - token NPSSO chiffré (AES-256-GCM) ;
@@ -40,10 +42,11 @@ Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un aut
 - **Vérifié avec les vraies données** : 266 jeux et 11 624 trophées, chiffres conformes à la console et à psnprofiles.
 - **Menu** : les onglets Plat Wall, Trophy Log, Trophy Advisor et Stats existent déjà et mènent à une page « Coming soon ».
 
-### Sur la branche `feat/game-detail` (en attente de fusion)
-- **Page de détail d'un jeu** (`/games/[id]`, spec 8.9), conforme à la maquette v5 :
+### Page de détail d'un jeu (PR #4, fusionnée le 9 novembre 2026)
+- **Page `/games/[id]`** (spec 8.9), conforme à la maquette v5 :
   - bannière du jeu (image 4K du PSN) avec son logo, ou bannière choisie à la main pour 5 jeux anciens, ou rien sur fond uni ;
-  - bandeau, liste des trophées avec groupes DLC (images carrées partout : icônes d’origine en PS5, jaquette du jeu en PS4 ; une image non carrée est posée sur une tuile carrée qui prend la couleur de son bord, comme Marvel Heroes Omega), filtre et tri, compteurs des trophées à paliers ;
+  - bandeau, liste des trophées avec groupes DLC, filtre et tri, compteurs des trophées à paliers ;
+  - **aucune image rectangulaire** : icônes d'origine en PS5, jaquette du jeu en PS4. Une image non carrée est posée sur une tuile carrée qui prend la couleur de son bord, comme Marvel Heroes Omega ;
   - colonne de 320 px : jaquette, totaux et points, raretés, éditeur, genre, date de sortie, liens PowerPyx et psnprofiles, Timeline.
 - **Synchro** :
   - concept du jeu, catalogue PSN (éditeur, genres, date de sortie) ;
@@ -52,35 +55,40 @@ Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un aut
 - **Emprunt** : une info manquante est prise chez une autre version du même jeu, PS5 d'abord.
 - **Games** :
   - bannière automatique (dernier jeu joué) sans bannière personnalisée ;
-  - tri par défaut « Last trophy », en tête du menu, dans l’ordre de la console (date de mise à jour de la liste au PSN) ;
+  - tri par défaut « Last trophy », en tête du menu, dans l'ordre de la console (date de mise à jour de la liste au PSN) ;
   - retour au même endroit de la liste avec « précédent » ;
   - répartition par rareté centrée.
-- **Vérifié avec les vraies données** le 8 novembre 2026 : Cyberpunk 2077, Gran Turismo 7, FFXIV Online, Phantom Blade Zero, SAROS, Nioh 3, The Last of Us Part II Remastered, Dauntless, et les 5 jeux à bannière manuelle.
+- **Vérifié avec les vraies données** :
+  - le 8 novembre 2026 : Cyberpunk 2077, Gran Turismo 7, FFXIV Online, Phantom Blade Zero, SAROS, Nioh 3, The Last of Us Part II Remastered, Dauntless, et les 5 jeux à bannière manuelle ;
+  - le 9 novembre 2026 : les 168 listes PS4, sans aucune image rognée ni rectangulaire. Seules 4 n'ont pas de jaquette carrée et utilisent la tuile : Game of Thrones, Marvel Heroes Omega, Minecraft: Story Mode et Tales from the Borderlands.
+- 57 fichiers de tests, 422 tests.
 
 ## 3. Ce qui reste à faire, dans l'ordre
 1. **Déployer sur le NAS** en suivant `deploy/README.md`.
+   - Avant tout, vérifier sur github.com (onglet Actions, le dépôt est privé) que la CI de `main` est verte après la fusion de la PR #4, et que l'image a été publiée.
    - Juste après la première publication, donner une seule fois le rôle **Admin** au dépôt dans « Manage Actions access » du package GHCR (étape 1.5).
    - Faire les vérifications du premier déploiement listées dans `docs/superpowers/plans/2026-11-08-phase1-suivis.md`.
-2. **Page de détail d'un jeu** : terminée sur la branche `feat/game-detail` (voir 2). Il reste à **créer la Pull Request** vers `main` sur GitHub, vérifier que la CI est verte, puis la fusionner. La phase 1 sera alors terminée.
-   - Au premier déploiement de cette version, la synchro recharge une fois toutes les listes PS5 (migration 0005), ce qui la rallonge de quelques minutes.
-3. **Jeux aux trophées non obtenables** (demandé le 8 novembre 2026, spec section 14) : à faire **à part**, après la page de détail, sur la branche `feat/unobtainable`, avec son propre cadrage.
+   - À la première synchro de cette version, toutes les listes PS5 sont rechargées une fois (migration 0005), ce qui la rallonge de quelques minutes.
+2. **Jeux aux trophées non obtenables** (demandé le 8 novembre 2026, spec section 14) : la prochaine fonctionnalité, sur la branche `feat/unobtainable`. Elle commence par son propre brainstorming, avec maquettes.
    - Un bouton dans l'en-tête de la liste Games pour afficher tous les jeux d'un coup, sans défiler.
    - Un filtre séparé « With unobtainable » / « Without unobtainable », désactivé par défaut, qui s'ajoute aux autres filtres.
    - Un « ! » après le badge PS4/PS5 des jeux concernés dans la liste Games, avec une infobulle qui donne le nombre de trophées non obtenables.
    - Sur la page d'un jeu, un « ! » à côté de chaque trophée non obtenable. Le trophée a une légère surbrillance rouge s'il n'est pas obtenu, et garde sa surbrillance verte s'il l'est.
    - Dans Settings, l'adresse de la liste des jeux concernés, modifiable. Adresse actuelle : `https://psnp-plus.huskycode.dev/list.json`.
    - La liste ne donne pas l'identifiant PSN des jeux : rapprochement par nom et plateforme (5 de tes jeux reconnus le 8 novembre 2026).
-4. **Pages suivantes**, chacune avec **son propre brainstorming** (spec, section 3) :
+3. **Pages suivantes**, chacune avec **son propre brainstorming** (spec, section 3) :
    - **Plat Wall** ;
    - **Trophy Log** ;
    - **Trophy Advisor** : les trophées non obtenus sont déjà stockés avec leur rareté. Le toggle « Hide 0% games » doit aussi en retirer les jeux à 0 % ;
    - **Stats** : elle reçoit le calendrier « Last 60 days », déjà décrit dans la spec, section 3.
-5. **Points de suivi** : à piocher dans `docs/superpowers/plans/2026-11-08-phase1-suivis.md` quand une page touche le même code.
+4. **Points de suivi** : à piocher dans `docs/superpowers/plans/2026-11-08-phase1-suivis.md` quand une page touche le même code.
 
 ## 4. Comment reprendre dans une nouvelle conversation
-Pour démarrer une page, il suffit de le dire, par exemple « On attaque la page de détail d'un jeu ». Avec le plugin superpowers installé (voir 6), Claude lance de lui-même le bon processus. Pour être sûr, on peut aussi le demander explicitement : « utilise le skill brainstorming ».
+Pour démarrer une page, il suffit de le dire, par exemple « On attaque les trophées non obtenables ». Avec le plugin superpowers installé (voir 6), Claude lance de lui-même le bon processus. Pour être sûr, on peut aussi le demander explicitement : « utilise le skill brainstorming ».
 
-Le processus suivi pour la page Games, à refaire pour chaque page :
+Avant de créer une branche : `git switch main` puis `git pull`, pour partir de la dernière version.
+
+Le processus suivi pour chaque page :
 1. **Brainstorming** (`superpowers:brainstorming`) :
    - questions une par une, en français ;
    - maquettes HTML montrées dans le navigateur de l'app : configuration « maquettes » de `.claude/launch.json`, servie par Python sur le port 8765. Les maquettes vont dans `.superpowers/brainstorm/maquettes/`, qui est versionné ;
@@ -91,6 +99,7 @@ Le processus suivi pour la page Games, à refaire pour chaque page :
    - sur une branche `feat/<sujet>` ;
    - un agent implémente chaque tâche, un autre la relit, puis une relecture finale porte sur toute la branche ;
    - le journal de suivi est dans `.superpowers/sdd/`, qui est **local et ignoré par git**. Il vaut donc mieux finir un plan sur le même PC. Sinon, la progression se relit dans `git log` et dans ce fichier.
+   - Un retour de l'utilisateur en cours de route devient une nouvelle tâche à la fin du plan, après mise à jour de la spec (c'est ainsi que les tâches 13 à 21 de la page d'un jeu ont été ajoutées).
 4. **Vérification avec les vraies données**, en local (voir 5) : tu colles toi-même ton NPSSO dans Settings.
 5. **Fin de branche** :
    - Pull Request `feat/<sujet>` → `main` créée depuis ton navigateur (`gh` n'est pas installé) ;
@@ -99,7 +108,7 @@ Le processus suivi pour la page Games, à refaire pour chaque page :
 6. **Toujours** : un commit et un push après chaque étape terminée, pour pouvoir changer de PC à tout moment.
 
 ## 5. Tester en local avec les vraies données
-Le site et le worker ont besoin d'une même base. On utilise PGlite servi comme un Postgres (`@electric-sql/pglite-socket`, avec un correctif dans `scripts/e2e/db.mjs`). Tout ce qui est généré va dans `.data/`, qui est ignoré par git.
+Le site et le worker ont besoin d'une même base. On utilise PGlite servi comme un Postgres (`@electric-sql/pglite-socket`, avec un correctif dans `scripts/e2e/db.mjs`). Tout ce qui est généré va dans `.data/`, qui est ignoré par git : base, images téléchargées et identifiant de test restent sur le PC.
 
 ```bash
 npm run e2e:env      # une fois par PC : crée .data/e2e.env avec un identifiant de test (ligne 2 du fichier)
@@ -111,16 +120,21 @@ npm run e2e:sql -- "select count(*) from titles"   # requête SQL ponctuelle
 
 Ensuite : se connecter avec l'identifiant de test, coller le NPSSO dans Settings, puis attendre la première synchro (~15 min pour 266 jeux).
 
+- Le worker exécute le code source (tsx) : après une modification de la synchro, il faut le redémarrer.
+- Sous Windows, arrêter `npm run e2e:worker` n'arrête que npm : les processus `node.exe` du worker continuent. Avant de le relancer, les arrêter, sinon plusieurs workers synchronisent en même temps.
+
 ## 6. Mettre en place un autre PC
 1. Cloner `https://github.com/Zedemix-dev/psn-tracker` (dépôt privé), puis `npm ci`.
 2. Dans Claude Code, installer les plugins **superpowers** et **frontend-design**, depuis le marketplace officiel `claude-plugins-official`. Sans superpowers, les skills du processus (brainstorming, plans, subagent-driven) n'existent pas.
 3. Pour les tests en local : `npm run e2e:env`.
-4. Python n'est utile que pour servir les maquettes. Le chemin de Python dans la configuration « maquettes » de `.claude/launch.json` est propre au PC d'origine : l'adapter si besoin.
-5. La mémoire de Claude est propre à chaque PC. Ce qui doit suivre est dans ce fichier et dans `CLAUDE.md`.
+4. `AGENTS.md` (consignes Next.js 16 que `CLAUDE.md` demande de lire) est ignoré par git : il est créé au premier `npm run dev` ou `npm run e2e:web`. Les guides de Next sont dans `node_modules/next/dist/docs/` après `npm ci`.
+5. Python n'est utile que pour servir les maquettes. Le chemin de Python dans la configuration « maquettes » de `.claude/launch.json` est propre au PC d'origine : l'adapter si besoin.
+6. La mémoire de Claude est propre à chaque PC. Ce qui doit suivre est dans ce fichier et dans `CLAUDE.md`.
 
 ## 7. Décisions et préférences à respecter
 - **Langues** : la conversation en **français**. Le site est entièrement en **anglais**, y compris les noms des jeux et des trophées (`Accept-Language` en-GB). Le code et les messages de commit sont en anglais.
-- **Style** : style « Console » ; couleurs de progression par rang : S #667FB2, A #008000, B #7B9E00, C #A68E00, D #A66A00, E #FF4100, F #EE0000. Les icônes officielles fournies par l'utilisateur sont dans `public/icons/` ; pas de liens vers les images de psnprofiles.
+- **Style** : style « Console » ; couleurs de progression par rang : S #667FB2, A #008000, B #7B9E00, C #A68E00, D #A66A00, E #FF4100, F #EE0000. Les icônes officielles fournies par l'utilisateur sont dans `public/icons/` ; pas de liens vers les images de psnprofiles : toute image est téléchargée et servie par le site.
+- **Images** : aucune image rectangulaire, nulle part (spec 8.9). Les cas à la marge (5 bannières choisies à la main) sont une liste écrite dans le code, `src/games/banner-overrides.ts`.
 - **Sauvegardes** : **aucune dans l'app**. Le RAID SHR du NAS s'en charge (« ne rien faire »).
 - **Validation** : rien n'est construit tant que la maquette ou la description n'a pas été validée.
 - **Sécurité** : Claude ne saisit jamais le vrai NPSSO. C'est toujours l'utilisateur qui le colle.

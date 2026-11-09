@@ -569,8 +569,8 @@ Il choisit :
 Il doit aussi vérifier en pratique la détection des nouveaux DLC (6.4).
 
 ## 13. Points restants
-- **Page de détail d'un jeu :** maquette validée le 8 novembre 2026 (8.9), construite et vérifiée avec les vraies données sur la branche `feat/game-detail`. Il reste à fusionner la Pull Request ; c'est la dernière étape de la phase 1.
-- **Jeux aux trophées non obtenables :** fonctionnalité demandée le 8 novembre 2026, décrite en 14. Elle sera faite à part, après la page de détail d'un jeu.
+- **Page de détail d'un jeu :** maquette validée le 8 novembre 2026 (8.9), construite, vérifiée avec les vraies données et fusionnée dans `main` le 9 novembre 2026 (PR #4). La phase 1 est terminée.
+- **Jeux aux trophées non obtenables :** fonctionnalité demandée le 8 novembre 2026, décrite en 14. C'est la prochaine fonctionnalité, à faire à part sur la branche `feat/unobtainable`.
 
 ## 14. Jeux aux trophées non obtenables (à venir)
 **[décidé, 8 novembre 2026]** Cette fonctionnalité est faite **à part**, après la page de détail d'un jeu, sur sa propre branche (`feat/unobtainable`). Elle suivra le processus habituel : cadrage, maquette validée, spec, plan, construction. Ce qui suit est ce que l'utilisateur a déjà décidé, plus les constats faits le jour même.
