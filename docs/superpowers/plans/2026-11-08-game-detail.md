@@ -741,3 +741,29 @@ Ordre d'exécution : après la Task 16, avant la Task 12.
 - [ ] **Step 3 :** implémenter.
 - [ ] **Step 4 :** `npx vitest run` → PASS ; `npx tsc --noEmit` ; `npm run build`.
 - [ ] **Step 5 :** commit `feat(game): hand-picked banners for the five games no PSN version has one for`, puis push.
+
+### Task 18 : Images carrées des en-têtes de groupe, et tri « Last trophy » dans l'ordre de la console (spec 8.7 et 8.9)
+
+Décidé le 9 novembre 2026, après la maquette v6 (`.superpowers/brainstorm/maquettes/jeu-v6.html`, variante « Square group images »).
+
+**Files:**
+- Modify: `src/games/detail.ts` (et/ou `components/game/TrophyList.tsx`, `app/globals.css`), `src/games/query.ts`
+- Test: `src/games/detail.test.ts`, `src/games/query.test.ts`
+
+**Interfaces / règles:**
+- **En-têtes de groupe** : `GroupData.iconSrc` devient :
+  - pour une liste PS5 (dont `platforms` contient `PS5`), l'icône d'origine du groupe, comme aujourd'hui ;
+  - pour une liste PS4 (sans `PS5`), **la jaquette de la page**, `GameDetail.coverSrc`. C'est la même image que la ligne de la liste Games, empruntée au besoin (Task 16).
+  - Dans ce cas, un nouveau champ `GroupData.iconIsCover: boolean` vaut vrai. L'image remplit alors son cadre carré (`object-fit: cover`, sans fond sombre).
+  - Si `coverIsIcon` est vrai, la liste n'a aucune jaquette : l'image reste contenue, comme dans la liste Games.
+- **Tri « Last trophy »** (`lastTrophy` dans `queryGames`) : décroissant sur `coalesce(titles.psn_last_updated_at, titles.last_trophy_at)`, valeurs nulles en dernier, puis le même départage qu'aujourd'hui.
+
+- [ ] **Step 1 : tests qui échouent.**
+  - `detail.test.ts` :
+    - une liste PS4 avec deux groupes et une jaquette : les deux `iconSrc` valent `coverSrc`, avec `iconIsCover` vrai ;
+    - une liste PS5 avec deux groupes : chaque `iconSrc` est l'icône de son groupe, avec `iconIsCover` faux.
+  - `query.test.ts` : trois titres A (dernier trophée le 8 nov., mis à jour le 8 nov.), B (aucun trophée, mis à jour le 5 nov.) et C (dernier trophée le 4 nov., mis à jour le 4 nov.). Le tri `lastTrophy` donne A, B, C.
+- [ ] **Step 2 :** lancer → FAIL.
+- [ ] **Step 3 :** implémenter. Le CSS de la page applique `object-fit:cover` et retire le fond sombre quand l'image est la jaquette.
+- [ ] **Step 4 :** `npx vitest run` → PASS ; `npx tsc --noEmit` ; `npm run build`.
+- [ ] **Step 5 :** commit `feat(game): square group images on PS4 lists; Last trophy sort follows the console`, puis push.

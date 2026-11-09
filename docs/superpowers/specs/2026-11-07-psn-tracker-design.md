@@ -266,6 +266,9 @@ Chaque case contient un libellé et une valeur, **sans texte en dessous [décid�
   - **recherche** par nom.
 - **Tri [décidé]** : Last trophy (par défaut), Last played, Alphabetical, Percent completion, Time played, Total trophies, Earned trophies, Unearned trophies, Platinum rarity.
   - **[décidé, 8 novembre 2026] Le tri par défaut est « Last trophy »** (auparavant « Last played »), et il passe **en tête du menu**. Sans paramètre `sort` dans l'adresse, la liste est triée par dernier trophée.
+  - **[décidé, 9 novembre 2026] « Last trophy » suit l'ordre de la console** : la liste est triée sur la date de dernière mise à jour de la liste de trophées donnée par le PSN (`lastUpdatedDateTime`), la plus récente d'abord, et à défaut sur la date du dernier trophée.
+    - Cette date est celle du dernier trophée obtenu ou, sans trophée, celle du premier lancement du jeu. Un jeu commencé sans trophée (Phantom Blade Zero) se place donc au moment où il a été lancé, entre Cyberpunk 2077 et MAGICKA 2, comme sur la console et psnprofiles.
+    - Pour les autres jeux, l'ordre ne change pas en pratique : la date est celle du dernier trophée, à quelques minutes près.
   - **[mon choix]** Chaque tri a son sens naturel :
     - les plus récents d'abord pour les deux tris par date ;
     - de A à Z pour Alphabetical ;
@@ -406,7 +409,10 @@ C'est un panneau translucide qui chevauche le bas de la bannière, comme le band
 - **Groupes** (jeu de base, puis packs DLC)
   - **[mon choix]** Ils n'apparaissent que si la liste a plus d'un groupe. Sans DLC, les trophées s'enchaînent directement.
   - L'en-tête d'un groupe fait ~110 px (mesuré sur psnprofiles). Il contient :
-    - l'icône du groupe (100 × 100), contenue sans être rognée, sur un fond sombre ;
+    - une image carrée de 100 × 100 ;
+      - **[décidé, 9 novembre 2026, maquette v6]** pour une liste **PS5**, c'est l'icône d'origine de chaque groupe, qui est carrée ;
+      - pour une liste **PS4**, dont les icônes de groupe sont rectangulaires, c'est **la même image que la ligne du jeu dans la liste Games** (sa jaquette carrée, empruntée au besoin à une autre version), répétée sur le jeu de base et sur chaque DLC ;
+      - le but est la cohérence : une image carrée partout. Une liste PS4 sans aucune jaquette garde son icône, affichée en entier, comme dans la liste Games ;
     - un sur-titre en petites capitales : « Base game » pour le groupe `default`, puis « DLC 1 », « DLC 2 »… dans l'ordre des groupes ;
     - le nom : celui du jeu pour le jeu de base, celui du pack pour un DLC ;
     - « 45 of 45 trophies » ;
