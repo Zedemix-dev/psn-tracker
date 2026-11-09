@@ -189,3 +189,34 @@ describe("getGameDetail group images", () => {
     expect(d!.groups.every((g) => !g.iconIsCover)).toBe(true);
   });
 });
+
+describe("getGameDetail unobtainable", () => {
+  it("builds the band and marks the trophies", async () => {
+    await addTitle({
+      unobtainableCount: 3,
+      unobtainableNote: "Closed.",
+      definedBronze: 4,
+    });
+    await addTrophy(0, { unobtainable: true, earned: true, earnedAt: NOW });
+    await addTrophy(1, { unobtainable: true });
+    await addTrophy(2, { unobtainable: true });
+    await addTrophy(3);
+    const d = await getGameDetail(db, "NPWR1", empty, NOW);
+    expect(d!.unobtainable).toEqual({
+      label: "3 unobtainable trophies",
+      situation: ", 2 you don't have",
+      note: [{ text: "Closed." }],
+    });
+    expect(d!.trophies[0].unobtainable).toBe(true);
+    expect(d!.trophies[3].unobtainable).toBe(false);
+  });
+
+  it("has no band for an unmarked game", async () => {
+    await addTitle();
+    await addTrophy(0);
+    const d = await getGameDetail(db, "NPWR1", empty, NOW);
+    expect(d!.unobtainable).toBeNull();
+    expect(d!.trophies[0].unobtainable).toBe(false);
+  });
+});
+

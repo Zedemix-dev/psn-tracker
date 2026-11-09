@@ -16,6 +16,8 @@ import { guideSearchName, powerPyxRoadmapUrl, psnProfilesGuidesUrl } from "@/src
 import { formatDate, formatInt, formatPercent, formatPlayTime, formatTime } from "@/src/lib/format";
 import { rarityTier, type RarityTier } from "@/src/lib/rarity";
 import { type ImageMap, mediaSrc } from "@/src/sync/images";
+import { unobtainableLabel, unobtainableSituation } from "@/src/unobtainable/labels";
+import { parseNote, type NoteSegment } from "@/src/unobtainable/note";
 
 export type TrophyRowData = {
   id: number;
@@ -33,7 +35,11 @@ export type TrophyRowData = {
   tier: RarityTier | null;
   /** "3,626/5,000": unearned trophy whose target and progress are both known. */
   counter: string | null;
+  /** Marked as no longer obtainable by the community list. */
+  unobtainable: boolean;
 };
+
+export type UnobtainableBand = { label: string; situation: string; note: NoteSegment[] };
 
 export type GroupData = {
   id: string;
@@ -78,6 +84,8 @@ export type GameDetail = {
   releaseDate: string | null;
   guides: { powerPyx: string; psnProfiles: string };
   timeline: TimelineRow[];
+  /** Null when no trophy of the game is marked unobtainable. */
+  unobtainable: UnobtainableBand | null;
 };
 
 export async function getGameDetail(
@@ -116,6 +124,7 @@ export async function getGameDetail(
         !r.earned && r.progressTarget != null && r.progress != null
           ? `${formatInt(r.progress)}/${formatInt(r.progressTarget)}`
           : null,
+      unobtainable: r.unobtainable,
     };
   });
 
@@ -168,6 +177,15 @@ export async function getGameDetail(
   const metaParts = [`${earnedTotal} of ${definedTotal} trophies`];
   if (lastPlayed) metaParts.push(`Last played ${formatDate(lastPlayed)}`);
   if (title.playSeconds != null) metaParts.push(`${formatPlayTime(title.playSeconds)} played`);
+  const missing = rows.filter((r) => r.unobtainable && !r.earned).length;
+  const unobtainable: UnobtainableBand | null =
+    title.unobtainableCount > 0
+      ? {
+          label: unobtainableLabel(title.unobtainableCount, definedTotal),
+          situation: unobtainableSituation(title.unobtainableCount, missing),
+          note: parseNote(title.unobtainableNote),
+        }
+      : null;
   const guideName = guideSearchName(title.name);
 
   return {
@@ -212,5 +230,6 @@ export async function getGameDetail(
       title.definedPlatinum > 0,
       now,
     ),
+    unobtainable,
   };
 }
