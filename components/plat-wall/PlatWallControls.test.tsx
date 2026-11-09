@@ -32,6 +32,14 @@ describe("PlatWallControls", () => {
     expect(replace).toHaveBeenCalledWith("/plat-wall?show=art%2Crarity", { scroll: false });
   });
 
+  it("accumulates ticks made before the server answers", () => {
+    render(<PlatWallControls query={query()} years={years} canExport fileName="x.png" />);
+    open();
+    fireEvent.click(screen.getByLabelText("Rarity"));
+    fireEvent.click(screen.getByLabelText("Name"));
+    expect(replace).toHaveBeenLastCalledWith("/plat-wall?show=art%2Crarity%2Cname", { scroll: false });
+  });
+
   it("keeps the last ticked option", () => {
     render(<PlatWallControls query={query()} years={years} canExport fileName="x.png" />);
     open();

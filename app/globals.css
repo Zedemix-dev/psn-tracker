@@ -400,7 +400,7 @@ button.select{font-family:inherit;cursor:pointer;padding-right:26px;background-i
 .wall-panel .empty{padding:40px 16px;text-align:center;color:var(--muted);font-size:13px}
 .panel.wall-panel{overflow:visible}
 @media (max-width:640px){
-  .plat-grid{grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:10px 8px;padding:12px}
+  .plat-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px 8px;padding:12px}
   .btn-export{margin-left:0}
 }
 .plat-tip{position:fixed;z-index:60;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:#0B1022;box-shadow:0 8px 22px rgba(0,0,0,.5);color:var(--text);font-size:12px;line-height:1.4;pointer-events:none}

@@ -62,11 +62,22 @@ export function PlatWallControls({
     };
   }, [open]);
 
+  // The latest intended selection: ticks made before the server answers must build on each other.
+  const showKey = query.show.join(",");
+  const intendedShow = useRef<PlatShow[]>(query.show);
+  useEffect(() => {
+    intendedShow.current = query.show;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showKey]);
+
   function toggle(item: PlatShow) {
-    const on = query.show.includes(item);
-    if (on && query.show.length === 1) return;
-    const set = on ? query.show.filter((s) => s !== item) : [...query.show, item];
-    go({ ...query, show: PLAT_SHOW.filter((s) => set.includes(s)) });
+    const current = intendedShow.current;
+    const on = current.includes(item);
+    if (on && current.length === 1) return;
+    const set = on ? current.filter((s) => s !== item) : [...current, item];
+    const show = PLAT_SHOW.filter((s) => set.includes(s));
+    intendedShow.current = show;
+    go({ ...query, show });
   }
 
   return (

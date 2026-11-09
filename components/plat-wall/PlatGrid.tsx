@@ -54,6 +54,7 @@ export function PlatGrid({ tiles, show }: { tiles: PlatTile[]; show: PlatShow[] 
         <Link
           key={t.key}
           href={t.href}
+          prefetch={false}
           data-key={t.key}
           className={`plat-tile${art ? "" : " textonly"}`}
           aria-label={`${t.game}, earned ${t.when}${t.ratePct ? `, ${t.ratePct} of players` : ""}`}

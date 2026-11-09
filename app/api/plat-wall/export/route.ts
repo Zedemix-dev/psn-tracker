@@ -31,6 +31,7 @@ export async function GET(req: Request) {
   return new Response(new Uint8Array(png), {
     headers: {
       "Content-Type": "image/png",
+      "Content-Length": String(png.length),
       "Cache-Control": "no-store",
       "Content-Disposition": `${download ? "attachment" : "inline"}; filename="${loaded.fileName}"`,
     },

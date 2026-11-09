@@ -50,6 +50,7 @@ describe("GET /api/plat-wall/export", () => {
     expect(res.status).toBe(200);
     expect(res.headers.get("Content-Type")).toBe("image/png");
     expect(res.headers.get("Cache-Control")).toBe("no-store");
+    expect(res.headers.get("Content-Length")).toBe("3");
     expect(res.headers.get("Content-Disposition")).toMatch(/^inline/);
     expect(Buffer.from(await res.arrayBuffer()).toString()).toBe("png");
   });
