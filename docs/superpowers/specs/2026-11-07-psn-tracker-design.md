@@ -576,7 +576,7 @@ Il doit aussi vérifier en pratique la détection des nouveaux DLC (6.4).
 
 ## 13. Points restants
 - **Page de détail d'un jeu :** maquette validée le 8 novembre 2026 (8.9), construite, vérifiée avec les vraies données et fusionnée dans `main` le 9 novembre 2026 (PR #4). La phase 1 est terminée.
-- **Jeux aux trophées non obtenables :** fonctionnalité demandée le 8 novembre 2026, cadrée et maquette validée le 9 novembre 2026, décrite en 14. À construire sur la branche `feat/unobtainable`.
+- **Jeux aux trophées non obtenables :** fonctionnalité demandée le 8 novembre 2026, cadrée, maquette validée, construite et vérifiée avec les vraies données le 9 novembre 2026, décrite en 14. Sur la branche `feat/unobtainable`, à fusionner.
 
 ## 14. Jeux aux trophées non obtenables
 **[décidé, cadrage du 9 novembre 2026]** Fonctionnalité construite à part, sur la branche `feat/unobtainable`. Maquette validée le 9 novembre 2026 : `docs/superpowers/specs/2026-11-09-psn-tracker-maquette-nonobt.html`, référence pour l'aspect et le CSS. Les choix que l'utilisateur n'a pas faits lui-même sont marqués **[choix de Claude]**.
@@ -690,6 +690,6 @@ Nouveau bloc « Unobtainable trophies », après « PSN token ».
 ### 14.11 Vérification avec les vraies données
 - Les 5 jeux du 14.3 sont signalés, avec ces nombres, et aucun autre.
 - Gran Turismo Sport : 4 trophées en rouge, 3 en vert avec « ! ». Final Fantasy XV : 10 trophées marqués, dans les groupes 004 et 007.
-- « Not 100% » avec « Without unobtainable » donne 40 jeux, « With unobtainable » 5.
+- « Not 100% » avec « Without unobtainable » donne le nombre de jeux non terminés moins les jeux concernés non terminés (39 le jour de la vérification, Cyberpunk 2077 venant de passer à 100 %), « With unobtainable » 5.
 - « Show all » affiche les 266 jeux.
 - Une adresse invalide ou inaccessible affiche l'échec et ne change aucun repère.

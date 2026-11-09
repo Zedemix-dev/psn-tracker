@@ -1,6 +1,6 @@
 # PSN Tracker : état du projet et feuille de route
 
-*Mis à jour le 9 novembre 2026 : la page de détail d'un jeu est fusionnée dans `main` (PR #4). La phase 1 est terminée. Prochaines étapes : le déploiement sur le NAS, puis les jeux aux trophées non obtenables.*
+*Mis à jour le 9 novembre 2026 : les trophées non obtenables sont construits et vérifiés sur la branche `feat/unobtainable`, la Pull Request reste à créer et à fusionner. La phase 1 est terminée. Prochaine étape après la fusion : le déploiement sur le NAS.*
 
 Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un autre PC, commence par le lire. Le fichier `CLAUDE.md` à la racine le demande automatiquement.
 
@@ -64,19 +64,22 @@ Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un aut
   - le 9 novembre 2026 : les 168 listes PS4, sans aucune image rognée ni rectangulaire. Seules 4 n'ont pas de jaquette carrée et utilisent la tuile : Game of Thrones, Marvel Heroes Omega, Minecraft: Story Mode et Tales from the Borderlands.
 - 57 fichiers de tests, 422 tests.
 
+### Trophées non obtenables (branche `feat/unobtainable`, spec section 14)
+- **Données** : le worker télécharge la liste une fois par jour, indépendamment du token PSN, et marque chaque trophée concerné en base (`trophies.unobtainable`). Trophy Advisor pourra s'en servir tel quel.
+- **Games** : bouton « Show all », filtre « With / Without unobtainable », « ! » avec infobulle (nombre et cause).
+- **Page d'un jeu** : bandeau avec le nombre et la cause, « ! » sur chaque trophée concerné, rouge s'il n'est pas obtenu, vert s'il l'est.
+- **Settings** : état du téléchargement et adresse de la liste.
+- **Correction au passage** : la surbrillance verte des trophées obtenus ne s'affichait pas depuis la PR #4 (couleurs jamais définies sur le site).
+- **Vérifié avec les vraies données** le 9 novembre 2026 : Gran Turismo Sport 7, Marvel Heroes Omega 37, Final Fantasy XV 10, Dauntless PS4 45 et PS5 46, aucun autre jeu.
+- 64 fichiers de tests, 549 tests.
+
 ## 3. Ce qui reste à faire, dans l'ordre
 1. **Déployer sur le NAS** en suivant `deploy/README.md`.
    - Avant tout, vérifier sur github.com (onglet Actions, le dépôt est privé) que la CI de `main` est verte après la fusion de la PR #4, et que l'image a été publiée.
    - Juste après la première publication, donner une seule fois le rôle **Admin** au dépôt dans « Manage Actions access » du package GHCR (étape 1.5).
    - Faire les vérifications du premier déploiement listées dans `docs/superpowers/plans/2026-11-08-phase1-suivis.md`.
    - À la première synchro de cette version, toutes les listes PS5 sont rechargées une fois (migration 0005), ce qui la rallonge de quelques minutes.
-2. **Jeux aux trophées non obtenables** : en cours sur la branche `feat/unobtainable`. Cadrage fait le 9 novembre 2026, maquette validée, décisions dans la **spec, section 14**. Plan écrit : `docs/superpowers/plans/2026-11-09-unobtainable.md` (13 tâches). Étape suivante : l'exécution « subagent-driven », après relecture du plan par l'utilisateur.
-   - Un bouton dans l'en-tête de la liste Games pour afficher tous les jeux d'un coup, sans défiler.
-   - Un filtre séparé « With unobtainable » / « Without unobtainable », désactivé par défaut, qui s'ajoute aux autres filtres.
-   - Un « ! » après le badge PS4/PS5 des jeux concernés dans la liste Games, avec une infobulle qui donne le nombre de trophées non obtenables et la cause.
-   - Sur la page d'un jeu, un bandeau avec le nombre et la cause, et un « ! » à côté de chaque trophée non obtenable. Le trophée a une légère surbrillance rouge s'il n'est pas obtenu, et garde sa surbrillance verte s'il l'est.
-   - Dans Settings, l'adresse de la liste des jeux concernés, modifiable. Adresse actuelle : `https://psnp-plus.huskycode.dev/list.json`.
-   - La liste ne donne pas l'identifiant PSN des jeux : rapprochement par nom et plateforme (5 de tes jeux reconnus, aucun manqué, vérifié le 9 novembre 2026).
+2. **Jeux aux trophées non obtenables** : construits et vérifiés sur la branche `feat/unobtainable` (voir section 2). Il reste à créer la Pull Request vers `main` depuis github.com, à vérifier que la CI est verte, puis à fusionner. Plan : `docs/superpowers/plans/2026-11-09-unobtainable.md`.
 3. **Pages suivantes**, chacune avec **son propre brainstorming** (spec, section 3) :
    - **Plat Wall** ;
    - **Trophy Log** ;
