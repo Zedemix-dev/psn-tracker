@@ -43,6 +43,13 @@
       "when": 1794161234169,
       "tag": "0005_reload_ps5_lists",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1794233513003,
+      "tag": "0006_unobtainable",
+      "breakpoints": true
     }
   ]
 }

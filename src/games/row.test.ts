@@ -64,6 +64,8 @@ const title = (over: Partial<GameTitle> = {}): GameTitle => ({
   genres: null,
   releaseDate: null,
   catalogCheckedAt: null,
+  unobtainableCount: 0,
+  unobtainableNote: null,
   ...over,
 });
 

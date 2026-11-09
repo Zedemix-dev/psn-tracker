@@ -4,6 +4,7 @@ import {
   check,
   index,
   integer,
+  jsonb,
   numeric,
   pgTable,
   primaryKey,
@@ -18,6 +19,17 @@ export type TrophyType = "platinum" | "gold" | "silver" | "bronze";
 export type SyncKind = "scheduled" | "manual" | "daily" | "first";
 export type SyncStatus = "running" | "success" | "error";
 export type PsnAuthStatus = "missing" | "valid" | "expired";
+
+export const DEFAULT_UNOBTAINABLE_LIST_URL = "https://psnp-plus.huskycode.dev/list.json";
+
+export type UnobtainableEntry = {
+  id: string;
+  title: string;
+  platforms: string[];
+  trophies: number[];
+  note: string | null;
+  timestamp: number | null;
+};
 
 export const profile = pgTable("profile", {
   id: integer("id").primaryKey().default(1),
@@ -68,6 +80,8 @@ export const titles = pgTable("titles", {
   genres: text("genres").array(),
   releaseDate: ts("release_date"),
   catalogCheckedAt: ts("catalog_checked_at"),
+  unobtainableCount: integer("unobtainable_count").notNull().default(0),
+  unobtainableNote: text("unobtainable_note"),
 });
 
 export const trophyGroups = pgTable(
@@ -107,6 +121,7 @@ export const trophies = pgTable(
     progressTarget: integer("progress_target"),
     progress: integer("progress"),
     progressedAt: ts("progressed_at"),
+    unobtainable: boolean("unobtainable").notNull().default(false),
   },
   (t) => [
     primaryKey({ columns: [t.titleId, t.trophyId] }),
@@ -169,6 +184,18 @@ export const settings = pgTable("settings", {
     .notNull()
     .default("missing"),
   syncRequestedAt: ts("sync_requested_at"),
+  unobtainableListUrl: text("unobtainable_list_url")
+    .notNull()
+    .default(DEFAULT_UNOBTAINABLE_LIST_URL),
+  unobtainableRequestedAt: ts("unobtainable_requested_at"),
+});
+
+export const unobtainableList = pgTable("unobtainable_list", {
+  id: integer("id").primaryKey().default(1),
+  entries: jsonb("entries").$type<UnobtainableEntry[]>().notNull().default([]),
+  downloadedAt: ts("downloaded_at"),
+  attemptedAt: ts("attempted_at"),
+  error: text("error"),
 });
 
 export const cabinet = pgTable(
