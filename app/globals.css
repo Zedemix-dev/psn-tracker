@@ -393,7 +393,7 @@ button.select{font-family:inherit;cursor:pointer;padding-right:26px;background-i
 .plat-tile{display:flex;flex-direction:column;align-items:center;gap:6px;text-decoration:none;min-width:0}
 .plat-tile .art{width:100%;aspect-ratio:1;border-radius:12px;object-fit:cover;transition:transform .12s ease}
 .plat-tile:hover .art{transform:translateY(-2px) scale(1.05)}
-.plat-tile .pct{font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1}
+.plat-tile .pct{width:auto;text-align:center;font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1}
 .plat-tile .nm{width:100%;font-size:10.5px;line-height:1.25;color:var(--muted);text-align:center;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 /* Art unticked: text-only card */
 .plat-tile.textonly{justify-content:center;gap:5px;min-height:92px;padding:8px 6px;border-radius:12px;background:var(--surface)}
