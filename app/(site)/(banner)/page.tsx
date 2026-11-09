@@ -60,7 +60,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Sea
     ratePct: t.earnedRate === null ? null : formatPercent(t.earnedRate),
     tier: t.earnedRate === null ? null : rarityTier(t.earnedRate),
   }));
-  const listKey = `${hideZero}|${query.state}|${query.platform}|${query.sort}|${query.q}|${sync.lastSuccessAt}`;
+  const listKey = `${hideZero}|${query.state}|${query.platform}|${query.sort}|${query.q}|${query.unobtainable}|${sync.lastSuccessAt}`;
   return (
     <main className="wrap">
       <ProfileBand profile={row} imageMap={imageMap} sync={sync} />

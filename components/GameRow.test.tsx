@@ -22,6 +22,7 @@ const game = (g: Partial<GameRowData> = {}): GameRowData => ({
   rank: "S",
   lastPlayedLine: "Last played 5 Nov 2026 | 33h 27m played",
   status: "plat-earned",
+  unobtainable: null,
   ...g,
 });
 

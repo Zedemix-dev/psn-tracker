@@ -8,7 +8,7 @@ import type { GameQuery } from "@/src/games/query";
 const replace = vi.fn();
 vi.mock("next/navigation", () => ({ useRouter: () => ({ replace }) }));
 
-const query = (q: string): GameQuery => ({ state: "all", platform: "all", sort: "lastTrophy", q, offset: 0 });
+const query = (q: string): GameQuery => ({ state: "all", platform: "all", sort: "lastTrophy", q, unobtainable: "off", offset: 0 });
 const input = () => screen.getByPlaceholderText("Search games") as HTMLInputElement;
 
 beforeEach(() => vi.useFakeTimers());

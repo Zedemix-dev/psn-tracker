@@ -23,7 +23,7 @@ async function addTitle({ id, ...over }: Seed) {
   });
 }
 
-const base: GameQuery = { state: "all", platform: "all", sort: "alphabetical", q: "", offset: 0 };
+const base: GameQuery = { state: "all", platform: "all", sort: "alphabetical", q: "", unobtainable: "off", offset: 0 };
 const ids = async (q: Partial<GameQuery>, hideZero = false) =>
   (await queryGames(db, { ...base, ...q }, { hideZero })).items.map((i) => i.id);
 
@@ -32,7 +32,7 @@ describe("parseGameQuery", () => {
     const q = parseGameQuery(
       new URLSearchParams("state=bogus&platform=PS3&sort=nope&offset=-5&q=%20zelda%20"),
     );
-    expect(q).toEqual({ state: "all", platform: "all", sort: "lastTrophy", q: "zelda", offset: 0 });
+    expect(q).toEqual({ state: "all", platform: "all", sort: "lastTrophy", q: "zelda", unobtainable: "off", offset: 0 });
   });
 
   it("defaults to the last trophy sort, and keeps an explicit lastPlayed", () => {
@@ -42,7 +42,7 @@ describe("parseGameQuery", () => {
 
   it("reads valid values", () => {
     const q = parseGameQuery(new URLSearchParams("state=notFinished&platform=PS4&sort=percent&offset=50"));
-    expect(q).toEqual({ state: "notFinished", platform: "PS4", sort: "percent", q: "", offset: 50 });
+    expect(q).toEqual({ state: "notFinished", platform: "PS4", sort: "percent", q: "", unobtainable: "off", offset: 50 });
   });
 });
 
@@ -80,6 +80,42 @@ describe("filters", () => {
     expect(await ids({}, true)).not.toContain("zero");
     const { total } = await queryGames(db, base, { hideZero: true });
     expect(total).toBe(3);
+  });
+});
+
+describe("unobtainable filter", () => {
+  beforeEach(async () => {
+    await addTitle({ id: "a", progress: 50, unobtainableCount: 2 });
+    await addTitle({ id: "b", progress: 50 });
+    await addTitle({ id: "c", progress: 100, unobtainableCount: 3 });
+    await addTitle({ id: "z", progress: 0, unobtainableCount: 1 });
+  });
+
+  it("defaults to off and reads valid values", () => {
+    expect(parseGameQuery(new URLSearchParams("")).unobtainable).toBe("off");
+    expect(parseGameQuery(new URLSearchParams("unobtainable=with")).unobtainable).toBe("with");
+    expect(parseGameQuery(new URLSearchParams("unobtainable=without")).unobtainable).toBe("without");
+    expect(parseGameQuery(new URLSearchParams("unobtainable=bogus")).unobtainable).toBe("off");
+  });
+
+  it("filters with and without", async () => {
+    expect(await ids({ unobtainable: "off" })).toEqual(["a", "b", "c", "z"]);
+    expect(await ids({ unobtainable: "with" })).toEqual(["a", "c", "z"]);
+    expect(await ids({ unobtainable: "without" })).toEqual(["b"]);
+  });
+
+  it("combines with the state filter", async () => {
+    expect(await ids({ state: "not100", unobtainable: "without" })).toEqual(["b"]);
+    expect(await ids({ state: "not100", unobtainable: "with" })).toEqual(["a", "z"]);
+  });
+
+  it("combines with Hide 0%", async () => {
+    expect(await ids({ unobtainable: "with" }, true)).toEqual(["a", "c"]);
+  });
+
+  it("counts the filtered total", async () => {
+    const res = await queryGames(db, { ...base, unobtainable: "with" }, { hideZero: false });
+    expect(res.total).toBe(3);
   });
 });
 
@@ -175,6 +211,26 @@ describe("lastTrophy follows the console", () => {
     await addTitle({ id: "b", psnLastUpdatedAt: new Date("2024-11-05Z") });
     await addTitle({ id: "a", lastTrophyAt: new Date("2024-11-08Z"), psnLastUpdatedAt: new Date("2024-11-08Z") });
     expect(await ids({ sort: "lastTrophy" })).toEqual(["a", "b", "c"]);
+  });
+});
+
+describe("all", () => {
+  it("returns every remaining game with all", async () => {
+    await db.insert(titles).values(
+      Array.from({ length: 60 }, (_, i) => ({
+        npCommunicationId: `T${String(i).padStart(3, "0")}`,
+        npServiceName: "trophy",
+        name: `Game ${String(i).padStart(3, "0")}`,
+        iconUrl: "https://img.example/icon.png",
+        platforms: ["PS5"],
+        trophySetVersion: "1.00",
+      })),
+    );
+    const run = async (offset: number, all?: boolean) =>
+      (await queryGames(db, { ...base, offset }, { hideZero: false, all })).items.length;
+    expect(await run(50, true)).toBe(10);
+    expect(await run(0)).toBe(50);
+    expect(await run(0, true)).toBe(60);
   });
 });
 

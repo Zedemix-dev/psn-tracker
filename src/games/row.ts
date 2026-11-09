@@ -1,5 +1,7 @@
 import type { titles, TrophyType } from "@/src/db/schema";
 import { formatLastPlayedLine } from "@/src/lib/format";
+import { unobtainableLabel } from "@/src/unobtainable/labels";
+import { notePlainText } from "@/src/unobtainable/note";
 import { type SiblingIndex, withSiblings } from "@/src/games/siblings";
 import { type ImageMap, mediaSrc } from "@/src/sync/images";
 
@@ -20,6 +22,8 @@ export type GameRowData = {
   rank: GameRank;
   lastPlayedLine: string;
   status: GameStatus;
+  /** Set when the list marks trophies of this game as unobtainable. */
+  unobtainable: { label: string; note: string | null } | null;
 };
 
 export type GameTitle = typeof titles.$inferSelect;
@@ -69,5 +73,12 @@ export function toGameRow(title: GameTitle, imageMap: ImageMap, siblings: Siblin
       title.playSeconds,
     ),
     status: gameStatus(title),
+    unobtainable:
+      title.unobtainableCount > 0
+        ? {
+            label: unobtainableLabel(title.unobtainableCount, definedTotal),
+            note: notePlainText(title.unobtainableNote),
+          }
+        : null,
   };
 }

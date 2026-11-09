@@ -30,7 +30,7 @@ export function GameList({
   const pendingScroll = useRef<number | null>(null);
   const loaded = items.length;
   const more = loaded < total;
-  const { state, platform, sort, q } = query;
+  const { state, platform, sort, q, unobtainable } = query;
 
   // Back from a game page: put the loaded rows and the scroll position back. Done after mount, so
   // the server-rendered first page still hydrates cleanly.
@@ -65,7 +65,7 @@ export function GameList({
     busy.current = true;
     setFailed(false);
     try {
-      const params = gameQueryParams({ state, platform, sort, q });
+      const params = gameQueryParams({ state, platform, sort, q, unobtainable });
       params.set("offset", String(loaded));
       const res = await fetch(`/api/games?${params}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -80,7 +80,7 @@ export function GameList({
     } finally {
       busy.current = false;
     }
-  }, [state, platform, sort, q, loaded]);
+  }, [state, platform, sort, q, unobtainable, loaded]);
 
   useEffect(() => {
     const el = sentinel.current;

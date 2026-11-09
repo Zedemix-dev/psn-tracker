@@ -22,10 +22,11 @@ const game = (n: number): GameRowData => ({
   rank: "C",
   lastPlayedLine: "",
   status: "incomplete",
+  unobtainable: null,
 });
 const games = (from: number, count: number) => Array.from({ length: count }, (_, i) => game(from + i));
 
-const query: GameQuery = { state: "all", platform: "all", sort: "lastTrophy", q: "", offset: 0 };
+const query: GameQuery = { state: "all", platform: "all", sort: "lastTrophy", q: "", unobtainable: "off", offset: 0 };
 
 let trigger: () => void = () => {};
 let observed = 0;
@@ -105,7 +106,7 @@ describe("GameList", () => {
       <GameList
         snapshotKey="k"
         initial={{ items: games(1, 50), total: 51 }}
-        query={{ ...query, state: "notFinished", platform: "PS5", sort: "alphabetical", q: "dark souls" }}
+        query={{ ...query, state: "notFinished", platform: "PS5", sort: "alphabetical", q: "dark souls", unobtainable: "with" }}
       />,
     );
     await intersect();
@@ -116,6 +117,7 @@ describe("GameList", () => {
       platform: "PS5",
       sort: "alphabetical",
       q: "dark souls",
+      unobtainable: "with",
       offset: "50",
     });
   });

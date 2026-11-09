@@ -7,5 +7,6 @@ export function gameQueryParams(query: Omit<GameQuery, "offset">): URLSearchPara
   if (query.platform !== "all") params.set("platform", query.platform);
   if (query.sort !== "lastTrophy") params.set("sort", query.sort);
   if (query.q) params.set("q", query.q);
+  if (query.unobtainable !== "off") params.set("unobtainable", query.unobtainable);
   return params;
 }
