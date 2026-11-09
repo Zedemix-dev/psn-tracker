@@ -1,6 +1,6 @@
 # PSN Tracker : état du projet et feuille de route
 
-*Mis à jour le 9 novembre 2026 : la page Plat Wall est construite et vérifiée sur la branche `feat/plat-wall`, Pull Request à créer. Prochaine étape après sa fusion : Trophy Log, puis Trophy Advisor et Stats. Le déploiement sur le NAS vient après ces pages.*
+*Mis à jour le 9 novembre 2026 : la page Plat Wall est fusionnée dans `main` (PR #9). Prochaine étape : la page Trophy Log, puis Trophy Advisor et Stats. Le déploiement sur le NAS vient après ces trois pages.*
 
 Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un autre PC, commence par le lire. Le fichier `CLAUDE.md` à la racine le demande automatiquement.
 
@@ -21,7 +21,7 @@ Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un aut
 | `docs/superpowers/specs/2026-11-09-psn-tracker-maquette-nonobt.html` | Maquette validée des trophées non obtenables (v1). |
 | `docs/superpowers/plans/2026-11-09-unobtainable.md` | Le plan des trophées non obtenables (13 tâches, plus une correction de la surbrillance verte). Terminé. |
 | `docs/superpowers/specs/2026-11-09-psn-tracker-maquette-platwall.html` | Maquette validée du Plat Wall (v3). |
-| `docs/superpowers/plans/2026-11-09-plat-wall.md` | Le plan du Plat Wall (8 tâches). |
+| `docs/superpowers/plans/2026-11-09-plat-wall.md` | Le plan du Plat Wall (8 tâches). Terminé. |
 | `deploy/README.md` | Guide pas à pas du déploiement sur le NAS. |
 | `.superpowers/brainstorm/maquettes/` | Toutes les maquettes intermédiaires : `accueil-v1` à `v12`, `jeu-v1` à `v6` (la v6 compare les images de groupe : carrées ou absentes), `platwall-v1` à `v3`. |
 
@@ -44,7 +44,7 @@ Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un aut
 - **Page Settings** : bannière (envoi depuis le PC et position), token NPSSO avec tuto, historique des synchros en direct, déconnexion.
 - **Déploiement** : image Docker unique (app + worker), CI (tests, smoke Postgres, build et publication de l'image sur `main`, 3 dernières images gardées), deux stacks Portainer, nginx.
 - **Vérifié avec les vraies données** : 266 jeux et 11 624 trophées, chiffres conformes à la console et à psnprofiles.
-- **Menu** : les onglets Plat Wall, Trophy Log, Trophy Advisor et Stats existent déjà et mènent à une page « Coming soon ».
+- **Menu** : les onglets Trophy Log, Trophy Advisor et Stats existent déjà et mènent à une page « Coming soon ».
 
 ### Page de détail d'un jeu (PR #4, fusionnée le 9 novembre 2026)
 - **Page `/games/[id]`** (spec 8.9), conforme à la maquette v5 :
@@ -76,13 +76,14 @@ Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un aut
 - **Vérifié avec les vraies données** le 9 novembre 2026 : Gran Turismo Sport 7, Marvel Heroes Omega 37, Final Fantasy XV 10, Dauntless PS4 45 et PS5 46, aucun autre jeu.
 - 64 fichiers de tests, 552 tests.
 
-### Page Plat Wall (branche `feat/plat-wall`, spec section 15)
+### Page Plat Wall (PR #9, fusionnée le 9 novembre 2026, spec section 15)
 - **Page `/plat-wall`** : la miniature du trophée de chaque platine obtenu, sans limite d'affichage, avec Display (Art, Rarity, Name), année, plateforme et tri. Bulle au survol, clic vers la page du jeu.
 - **Export PNG** : le bouton ouvre un aperçu, et « Download PNG » enregistre l'image (2896 px de large, 13 colonnes), avec le bandeau, les 6 cases et le mur filtré.
 - **Fabrication** : faite par le serveur avec `sharp`. Le texte est dessiné en Sora avec `fontkit` et la police du dépôt (`public/fonts/`), car l'image Docker n'a aucune police.
 - **Stockage** : aucune image n'est écrite sur le disque. Seule la dernière reste en mémoire vive, 10 minutes au maximum.
 - **Vérifié avec les vraies données** le 9 novembre 2026 : 230 platines, nombres par année et par plateforme, Never Fade Away pour Cyberpunk 2077, Endfield sans fond, noms à caractères spéciaux, aperçu sur PC et en affichage téléphone, aucun fichier ajouté après plusieurs exports.
-- 78 fichiers de tests, 662 tests.
+- **Build Docker** : il échoue si l'export ne peut pas charger `sharp`, `fontkit` ou la police (`scripts/check-export-deps.cjs`). Job `image` de la CI vert sur la PR #9.
+- 78 fichiers de tests, 663 tests.
 
 ## 3. Ce qui reste à faire, dans l'ordre
 1. **Pages restantes**, chacune avec **son propre brainstorming** (spec, section 3), dans cet ordre :
@@ -98,7 +99,7 @@ Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un aut
 3. **Points de suivi** : à piocher dans `docs/superpowers/plans/2026-11-08-phase1-suivis.md` quand une page touche le même code.
 
 ## 4. Comment reprendre dans une nouvelle conversation
-Pour démarrer une page, il suffit de le dire, par exemple « On attaque le Plat Wall ». Avec le plugin superpowers installé (voir 6), Claude lance de lui-même le bon processus. Pour être sûr, on peut aussi le demander explicitement : « utilise le skill brainstorming ».
+Pour démarrer une page, il suffit de le dire, par exemple « On attaque Trophy Log ». Avec le plugin superpowers installé (voir 6), Claude lance de lui-même le bon processus. Pour être sûr, on peut aussi le demander explicitement : « utilise le skill brainstorming ».
 
 Avant de créer une branche : `git switch main` puis `git pull`, pour partir de la dernière version.
 
