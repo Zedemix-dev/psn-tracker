@@ -576,7 +576,7 @@ Il doit aussi vérifier en pratique la détection des nouveaux DLC (6.4).
 
 ## 13. Points restants
 - **Page de détail d'un jeu :** maquette validée le 8 novembre 2026 (8.9), construite, vérifiée avec les vraies données et fusionnée dans `main` le 9 novembre 2026 (PR #4). La phase 1 est terminée.
-- **Jeux aux trophées non obtenables :** fonctionnalité demandée le 8 novembre 2026, cadrée, maquette validée, construite et vérifiée avec les vraies données le 9 novembre 2026, décrite en 14. Sur la branche `feat/unobtainable`, à fusionner.
+- **Jeux aux trophées non obtenables :** fonctionnalité demandée le 8 novembre 2026, cadrée, maquette validée, construite et vérifiée avec les vraies données le 9 novembre 2026, décrite en 14. Fusionnée dans `main` le 9 novembre 2026 (PR #6).
 
 ## 14. Jeux aux trophées non obtenables
 **[décidé, cadrage du 9 novembre 2026]** Fonctionnalité construite à part, sur la branche `feat/unobtainable`. Maquette validée le 9 novembre 2026 : `docs/superpowers/specs/2026-11-09-psn-tracker-maquette-nonobt.html`, référence pour l'aspect et le CSS. Les choix que l'utilisateur n'a pas faits lui-même sont marqués **[choix de Claude]**.
