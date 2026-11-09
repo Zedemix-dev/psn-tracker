@@ -21,6 +21,11 @@ function parts(d: Date) {
   };
 }
 
+/** Calendar year of `d` in Paris. */
+export function parisYear(d: Date): number {
+  return Number(parts(d).year);
+}
+
 export function formatDate(d: Date): string {
   const p = parts(d);
   return `${p.day} ${p.month} ${p.year}`;
