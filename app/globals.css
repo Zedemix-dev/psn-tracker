@@ -406,3 +406,20 @@ button.select{font-family:inherit;cursor:pointer;padding-right:26px;background-i
 .plat-tip{position:fixed;z-index:60;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:#0B1022;box-shadow:0 8px 22px rgba(0,0,0,.5);color:var(--text);font-size:12px;line-height:1.4;pointer-events:none}
 .plat-tip b{display:block;font-weight:600}
 .plat-tip span{display:block;margin-top:2px;color:var(--muted)}
+
+/* Plat Wall PNG preview */
+.btn-export:disabled{opacity:.45;cursor:default}
+a.btn-export{text-decoration:none}
+.btn-export[aria-disabled="true"]{opacity:.45;pointer-events:none}
+.ov{position:fixed;inset:0;z-index:50;overflow:auto;background:rgba(5,8,20,.92);padding:16px}
+.ov-bar{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:10px 16px;flex-wrap:wrap;max-width:1160px;margin:0 auto 12px;padding:10px 14px;border-radius:12px;background:#0F1631;border:1px solid var(--line);box-shadow:0 8px 24px rgba(0,0,0,.45)}
+.ov-bar h2{margin:0;font-size:15px;font-weight:600;line-height:1.2}
+.ov-bar .dims{margin-top:2px;font-size:12px;color:var(--muted)}
+.ov-actions{display:flex;align-items:center;gap:8px}
+.ov-actions .btn-export{margin-left:0}
+.btn-close{height:30px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface-2);color:var(--text);font-size:12px;font-weight:600;cursor:pointer}
+.btn-close:hover{background:rgba(255,255,255,.2)}
+.ov-wait{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;min-height:50vh;color:var(--muted);font-size:13px}
+.spin{width:28px;height:28px;border-radius:50%;border:3px solid var(--surface-2);border-top-color:var(--accent);animation:spin 1s linear infinite}
+.ov-frame{max-width:1160px;margin:0 auto;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,.25)}
+.ov-frame[hidden]{display:none}

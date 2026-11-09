@@ -1,7 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { ExportPreview } from "@/components/plat-wall/ExportPreview";
 import {
   PLAT_SHOW,
   platQueryParams,
@@ -23,10 +24,22 @@ const SORTS: [PlatSort, string][] = [
   ["alphabetical", "Alphabetical"],
 ];
 
-export function PlatWallControls({ query, years }: { query: PlatQuery; years: number[] }) {
+export function PlatWallControls({
+  query,
+  years,
+  canExport,
+  fileName,
+}: {
+  query: PlatQuery;
+  years: number[];
+  canExport: boolean;
+  fileName: string;
+}) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [previewing, setPreviewing] = useState(false);
   const dd = useRef<HTMLDivElement>(null);
+  const closePreview = useCallback(() => setPreviewing(false), []);
 
   function go(next: PlatQuery) {
     const qs = platQueryParams(next).toString();
@@ -115,6 +128,15 @@ export function PlatWallControls({ query, years }: { query: PlatQuery; years: nu
           </option>
         ))}
       </select>
+      <button type="button" className="btn-export" disabled={!canExport} onClick={() => setPreviewing(true)}>
+        <svg className="ico" viewBox="0 0 24 24" aria-hidden="true">
+          <g fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 20h14" />
+          </g>
+        </svg>
+        Export PNG
+      </button>
+      {previewing && <ExportPreview query={query} fileName={fileName} onClose={closePreview} />}
     </div>
   );
 }

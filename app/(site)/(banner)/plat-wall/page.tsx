@@ -7,7 +7,7 @@ import { getDb } from "@/src/db/client";
 import { profile } from "@/src/db/schema";
 import { formatDate, formatInt, formatPercent } from "@/src/lib/format";
 import { loadPlatinums } from "@/src/plat-wall/load";
-import { applyPlatQuery, parsePlatQuery, platinumYears } from "@/src/plat-wall/query";
+import { applyPlatQuery, exportFileName, parsePlatQuery, platinumYears } from "@/src/plat-wall/query";
 import { getSettings } from "@/src/settings/repo";
 import { getProfileStats } from "@/src/stats/profile-stats";
 import { loadImageMap, mediaSrc } from "@/src/sync/images";
@@ -55,7 +55,12 @@ export default async function PlatWallPage({ searchParams }: { searchParams: Pro
               Showing {formatInt(shown.length)} of {formatInt(all.length)} platinum trophies
             </div>
           </div>
-          <PlatWallControls query={query} years={platinumYears(all)} />
+          <PlatWallControls
+            query={query}
+            years={platinumYears(all)}
+            canExport={tiles.length > 0}
+            fileName={exportFileName(name, query)}
+          />
         </div>
         {tiles.length > 0 ? (
           <PlatGrid tiles={tiles} show={query.show} />

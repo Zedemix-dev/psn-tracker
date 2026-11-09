@@ -26,39 +26,39 @@ afterEach(() => {
 
 describe("PlatWallControls", () => {
   it("ticks Rarity", () => {
-    render(<PlatWallControls query={query()} years={years} />);
+    render(<PlatWallControls query={query()} years={years} canExport fileName="x.png" />);
     open();
     fireEvent.click(screen.getByLabelText("Rarity"));
     expect(replace).toHaveBeenCalledWith("/plat-wall?show=art%2Crarity", { scroll: false });
   });
 
   it("keeps the last ticked option", () => {
-    render(<PlatWallControls query={query()} years={years} />);
+    render(<PlatWallControls query={query()} years={years} canExport fileName="x.png" />);
     open();
     expect(screen.getByLabelText("Art")).toBeDisabled();
     expect(screen.getByLabelText("Rarity")).not.toBeDisabled();
   });
 
   it("filters by year", () => {
-    render(<PlatWallControls query={query()} years={years} />);
+    render(<PlatWallControls query={query()} years={years} canExport fileName="x.png" />);
     fireEvent.change(screen.getByLabelText("Filter by year"), { target: { value: "2025" } });
     expect(replace).toHaveBeenCalledWith("/plat-wall?year=2025", { scroll: false });
   });
 
   it("lists All years first, then the years given", () => {
-    render(<PlatWallControls query={query()} years={years} />);
+    render(<PlatWallControls query={query()} years={years} canExport fileName="x.png" />);
     const select = screen.getByLabelText("Filter by year") as HTMLSelectElement;
     expect([...select.options].map((o) => o.textContent)).toEqual(["All years", "2026", "2025"]);
   });
 
   it("goes back to the bare URL with the defaults", () => {
-    render(<PlatWallControls query={query({ year: 2025 })} years={years} />);
+    render(<PlatWallControls query={query({ year: 2025 })} years={years} canExport fileName="x.png" />);
     fireEvent.change(screen.getByLabelText("Filter by year"), { target: { value: "all" } });
     expect(replace).toHaveBeenCalledWith("/plat-wall", { scroll: false });
   });
 
   it("sorts and filters by platform", () => {
-    render(<PlatWallControls query={query()} years={years} />);
+    render(<PlatWallControls query={query()} years={years} canExport fileName="x.png" />);
     fireEvent.change(screen.getByLabelText("Sort by"), { target: { value: "rarity" } });
     expect(replace).toHaveBeenCalledWith("/plat-wall?sort=rarity", { scroll: false });
     fireEvent.change(screen.getByLabelText("Filter by platform"), { target: { value: "PS5" } });
@@ -66,16 +66,16 @@ describe("PlatWallControls", () => {
   });
 
   it("marks active filters", () => {
-    const { rerender } = render(<PlatWallControls query={query()} years={years} />);
+    const { rerender } = render(<PlatWallControls query={query()} years={years} canExport fileName="x.png" />);
     expect(screen.getByLabelText("Filter by year")).not.toHaveClass("on");
     expect(screen.getByLabelText("Filter by platform")).not.toHaveClass("on");
-    rerender(<PlatWallControls query={query({ year: 2025, platform: "PS5" })} years={years} />);
+    rerender(<PlatWallControls query={query({ year: 2025, platform: "PS5" })} years={years} canExport fileName="x.png" />);
     expect(screen.getByLabelText("Filter by year")).toHaveClass("on");
     expect(screen.getByLabelText("Filter by platform")).toHaveClass("on");
   });
 
   it("closes the Display menu on Escape and on an outside click", () => {
-    render(<PlatWallControls query={query()} years={years} />);
+    render(<PlatWallControls query={query()} years={years} canExport fileName="x.png" />);
     expect(menu()).toBeNull();
     open();
     expect(menu()).not.toBeNull();
@@ -86,5 +86,22 @@ describe("PlatWallControls", () => {
     expect(menu()).not.toBeNull();
     fireEvent.mouseDown(document.body);
     expect(menu()).toBeNull();
+  });
+});
+
+describe("PlatWallControls export", () => {
+  const props = { years, fileName: "x.png" };
+  it("disables Export PNG when nothing matches", () => {
+    render(<PlatWallControls query={query()} canExport={false} {...props} />);
+    expect(screen.getByRole("button", { name: "Export PNG" })).toBeDisabled();
+  });
+
+  it("opens the preview from Export PNG", () => {
+    render(<PlatWallControls query={query()} canExport {...props} />);
+    expect(screen.queryByRole("dialog")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Export PNG" }));
+    expect(screen.getByRole("dialog", { name: "PNG preview" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Close" }));
+    expect(screen.queryByRole("dialog")).toBeNull();
   });
 });
