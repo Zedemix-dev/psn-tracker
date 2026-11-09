@@ -313,6 +313,8 @@ Chaque case contient un libellé et une valeur, **sans texte en dessous [décid�
     - Le nombre de jeux chargés et la position de défilement sont gardés le temps de l'onglet, pour les mêmes filtres, tri et recherche.
     - Si une synchro a eu lieu entre-temps, la liste repart du haut, comme c'est déjà le cas après une synchro.
 
+**[décidé, 9 novembre 2026]** Le bouton « Show all », le filtre « non obtenables » et le repère « ! » de cette liste sont décrits en 14.6.
+
 ### 8.8 Colonne latérale (droite, ~450 px)
 - **[décidé] Les listes sont propres comme sur psnprofiles** : aucun nom tronqué, et toutes les lignes à la même hauteur.
   - Chaque ligne fait ~66 px, portée par une icône de trophée de **56 px**.
@@ -500,6 +502,8 @@ C'est un panneau translucide qui chevauche le bas de la bannière, comme le band
   - les chiffres des autres joueurs (propriétaires, rang, classements, joueurs récents), qui sont des non-objectifs (2).
 - **[décidé, 8 novembre 2026] Pas de lien vers l'autre version du jeu.** Un jeu sorti sur PS4 et sur PS5 a deux listes de trophées, donc deux pages (Cyberpunk 2077 : PS4 à 100 %, PS5 à 86 %). psnprofiles relie les deux dans un encart « Other platforms and regions ». Ici, pour passer de l'une à l'autre, on repasse par la liste des jeux.
 
+**[décidé, 9 novembre 2026]** Le bandeau et les repères des trophées non obtenables de cette page sont décrits en 14.7.
+
 ## 9. Page Settings
 - **Banner [décidé]** :
   - envoi d'une image **depuis le PC** (JPEG, PNG ou WebP, 10 Mo maximum **[mon choix]**), avec aperçu ;
@@ -519,6 +523,8 @@ C'est un panneau translucide qui chevauche le bas de la bannière, comme le band
 - **Sync history [décidé]** : les dernières exécutions, avec leur statut, leur durée et leurs erreurs.
 - **Log out.**
 - Le Trophy cabinet **ne se modifie pas ici [décidé]** : son éditeur est sur la page principale (8.8).
+
+**[décidé, 9 novembre 2026]** Le bloc « Unobtainable trophies » de cette page est décrit en 14.9.
 
 ## 10. Système visuel « Console »
 - Inspiré de l'écran d'accueil de la PS5 : la bannière, floutée, sert de fond à toute la page ; les panneaux sont translucides, avec un flou d'arrière-plan et des coins arrondis.
@@ -570,44 +576,121 @@ Il doit aussi vérifier en pratique la détection des nouveaux DLC (6.4).
 
 ## 13. Points restants
 - **Page de détail d'un jeu :** maquette validée le 8 novembre 2026 (8.9), construite, vérifiée avec les vraies données et fusionnée dans `main` le 9 novembre 2026 (PR #4). La phase 1 est terminée.
-- **Jeux aux trophées non obtenables :** fonctionnalité demandée le 8 novembre 2026, décrite en 14. C'est la prochaine fonctionnalité, à faire à part sur la branche `feat/unobtainable`.
+- **Jeux aux trophées non obtenables :** fonctionnalité demandée le 8 novembre 2026, cadrée et maquette validée le 9 novembre 2026, décrite en 14. À construire sur la branche `feat/unobtainable`.
 
-## 14. Jeux aux trophées non obtenables (à venir)
-**[décidé, 8 novembre 2026]** Cette fonctionnalité est faite **à part**, après la page de détail d'un jeu, sur sa propre branche (`feat/unobtainable`). Elle suivra le processus habituel : cadrage, maquette validée, spec, plan, construction. Ce qui suit est ce que l'utilisateur a déjà décidé, plus les constats faits le jour même.
+## 14. Jeux aux trophées non obtenables
+**[décidé, cadrage du 9 novembre 2026]** Fonctionnalité construite à part, sur la branche `feat/unobtainable`. Maquette validée le 9 novembre 2026 : `docs/superpowers/specs/2026-11-09-psn-tracker-maquette-nonobt.html`, référence pour l'aspect et le CSS. Les choix que l'utilisateur n'a pas faits lui-même sont marqués **[choix de Claude]**.
 
-**Intention** : repérer les jeux dont certains trophées ne peuvent plus être obtenus (serveurs fermés, jeu plus supporté, jeu retiré du PSN…), pour les mettre de côté ou les cibler.
+### 14.1 Intention
+L'utilisateur veut savoir, parmi les jeux de son profil, lesquels ont des trophées qu'on ne peut plus obtenir. Le but : **ne pas prévoir de faire un jeu pour découvrir au dernier moment qu'un trophée est impossible.** Peu de jeux sont concernés (5 sur 266), mais l'information reste utile.
 
-**Ce que l'utilisateur a décidé** :
-1. **Bouton « tout afficher » dans la liste des jeux** (8.7). Il est placé dans l'en-tête de la liste, à côté du nombre de jeux (« 266 games »). En un clic, il affiche la liste complète des jeux de Games, sans avoir à faire défiler la page pour charger les jeux 50 par 50.
-2. **Filtre « non obtenables »**, dans la barre de filtres de Games, juste après le menu de tri.
-   - C'est un **filtre séparé**, une surcouche qui s'ajoute aux autres : il fonctionne en même temps que l'état, la plateforme, le tri, la recherche et « Hide 0% games ».
-   - Il a deux valeurs : **« With unobtainable »** (seulement les jeux qui ont des trophées non obtenables) et **« Without unobtainable »** (seulement les jeux qui n'en ont pas).
-   - Il est **désactivé par défaut** : la liste n'est filtrée que lorsque l'utilisateur choisit l'une des deux valeurs.
-3. **Repère « ! » dans la liste des jeux** (8.7) : un jeu qui a des trophées non obtenables porte un « ! » sur sa ligne, juste après le badge de plateforme (PS4/PS5).
-   - Au survol du « ! », une infobulle indique que le jeu a des trophées non obtenables, et combien. Ce nombre vient de la liste.
-4. **Sur la page d'un jeu** (8.9), chaque trophée non obtenable porte un « ! » à côté de son nom.
-   - Un trophée non obtenable **et non obtenu** a en plus une **légère surbrillance rouge**, sur le même principe que la surbrillance verte d'un trophée obtenu.
-   - Un trophée non obtenable **mais déjà obtenu** garde sa **surbrillance verte**, avec seulement le « ! » à côté de son nom, sans rouge.
-5. **Source de la liste réglable dans Settings** : un champ permet de saisir l'adresse de la liste des jeux aux trophées non obtenables.
-   - Adresse actuelle, à mettre par défaut : `https://psnp-plus.huskycode.dev/list.json` (liste maintenue pour l'extension PSNP+).
-   - Si l'adresse change un jour, l'utilisateur la met à jour depuis l'interface, sans toucher au code.
+Elle sert aussi à **retirer ces jeux de la liste** : par exemple « Not 100% » avec « Without unobtainable ». Et elle sera réutilisée plus tard par Trophy Advisor, avec son propre filtre, pour ne pas polluer la liste des trophées non obtenus.
 
-**Constats du 8 novembre 2026** (à confirmer au cadrage) :
-- **Format de la liste** : `{ "version": 2, "list": { "<id psnprofiles>": { "title", "platforms", "submitter", "note", "trophies": [numéros], "timestamp" } } }`.
-  - Elle compte 1 622 jeux, dont 1 150 sur PS4 ou PS5.
-  - `note` explique la cause, par exemple « The servers closed on May 29/30, 2025. ».
-  - `trophies` donne les numéros des trophées non obtenables dans la liste psnprofiles du jeu.
-- **Aucun identifiant PSN** (`npCommunicationId`) dans la liste : un jeu doit être rapproché **par son nom et sa plateforme**.
-  - Avec un nom normalisé (minuscules, sans ™ ® ©, ponctuation réduite) et une plateforme commune, 5 des 266 jeux de l'utilisateur sont reconnus : Dauntless (PS4 et PS5), Final Fantasy XV (PS4), Gran Turismo Sport et Marvel Heroes Omega. Aucun faux positif n'a été vu.
-  - Un même jeu peut avoir plusieurs entrées, une par région (Final Fantasy XV en a 4). Pour savoir si un jeu « a des trophées non obtenables », il suffit que l'une d'elles corresponde.
-- **Numéros des trophées** : leur correspondance avec les `trophyId` du PSN est **à vérifier** au cadrage, en comparant avec les pages psnprofiles.
-  - Pour Gran Turismo Sport (`[1, 2, 3, 4, 35, 36, 38]`), la lecture « numéro − 1 = `trophyId` » donne des trophées en ligne plausibles : le platine, les records du Sport Mode, la livrée partagée, le Daily Workout.
-  - Mais l'entrée de Dauntless vaut `[0]`, ce qui ne colle pas avec une numérotation qui part de 1.
-  - Le nombre de trophées non obtenables affiché dans l'infobulle de la liste des jeux est la taille de ce tableau.
+### 14.2 Objectifs, non-objectifs, anti-objectifs
+**Objectifs**
+- Signaler les jeux concernés dans Games, et les trophées concernés sur la page d'un jeu.
+- Un filtre « With / Without unobtainable » qui se combine à tous les autres.
+- Un bouton pour afficher tous les jeux d'un coup.
+- L'adresse de la liste modifiable dans Settings.
+- **Chaque trophée concerné est marqué en base**, pas seulement le jeu, pour que Trophy Advisor puisse s'en servir sans nouveau travail sur les données.
 
-**Points à trancher au cadrage** :
-- le libellé du filtre quand il est désactivé, et l'aspect du bouton « tout afficher » une fois tous les jeux chargés ;
-- la fréquence de téléchargement de la liste (par exemple avec le rafraîchissement quotidien, et à l'enregistrement d'une nouvelle adresse), et ce qui s'affiche si elle est inaccessible ;
-- l'effet du filtre sur les stats, comme « Hide 0% games » le fait (8.4), ou non ;
-- l'affichage de la note de la liste (la cause : « Servers closed on… »), dans l'infobulle du « ! » ou sur la page d'un jeu ;
-- une correction manuelle pour un jeu mal reconnu par son nom.
+**Non-objectifs**
+- Trophy Advisor lui-même et son filtre (page à venir).
+- Toute modification des stats du profil : le filtre ne change que la liste affichée, contrairement à « Hide 0% games » (8.4) **[choix de Claude]**.
+- Une correction manuelle d'un jeu mal reconnu : la vérification du 14.3 ne montre aucun cas qui la justifie **[choix de Claude]**.
+
+**Anti-objectifs** (ce qui serait un échec même si tout fonctionne)
+- **Un jeu concerné qui n'est pas signalé** : c'est exactement la situation à éviter. Dans le doute, on préfère signaler (14.4, plusieurs entrées).
+- Une panne de la liste qui ferait disparaître les repères existants.
+- Une liste de trophées marqués faux : le rouge doit tomber sur les bons trophées.
+- Une dépendance au token PSN : la liste doit se télécharger même si le token a expiré.
+
+### 14.3 La source et ce qu'on y a vérifié
+- Adresse par défaut : `https://psnp-plus.huskycode.dev/list.json` (liste maintenue pour l'extension PSNP+, 536 Ko).
+- Format : `{ "version": 2, "list": { "<id psnprofiles>": { "title", "platforms", "submitter", "note", "trophies": [numéros], "timestamp" } } }`. `timestamp` manque sur 43 entrées, `note` est vide sur 2.
+- Elle compte 1 622 entrées, dont 1 150 sur PS4 ou PS5. Elle ne donne **aucun identifiant PSN**.
+
+**Vérifié le 9 novembre 2026 en comparant la liste à la base réelle (266 jeux) :**
+- **Le numéro moins 1 donne le `trophyId` PSN.** Sur Final Fantasy XV, `[68…74, 89, 90, 91]` tombe exactement sur les 7 trophées du groupe 004 (Comrades) et les 3 du groupe 007 (sa mise à jour de mars 2018). Sans le « moins 1 », la série déborde sur le groupe suivant. Sur Gran Turismo Sport, `1` est le platine.
+- **`[0]` veut dire « tous les trophées du jeu ».** 223 entrées valent exactement `[0]`, le `0` n'est jamais mélangé à d'autres numéros, et la note de MAG le dit en toutes lettres.
+- **5 jeux reconnus, aucun manqué** en cherchant large (titres proches, distance d'édition, mots en commun) :
+
+| Jeu | Progression | Non obtenables | Encore manquants |
+|---|---|---|---|
+| Gran Turismo Sport (PS4) | 67 % | 7 | 4, dont le platine |
+| Marvel Heroes Omega (PS4) | 51 % | 37 (tous) | 13 |
+| Final Fantasy XV (PS4) | 100 % | 10 | 0 |
+| Dauntless (PS4) | 100 % | 45 (tous) | 0 |
+| Dauntless (PS5) | 100 % | 46 (tous) | 0 |
+
+- **La plateforme compte** : The First Descendant (PS5) ne doit pas être signalé, l'entrée ne vise que la version PS4. Pareil pour Rayman Legends (PS4), dont les entrées sont PS3 et Vita.
+
+### 14.4 Rapprochement avec les jeux du profil
+Tout ce paragraphe est **[choix de Claude]**, vérifié sur les vraies données : il redonne exactement les 5 jeux ci-dessus.
+- **Clé de nom**, dans cet ordre : suppression de ™ ® © (sans rien laisser à leur place), décomposition Unicode NFKD, suppression des accents, minuscules, toute suite de caractères qui ne sont ni lettres ni chiffres (au sens Unicode) devient une espace, espaces de bord retirées. Une clé vide ne correspond à rien. L'ordre compte : NFKD transforme ™ en « TM », et 42 des 266 jeux du profil portent l'un de ces signes alors qu'aucun titre de la liste n'en a.
+- **Plateforme** : il faut au moins une plateforme commune. `PSVITA` du PSN équivaut à `Vita` de la liste et `PSPC` à `PC` ; `PS3`, `PS4`, `PS5` sont identiques ; `VR` n'équivaut à rien.
+- **Plusieurs entrées pour un même jeu** (une par région : Final Fantasy XV en a 4) : on prend **l'union** de leurs numéros, et si l'une vaut `[0]`, tout le jeu est concerné. Elles divergent dans 9 groupes sur 186 de la liste, aucun chez l'utilisateur. La note retenue est celle de l'entrée au `timestamp` le plus récent (sans `timestamp` : après les autres ; à égalité : le plus petit identifiant).
+- **Du numéro au trophée** : `trophyId = numéro − 1`. Un numéro qui ne correspond à aucun trophée du jeu est ignoré.
+- **Un jeu est « concerné » dès que la liste marque au moins un de ses trophées existants**, même si l'utilisateur les a déjà tous. Le « ! » et le filtre utilisent cette même définition.
+- **Nombre affiché** : le nombre de trophées réellement marqués dans le jeu (N). Cela remplace « la taille du tableau » du cadrage du 8 novembre, faux pour `[0]`.
+- **Quand** : le rapprochement est refait après chaque téléchargement réussi et à la fin de chaque synchro, pour qu'un nouveau jeu soit signalé sans attendre le prochain téléchargement. Il s'applique d'un seul coup (transaction). Une synchro qui recharge un jeu ne doit pas effacer ses marques, même temporairement.
+- La liste brute est gardée en base, pour refaire le rapprochement sans la retélécharger.
+
+### 14.5 Téléchargement de la liste
+**[choix de Claude]**, sauf le comportement en cas d'échec, montré dans la maquette validée.
+- Fait par le worker, **indépendamment du token PSN et des synchros** : il n'apparaît pas dans « Sync history ».
+- À faire si : jamais téléchargée ; ou dernier succès il y a 24 h ou plus et dernière tentative il y a 1 h ou plus ; ou demandé par « Save » dans Settings. Vérifié à chaque itération du worker, avant les travaux PSN. Son échec n'empêche pas ceux-ci.
+- Garde-fous, parce que l'adresse et le contenu viennent de l'extérieur : `http` ou `https` seulement, délai maximum de 30 s, taille maximum de 10 Mo.
+- La réponse est refusée si ce n'est pas du JSON, si `version` n'est pas `2`, ou s'il ne reste aucune entrée valide. Une entrée mal formée est ignorée individuellement.
+- **En cas d'échec, l'ancienne liste et toutes les marques restent en place.** L'échec est affiché dans Settings.
+
+### 14.6 Liste Games (8.7)
+- **Bouton « Show all »**, dans l'en-tête, à gauche du nombre de jeux.
+  - Visible tant qu'il reste des jeux à charger. Il n'apparaît donc pas si tout tient en 50 jeux ou moins.
+  - Au clic : désactivé, libellé « Loading… », puis tous les jeux restants arrivent en une seule requête. Le bouton et la ligne « The next 50 games load as you scroll down » disparaissent, et la page ne bouge pas.
+  - Si le chargement échoue : le bouton redevient « Show all » et le message existant « Couldn't load more games. Retry » s'affiche **[choix de Claude]**.
+  - Changer un filtre repart des 50 premiers jeux, comme aujourd'hui.
+- **Filtre**, juste après le menu de tri, avant la recherche.
+  - Trois valeurs : « Unobtainable » (désactivé, par défaut), « With unobtainable », « Without unobtainable ».
+  - Contour de couleur d'accent quand il est actif.
+  - Il se combine avec l'état, la plateforme, le tri, la recherche et « Hide 0% games ». Le nombre de jeux de l'en-tête suit.
+  - Comme les autres filtres, il vit dans l'adresse de la page (`unobtainable=with|without`) et n'est pas enregistré en base.
+- **« ! » après le badge de plateforme** des jeux concernés, avec une infobulle au survol :
+  - première ligne : « N unobtainable trophies », « 1 unobtainable trophy », ou « All N trophies are unobtainable » si tous les trophées du jeu sont marqués ;
+  - seconde ligne : la note, en texte simple (14.8).
+
+### 14.7 Page d'un jeu (8.9)
+- **Bandeau** dans le panneau « Trophies », entre les menus et la liste, seulement sur les jeux concernés. Il reste affiché quels que soient le filtre et le tri des trophées.
+  - Première ligne : le même nombre que l'infobulle, puis la situation de l'utilisateur : « 7 unobtainable trophies, 4 you don't have », « 10 unobtainable trophies, you have them all », « All 37 trophies are unobtainable, 13 you don't have ».
+  - Seconde ligne : la note, avec ses liens cliquables (14.8).
+- **Chaque trophée marqué** porte un « ! » à côté de son nom, avec une infobulle : « No longer obtainable. », ou « No longer obtainable. You already have it. » s'il est obtenu.
+- **Non obtenable et non obtenu** : surbrillance rouge sur le même principe que la verte, fond à 14 % et anneau de 2 px autour de l'icône, couleur `--rank-f`.
+- **Non obtenable mais obtenu** : surbrillance verte inchangée, seulement le « ! ».
+
+### 14.8 Notes de la liste
+Texte venu de l'extérieur, jamais interprété comme du HTML. 591 notes contiennent un lien Markdown, quelques-unes `**` ou des accents graves.
+- `[libellé](adresse)` : dans l'infobulle, seulement le libellé ; sur la page d'un jeu, un lien qui s'ouvre dans un nouvel onglet, si l'adresse est en `http` ou `https`.
+- `**` et les accents graves sont retirés.
+- Note vide : pas de seconde ligne.
+
+### 14.9 Settings (9)
+Nouveau bloc « Unobtainable trophies », après « PSN token ».
+- **État** :
+  - « Up to date » : date du téléchargement · nombre d'entrées de la liste · nombre de jeux du profil concernés (jeux masqués exclus) ;
+  - « Download failed » : raison et date de la tentative · date de la liste encore utilisée, ou l'absence de liste **[choix de Claude pour ce dernier cas]** ;
+  - « Not downloaded yet » et « Downloading… » **[choix de Claude]**.
+- **« List address »** : champ prérempli avec l'adresse par défaut, et bouton « Save ».
+- « Save » refuse une adresse qui n'est pas en `http` ou `https`, avec le message d'erreur habituel des formulaires de Settings, et déclenche un téléchargement. Enregistrer la même adresse relance donc le téléchargement **[choix de Claude]**.
+
+### 14.10 Laissé au builder
+- Le schéma exact (colonnes, tables, stockage de la liste brute), à condition qu'on puisse interroger en SQL les trophées marqués.
+- L'organisation du code, le découpage des composants, le mécanisme de l'infobulle (elle ne doit pas être coupée par le panneau) et son accès au clavier.
+- Le format des dates, qui suit ceux déjà utilisés sur le site.
+- L'usage éventuel de l'ETag renvoyé par le serveur : ce n'est pas demandé.
+
+### 14.11 Vérification avec les vraies données
+- Les 5 jeux du 14.3 sont signalés, avec ces nombres, et aucun autre.
+- Gran Turismo Sport : 4 trophées en rouge, 3 en vert avec « ! ». Final Fantasy XV : 10 trophées marqués, dans les groupes 004 et 007.
+- « Not 100% » avec « Without unobtainable » donne 40 jeux, « With unobtainable » 5.
+- « Show all » affiche les 266 jeux.
+- Une adresse invalide ou inaccessible affiche l'échec et ne change aucun repère.

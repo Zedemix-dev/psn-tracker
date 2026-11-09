@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup unobtainable v1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0F1631; --surface:rgba(255,255,255,.07); --surface-2:rgba(255,255,255,.12); --line:rgba(255,255,255,.13);
+  --text:#F3F5FB; --muted:#A9B3CB; --accent:#5AA9FF; --done:#D3E2FF;
+  --plat:#D3E2FF; --gold:#F2C462; --silver:#C9D0DA; --bronze:#DE9563;
+  --earned:#3DBE6B; --earned-text:#93E2AE;
+  --font:"Sora",sans-serif; --r-panel:14px; --r-chip:8px;
+  --rank-s:#667FB2; --rank-a:#008000; --rank-b:#7B9E00; --rank-c:#A68E00; --rank-d:#A66A00; --rank-e:#FF4100; --rank-f:#EE0000;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:linear-gradient(160deg,#1a2550,#0F1631 60%);background-attachment:fixed;color:var(--text);font-family:var(--font);font-size:14px;line-height:1.4;-webkit-font-smoothing:antialiased;padding:20px 0 60px}
+img{display:block}
+button{font:inherit;color:inherit}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1100px;margin:0 auto;padding:0 16px}
+.glass{background:var(--surface);border:1px solid var(--line);backdrop-filter:blur(18px)}
+.panel{border-radius:var(--r-panel);overflow:hidden}
+.panel-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:12px 16px 10px}
+.panel-head h2{margin:0;font-size:15px;font-weight:600;line-height:1.2}
+.panel-head .aside{font-size:12px;color:var(--muted)}
+.ph-left{display:flex;align-items:center;gap:16px}
+.toggle{display:inline-flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);cursor:pointer;user-select:none}
+.toggle input{position:absolute;opacity:0;width:1px;height:1px}
+.toggle .track{position:relative;width:30px;height:17px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line)}
+.toggle .track::after{content:"";position:absolute;top:2px;left:2px;width:11px;height:11px;border-radius:50%;background:#fff}
+
+/* Mockup annotations (French, not part of the site) */
+.anno{margin:26px 2px 8px;font-size:12.5px;color:var(--muted)}
+.anno b{color:var(--text);font-weight:600}
+.anno:first-child{margin-top:0}
+.sub-anno{margin:14px 2px 6px;font-size:12px;color:var(--muted)}
+
+/* Games list */
+.head-right{display:flex;align-items:center;gap:10px}
+.show-all{height:24px;padding:0 10px;border-radius:999px;border:1px solid var(--line);background:var(--surface-2);font-size:11.5px;font-weight:600;cursor:pointer}
+.show-all:hover{background:rgba(255,255,255,.2)}
+.show-all:disabled{opacity:.6;cursor:default}
+.games-tools{display:flex;gap:6px;padding:0 16px 10px;flex-wrap:wrap}
+.select,.search{height:30px;border:1px solid var(--line);background:var(--surface-2);color:var(--text);border-radius:var(--r-chip);padding:0 10px;font-size:12px;display:inline-flex;align-items:center;gap:6px}
+select.select{font-family:inherit;appearance:none;-webkit-appearance:none;cursor:pointer;padding-right:26px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill='none' stroke='%23F3F5FB' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' d='M3 4.5L6 7.5 9 4.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center;background-size:10px 10px}
+select.select option{background:#0F1631;color:var(--text)}
+select.select.on{border-color:var(--accent)}
+.search{flex:1;min-width:140px;color:var(--muted)}
+.game{display:grid;grid-template-columns:60px minmax(0,1fr) minmax(280px,40%) 22px;align-items:center;gap:14px;padding:9px 16px;border-top:1px solid rgba(255,255,255,.08)}
+.game:hover{background:rgba(255,255,255,.04)}
+.gtext{min-width:0}
+.gtitle{display:flex;align-items:center;gap:8px;min-width:0}
+.game h3{margin:0;min-width:0;font-size:15px;font-weight:600;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.game-cover{width:60px;height:60px;border-radius:9px;object-fit:cover;background:var(--surface-2)}
+.game-cover.icon{object-fit:contain;background:#0B1022}
+.game-meta{display:flex;align-items:center;gap:8px;margin-top:3px;font-size:12px;line-height:1.3;color:var(--muted);white-space:nowrap}
+.game-meta .sep{width:1px;height:11px;background:rgba(255,255,255,.28)}
+.platform{font-size:10px;font-weight:700;line-height:1;padding:2px 5px;border-radius:4px;border:1px solid var(--line);color:var(--text)}
+.right{display:flex;flex-direction:column;gap:9px;min-width:0}
+.chips{display:flex;justify-content:center;gap:4px;padding-right:44px}
+.chip{display:inline-flex;align-items:center;justify-content:center;gap:3px;min-width:54px;font-size:12px;font-weight:600;padding:3px 4px;border-radius:6px;background:var(--surface-2);font-variant-numeric:tabular-nums}
+.chip svg{width:11px;height:11px}
+.plat svg{color:var(--plat)} .gold svg{color:var(--gold)} .silver svg{color:var(--silver)} .bronze svg{color:var(--bronze)}
+.progress{display:flex;align-items:center;gap:8px}
+.bar{flex:1;height:6px;border-radius:3px;background:var(--surface-2);overflow:hidden}
+.bar i{display:block;height:100%}
+.pct{font-size:12px;font-weight:600;width:36px;text-align:right;font-variant-numeric:tabular-nums}
+.status{display:grid;place-items:center}
+.status svg{width:20px;height:20px}
+.status .check{color:var(--done)}
+.status img.pi{width:28px;height:28px;object-fit:contain}
+.status img.pi.miss{filter:grayscale(1) brightness(.8);opacity:.35}
+.load-more{padding:14px;text-align:center;color:var(--muted);font-size:12px;border-top:1px solid rgba(255,255,255,.08)}
+
+/* The "!" marker and its tooltip */
+.unob{position:relative;flex:none;display:inline-block;font-size:10px;font-weight:800;line-height:1;padding:2px 6px;border-radius:4px;border:1px solid color-mix(in srgb,var(--rank-f) 70%,transparent);background:color-mix(in srgb,var(--rank-f) 28%,transparent);color:#FFC2BC;cursor:help;font-style:normal}
+.unob .tip{display:none;position:absolute;left:0;bottom:calc(100% + 7px);z-index:10;width:270px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:#0B1022;box-shadow:0 8px 22px rgba(0,0,0,.5);color:var(--text);font-size:12px;font-weight:400;line-height:1.4;white-space:normal;cursor:default}
+.unob .tip b{display:block;font-weight:600}
+.unob .tip span{display:block;margin-top:2px;color:var(--muted)}
+.unob:hover .tip,.unob:focus .tip{display:block}
+.unob.demo .tip{display:block}
+
+/* Game page */
+.tools{display:flex;gap:6px;padding:0 16px 12px;flex-wrap:wrap}
+.unob-note{display:flex;align-items:flex-start;gap:10px;padding:10px 16px;border-top:1px solid var(--line);background:color-mix(in srgb,var(--rank-f) 9%,transparent);font-size:13px}
+.unob-note .unob{margin-top:2px;cursor:default}
+.unob-note b{font-weight:600}
+.unob-note .why{margin-top:1px;font-size:12.5px;color:var(--muted)}
+.unob-note a{color:var(--accent);text-decoration:none}
+.unob-note a:hover{text-decoration:underline}
+.trophy{display:grid;grid-template-columns:56px minmax(0,1fr) 116px 92px 30px;gap:14px;align-items:center;min-height:66px;padding:5px 16px 5px 5px;border-top:1px solid rgba(255,255,255,.06)}
+.trophy img.ic{width:56px;height:56px;border-radius:10px;object-fit:cover;background:var(--surface-2)}
+.trophy.earned{background:color-mix(in srgb,var(--earned) 14%,transparent)}
+.trophy.earned img.ic{box-shadow:0 0 0 2px var(--earned)}
+.trophy.lost{background:color-mix(in srgb,var(--rank-f) 14%,transparent)}
+.trophy.lost img.ic{box-shadow:0 0 0 2px var(--rank-f)}
+.trophy .n{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600;line-height:1.3}
+.trophy .d{font-size:12.5px;line-height:1.35;color:var(--muted);margin-top:2px}
+.when{text-align:right;font-size:12.5px;line-height:1.3;color:var(--earned-text);font-variant-numeric:tabular-nums}
+.when small{display:block;font-size:11.5px;opacity:.8}
+.rate{text-align:right;font-size:11px;line-height:1.3;color:var(--muted)}
+.rate b{display:block;font-size:15px;font-weight:600;line-height:1.15;color:var(--text);font-variant-numeric:tabular-nums}
+img.ti{width:30px;height:30px;object-fit:contain}
+.note-samples{display:flex;flex-direction:column;gap:6px}
+.note-samples .unob-note{border:1px solid var(--line);border-radius:10px}
+
+/* Settings */
+.set-body{display:flex;flex-direction:column;gap:12px;padding:0 16px 16px}
+.set-row{display:flex;flex-direction:column;align-items:flex-start;gap:8px}
+.set-label{font-size:12px;color:var(--muted)}
+.set-input{width:100%;max-width:520px;height:32px;border:1px solid var(--line);background:var(--surface-2);color:var(--text);border-radius:var(--r-chip);padding:0 10px;font:inherit;font-size:13px}
+.set-btn{height:32px;padding:0 14px;border-radius:var(--r-chip);border:1px solid var(--accent);background:var(--accent);color:#0F1631;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.set-status{margin:0;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.set-badge{font-size:12px;font-weight:600;padding:3px 10px;border-radius:999px;background:var(--surface-2)}
+.set-badge.valid{color:#7BE0A4}
+.set-badge.expired{color:#FF8A8A}
+.set-muted{font-size:12px;color:var(--muted)}
+
+@media (max-width:760px){
+  .game{grid-template-columns:60px minmax(0,1fr) 22px}
+  .right{grid-column:1/-1;grid-row:2}
+  .chips{justify-content:flex-start;padding-right:0;flex-wrap:wrap}
+  .trophy{grid-template-columns:48px minmax(0,1fr) 26px;gap:10px}
+  .trophy .when,.trophy .rate{display:none}
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><symbol id="cup" viewBox="0 0 24 24"><path fill="currentColor" d="M7 3h10v5a5 5 0 0 1-4 4.9V17h3v3H8v-3h3v-4.1A5 5 0 0 1 7 8V3zM4 5h2v3.4A3 3 0 0 1 4 5.6V5zm14 0h2v.6a3 3 0 0 1-2 2.8V5z"/></symbol></defs></svg>
+<main class="wrap">
+
+<p class="anno"><b>1. Liste Games</b> : passe la souris sur un « ! ». Essaie aussi « Not 100% » avec « Without unobtainable », puis « Show all ».</p>
+<section class="panel glass" aria-label="Games">
+  <div class="panel-head">
+    <div class="ph-left"><h2>Games</h2><span class="toggle"><span class="track" aria-hidden="true"></span>Hide 0% games</span></div>
+    <div class="head-right"><button type="button" class="show-all" id="show-all">Show all</button><span class="aside" id="games-count">266 games</span></div>
+  </div>
+  <div class="games-tools">
+    <select class="select" id="f-state" aria-label="Filter by status"><option value="all">All</option><option value="not100">Not 100%</option></select>
+    <select class="select" aria-label="Filter by platform"><option>All platforms</option></select>
+    <select class="select" aria-label="Sort by"><option>Last trophy</option></select>
+    <select class="select" id="f-unob" aria-label="Filter by unobtainable trophies"><option value="off">Unobtainable</option><option value="with">With unobtainable</option><option value="without">Without unobtainable</option></select>
+    <span class="search">Search games</span>
+  </div>
+  <div id="games"></div>
+  <div class="load-more" id="load-more">The next 50 games load as you scroll down</div>
+</section>
+
+<p class="anno"><b>2. Page d'un jeu</b> : Gran Turismo Sport, liste raccourcie aux trophées utiles pour l'exemple.</p>
+<section class="panel glass" aria-label="Trophies">
+  <div class="panel-head"><h2>Trophies</h2></div>
+  <div class="tools"><select class="select" aria-label="Show"><option>All trophies</option></select><select class="select" aria-label="Sort"><option>PSN order</option></select></div>
+  <div class="unob-note"><i class="unob">!</i><div><b>7 unobtainable trophies</b>, 4 you don't have
+    <div class="why">The servers closed on January 31st, 2024: <a href="#" onclick="return false">more info.</a></div></div></div>
+  <div id="trophies"></div>
+</section>
+
+<p class="sub-anno">Le même bandeau sur tes autres jeux concernés :</p>
+<div class="note-samples">
+  <div class="unob-note glass"><i class="unob">!</i><div><b>10 unobtainable trophies</b>, you have them all
+    <div class="why">Comrades trophies broken since patch v1.27. <a href="#" onclick="return false">Patch downgrade is possible.</a> CN stack is unaffected.</div></div></div>
+  <div class="unob-note glass"><i class="unob">!</i><div><b>All 37 trophies are unobtainable</b>, 13 you don't have
+    <div class="why">Online servers shut down on November 27th, 2017.</div></div></div>
+</div>
+
+<p class="anno"><b>3. Settings</b> : nouveau bloc, après « PSN token ».</p>
+<section class="panel glass" aria-label="Unobtainable trophies">
+  <div class="panel-head"><h2>Unobtainable trophies</h2></div>
+  <div class="set-body">
+    <p class="set-status"><span class="set-badge valid">Up to date</span><span class="set-muted">Downloaded today at 03:12 · 1,622 games in the list · 5 of yours</span></p>
+    <form class="set-row" onsubmit="return false">
+      <label class="set-label" for="list-url">List address</label>
+      <input class="set-input" id="list-url" value="https://psnp-plus.huskycode.dev/list.json">
+      <button class="set-btn">Save</button>
+    </form>
+  </div>
+</section>
+<p class="sub-anno">Si la liste est inaccessible, l'ancienne continue de servir :</p>
+<section class="panel glass" aria-label="Unobtainable trophies, download failed">
+  <div class="set-body" style="padding-top:14px">
+    <p class="set-status"><span class="set-badge expired">Download failed</span><span class="set-muted">Couldn't reach this address today at 03:12 · still using the list from 8 Nov 2026</span></p>
+  </div>
+</section>
+</main>
+
+<script>
+const TICON={plat:'icons/40-platinum.png',gold:'icons/40-gold.png',silver:'icons/40-silver.png',bronze:'icons/40-bronze.png'};
+const TYPE={plat:'Platinum',gold:'Gold',silver:'Silver',bronze:'Bronze'};
+const ticon=(t,cls)=>`<img class="ti ${cls||''}" src="${TICON[t]}" alt="${TYPE[t]}" title="${TYPE[t]}">`;
+const rankColor=p=>p===100?'var(--rank-s)':p>=80?'var(--rank-a)':p>=60?'var(--rank-b)':p>=40?'var(--rank-c)':p>=20?'var(--rank-d)':p>=1?'var(--rank-e)':'var(--rank-f)';
+const tier=r=>r<5?'Ultra rare':r<10?'Very rare':r<20?'Rare':r<50?'Uncommon':'Common';
+const cup=()=>`<svg aria-hidden="true"><use href="#cup"/></svg>`;
+const A='https://image.api.playstation.com/';
+
+/* Real games, in the real "Last trophy" order */
+const games=[
+ {n:'Destiny 2',p:'PS5',pr:100,c:[1,1,11,11,4,4,8,8],i:A+'vulcan/ap/rnd/202605/2700/67e26ca577583cd8189696baa2181bfc51820ecab1709869.png',l:'Last played 31 Oct 2026',h:'240h'},
+ {n:'Gran Turismo 7',p:'PS5',pr:91,c:[0,1,1,2,4,4,47,47],i:A+'vulcan/ap/rnd/202202/2806/wpHT6JXmOA9iECLZKRPRvt0U.png',l:'Last played 4 Dec 2025',h:'218h'},
+ {n:'Dauntless',p:'PS4',pr:100,c:[0,0,2,2,14,14,29,29],icon:1,i:A+'trophy/np/NPWR17865_00_000C88E39FCF2B8F761D874D8456594E3B19197234/BF60B587DC8C59C44F1CB0937A5EE3F90817D92E.PNG',u:'All 45 trophies are unobtainable',why:'The servers closed on May 29/30, 2025.'},
+ {n:'Dauntless',p:'PS5',pr:100,c:[1,1,2,2,14,14,29,29],icon:1,i:'https://psnobj.prod.dl.playstation.net/psnobj/NPWR26883_00/f9dbb3de-db47-4653-be92-239d467008e1.png',u:'All 46 trophies are unobtainable',why:'The servers closed on May 29/30, 2025.'},
+ {n:'Gran Turismo Sport',p:'PS4',pr:67,c:[0,1,1,4,3,4,31,32],i:A+'vulcan/img/rnd/202011/1019/hMkDp3eo0OSpdqe4rZj6EYJK.png',l:'Last played 26 Jun 2022',h:'323h',u:'7 unobtainable trophies',why:'The servers closed on January 31st, 2024: more info.'},
+ {n:'FINAL FANTASY XV',p:'PS4',pr:100,c:[1,1,9,9,11,11,77,77],i:A+'gs2-sec/appkgo/prod/CUSA01615_00/5/i_d0fdf4ae434e480b9536662f48df7f7180a4c75a96f410c97c76e3bd5f4ef27e/i/icon0.png',l:'Last played 8 Nov 2024',h:'356h',u:'10 unobtainable trophies',why:'Comrades trophies broken since patch v1.27. Patch downgrade is possible. CN stack is unaffected.'},
+ {n:'Red Dead Redemption 2',p:'PS4',pr:97,c:[0,1,3,3,3,4,44,44],i:A+'gs2-sec/appkgo/prod/CUSA08519_00/12/i_3da1cf7c41dc7652f9b639e1680d96436773658668c7dc3930c441291095713b/i/icon0.png',l:'Last played 23 Dec 2018',h:'300h'},
+ {n:'Marvel Heroes Omega',p:'PS4',pr:51,c:[0,1,0,3,11,17,13,16],icon:1,i:A+'trophy/np/NPWR12197_00_00F0ACC408EDE275091BF2B6AC6B8358AE8F787A1F/1030F1154CAC44604732DE27828AE413A291D871.PNG',u:'All 37 trophies are unobtainable',why:'Online servers shut down on November 27th, 2017.'},
+];
+
+/* Real counts: 266 games, 42 not at 100%, 5 flagged, of which 2 not at 100% */
+const COUNT={all:{off:266,with:5,without:261},not100:{off:42,with:2,without:40}};
+
+const chip=(cls,e,t)=>t?`<span class="chip ${cls}">${cup()}${e}/${t}</span>`:'';
+const tick=`<svg class="check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+document.getElementById('games').innerHTML=games.map(g=>{
+  const [pe,pt,ge,gt,se,st,be,bt]=g.c, earned=pe+ge+se+be, total=pt+gt+st+bt;
+  const status=pt?(pe?ticon('plat','pi'):ticon('plat','pi miss')):tick;
+  const mark=g.u?`<i class="unob" tabindex="0" aria-label="${g.u}">!<span class="tip"><b>${g.u}</b><span>${g.why}</span></span></i>`:'';
+  const played=g.l?`<div class="game-meta"><span>${g.l}</span><span class="sep"></span><span>${g.h} played</span></div>`:'';
+  return `<article class="game" data-pr="${g.pr}" data-u="${g.u?1:0}">
+    <img class="game-cover${g.icon?' icon':''}" src="${g.i}" alt="" loading="lazy">
+    <div class="gtext"><div class="gtitle"><h3>${g.n}</h3><span class="platform">${g.p}</span>${mark}</div>
+      <div class="game-meta"><span>${earned} / ${total} trophies</span></div>${played}</div>
+    <div class="right"><div class="chips">${chip('plat',pe,pt)}${chip('gold',ge,gt)}${chip('silver',se,st)}${chip('bronze',be,bt)}</div>
+      <div class="progress"><div class="bar"><i style="width:${g.pr}%;background:${rankColor(g.pr)}"></i></div><span class="pct">${g.pr}%</span></div></div>
+    <div class="status">${status}</div></article>`;
+}).join('');
+
+const rows=[...document.querySelectorAll('.game')], fState=document.getElementById('f-state'), fUnob=document.getElementById('f-unob');
+const count=document.getElementById('games-count'), showAll=document.getElementById('show-all'), loadMore=document.getElementById('load-more');
+let allShown=false;
+function update(){
+  const st=fState.value, un=fUnob.value;
+  rows.forEach(el=>{
+    let ok=true;
+    if(st==='not100'&&+el.dataset.pr===100) ok=false;
+    if(un==='with'&&el.dataset.u!=='1') ok=false;
+    if(un==='without'&&el.dataset.u==='1') ok=false;
+    el.hidden=!ok;
+  });
+  const n=COUNT[st][un], more=!allShown&&n>50;
+  count.textContent=n+' games';
+  showAll.hidden=!more; loadMore.hidden=!more;
+  fUnob.classList.toggle('on',un!=='off');
+}
+[fState,fUnob].forEach(s=>s.addEventListener('change',()=>{allShown=false;showAll.disabled=false;showAll.textContent='Show all';update()}));
+showAll.addEventListener('click',()=>{showAll.disabled=true;showAll.textContent='Loading…';setTimeout(()=>{allShown=true;update()},600)});
+update();
+
+/* Real trophies of Gran Turismo Sport */
+const B=A+'trophy/np/NPWR09921_00_003EE781881CD253436F47B136654659336BAE8773/';
+const trophies=[
+ {t:'plat',n:'Gran Turismo Platinum Trophy',d:'Acquired all Gran Turismo Sport trophies.',r:.1,u:1,i:'6619F6101AB8F928725EAC7D5EF6694F408F065C'},
+ {t:'gold',n:'Record Number of Wins',d:"Matched Michael Schumacher's record of 91 F1 victories.",r:.1,u:1,i:'2D7B3B047BEE5E5E19F081C10188C12BF8AC3F39'},
+ {t:'gold',n:'Record Number of Races',d:"Matched Rubens Barrichello's record of 322 F1 races.",r:.4,u:1,i:'7601D41CD43B3BE01A1662F325E924F007E2E341'},
+ {t:'gold',n:'Certified Genius',d:"Matched Ayrton Senna's record of 65 pole positions.",r:.1,u:1,i:'B362EEB7094D21AB4200DB7C0EB02391F5AB9F71'},
+ {t:'silver',n:'Finale',d:'Accessed the Ending Movie.',r:6.7,e:['27 Nov 2021','22:15'],i:'440083F132B19D5D36A0002FA3A29F9EE1EE088B'},
+ {t:'silver',n:'Tactical King',d:'Earned Gold in all Circuit Experiences.',r:2.2,i:'5383B94B0236E9C15336B83FACD0BBD4AE35FA2B'},
+ {t:'bronze',n:'The Charm of Customisation',d:'Showed off your first car customised with the livery editor.',r:3,u:1,e:['19 Jun 2019','20:24'],i:'E8839A777AD65B75E5059370EB0BE7ACEC472C78'},
+ {t:'bronze',n:'Master of Manners',d:'Sport Mode Open after Completing all Racing Etiquette Lessons.',r:28,u:1,e:['9 Jun 2019','13:04'],i:'7A0A093E62864CA94ED012022ACF04161FA6C109'},
+ {t:'bronze',n:'Run, Run, Run!',d:'Completed your first Daily Workout.',r:55.8,u:1,e:['7 Jun 2019','21:45'],i:'974AAC13CE6405412AF570FA92D359DF5BD8EC78'},
+];
+document.getElementById('trophies').innerHTML=trophies.map(t=>{
+  const cls=t.e?' earned':t.u?' lost':'';
+  const tip=t.e?'No longer obtainable. You already have it.':'No longer obtainable.';
+  const mark=t.u?`<i class="unob" tabindex="0" aria-label="${tip}">!<span class="tip"><b>${tip}</b></span></i>`:'';
+  return `<div class="trophy${cls}"><img class="ic" src="${B+t.i}.PNG" alt="" loading="lazy">
+    <div><div class="n"><span>${t.n}</span>${mark}</div><div class="d">${t.d}</div></div>
+    <div class="when">${t.e?`${t.e[0]}<small>${t.e[1]}</small>`:''}</div>
+    <div class="rate"><b>${t.r.toFixed(2)}%</b>${tier(t.r)}</div>${ticon(t.t)}</div>`;
+}).join('');
+</script>
+</body>
+</html>

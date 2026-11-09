@@ -18,6 +18,7 @@ Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un aut
 | `docs/superpowers/specs/2026-11-08-psn-tracker-maquette-jeu.html` | Maquette validée de la page d'un jeu (v5). |
 | `docs/superpowers/plans/2026-11-08-game-detail.md` | Le plan de la page d'un jeu (tâches 1 à 21, dont 13 à 21 ajoutées en cours de route). Terminé. |
 | `docs/superpowers/plans/2026-11-08-phase1-suivis.md` | Points mis de côté et vérifications au premier déploiement. |
+| `docs/superpowers/specs/2026-11-09-psn-tracker-maquette-nonobt.html` | Maquette validée des trophées non obtenables (v1). |
 | `deploy/README.md` | Guide pas à pas du déploiement sur le NAS. |
 | `.superpowers/brainstorm/maquettes/` | Toutes les maquettes intermédiaires : `accueil-v1` à `v12`, `jeu-v1` à `v6` (la v6 compare les images de groupe : carrées ou absentes). |
 
@@ -69,13 +70,13 @@ Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un aut
    - Juste après la première publication, donner une seule fois le rôle **Admin** au dépôt dans « Manage Actions access » du package GHCR (étape 1.5).
    - Faire les vérifications du premier déploiement listées dans `docs/superpowers/plans/2026-11-08-phase1-suivis.md`.
    - À la première synchro de cette version, toutes les listes PS5 sont rechargées une fois (migration 0005), ce qui la rallonge de quelques minutes.
-2. **Jeux aux trophées non obtenables** (demandé le 8 novembre 2026, spec section 14) : la prochaine fonctionnalité, sur la branche `feat/unobtainable`. Elle commence par son propre brainstorming, avec maquettes.
+2. **Jeux aux trophées non obtenables** : en cours sur la branche `feat/unobtainable`. Cadrage fait le 9 novembre 2026, maquette validée, décisions dans la **spec, section 14**. Étape suivante : le plan dans `docs/superpowers/plans/`, après relecture de la section 14 par l'utilisateur.
    - Un bouton dans l'en-tête de la liste Games pour afficher tous les jeux d'un coup, sans défiler.
    - Un filtre séparé « With unobtainable » / « Without unobtainable », désactivé par défaut, qui s'ajoute aux autres filtres.
-   - Un « ! » après le badge PS4/PS5 des jeux concernés dans la liste Games, avec une infobulle qui donne le nombre de trophées non obtenables.
-   - Sur la page d'un jeu, un « ! » à côté de chaque trophée non obtenable. Le trophée a une légère surbrillance rouge s'il n'est pas obtenu, et garde sa surbrillance verte s'il l'est.
+   - Un « ! » après le badge PS4/PS5 des jeux concernés dans la liste Games, avec une infobulle qui donne le nombre de trophées non obtenables et la cause.
+   - Sur la page d'un jeu, un bandeau avec le nombre et la cause, et un « ! » à côté de chaque trophée non obtenable. Le trophée a une légère surbrillance rouge s'il n'est pas obtenu, et garde sa surbrillance verte s'il l'est.
    - Dans Settings, l'adresse de la liste des jeux concernés, modifiable. Adresse actuelle : `https://psnp-plus.huskycode.dev/list.json`.
-   - La liste ne donne pas l'identifiant PSN des jeux : rapprochement par nom et plateforme (5 de tes jeux reconnus le 8 novembre 2026).
+   - La liste ne donne pas l'identifiant PSN des jeux : rapprochement par nom et plateforme (5 de tes jeux reconnus, aucun manqué, vérifié le 9 novembre 2026).
 3. **Pages suivantes**, chacune avec **son propre brainstorming** (spec, section 3) :
    - **Plat Wall** ;
    - **Trophy Log** ;
