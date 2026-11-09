@@ -43,7 +43,7 @@ Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un aut
 ### Sur la branche `feat/game-detail` (en attente de fusion)
 - **Page de détail d'un jeu** (`/games/[id]`, spec 8.9), conforme à la maquette v5 :
   - bannière du jeu (image 4K du PSN) avec son logo, ou bannière choisie à la main pour 5 jeux anciens, ou rien sur fond uni ;
-  - bandeau, liste des trophées avec groupes DLC (images carrées partout : icônes d’origine en PS5, jaquette du jeu en PS4), filtre et tri, compteurs des trophées à paliers ;
+  - bandeau, liste des trophées avec groupes DLC (images carrées partout : icônes d’origine en PS5, jaquette du jeu en PS4 ; une image non carrée est posée sur une tuile carrée qui prend la couleur de son bord, comme Marvel Heroes Omega), filtre et tri, compteurs des trophées à paliers ;
   - colonne de 320 px : jaquette, totaux et points, raretés, éditeur, genre, date de sortie, liens PowerPyx et psnprofiles, Timeline.
 - **Synchro** :
   - concept du jeu, catalogue PSN (éditeur, genres, date de sortie) ;
