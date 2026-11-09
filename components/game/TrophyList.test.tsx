@@ -168,6 +168,7 @@ describe("TrophyList", () => {
     expect(row.querySelector(".unob")).toHaveTextContent("!");
     expect(row.querySelector(".unob .tip")).toHaveTextContent("No longer obtainable.");
     expect(row.querySelector(".unob .tip")).not.toHaveTextContent("already have");
+    expect(row.querySelector(".unob")).toHaveAttribute("tabindex", "0");
   });
 
   it("keeps green for an earned one", () => {

@@ -328,6 +328,14 @@ describe("GameList", () => {
       expect(rows()).toBe(50);
     });
 
+    it("makes one request when Show all races with scrolling", async () => {
+      fetchMock.mockReturnValueOnce(new Promise<Response>(() => {}));
+      render(<GameList snapshotKey="k" initial={{ items: games(1, 50), total: 60 }} query={query} />);
+      await intersect();
+      await act(async () => showAll().click());
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
     it("makes one request when scrolling races with Show all", async () => {
       let resolve!: (r: Response) => void;
       fetchMock.mockReturnValueOnce(new Promise<Response>((r) => (resolve = r)));

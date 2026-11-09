@@ -17,10 +17,14 @@ function parseEntry(id: string, raw: unknown): UnobtainableEntry | null {
   if (typeof title !== "string" || title === "") return null;
   if (!Array.isArray(trophies) || trophies.length === 0) return null;
   if (!trophies.every((t) => Number.isInteger(t) && (t as number) >= 0)) return null;
+  const platformList = Array.isArray(platforms) ? platforms.filter((p): p is string => typeof p === "string") : [];
+  const strings = [id, title, ...platformList, ...(typeof note === "string" ? [note] : [])];
+  // Postgres refuses NUL characters in jsonb.
+  if (strings.some((s) => s.includes("\u0000"))) return null;
   return {
     id,
     title,
-    platforms: Array.isArray(platforms) ? platforms.filter((p): p is string => typeof p === "string") : [],
+    platforms: platformList,
     trophies: trophies as number[],
     note: typeof note === "string" && note !== "" ? note : null,
     timestamp: typeof timestamp === "number" && Number.isFinite(timestamp) ? timestamp : null,

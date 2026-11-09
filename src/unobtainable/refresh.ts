@@ -65,22 +65,34 @@ export async function refreshUnobtainableListIfDue(
     .select({ url: settings.unobtainableListUrl, requestedAt: settings.unobtainableRequestedAt })
     .from(settings)
     .where(eq(settings.id, 1));
-  const [list] = await db.select().from(unobtainableList).where(eq(unobtainableList.id, 1));
+  const [list] = await db
+    .select({ downloadedAt: unobtainableList.downloadedAt, attemptedAt: unobtainableList.attemptedAt })
+    .from(unobtainableList)
+    .where(eq(unobtainableList.id, 1));
   if (!s) return;
   if (!isListDue({ requestedAt: s.requestedAt, downloadedAt: list?.downloadedAt ?? null, attemptedAt: list?.attemptedAt ?? null }, now)) {
     return;
   }
 
   const result = await downloadList(s.url, fetchImpl);
+  let failure: string | null = result.ok ? null : result.error;
   if (result.ok) {
-    const set = { entries: result.entries, downloadedAt: now, attemptedAt: now, error: null };
-    await db
-      .insert(unobtainableList)
-      .values({ id: 1, ...set })
-      .onConflictDoUpdate({ target: unobtainableList.id, set });
-    await applyUnobtainable(db);
-  } else {
-    const set = { attemptedAt: now, error: result.error };
+    try {
+      // One transaction: a list that cannot be stored or applied leaves the previous one in place.
+      await db.transaction(async (tx) => {
+        const set = { entries: result.entries, downloadedAt: now, attemptedAt: now, error: null };
+        await tx
+          .insert(unobtainableList)
+          .values({ id: 1, ...set })
+          .onConflictDoUpdate({ target: unobtainableList.id, set });
+        await applyUnobtainable(tx);
+      });
+    } catch {
+      failure = LIST_INVALID;
+    }
+  }
+  if (failure !== null) {
+    const set = { attemptedAt: now, error: failure };
     await db
       .insert(unobtainableList)
       .values({ id: 1, entries: [], ...set })

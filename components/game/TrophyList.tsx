@@ -23,6 +23,7 @@ function Row({ t }: { t: TrophyRowData }) {
           {t.name}
           {t.unobtainable && (
             <UnobtainableMark
+              focusable
               label="No longer obtainable."
               detail={t.earned ? "You already have it." : null}
             />

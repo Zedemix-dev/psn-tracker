@@ -1,7 +1,15 @@
 /** The red "!" with its tooltip: what is unobtainable and, when known, why. */
-export function UnobtainableMark({ label, detail }: { label: string; detail?: string | null }) {
+export function UnobtainableMark({
+  label,
+  detail,
+  focusable = false,
+}: {
+  label: string;
+  detail?: string | null;
+  focusable?: boolean;
+}) {
   return (
-    <i className="unob" role="img" aria-label={detail ? `${label} ${detail}` : label}>
+    <i className="unob" role="img" tabIndex={focusable ? 0 : undefined} aria-label={detail ? `${label} ${detail}` : label}>
       !
       <span className="tip">
         <b>{label}</b>

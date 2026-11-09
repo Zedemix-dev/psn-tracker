@@ -104,7 +104,7 @@ export async function saveUnobtainableListUrl(_prev: FormResult | null, form: Fo
   try {
     await saveUnobtainableUrl(await getDb(), parsed.data, new Date());
     revalidatePath("/", "layout");
-    return { ok: true, message: "Saved. Downloading the list…" };
+    return { ok: true, message: "Saved." };
   } catch (e) {
     return fail("saveUnobtainableListUrl", e);
   }

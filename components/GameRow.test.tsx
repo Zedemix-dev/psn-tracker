@@ -138,6 +138,7 @@ describe("GameRow", () => {
     expect(mark).toHaveAttribute("aria-label", "7 unobtainable trophies Closed.");
     expect(mark.textContent).toContain("7 unobtainable trophies");
     expect(mark.textContent).toContain("Closed.");
+    expect(mark).not.toHaveAttribute("tabindex");
     const platform = container.querySelector(".platform")!;
     expect(platform.compareDocumentPosition(mark) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });

@@ -7,6 +7,13 @@ import { LIST_INVALID, LIST_UNREACHABLE } from "@/src/unobtainable/list";
 import { downloadList, isListDue, refreshUnobtainableListIfDue } from "@/src/unobtainable/refresh";
 import { createTestDb } from "@/tests/helpers/db";
 
+const applyMock = vi.hoisted(() => vi.fn());
+vi.mock("@/src/unobtainable/apply", async (importOriginal) => {
+  const original = await importOriginal<typeof import("@/src/unobtainable/apply")>();
+  applyMock.mockImplementation(original.applyUnobtainable);
+  return { applyUnobtainable: (...a: Parameters<typeof original.applyUnobtainable>) => applyMock(...a) };
+});
+
 const MIN = 60_000;
 const H = 60 * MIN;
 const now = new Date("2026-11-09T12:00:00Z");
@@ -137,6 +144,20 @@ describe("refreshUnobtainableListIfDue", () => {
     expect(l.error).toBe(LIST_UNREACHABLE);
     expect(l.downloadedAt).toBeNull();
     expect(l.attemptedAt).toEqual(now);
+  });
+
+  it("records a failure when storing the list throws", async () => {
+    await refreshUnobtainableListIfDue(db, now, okFetch());
+    const now2 = new Date(now.getTime() + MIN);
+    await saveUnobtainableUrl(db, "https://x.example/l", now2);
+    applyMock.mockRejectedValueOnce(new Error("boom"));
+    await refreshUnobtainableListIfDue(db, now2, okFetch());
+    const l = await list();
+    expect(l.attemptedAt).toEqual(now2);
+    expect(l.error).toBe(LIST_INVALID);
+    expect(l.downloadedAt).toEqual(now);
+    expect(l.entries).toHaveLength(1);
+    expect(await requested()).toBeNull();
   });
 
   it("does nothing when not due", async () => {

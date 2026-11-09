@@ -42,6 +42,11 @@ describe("parseList", () => {
     expect(res.ok && res.entries.map((e) => e.id)).toEqual(["ok"]);
   });
 
+  it("skips entries containing a NUL character", () => {
+    const res = parseList({ version: 2, list: { a: { ...entry, title: "a\u0000b" }, ok: entry } });
+    expect(res.ok && res.entries).toHaveLength(1);
+  });
+
   it("refuses a list with no valid entry", () =>
     expect(parseList({ version: 2, list: { a: { title: 3 } } })).toEqual({ ok: false, error: LIST_INVALID }));
 });
