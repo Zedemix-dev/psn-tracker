@@ -9,7 +9,7 @@ export async function loadPlatinums(db: Db): Promise<Platinum[]> {
     .select({
       titleId: titles.npCommunicationId,
       game: titles.name,
-      iconUrl: titles.iconUrl,
+      iconUrl: trophies.iconUrl,
       earnedAt: trophies.earnedAt,
       rate: trophies.earnedRate,
       platforms: titles.platforms,
