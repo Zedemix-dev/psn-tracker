@@ -54,6 +54,7 @@ export default async function GamePage({
           <TrophyList
             groups={detail.groups}
             trophies={detail.trophies}
+            unobtainable={detail.unobtainable}
             initialShow={view.show}
             initialSort={view.sort}
           />

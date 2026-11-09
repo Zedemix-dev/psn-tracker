@@ -10,6 +10,7 @@ export async function GET(req: Request) {
   }
   const db = await getDb();
   const { hideZero } = await getSettings(db);
-  const query = parseGameQuery(new URL(req.url).searchParams);
-  return NextResponse.json(await queryGames(db, query, { hideZero }));
+  const { searchParams } = new URL(req.url);
+  const query = parseGameQuery(searchParams);
+  return NextResponse.json(await queryGames(db, query, { hideZero, all: searchParams.get("all") === "1" }));
 }

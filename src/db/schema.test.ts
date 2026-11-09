@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createTestDb } from "@/tests/helpers/db";
-import { profile, settings, titles, trophies } from "@/src/db/schema";
+import { profile, settings, titles, trophies, unobtainableList } from "@/src/db/schema";
 
 describe("schema", () => {
   it("applies migrations and seeds the singleton rows", async () => {
@@ -46,5 +46,33 @@ describe("schema", () => {
     expect(typeof tr.progressTarget).toBe("number");
     expect(tr.progress).toBe(3626);
     expect(tr.progressedAt?.getTime()).toBe(progressedAt.getTime());
+  });
+
+  it("defaults the unobtainable columns", async () => {
+    const db = await createTestDb();
+    await db.insert(titles).values({
+      npCommunicationId: "NPWR00001_00",
+      npServiceName: "trophy2",
+      name: "Test Game",
+      iconUrl: "https://example.com/icon.png",
+      platforms: ["PS5"],
+      trophySetVersion: "01.00",
+    });
+    await db.insert(trophies).values({
+      titleId: "NPWR00001_00",
+      trophyId: 1,
+      type: "gold",
+      name: "Grind",
+      iconUrl: "https://example.com/t.png",
+    });
+    const [s] = await db.select().from(settings);
+    const [title] = await db.select().from(titles);
+    const [trophy] = await db.select().from(trophies);
+    expect(s.unobtainableListUrl).toBe("https://psnp-plus.huskycode.dev/list.json");
+    expect(s.unobtainableRequestedAt).toBeNull();
+    expect(title.unobtainableCount).toBe(0);
+    expect(title.unobtainableNote).toBeNull();
+    expect(trophy.unobtainable).toBe(false);
+    expect(await db.select().from(unobtainableList)).toEqual([]);
   });
 });

@@ -2,12 +2,13 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { BannerForm } from "@/components/SettingsForms";
+import { BannerForm, UnobtainableForm } from "@/components/SettingsForms";
 
 vi.mock("@/app/(site)/(banner)/settings/actions", () => ({
   resetBanner: vi.fn(),
   saveBannerPosition: vi.fn(),
   saveNpsso: vi.fn(),
+  saveUnobtainableListUrl: vi.fn(),
   uploadBanner: vi.fn(),
 }));
 
@@ -24,5 +25,13 @@ describe("BannerForm", () => {
     expect(screen.getByText("Automatic — last played game (Cyberpunk 2077)")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Use automatic banner" })).toBeInTheDocument();
     expect(screen.getByLabelText("Visible part")).toBeDisabled();
+  });
+});
+
+describe("UnobtainableForm", () => {
+  it("shows the address and Save", () => {
+    render(<UnobtainableForm url="https://x.example/list.json" />);
+    expect(screen.getByLabelText("List address")).toHaveValue("https://x.example/list.json");
+    expect(screen.getByRole("button", { name: "Save" })).toBeInTheDocument();
   });
 });

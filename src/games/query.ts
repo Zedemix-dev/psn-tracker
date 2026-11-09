@@ -7,6 +7,7 @@ import { loadImageMap } from "@/src/sync/images";
 
 export const GAME_STATES = ["all", "100", "not100", "notFinished", "0", "platinum", "platinumNot100"] as const;
 export const GAME_PLATFORMS = ["all", "PS4", "PS5"] as const;
+export const GAME_UNOBTAINABLE = ["off", "with", "without"] as const;
 export const GAME_SORTS = [
   "lastPlayed",
   "lastTrophy",
@@ -22,15 +23,19 @@ export const GAME_SORTS = [
 export type GameState = (typeof GAME_STATES)[number];
 export type GamePlatform = (typeof GAME_PLATFORMS)[number];
 export type GameSort = (typeof GAME_SORTS)[number];
+export type GameUnobtainable = (typeof GAME_UNOBTAINABLE)[number];
 export type GameQuery = {
   state: GameState;
   platform: GamePlatform;
   sort: GameSort;
   q: string;
+  unobtainable: GameUnobtainable;
   offset: number;
 };
 
 export const PAGE_SIZE = 50;
+/** Safety cap for the "Show all" request. */
+const ALL_LIMIT = 10_000;
 
 function pick<T extends string>(allowed: readonly T[], value: string | null, fallback: T): T {
   return allowed.includes(value as T) ? (value as T) : fallback;
@@ -43,6 +48,7 @@ export function parseGameQuery(params: URLSearchParams): GameQuery {
     platform: pick(GAME_PLATFORMS, params.get("platform"), "all"),
     sort: pick(GAME_SORTS, params.get("sort"), "lastTrophy"),
     q: (params.get("q") ?? "").trim(),
+    unobtainable: pick(GAME_UNOBTAINABLE, params.get("unobtainable"), "off"),
     offset: Number.isFinite(offset) && offset > 0 ? offset : 0,
   };
 }
@@ -102,6 +108,8 @@ function filtersFor(query: GameQuery, hideZero: boolean): SQL | undefined {
       conds.push(gt(titles.earnedPlatinum, 0), lt(titles.progress, 100));
       break;
   }
+  if (query.unobtainable === "with") conds.push(gt(titles.unobtainableCount, 0));
+  if (query.unobtainable === "without") conds.push(eq(titles.unobtainableCount, 0));
   if (query.platform !== "all") conds.push(sql`${query.platform} = any(${titles.platforms})`);
   if (query.q) conds.push(ilike(titles.name, `%${escapeLike(query.q)}%`));
   return and(...conds);
@@ -110,7 +118,7 @@ function filtersFor(query: GameQuery, hideZero: boolean): SQL | undefined {
 export async function queryGames(
   db: Db,
   query: GameQuery,
-  { hideZero }: { hideZero: boolean },
+  { hideZero, all = false }: { hideZero: boolean; all?: boolean },
 ): Promise<{ items: GameRowData[]; total: number }> {
   const where = filtersFor(query, hideZero);
   const [rows, [count], imageMap, siblings] = await Promise.all([
@@ -119,7 +127,7 @@ export async function queryGames(
       .from(titles)
       .where(where)
       .orderBy(orderFor(query.sort), asc(sql`lower(${titles.name})`), asc(titles.npCommunicationId))
-      .limit(PAGE_SIZE)
+      .limit(all ? ALL_LIMIT : PAGE_SIZE)
       .offset(Math.max(0, query.offset)),
     db.select({ n: sql<number>`count(*)::int` }).from(titles).where(where),
     loadImageMap(db),

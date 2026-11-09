@@ -233,7 +233,35 @@ describe("syncTitle", () => {
   });
 });
 
+describe("syncTitle and unobtainable marks", () => {
+  it("keeps the unobtainable marks when a title is reloaded", async () => {
+    const { defs, userTrophies } = makeTrophies(3);
+    const gw = createFakePsn({ titleData: { [ID]: { groups: [makeGroup("default")], defs, userTrophies } } });
+    await syncTitle(db, gw, auth, makeRemoteTitle(), now);
+
+    await db.update(trophies).set({ unobtainable: true }).where(eq(trophies.trophyId, 1));
+    await db.update(titles).set({ unobtainableCount: 1, unobtainableNote: "x" });
+
+    await syncTitle(db, gw, auth, makeRemoteTitle(), now);
+
+    const [row] = await db.select().from(trophies).where(eq(trophies.trophyId, 1));
+    expect(row.unobtainable).toBe(true);
+    const [t] = await db.select().from(titles);
+    expect(t.unobtainableCount).toBe(1);
+    expect(t.unobtainableNote).toBe("x");
+  });
+});
+
 describe("upsertTitleRow", () => {
+  it("leaves the unobtainable summary intact", async () => {
+    await upsertTitleRow(db, makeRemoteTitle(), now);
+    await db.update(titles).set({ unobtainableCount: 2, unobtainableNote: "n" });
+    await upsertTitleRow(db, makeRemoteTitle({ name: "Renamed" }), now);
+    const [t] = await db.select().from(titles);
+    expect(t.unobtainableCount).toBe(2);
+    expect(t.unobtainableNote).toBe("n");
+  });
+
   it("does not touch cover, play time, syncedAt or groupsCheckedAt", async () => {
     await upsertTitleRow(db, makeRemoteTitle(), now);
     await db

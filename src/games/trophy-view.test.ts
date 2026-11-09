@@ -17,6 +17,7 @@ const row = (id: number, o: Partial<TrophyRowData> = {}): TrophyRowData => ({
   rateLabel: "10.00%",
   tier: "Rare",
   counter: null,
+  unobtainable: false,
   ...o,
 });
 

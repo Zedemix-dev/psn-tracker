@@ -1,6 +1,6 @@
 import { desc } from "drizzle-orm";
 import { AutoRefresh } from "@/components/AutoRefresh";
-import { BannerForm, NpssoForm } from "@/components/SettingsForms";
+import { BannerForm, NpssoForm, UnobtainableForm } from "@/components/SettingsForms";
 import { requireSession } from "@/src/auth/require-session";
 import { getDb } from "@/src/db/client";
 import { syncRuns } from "@/src/db/schema";
@@ -8,6 +8,7 @@ import { formatDate, formatDateTime, formatDuration } from "@/src/lib/format";
 import { getPageBanner } from "@/src/settings/page-banner";
 import { getSettings } from "@/src/settings/repo";
 import { getSyncStatus } from "@/src/sync/requests";
+import { getUnobtainableStatus } from "@/src/unobtainable/status";
 import { logout } from "./actions";
 
 const STATUS_LABEL = { valid: "Valid", expired: "Expired", missing: "Not connected" } as const;
@@ -16,18 +17,19 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 export default async function SettingsPage() {
   await requireSession();
   const db = await getDb();
-  const [s, runs, sync, pageBanner] = await Promise.all([
+  const [s, runs, sync, pageBanner, unobt] = await Promise.all([
     getSettings(db),
     db.select().from(syncRuns).orderBy(desc(syncRuns.startedAt), desc(syncRuns.id)).limit(20),
     getSyncStatus(db),
     getPageBanner(db),
+    getUnobtainableStatus(db),
   ]);
   const age = s.npssoSetAt ? Math.floor((Date.now() - s.npssoSetAt.getTime()) / DAY_MS) : null;
 
   return (
     <main className="wrap set-page">
       {/* Keeps the token status and the sync history live (first sync progress, 6-hourly syncs). */}
-      <AutoRefresh active={sync.status === "queued" || sync.status === "running"} />
+      <AutoRefresh active={sync.status === "queued" || sync.status === "running" || unobt.busy} />
       <section className="panel glass" aria-label="Banner">
         <div className="panel-head">
           <h2>Banner</h2>
@@ -75,6 +77,19 @@ export default async function SettingsPage() {
             <li>Copy the value of &quot;npsso&quot; (64 characters).</li>
             <li>Paste it here and save.</li>
           </ol>
+        </div>
+      </section>
+
+      <section className="panel glass" aria-label="Unobtainable trophies">
+        <div className="panel-head">
+          <h2>Unobtainable trophies</h2>
+        </div>
+        <div className="set-body">
+          <p className="set-status">
+            <span className={`set-badge ${unobt.badgeClass}`.trim()}>{unobt.badge}</span>
+            {unobt.detail && <span className="set-muted">{unobt.detail}</span>}
+          </p>
+          <UnobtainableForm url={unobt.url} />
         </div>
       </section>
 

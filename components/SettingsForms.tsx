@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState, useTransition } from "react";
-import { resetBanner, saveBannerPosition, saveNpsso, uploadBanner } from "@/app/(site)/(banner)/settings/actions";
+import { resetBanner, saveBannerPosition, saveNpsso, saveUnobtainableListUrl, uploadBanner } from "@/app/(site)/(banner)/settings/actions";
 import type { FormResult } from "@/src/settings/npsso";
 
 function Message({ result }: { result: FormResult | null }) {
@@ -134,6 +134,30 @@ export function NpssoForm() {
       />
       <button type="submit" className="set-btn" disabled={pending}>
         {pending ? "Saving…" : "Save token"}
+      </button>
+      <Message result={result} />
+    </form>
+  );
+}
+
+export function UnobtainableForm({ url }: { url: string }) {
+  const [result, save, pending] = useActionState(saveUnobtainableListUrl, null);
+  return (
+    <form action={save} className="set-row">
+      <label className="set-label" htmlFor="list-url">
+        List address
+      </label>
+      <input
+        id="list-url"
+        name="url"
+        type="text"
+        spellCheck={false}
+        defaultValue={url}
+        className="set-input"
+        required
+      />
+      <button type="submit" className="set-btn" disabled={pending}>
+        {pending ? "Saving…" : "Save"}
       </button>
       <Message result={result} />
     </form>

@@ -1,8 +1,9 @@
 "use client";
 
+import { createPortal } from "react-dom";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { GameRow } from "@/components/GameRow";
-import { gameQueryParams } from "@/components/game-query-string";
+import { SHOW_ALL_SLOT_ID, gameQueryParams } from "@/components/game-query-string";
 import { saveListSnapshot, takeListSnapshot } from "@/components/list-snapshot";
 import type { GameQuery } from "@/src/games/query";
 import type { GameRowData } from "@/src/games/row";
@@ -25,12 +26,19 @@ export function GameList({
   const [items, setItems] = useState(initial.items);
   const [total, setTotal] = useState(initial.total);
   const [failed, setFailed] = useState(false);
+  const [loadingAll, setLoadingAll] = useState(false);
+  const [slot, setSlot] = useState<HTMLElement | null>(null);
   const busy = useRef(false);
   const sentinel = useRef<HTMLDivElement>(null);
   const pendingScroll = useRef<number | null>(null);
   const loaded = items.length;
   const more = loaded < total;
-  const { state, platform, sort, q } = query;
+  const { state, platform, sort, q, unobtainable } = query;
+
+  // The "Show all" slot lives in the server-rendered header; look it up once mounted.
+  useEffect(() => {
+    setSlot(document.getElementById(SHOW_ALL_SLOT_ID));
+  }, []);
 
   // Back from a game page: put the loaded rows and the scroll position back. Done after mount, so
   // the server-rendered first page still hydrates cleanly.
@@ -60,27 +68,35 @@ export function GameList({
     }
   };
 
-  const loadMore = useCallback(async () => {
-    if (busy.current) return;
-    busy.current = true;
-    setFailed(false);
-    try {
-      const params = gameQueryParams({ state, platform, sort, q });
-      params.set("offset", String(loaded));
-      const res = await fetch(`/api/games?${params}`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const page: Page = await res.json();
-      setItems((prev) => {
-        const seen = new Set(prev.map((r) => r.id));
-        return [...prev, ...page.items.filter((r) => !seen.has(r.id))];
-      });
-      setTotal(page.total);
-    } catch {
-      setFailed(true);
-    } finally {
-      busy.current = false;
-    }
-  }, [state, platform, sort, q, loaded]);
+  // One loader for the next page (scrolling, Retry) and for the whole rest (Show all).
+  const load = useCallback(
+    async (all: boolean) => {
+      if (busy.current) return;
+      busy.current = true;
+      setFailed(false);
+      if (all) setLoadingAll(true);
+      try {
+        const params = gameQueryParams({ state, platform, sort, q, unobtainable });
+        params.set("offset", String(loaded));
+        if (all) params.set("all", "1");
+        const res = await fetch(`/api/games?${params}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const page: Page = await res.json();
+        setItems((prev) => {
+          const seen = new Set(prev.map((r) => r.id));
+          return [...prev, ...page.items.filter((r) => !seen.has(r.id))];
+        });
+        setTotal(page.total);
+      } catch {
+        setFailed(true);
+      } finally {
+        busy.current = false;
+        setLoadingAll(false);
+      }
+    },
+    [state, platform, sort, q, unobtainable, loaded],
+  );
+  const loadMore = useCallback(() => load(false), [load]);
 
   useEffect(() => {
     const el = sentinel.current;
@@ -100,6 +116,14 @@ export function GameList({
 
   return (
     <>
+      {more &&
+        slot &&
+        createPortal(
+          <button type="button" className="show-all" disabled={loadingAll} onClick={() => void load(true)}>
+            {loadingAll ? "Loading…" : "Show all"}
+          </button>,
+          slot,
+        )}
       {items.length === 0 && !more && <p className="empty">{empty}</p>}
       <div className="stacked" onClickCapture={rememberPlace}>
         {items.map((row) => (

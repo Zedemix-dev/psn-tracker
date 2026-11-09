@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { TrophyList } from "@/components/game/TrophyList";
 import type { GroupData, TrophyRowData } from "@/src/games/detail";
@@ -25,6 +27,7 @@ const trophy = (id: number, o: Partial<TrophyRowData> = {}): TrophyRowData => ({
   rateLabel: "10.00%",
   tier: "Rare",
   counter: null,
+  unobtainable: false,
   ...o,
 });
 
@@ -50,8 +53,22 @@ const list = [
   trophy(2, { groupId: "001", rate: null, rateLabel: null, tier: null }),
 ];
 
-const setup = (groups: GroupData[], trophies = list) =>
-  render(<TrophyList groups={groups} trophies={trophies} initialShow="all" initialSort="psn" />);
+const band = {
+  label: "7 unobtainable trophies",
+  situation: ", 4 you don't have",
+  note: [{ text: "Closed: " }, { text: "more info.", href: "https://x.dev" }],
+};
+
+const setup = (groups: GroupData[], trophies = list, unobtainable: typeof band | null = null) =>
+  render(
+    <TrophyList
+      groups={groups}
+      trophies={trophies}
+      unobtainable={unobtainable}
+      initialShow="all"
+      initialSort="psn"
+    />,
+  );
 
 describe("TrophyList", () => {
   it("shows the title and earned count", () => {
@@ -116,5 +133,71 @@ describe("TrophyList", () => {
     const { container } = setup(two);
     fireEvent.change(screen.getByLabelText("Show"), { target: { value: "earned" } });
     expect(container.querySelectorAll(".group-head")).toHaveLength(1);
+  });
+
+  it("shows the band with its link", () => {
+    const { container } = setup(one, list, band);
+    const note = container.querySelector(".unob-note")!;
+    expect(note).toHaveTextContent("7 unobtainable trophies");
+    expect(note).toHaveTextContent(", 4 you don't have");
+    expect(note).toHaveTextContent("Closed:");
+    const link = screen.getByRole("link", { name: "more info." });
+    expect(link).toHaveAttribute("href", "https://x.dev");
+    expect(link).toHaveAttribute("target", "_blank");
+    expect(link.getAttribute("rel")).toContain("noopener");
+    expect(container.querySelectorAll(".unob-note a")).toHaveLength(1);
+  });
+
+  it("shows no band for other games", () => {
+    const { container } = setup(one, list, null);
+    expect(container.querySelector(".unob-note")).toBeNull();
+  });
+
+  it("keeps the band when the filter hides every row", () => {
+    const { container } = setup(one, [trophy(1), trophy(2)], band);
+    fireEvent.change(screen.getByLabelText("Show"), { target: { value: "earned" } });
+    expect(screen.getByText("No trophy matches this filter.")).toBeInTheDocument();
+    expect(container.querySelector(".unob-note")).not.toBeNull();
+  });
+
+  it("reddens an unearned unobtainable trophy", () => {
+    const { container } = setup(one, [trophy(1, { unobtainable: true })]);
+    const row = container.querySelector(".trophy")!;
+    expect(row).toHaveClass("lost");
+    expect(row).not.toHaveClass("earned");
+    expect(row.querySelector(".unob")).toHaveTextContent("!");
+    expect(row.querySelector(".unob .tip")).toHaveTextContent("No longer obtainable.");
+    expect(row.querySelector(".unob .tip")).not.toHaveTextContent("already have");
+    expect(row.querySelector(".unob")).toHaveAttribute("tabindex", "0");
+  });
+
+  it("keeps green for an earned one", () => {
+    const { container } = setup(one, [trophy(1, { unobtainable: true, earned: true, earnedDate: "5 Nov 2026", earnedTime: "21:04", earnedAtMs: 1 })]);
+    const row = container.querySelector(".trophy")!;
+    expect(row).toHaveClass("earned");
+    expect(row).not.toHaveClass("lost");
+    expect(row.querySelector(".unob")).toHaveTextContent("!");
+    expect(row.querySelector(".unob")).toHaveAttribute("aria-label", "No longer obtainable. You already have it.");
+    expect(row.querySelector(".unob .tip")).toHaveTextContent("You already have it.");
+  });
+
+  it("marks nothing else", () => {
+    const { container } = setup(one);
+    expect(container.querySelector(".unob")).toBeNull();
+    expect(container.querySelector(".trophy.lost")).toBeNull();
+  });
+
+  it("renders HTML from a note as text", () => {
+    const { container } = setup(one, list, { ...band, note: [{ text: "<img src=x>" }] });
+    expect(screen.getByText("<img src=x>")).toBeInTheDocument();
+    expect(container.querySelector("img[src='x']")).toBeNull();
+  });
+});
+
+describe("earned highlight CSS", () => {
+  it("defines the earned highlight colours", () => {
+    const css = readFileSync(path.resolve(import.meta.dirname, "../../app/globals.css"), "utf8");
+    expect(css).toMatch(/:root\{[^}]*--earned:#3DBE6B/);
+    expect(css).toMatch(/:root\{[^}]*--earned-text:#93E2AE/);
   });
 });

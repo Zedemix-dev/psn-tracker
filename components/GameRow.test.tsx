@@ -22,6 +22,7 @@ const game = (g: Partial<GameRowData> = {}): GameRowData => ({
   rank: "S",
   lastPlayedLine: "Last played 5 Nov 2026 | 33h 27m played",
   status: "plat-earned",
+  unobtainable: null,
   ...g,
 });
 
@@ -126,6 +127,25 @@ describe("GameRow", () => {
     expect(container.querySelector(".game-cover")).not.toHaveClass("icon");
     rerender(<GameRow row={game({ coverIsIcon: true })} />);
     expect(container.querySelector(".game-cover")).toHaveClass("icon");
+  });
+
+  it("shows the mark after the platform badge", () => {
+    const { container } = render(
+      <GameRow row={game({ unobtainable: { label: "7 unobtainable trophies", note: "Closed." } })} />,
+    );
+    const mark = container.querySelector(".unob")!;
+    expect(mark).not.toBeNull();
+    expect(mark).toHaveAttribute("aria-label", "7 unobtainable trophies Closed.");
+    expect(mark.textContent).toContain("7 unobtainable trophies");
+    expect(mark.textContent).toContain("Closed.");
+    expect(mark).not.toHaveAttribute("tabindex");
+    const platform = container.querySelector(".platform")!;
+    expect(platform.compareDocumentPosition(mark) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("shows no mark otherwise", () => {
+    const { container } = render(<GameRow row={game({ unobtainable: null })} />);
+    expect(container.querySelector(".unob")).toBeNull();
   });
 });
 

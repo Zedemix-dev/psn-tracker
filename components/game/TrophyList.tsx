@@ -3,8 +3,9 @@
 import { Fragment, useState } from "react";
 import { ProgressStack, StatusIcon } from "@/components/ProgressStack";
 import { TileImage } from "@/components/TileImage";
+import { UnobtainableMark } from "@/components/UnobtainableMark";
 import { TrophyTypeIcon } from "@/components/TrophyTypeIcon";
-import type { GroupData, TrophyRowData } from "@/src/games/detail";
+import type { GroupData, TrophyRowData, UnobtainableBand } from "@/src/games/detail";
 import {
   filterAndSort,
   trophyViewParams,
@@ -14,11 +15,20 @@ import {
 
 function Row({ t }: { t: TrophyRowData }) {
   return (
-    <div className={`trophy${t.earned ? " earned" : ""}`}>
+    <div className={`trophy${t.earned ? " earned" : t.unobtainable ? " lost" : ""}`}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img className="ic" src={t.iconSrc} alt="" loading="lazy" />
       <div>
-        <div className="n">{t.name}</div>
+        <div className="n">
+          {t.name}
+          {t.unobtainable && (
+            <UnobtainableMark
+              focusable
+              label="No longer obtainable."
+              detail={t.earned ? "You already have it." : null}
+            />
+          )}
+        </div>
         <div className="d">{t.detail}</div>
       </div>
       <div className="meta">
@@ -51,11 +61,13 @@ function Row({ t }: { t: TrophyRowData }) {
 export function TrophyList({
   groups,
   trophies,
+  unobtainable,
   initialShow,
   initialSort,
 }: {
   groups: GroupData[];
   trophies: TrophyRowData[];
+  unobtainable: UnobtainableBand | null;
   initialShow: TrophyShow;
   initialSort: TrophySort;
 }) {
@@ -105,6 +117,30 @@ export function TrophyList({
           <option value="rarity">Rarest first</option>
         </select>
       </div>
+      {unobtainable && (
+        <div className="unob-note">
+          <i className="unob" aria-hidden="true">
+            !
+          </i>
+          <div>
+            <b>{unobtainable.label}</b>
+            {unobtainable.situation}
+            {unobtainable.note.length > 0 && (
+              <div className="why">
+                {unobtainable.note.map((s, i) =>
+                  s.href ? (
+                    <a key={i} href={s.href} target="_blank" rel="noopener noreferrer">
+                      {s.text}
+                    </a>
+                  ) : (
+                    <Fragment key={i}>{s.text}</Fragment>
+                  ),
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
       <div>
         {sections.length === 0 && <div className="empty-list">No trophy matches this filter.</div>}
         {sections.map(({ g, rows }) => (

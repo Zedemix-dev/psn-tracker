@@ -64,6 +64,8 @@ const title = (over: Partial<GameTitle> = {}): GameTitle => ({
   genres: null,
   releaseDate: null,
   catalogCheckedAt: null,
+  unobtainableCount: 0,
+  unobtainableNote: null,
   ...over,
 });
 
@@ -83,8 +85,36 @@ describe("toGameRow", () => {
       rank: "C",
       lastPlayedLine: "Last played 5 Mar 2024 | 2h 00m played",
       status: "plat-earned",
+      unobtainable: null,
     });
     expect(JSON.parse(JSON.stringify(row))).toEqual(row);
+  });
+
+  it("describes the unobtainable trophies, with the note as plain text", () => {
+    const row = toGameRow(
+      title({
+        unobtainableCount: 7,
+        definedPlatinum: 1,
+        definedGold: 5,
+        definedSilver: 15,
+        definedBronze: 20,
+        unobtainableNote: "Closed: [more](https://x.dev)",
+      }),
+      new Map(),
+      new Map(),
+    );
+    expect(row.definedTotal).toBe(41);
+    expect(row.unobtainable).toEqual({ label: "7 unobtainable trophies", note: "Closed: more" });
+  });
+
+  it("says all trophies when every one is marked, and has no note when empty", () => {
+    const row = toGameRow(title({ unobtainableCount: 10, unobtainableNote: "" }), new Map(), new Map());
+    expect(row.unobtainable).toEqual({ label: "All 10 trophies are unobtainable", note: null });
+  });
+
+  it("has no unobtainable data when the count is 0", () => {
+    const row = toGameRow(title({ unobtainableCount: 0, unobtainableNote: "stale" }), new Map(), new Map());
+    expect(row.unobtainable).toBeNull();
   });
 
   it("falls back to the icon without cover and to the last trophy date without play data", () => {

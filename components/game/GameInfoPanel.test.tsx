@@ -33,6 +33,7 @@ const detail = (o: Partial<GameDetail> = {}): GameDetail => ({
   releaseDate: "10 Dec 2020",
   guides: { powerPyx: "https://pyx.example/x", psnProfiles: "https://psnp.example/y" },
   timeline: [],
+  unobtainable: null,
   ...o,
 });
 

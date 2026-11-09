@@ -1,12 +1,14 @@
 import { randomBytes } from "node:crypto";
 import { beforeEach, describe, expect, it } from "vitest";
 import type { Db } from "@/src/db/client";
-import { settings } from "@/src/db/schema";
+import { DEFAULT_UNOBTAINABLE_LIST_URL, settings } from "@/src/db/schema";
 import { createTestDb } from "@/tests/helpers/db";
 import {
   getSettings,
   loadPsnTokens,
+  clearUnobtainableRequest,
   requestSync,
+  saveUnobtainableUrl,
   savePsnTokens,
   setBanner,
   setHideZero,
@@ -37,7 +39,27 @@ describe("settings repo", () => {
       npssoSetAt: null,
       psnAuthStatus: "missing",
       syncRequestedAt: null,
+      unobtainableListUrl: DEFAULT_UNOBTAINABLE_LIST_URL,
+      unobtainableRequestedAt: null,
     });
+  });
+
+  it("saveUnobtainableUrl writes the address and the request", async () => {
+    const now = new Date("2026-11-09T10:00:00Z");
+    await saveUnobtainableUrl(db, "https://x.example/list.json", now);
+    const s = await getSettings(db);
+    expect(s.unobtainableListUrl).toBe("https://x.example/list.json");
+    expect(s.unobtainableRequestedAt).toEqual(now);
+  });
+
+  it("clearUnobtainableRequest only clears the value it saw", async () => {
+    const t1 = new Date("2026-11-09T10:00:00Z");
+    const t2 = new Date("2026-11-09T10:05:00Z");
+    await saveUnobtainableUrl(db, "https://x.example/l", t2);
+    await clearUnobtainableRequest(db, t1);
+    expect((await getSettings(db)).unobtainableRequestedAt).toEqual(t2);
+    await clearUnobtainableRequest(db, t2);
+    expect((await getSettings(db)).unobtainableRequestedAt).toBeNull();
   });
 
   it("updates hideZero and banner", async () => {

@@ -6,6 +6,8 @@ import type { PsnGateway } from "@/src/psn/gateway";
 import { requestSync, takeSyncRequest } from "@/src/settings/repo";
 import { runDailyRefresh } from "@/src/sync/daily";
 import { runSync } from "@/src/sync/run";
+import { applyUnobtainable } from "@/src/unobtainable/apply";
+import { refreshUnobtainableListIfDue } from "@/src/unobtainable/refresh";
 
 export type JobKind = "manual" | "scheduled" | "daily";
 export type JobState = { lastScheduledAt: Date | null; lastDailyAt: Date | null; manualRequested: boolean };
@@ -30,6 +32,8 @@ export type TickDeps = {
   cfg: AppConfig;
   runSync: typeof runSync;
   runDailyRefresh: typeof runDailyRefresh;
+  refreshUnobtainableList: typeof refreshUnobtainableListIfDue;
+  applyUnobtainable: typeof applyUnobtainable;
   log?: (line: string) => void;
 };
 
@@ -37,6 +41,8 @@ export const defaultTickDeps = (base: Pick<TickDeps, "db" | "gw" | "cfg">): Tick
   ...base,
   runSync,
   runDailyRefresh,
+  refreshUnobtainableList: refreshUnobtainableListIfDue,
+  applyUnobtainable,
   log: (line) => console.log(line),
 });
 
@@ -53,6 +59,12 @@ export async function tick(deps: TickDeps, now: Date): Promise<void> {
   const rows = await db.select().from(jobState);
   const lastOf = (key: string) => rows.find((r) => r.key === key)?.lastRunAt ?? null;
 
+  try {
+    await deps.refreshUnobtainableList(db, now);
+  } catch (e) {
+    deps.log?.(`[worker] unobtainable list refresh failed: ${e instanceof Error ? e.message : String(e)}`);
+  }
+
   const manualRequested = await takeSyncRequest(db);
   const kind = decideNextJob(
     { lastScheduledAt: lastOf("scheduled"), lastDailyAt: lastOf("daily"), manualRequested },
@@ -68,6 +80,13 @@ export async function tick(deps: TickDeps, now: Date): Promise<void> {
   deps.log?.(
     `[worker] ${kind} ${result.status} in ${Date.now() - t0} ms${result.error ? `: ${result.error}` : ""}`,
   );
+  if (result.status !== "skipped") {
+    try {
+      await deps.applyUnobtainable(db);
+    } catch (e) {
+      deps.log?.(`[worker] unobtainable marks failed: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }
 }
 
 /** Rows still `running` at startup belong to a dead process (single worker). */

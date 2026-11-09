@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { gameQueryParams } from "@/components/game-query-string";
-import type { GamePlatform, GameQuery, GameSort, GameState } from "@/src/games/query";
+import type { GamePlatform, GameQuery, GameSort, GameState, GameUnobtainable } from "@/src/games/query";
 
 const STATES: [GameState, string][] = [
   ["all", "All"],
@@ -29,6 +29,11 @@ const SORTS: [GameSort, string][] = [
   ["earnedTrophies", "Earned trophies"],
   ["unearnedTrophies", "Unearned trophies"],
   ["platinumRarity", "Platinum rarity"],
+];
+const UNOBTAINABLE: [GameUnobtainable, string][] = [
+  ["off", "Unobtainable"],
+  ["with", "With unobtainable"],
+  ["without", "Without unobtainable"],
 ];
 const DEBOUNCE_MS = 300;
 
@@ -94,6 +99,14 @@ export function GameFilters({ query }: { query: GameQuery }) {
         onChange={(e) => go({ ...query, sort: e.target.value as GameSort })}
       >
         <Options options={SORTS} />
+      </select>
+      <select
+        className={`select${query.unobtainable !== "off" ? " on" : ""}`}
+        aria-label="Filter by unobtainable trophies"
+        value={query.unobtainable}
+        onChange={(e) => go({ ...query, unobtainable: e.target.value as GameUnobtainable })}
+      >
+        <Options options={UNOBTAINABLE} />
       </select>
       <label className="search">
         <svg className="ico" viewBox="0 0 24 24" aria-hidden="true">

@@ -11,6 +11,8 @@ export type Settings = {
   npssoSetAt: Date | null;
   psnAuthStatus: PsnAuthStatus;
   syncRequestedAt: Date | null;
+  unobtainableListUrl: string;
+  unobtainableRequestedAt: Date | null;
 };
 
 const ROW = eq(settings.id, 1);
@@ -24,6 +26,8 @@ export async function getSettings(db: Db): Promise<Settings> {
       npssoSetAt: settings.npssoSetAt,
       psnAuthStatus: settings.psnAuthStatus,
       syncRequestedAt: settings.syncRequestedAt,
+      unobtainableListUrl: settings.unobtainableListUrl,
+      unobtainableRequestedAt: settings.unobtainableRequestedAt,
     })
     .from(settings)
     .where(ROW);
@@ -40,6 +44,18 @@ export async function setBanner(db: Db, path: string | null, posY: number): Prom
 
 export async function requestSync(db: Db, now: Date): Promise<void> {
   await db.update(settings).set({ syncRequestedAt: now }).where(ROW);
+}
+
+export async function saveUnobtainableUrl(db: Db, url: string, now: Date): Promise<void> {
+  await db.update(settings).set({ unobtainableListUrl: url, unobtainableRequestedAt: now }).where(ROW);
+}
+
+/** Clears the request only if it still holds the value read before the download. */
+export async function clearUnobtainableRequest(db: Db, seen: Date): Promise<void> {
+  await db
+    .update(settings)
+    .set({ unobtainableRequestedAt: null })
+    .where(and(ROW, eq(settings.unobtainableRequestedAt, seen)));
 }
 
 export async function takeSyncRequest(db: Db): Promise<boolean> {

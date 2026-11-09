@@ -1,5 +1,6 @@
 import { GameFilters } from "@/components/GameFilters";
 import { GameList } from "@/components/GameList";
+import { SHOW_ALL_SLOT_ID } from "@/components/game-query-string";
 import { HideZeroToggle } from "@/components/HideZeroToggle";
 import { CabinetPanel } from "@/components/CabinetPanel";
 import { MilestonesPanel } from "@/components/MilestonesPanel";
@@ -60,7 +61,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Sea
     ratePct: t.earnedRate === null ? null : formatPercent(t.earnedRate),
     tier: t.earnedRate === null ? null : rarityTier(t.earnedRate),
   }));
-  const listKey = `${hideZero}|${query.state}|${query.platform}|${query.sort}|${query.q}|${sync.lastSuccessAt}`;
+  const listKey = `${hideZero}|${query.state}|${query.platform}|${query.sort}|${query.q}|${query.unobtainable}|${sync.lastSuccessAt}`;
   return (
     <main className="wrap">
       <ProfileBand profile={row} imageMap={imageMap} sync={sync} />
@@ -73,9 +74,12 @@ export default async function Home({ searchParams }: { searchParams: Promise<Sea
               <h2>Games</h2>
               <HideZeroToggle checked={hideZero} />
             </div>
-            <span className="aside">
-              {formatInt(games.total)} {games.total === 1 ? "game" : "games"}
-            </span>
+            <div className="head-right">
+              <span id={SHOW_ALL_SLOT_ID} />
+              <span className="aside">
+                {formatInt(games.total)} {games.total === 1 ? "game" : "games"}
+              </span>
+            </div>
           </div>
           <GameFilters query={query} />
           {/* lastSuccessAt in the key: after a sync, the list restarts from the fresh first page. */}
