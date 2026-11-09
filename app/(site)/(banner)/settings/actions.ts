@@ -12,11 +12,13 @@ import { getConfig } from "@/src/lib/config";
 import { createPsnGateway } from "@/src/psn/gateway";
 import { removeBannerFile, storeBannerFile, validateBannerUpload } from "@/src/settings/banner";
 import { NPSSO_INVALID, saveNpssoToken, type FormResult } from "@/src/settings/npsso";
-import { getSettings, setBanner } from "@/src/settings/repo";
+import { getSettings, saveUnobtainableUrl, setBanner } from "@/src/settings/repo";
+import { isListUrl } from "@/src/unobtainable/list";
 
 const GENERIC: FormResult = { ok: false, message: "Something went wrong. Try again." };
 const posSchema = z.number().finite();
 const npssoSchema = z.string().max(256);
+const listUrlSchema = z.string().trim().max(2048);
 const clampPos = (n: number) => Math.min(100, Math.max(0, Math.round(n)));
 
 function fail(action: string, e: unknown): FormResult {
@@ -92,6 +94,19 @@ export async function saveNpsso(_prev: FormResult | null, form: FormData): Promi
     return res;
   } catch (e) {
     return fail("saveNpsso", e);
+  }
+}
+
+export async function saveUnobtainableListUrl(_prev: FormResult | null, form: FormData): Promise<FormResult> {
+  await requireSession();
+  const parsed = listUrlSchema.safeParse(form.get("url") ?? "");
+  if (!parsed.success || !isListUrl(parsed.data)) return { ok: false, message: "Enter an http or https address." };
+  try {
+    await saveUnobtainableUrl(await getDb(), parsed.data, new Date());
+    revalidatePath("/", "layout");
+    return { ok: true, message: "Saved. Downloading the list…" };
+  } catch (e) {
+    return fail("saveUnobtainableListUrl", e);
   }
 }
 
