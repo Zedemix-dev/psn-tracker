@@ -42,6 +42,8 @@ describe("tick", () => {
   let db: Db;
   let runSync: ReturnType<typeof vi.fn>;
   let runDailyRefresh: ReturnType<typeof vi.fn>;
+  let refreshUnobtainableList: ReturnType<typeof vi.fn>;
+  let applyUnobtainable: ReturnType<typeof vi.fn>;
   let deps: TickDeps;
   const ok: SyncRunResult = { status: "success", runId: 1 };
 
@@ -49,12 +51,16 @@ describe("tick", () => {
     db = await createTestDb();
     runSync = vi.fn(async () => ok);
     runDailyRefresh = vi.fn(async () => ok);
+    refreshUnobtainableList = vi.fn(async () => {});
+    applyUnobtainable = vi.fn(async () => {});
     deps = {
       db,
       gw: {} as PsnGateway,
       cfg: {} as AppConfig,
       runSync: runSync as unknown as TickDeps["runSync"],
       runDailyRefresh: runDailyRefresh as unknown as TickDeps["runDailyRefresh"],
+      refreshUnobtainableList: refreshUnobtainableList as unknown as TickDeps["refreshUnobtainableList"],
+      applyUnobtainable: applyUnobtainable as unknown as TickDeps["applyUnobtainable"],
     };
   });
 
@@ -109,6 +115,67 @@ describe("tick", () => {
     await tick(deps, now);
     expect(runSync).not.toHaveBeenCalled();
     expect(runDailyRefresh).not.toHaveBeenCalled();
+  });
+
+  const markFresh = () =>
+    db.insert(jobState).values([
+      { key: "scheduled", lastRunAt: ago(1 * H) },
+      { key: "daily", lastRunAt: ago(1 * H) },
+    ]);
+
+  it("refreshes the list before the PSN job", async () => {
+    await tick(deps, now);
+    expect(refreshUnobtainableList).toHaveBeenCalledTimes(1);
+    expect(refreshUnobtainableList.mock.calls[0].slice(0, 2)).toEqual([db, now]);
+    expect(refreshUnobtainableList.mock.invocationCallOrder[0]).toBeLessThan(runSync.mock.invocationCallOrder[0]);
+  });
+
+  it("runs the PSN job when the list refresh throws", async () => {
+    const log = vi.fn();
+    refreshUnobtainableList.mockRejectedValueOnce(new Error("offline"));
+    await tick({ ...deps, log }, now);
+    expect(runSync).toHaveBeenCalledTimes(1);
+    expect(log.mock.calls.some(([l]) => String(l).includes("offline"))).toBe(true);
+  });
+
+  it("applies the marks after a job", async () => {
+    await tick(deps, now);
+    expect(applyUnobtainable).toHaveBeenCalledTimes(1);
+    expect(applyUnobtainable).toHaveBeenCalledWith(db);
+    expect(applyUnobtainable.mock.invocationCallOrder[0]).toBeGreaterThan(runSync.mock.invocationCallOrder[0]);
+
+    applyUnobtainable.mockClear();
+    await tick(deps, now); // daily is due now
+    expect(runDailyRefresh).toHaveBeenCalledTimes(1);
+    expect(applyUnobtainable).toHaveBeenCalledTimes(1);
+    expect(applyUnobtainable.mock.invocationCallOrder[0]).toBeGreaterThan(runDailyRefresh.mock.invocationCallOrder[0]);
+  });
+
+  it("applies the marks after a failed job", async () => {
+    runSync.mockResolvedValueOnce({ status: "error", error: "x" });
+    await tick(deps, now);
+    expect(applyUnobtainable).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not apply after a skipped job", async () => {
+    runSync.mockResolvedValueOnce({ status: "skipped" });
+    await tick(deps, now);
+    expect(applyUnobtainable).not.toHaveBeenCalled();
+  });
+
+  it("still logs and carries on when applying the marks throws", async () => {
+    const log = vi.fn();
+    applyUnobtainable.mockRejectedValueOnce(new Error("apply-boom"));
+    await expect(tick({ ...deps, log }, now)).resolves.toBeUndefined();
+    expect(log.mock.calls.some(([l]) => String(l).includes("apply-boom"))).toBe(true);
+  });
+
+  it("still refreshes the list when no job is due", async () => {
+    await markFresh();
+    await tick(deps, now);
+    expect(refreshUnobtainableList).toHaveBeenCalledTimes(1);
+    expect(runSync).not.toHaveBeenCalled();
+    expect(applyUnobtainable).not.toHaveBeenCalled();
   });
 });
 
