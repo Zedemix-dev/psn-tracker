@@ -4,6 +4,7 @@ import {
   formatDateAndTime,
   formatDateTime,
   formatDateTimeSeconds,
+  formatCounter,
   formatDuration,
   formatTime,
   formatHoursTotal,
@@ -93,5 +94,12 @@ describe("formatDateAndTime", () => {
       expect(formatDateAndTime(d)).toEqual({ date: formatDate(d), time: formatTime(d) });
     }
     expect(formatDateAndTime(new Date("2022-07-17T23:21:07Z"))).toEqual({ date: "18 Jul 2022", time: "01:21:07" });
+  });
+});
+
+describe("formatCounter", () => {
+  it("groups thousands on both numbers", () => {
+    expect(formatCounter(3626, 5000)).toBe("3,626/5,000");
+    expect(formatCounter(0, 4)).toBe("0/4");
   });
 });

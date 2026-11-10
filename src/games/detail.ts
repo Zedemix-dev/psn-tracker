@@ -13,7 +13,7 @@ import {
 import { gameStatus, progressRank, type GameRank, type GameStatus } from "@/src/games/row";
 import { loadSiblingIndex, withSiblings } from "@/src/games/siblings";
 import { guideSearchName, powerPyxRoadmapUrl, psnProfilesGuidesUrl } from "@/src/lib/guide-links";
-import { formatDate, formatInt, formatPercent, formatPlayTime, formatTime } from "@/src/lib/format";
+import { formatCounter, formatDate, formatInt, formatPercent, formatPlayTime, formatTime } from "@/src/lib/format";
 import { rarityTier, type RarityTier } from "@/src/lib/rarity";
 import { type ImageMap, mediaSrc } from "@/src/sync/images";
 import { unobtainableLabel, unobtainableSituation } from "@/src/unobtainable/labels";
@@ -122,7 +122,7 @@ export async function getGameDetail(
       tier: rate == null ? null : rarityTier(rate),
       counter:
         !r.earned && r.progressTarget != null && r.progress != null
-          ? `${formatInt(r.progress)}/${formatInt(r.progressTarget)}`
+          ? formatCounter(r.progress, r.progressTarget)
           : null,
       unobtainable: r.unobtainable,
     };

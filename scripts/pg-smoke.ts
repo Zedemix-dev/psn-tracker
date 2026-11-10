@@ -3,9 +3,11 @@
 import { eq } from "drizzle-orm";
 import { createDb, type Db } from "@/src/db/client";
 import { runMigrations } from "@/src/db/migrate";
-import { titles, trophies } from "@/src/db/schema";
+import { titles, trophies, trophyGroups } from "@/src/db/schema";
 import { requestSync, takeSyncRequest } from "@/src/settings/repo";
 import { countLoggedTrophies, queryTrophyLog } from "@/src/trophy-log/load";
+import { getIncompleteGames, queryAdvisor } from "@/src/trophy-advisor/load";
+import { DEFAULT_ADVISOR_QUERY } from "@/src/trophy-advisor/query";
 import { DEFAULT_LOG_QUERY } from "@/src/trophy-log/query";
 
 function expect<T extends boolean | string>(label: string, actual: T, expected: T): void {
@@ -76,6 +78,59 @@ async function smokeTrophyLog(db: Db): Promise<void> {
   } finally {
     await db.delete(trophies).where(eq(trophies.titleId, SMOKE_TITLE));
     await db.delete(titles).where(eq(titles.npCommunicationId, SMOKE_TITLE));
+  }
+}
+
+const ADVISOR_TITLE = "SMOKE_TA_00";
+
+/** The Trophy Advisor queries on this engine (collation, group by, filter): 3 unearned trophies, one of them DLC. */
+async function smokeAdvisor(db: Db): Promise<void> {
+  const OFF = { hideZero: false, hideUnobtainable: false, dlc: "all" } as const;
+  try {
+    await db.insert(titles).values({
+      npCommunicationId: ADVISOR_TITLE,
+      npServiceName: "trophy",
+      name: "Smoke Advisor Game",
+      iconUrl: "https://img.example/icon.png",
+      platforms: ["PS5"],
+      trophySetVersion: "1.00",
+      definedBronze: 3,
+      progress: 10,
+      hidden: false,
+    });
+    await db.insert(trophyGroups).values({ titleId: ADVISOR_TITLE, groupId: "001", name: "Smoke DLC" });
+    const seeds: [number, string, string][] = [
+      [1, "Zebra", "default"],
+      [2, "À On", "default"],
+      [3, " Journeyman", "001"],
+    ];
+    await db.insert(trophies).values(
+      seeds.map(([trophyId, name, groupId]) => ({
+        titleId: ADVISOR_TITLE,
+        trophyId,
+        groupId,
+        type: "bronze" as const,
+        name,
+        detail: `Do ${name}`,
+        iconUrl: `https://img.example/t${trophyId}.png`,
+        earned: false,
+        earnedRate: "10.00",
+        unobtainable: false,
+      })),
+    );
+    const total = (await queryAdvisor(db, DEFAULT_ADVISOR_QUERY, OFF, { offset: 0, limit: 1 })).total;
+    const mine = async (query: typeof DEFAULT_ADVISOR_QUERY) =>
+      (await queryAdvisor(db, query, OFF, { offset: 0, limit: total })).items.filter((r) => r.gameId === ADVISOR_TITLE);
+    const alpha = await mine({ ...DEFAULT_ADVISOR_QUERY, sort: "alphabetical", order: "asc" });
+    expect("advisor alphabetical order", alpha.map((r) => r.name).join("|"), ["À On", " Journeyman", "Zebra"].join("|"));
+    const leftOf = async (dlc: "all" | "hide") =>
+      (await getIncompleteGames(db, { ...OFF, dlc })).find((g) => g.id === ADVISOR_TITLE)?.left;
+    expect("incomplete game counts DLC", String(await leftOf("all")), "3");
+    expect("incomplete game without DLC", String(await leftOf("hide")), "2");
+  } finally {
+    await db.delete(trophies).where(eq(trophies.titleId, ADVISOR_TITLE));
+    await db.delete(trophyGroups).where(eq(trophyGroups.titleId, ADVISOR_TITLE));
+    await db.delete(titles).where(eq(titles.npCommunicationId, ADVISOR_TITLE));
   }
 }
 
