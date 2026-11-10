@@ -481,3 +481,41 @@ it("shows the empty text and no Show all", …);
 - [ ] **Step 2 : construire le bundle de production**, pour que le build de la CI passe : `set -a; . .data/e2e.env; set +a; npx next build`.
 - [ ] **Step 3 : mettre à jour** `docs/ETAT-DU-PROJET.md` : ce qui est fait, ce qui reste à faire (Trophy Advisor, puis Stats), et les documents de référence (cette maquette, ce plan, `trophylog-v1` et `v2`). Ajouter en tête de ce plan la ligne de statut, comme pour le Plat Wall.
 - [ ] **Step 4 : commit et push** : `docs: project status after the Trophy Log page`.
+
+---
+
+### Task 8 : corrections de la vérification (ajoutée le 10 novembre 2026)
+
+Constats de la tâche 7 sur le build de production avec les vraies données. La spec a été mise à jour avant cette tâche (16.5, 16.6 et 16.8).
+
+**Files :**
+- Modify : `src/lib/format.ts`, `src/lib/format.test.ts`, `components/trophy-log/TrophyLogRow.tsx`, `components/trophy-log/TrophyLogRow.test.tsx`, `src/trophy-log/load.ts`, `src/trophy-log/load.test.ts`.
+
+**1. « Show all » plus rapide.** Mesuré : 3,1 s pour 11 636 lignes (1 s d'API, dont environ 0,7 s dans `formatDate` / `formatTime`, et 2,1 s de rendu). Objectif : **moins de 2 s** au total sur le build de production.
+- `src/lib/format.ts` : `parts()` appelle `formatToParts` **une seule fois** par date, au lieu d'une fois par champ. `formatInt` utilise un `Intl.NumberFormat` créé une fois au chargement du module. Les sorties ne changent pas : les tests existants de `format.test.ts` passent tels quels.
+- `TrophyLogRow` :
+  - les deux liens vers la page du jeu ont `prefetch={false}` : des milliers de liens visibles ne doivent pas précharger autant de pages ;
+  - `TileImage` n'est utilisé que si `gameIsIcon` ; sinon, un simple `<img className="gc">`.
+- Tests :
+```ts
+it("puts a plain image when the game image is a cover", () => /* gameIsIcon false: img.gc without class "icon"; still inside the link */);
+it("does not prefetch the game page", () => /* both links rendered with prefetch disabled — assert through the next/link mock's props */);
+```
+
+**2. Tri alphabétique (16.6).** La clé de tri ignore la casse, les accents, et la ponctuation ou les espaces en tête du nom.
+- Clé en SQL, identique sur PGlite et Postgres, sans extension :
+  - `lower(name)` ;
+  - puis `translate()` des lettres accentuées latines courantes vers leur lettre de base (`àáâãäåçèéêëìíîïñòóôõöùúûüýÿ` donne `aaaaaaceeeeiiiinooooouuuuyy`) ;
+  - puis `regexp_replace(…, '^[^a-z0-9]+', '')` ;
+  - le tout en `collate "C"`, avec toujours `n desc` à égalité.
+- Test dans `load.test.ts` :
+```ts
+it("sorts by name ignoring accents and leading punctuation", () =>
+  /* names ' Journeyman', '"A hero"', '…There', '“Endless”', 'À On', 'Zebra', 'apple':
+     A to Z gives '"A hero"', 'À On', 'apple', '“Endless”', ' Journeyman', '…There', 'Zebra'; Z to A is the reverse */);
+```
+
+- [ ] **Step 1 : écrire les tests qui échouent**, lancer : FAIL.
+- [ ] **Step 2 : implémenter**, puis `npx vitest run && npx tsc --noEmit` donne PASS.
+- [ ] **Step 3 : commit et push** : `perf: faster Trophy Log Show all, alphabetical sort ignores accents and leading punctuation`.
+- [ ] **Step 4 (session principale)** : refaire le build de production et mesurer « Show all » (moins de 2 s), puis vérifier les deux sens du tri alphabétique dans le navigateur.

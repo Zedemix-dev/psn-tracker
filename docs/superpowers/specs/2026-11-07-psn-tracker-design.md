@@ -871,12 +871,13 @@ Elle remplace la page « Coming soon » de cet onglet.
 - **Synchro [choix de Claude]** : les nouveaux trophées apparaissent après une synchro sans recharger la page, comme sur Games.
 - **Écrans étroits [choix de Claude]** :
   - sous 900 px, l'image du jeu est masquée (le nom du jeu reste un lien), et l'icône passe à 48 px ;
-  - sur téléphone (640 px et moins), le numéro, la date et la rareté passent sous la description, sur une seule ligne, comme sur la page d'un jeu (8.9) ;
+  - sur téléphone (640 px et moins), le numéro, la date et la rareté passent sous la description, comme sur la page d'un jeu (8.9). **[choix de Claude, vérification du 10 novembre 2026]** À 375 px, ils ne tiennent pas sur une seule ligne : la rareté passe alors à la ligne suivante, ce qui est accepté ;
   - le numéro reste visible à toutes les largeurs. La maquette v2 le masque entre 640 et 900 px : c'est un défaut, à ne pas reproduire.
 
 ### 16.6 Tri et filtres
 - **Tri [décidé]** : Date earned (par défaut), Alphabetical, Rarity.
   - Alphabetical trie sur le **nom du trophée**, sans tenir compte de la casse **[choix de Claude]**.
+    - **[choix de Claude, vérification du 10 novembre 2026]** Le tri ignore aussi les accents, ainsi que la ponctuation et les espaces en tête du nom. Sur les vraies données, « Z to A » commençait par « …There You Are », « “Endless” » et « À On », et « A to Z » par « Journeyman Librarian », précédé d'une espace. Avec cette règle, « À On » se range dans les A, « “Endless” » dans les E et « …There You Are » dans les T.
   - Rarity trie sur la rareté PSN. Les trophées sans rareté connue passent en dernier, dans les deux sens **[choix de Claude]**. Il n'y en a aucun aujourd'hui.
   - À égalité de nom ou de rareté, le plus récent passe devant, **dans les deux sens** **[choix de Claude]**, comme sur le Plat Wall. La maquette inverse aussi l'égalité avec le sens : c'est la spec qui fait foi.
 - **Sens [décidé]** : un bouton, à côté du tri, inverse l'ordre.
@@ -905,7 +906,7 @@ Elle remplace la page « Coming soon » de cet onglet.
 ### 16.8 Laissé au builder
 - L'organisation du code, l'adresse de l'API de pagination et les noms des paramètres d'adresse.
 - La requête. Le numéro est calculé sur tous les trophées obtenus, avant les filtres, et la page doit rester rapide sur les quelque 11 600 trophées.
-- La façon de garder la page fluide après « Show all » (images chargées à la demande, etc.).
+- La façon de garder la page fluide après « Show all » (images chargées à la demande, etc.). **Mesuré le 10 novembre 2026** sur le build de production, avec les vraies données : 3,1 s pour les 11 636 lignes (1 s pour l'API, 2,1 s de rendu). Objectif fixé à la vérification **[choix de Claude]** : moins de 2 s.
 - La façon de remettre la liste au retour d'une page de jeu (16.5), qui doit marcher **même après « Show all »**. Garder les quelque 11 600 lignes comme le fait Games dépasserait probablement la place disponible dans le navigateur. On peut par exemple garder seulement le nombre de lignes chargées et la position, puis recharger ces lignes.
 - Le tri « Date earned » de la page d'un jeu (`src/games/trophy-view.ts`) doit utiliser la même règle que 16.4, qui sera partagée.
 - Le partage des styles avec la page d'un jeu, sans rien changer ailleurs : `app/globals.css` est un seul fichier global.
