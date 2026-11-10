@@ -3,7 +3,6 @@ import { ComingSoon } from "@/components/ComingSoon";
 
 // A static sibling such as app/(site)/(banner)/settings/page.tsx takes precedence over this segment.
 const SECTIONS: Record<string, string> = {
-  "trophy-log": "Trophy Log",
   "trophy-advisor": "Trophy Advisor",
   stats: "Stats",
 };
