@@ -5,12 +5,12 @@ import { gameImages } from "@/src/games/game-image";
 import { toGameRow, type GameRank } from "@/src/games/row";
 import { loadSiblingIndex } from "@/src/games/siblings";
 import { formatCounter, formatPercent } from "@/src/lib/format";
-import { RARITY_RANGES, rarityTier, type RarityTier } from "@/src/lib/rarity";
+import { rarityTier, type RarityTier } from "@/src/lib/rarity";
+import { countTrophiesWhere, ofTitle, trophyFilters } from "@/src/lib/trophy-filters";
 import { sortName } from "@/src/lib/sort-name";
 import type { Settings } from "@/src/settings/repo";
 import { loadImageMap, mediaSrc } from "@/src/sync/images";
 import type { AdvisorQuery, AdvisorScope } from "@/src/trophy-advisor/query";
-import { tierOf } from "@/src/trophy-log/query";
 import { unobtainableLabel } from "@/src/unobtainable/labels";
 import { notePlainText } from "@/src/unobtainable/note";
 
@@ -52,8 +52,6 @@ export function advisorScope(s: Pick<Settings, "hideZero" | "advisorHideUnobtain
   return { hideZero: s.hideZero, hideUnobtainable: s.advisorHideUnobtainable, dlc: s.advisorDlc };
 }
 
-const ofTitle = eq(trophies.titleId, titles.npCommunicationId);
-
 /** The trophies the Advisor counts: the list, its total, countAdvisorTrophies and the column all use it. */
 function scopeWhere(scope: AdvisorScope): SQL | undefined {
   const conds: SQL[] = [eq(trophies.earned, false), eq(titles.hidden, false)];
@@ -61,19 +59,6 @@ function scopeWhere(scope: AdvisorScope): SQL | undefined {
   if (scope.hideUnobtainable) conds.push(eq(trophies.unobtainable, false));
   if (scope.dlc === "hide") conds.push(eq(trophies.groupId, "default"));
   if (scope.dlc === "only") conds.push(ne(trophies.groupId, "default"));
-  return and(...conds);
-}
-
-function filtersFor(query: AdvisorQuery): SQL | undefined {
-  const conds: SQL[] = [];
-  if (query.platform !== "all") conds.push(sql`${query.platform} = any(${titles.platforms})`);
-  if (query.rarity !== "all") {
-    // An unknown rate fails both comparisons: it only shows under All rarities.
-    const [min, max] = RARITY_RANGES[tierOf(query.rarity)];
-    conds.push(sql`${trophies.earnedRate} >= ${min}`);
-    if (max !== null) conds.push(sql`${trophies.earnedRate} < ${max}`);
-  }
-  if (query.type !== "all") conds.push(eq(trophies.type, query.type));
   return and(...conds);
 }
 
@@ -87,18 +72,9 @@ function orderFor(query: AdvisorQuery): SQL[] {
   return [primary, sql`${sortName(titles.name)} asc`, sql`${trophies.titleId} collate "C" asc`, sql`${trophies.trophyId} asc`];
 }
 
-async function countWhere(db: Db, where: SQL | undefined): Promise<number> {
-  const [row] = await db
-    .select({ n: sql<number>`count(*)::int` })
-    .from(trophies)
-    .innerJoin(titles, ofTitle)
-    .where(where);
-  return row.n;
-}
-
 /** Trophies the Advisor counts under `scope`, whatever the sort and the filters. */
 export async function countAdvisorTrophies(db: Db, scope: AdvisorScope): Promise<number> {
-  return countWhere(db, scopeWhere(scope));
+  return countTrophiesWhere(db, scopeWhere(scope));
 }
 
 export async function queryAdvisor(
@@ -107,7 +83,7 @@ export async function queryAdvisor(
   scope: AdvisorScope,
   paging: { offset: number; limit: number },
 ): Promise<AdvisorPage> {
-  const where = and(scopeWhere(scope), filtersFor(query));
+  const where = and(scopeWhere(scope), trophyFilters(query));
   const [rows, total, imageMap, siblings] = await Promise.all([
     db
       .select({
@@ -140,7 +116,7 @@ export async function queryAdvisor(
       .orderBy(...orderFor(query))
       .limit(paging.limit)
       .offset(paging.offset),
-    countWhere(db, where),
+    countTrophiesWhere(db, where),
     loadImageMap(db),
     loadSiblingIndex(db),
   ]);

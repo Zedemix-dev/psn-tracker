@@ -4,11 +4,12 @@ import { titles, trophies, trophyGroups, type TrophyType } from "@/src/db/schema
 import { gameImages } from "@/src/games/game-image";
 import { loadSiblingIndex } from "@/src/games/siblings";
 import { formatDateAndTime, formatPercent } from "@/src/lib/format";
+import { countTrophiesWhere, ofTitle, trophyFilters } from "@/src/lib/trophy-filters";
 import { sortName } from "@/src/lib/sort-name";
-import { RARITY_RANGES, rarityTier, type RarityTier } from "@/src/lib/rarity";
+import { rarityTier, type RarityTier } from "@/src/lib/rarity";
 import { earnedVisible } from "@/src/stats/trophies";
 import { loadImageMap, mediaSrc } from "@/src/sync/images";
-import { tierOf, type LogQuery } from "@/src/trophy-log/query";
+import type { LogQuery } from "@/src/trophy-log/query";
 
 /** JSON-safe: what one row of the log shows. */
 export type LogRow = {
@@ -33,23 +34,8 @@ export type LogRow = {
 /** total: rows matching the filters. */
 export type LogPage = { items: LogRow[]; total: number };
 
-const ofTitle = eq(trophies.titleId, titles.npCommunicationId);
-
 /** Spec 16.4, the order of compareEarnedOrder (src/lib/earned-order.ts): the number of each earned trophy. */
 const earnedNumber = sql<number>`(row_number() over (order by date_trunc('second', ${trophies.earnedAt}), (${trophies.type} = 'platinum'), ${trophies.trophyId}, ${trophies.titleId} collate "C"))::int`;
-
-function filtersFor(query: LogQuery): SQL | undefined {
-  const conds: SQL[] = [];
-  if (query.platform !== "all") conds.push(sql`${query.platform} = any(${titles.platforms})`);
-  if (query.rarity !== "all") {
-    // An unknown rate fails both comparisons: it only shows under All rarities.
-    const [min, max] = RARITY_RANGES[tierOf(query.rarity)];
-    conds.push(sql`${trophies.earnedRate} >= ${min}`);
-    if (max !== null) conds.push(sql`${trophies.earnedRate} < ${max}`);
-  }
-  if (query.type !== "all") conds.push(eq(trophies.type, query.type));
-  return and(...conds);
-}
 
 /** Ends with the number, which is unique: a total order, so pages never overlap or skip a row. */
 function orderFor(query: LogQuery, n: SQLWrapper): SQL[] {
@@ -65,18 +51,9 @@ function orderFor(query: LogQuery, n: SQLWrapper): SQL[] {
   }
 }
 
-async function countWhere(db: Db, where: SQL | undefined): Promise<number> {
-  const [row] = await db
-    .select({ n: sql<number>`count(*)::int` })
-    .from(trophies)
-    .innerJoin(titles, ofTitle)
-    .where(where);
-  return row.n;
-}
-
 /** Earned, dated trophies of visible titles: the ones the log numbers. */
 export async function countLoggedTrophies(db: Db): Promise<number> {
-  return countWhere(db, earnedVisible);
+  return countTrophiesWhere(db, earnedVisible);
 }
 
 export async function queryTrophyLog(
@@ -121,11 +98,11 @@ export async function queryTrophyLog(
           ne(trophies.groupId, "default"),
         ),
       )
-      .where(filtersFor(query))
+      .where(trophyFilters(query))
       .orderBy(...orderFor(query, numbered.n))
       .limit(paging.limit)
       .offset(paging.offset),
-    countWhere(db, and(earnedVisible, filtersFor(query))),
+    countTrophiesWhere(db, and(earnedVisible, trophyFilters(query))),
     loadImageMap(db),
     loadSiblingIndex(db),
   ]);
