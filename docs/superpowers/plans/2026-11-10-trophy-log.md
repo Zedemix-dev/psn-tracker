@@ -519,3 +519,52 @@ it("sorts by name ignoring accents and leading punctuation", () =>
 - [ ] **Step 2 : implémenter**, puis `npx vitest run && npx tsc --noEmit` donne PASS.
 - [ ] **Step 3 : commit et push** : `perf: faster Trophy Log Show all, alphabetical sort ignores accents and leading punctuation`.
 - [ ] **Step 4 (session principale)** : refaire le build de production et mesurer « Show all » (moins de 2 s), puis vérifier les deux sens du tri alphabétique dans le navigateur.
+
+---
+
+### Task 9 : affichage progressif de « Show all » (ajoutée le 10 novembre 2026)
+
+Décision de l'utilisateur après la mesure de la tâche 8 : « Show all » prenait 3,5 s, dont 3,1 s de rendu en un seul bloc, page figée. La spec est à jour (16.5 et 16.8).
+
+**Files :** Modify `components/trophy-log/TrophyLogList.tsx`, `components/trophy-log/TrophyLogList.test.tsx`.
+
+**Interfaces — Produces :** `export const LOG_RENDER_CHUNK = 300;` dans `TrophyLogList.tsx` : le nombre de lignes ajoutées par image. Mesure de la tâche 8 : environ 0,27 ms par ligne, soit environ 80 ms par paquet.
+
+**Comportement :**
+- **File d'attente** :
+  - les lignes reçues par « Show all » (après le retrait des doublons par `key`) ne vont plus d'un coup dans `items` ;
+  - le premier paquet de `LOG_RENDER_CHUNK` lignes est ajouté tout de suite, puis un paquet par `requestAnimationFrame` jusqu'à vider la file ;
+  - une page normale de 50 passe par le même chemin, et tient en un seul paquet.
+- **Pendant qu'il reste des lignes en attente** :
+  - `busy` reste vrai : ni la sentinelle, ni « Retry », ni un second « Show all » ne demandent de page ;
+  - « Show all » affiche « Loading… », désactivé ;
+  - `total` est connu dès la réponse.
+- **Retour en arrière** :
+  - les lignes rechargées (`offset=0&limit=<loaded>`) remplacent la première page, puis arrivent de la même façon par paquets ;
+  - la position gardée est rejointe dès que la page est assez haute pour l'atteindre (`document.documentElement.scrollHeight - innerHeight >= scrollY`), ou à défaut après le dernier paquet ;
+  - un seul défilement, plus le second à l'image suivante, comme aujourd'hui.
+- **Démontage** (changement de filtre, synchro) : la file est vidée et le `requestAnimationFrame` en attente est annulé. Aucune mise à jour d'état après le démontage.
+
+- [ ] **Step 1 : écrire les tests qui échouent.** Contrôler `requestAnimationFrame` avec un faux qui garde les rappels et les exécute à la demande.
+
+```ts
+it("adds a Show all result chunk by chunk", () =>
+  /* 50 rows, Show all returns 700: right after the response 50 + 300 rows; next frame 650; next 750;
+     "Loading…" until the last chunk, then Show all disappears */);
+it("asks for nothing more while chunks are pending", () =>
+  /* sentinel intersects during the chunks: fetch called once only */);
+it("scrolls back as soon as the page is tall enough", () =>
+  /* restore of 900 rows with scrollY 3400: scrollTo(0, 3400) not called while scrollHeight - innerHeight < 3400,
+     called on the first chunk that makes it reachable, once */);
+it("stops adding rows after unmount", () => /* unmount between two chunks: no error, the frame callback cancelled */);
+```
+Les tests existants de la liste doivent passer sans changer d'intention : seul le rythme d'apparition des lignes change.
+
+- [ ] **Step 2 : implémenter**, puis `npx vitest run && npx tsc --noEmit` donne PASS.
+- [ ] **Step 3 : commit et push** : `perf: Trophy Log shows the rows of Show all progressively`.
+- [ ] **Step 4 (session principale)** : refaire le build de production et mesurer, avec le panneau du navigateur affiché, les trois objectifs de 16.8 :
+  - premières nouvelles lignes en moins de 1 s ;
+  - plus long écart entre deux images en moins de 250 ms ;
+  - liste complète en moins de 5 s.
+
+  Refaire aussi le retour en arrière après « Show all ».

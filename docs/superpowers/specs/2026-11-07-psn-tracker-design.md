@@ -867,7 +867,8 @@ Elle remplace la page « Coming soon » de cet onglet.
 - **Trophée devenu non obtenable** : le même « ! » que sur la page d'un jeu pour un trophée obtenu, avec l'infobulle « No longer obtainable. You already have it. » (14.7) **[choix de Claude]**.
 - Sans résultat : « No trophies match these filters. »
 - **Chargement [décidé]** : 50 lignes, puis 50 de plus quand on approche du bas, comme Games (8.7), avec le texte « The next 50 trophies load as you scroll down » et le même « Retry » en cas d'échec. « Show all » charge tout le reste d'un coup.
-- **Retour [choix de Claude]** : revenir d'une page de jeu par « précédent » remet les lignes déjà chargées et la position, comme sur Games.
+  - **[décidé, 10 novembre 2026] Affichage progressif.** Afficher 11 636 lignes d'un seul coup figeait la page environ 3 s. Les lignes reçues s'ajoutent donc à la liste par paquets, un paquet par image affichée, et la page reste utilisable pendant ce temps. « Show all » affiche « Loading… » jusqu'au dernier paquet, et aucune autre page n'est demandée tant qu'il reste des lignes à afficher.
+- **Retour [choix de Claude]** : revenir d'une page de jeu par « précédent » remet les lignes déjà chargées et la position, comme sur Games. Les lignes rechargées s'affichent aussi par paquets. La page défile jusqu'à la position gardée dès que les lignes affichées suffisent à l'atteindre **[choix de Claude]**.
 - **Synchro [choix de Claude]** : les nouveaux trophées apparaissent après une synchro sans recharger la page, comme sur Games.
 - **Écrans étroits [choix de Claude]** :
   - sous 900 px, l'image du jeu est masquée (le nom du jeu reste un lien), et l'icône passe à 48 px ;
@@ -906,7 +907,10 @@ Elle remplace la page « Coming soon » de cet onglet.
 ### 16.8 Laissé au builder
 - L'organisation du code, l'adresse de l'API de pagination et les noms des paramètres d'adresse.
 - La requête. Le numéro est calculé sur tous les trophées obtenus, avant les filtres, et la page doit rester rapide sur les quelque 11 600 trophées.
-- La façon de garder la page fluide après « Show all » (images chargées à la demande, etc.). **Mesuré le 10 novembre 2026** sur le build de production, avec les vraies données : 3,1 s pour les 11 636 lignes (1 s pour l'API, 2,1 s de rendu). Objectif fixé à la vérification **[choix de Claude]** : moins de 2 s.
+- La façon de garder la page fluide après « Show all » (images chargées à la demande, etc.). **Mesuré le 10 novembre 2026** sur le build de production, avec les vraies données : 3,1 s pour les 11 636 lignes (1 s pour l'API, 2,1 s de rendu). Objectif fixé à la vérification **[choix de Claude]** : moins de 2 s. Après la tâche 8, l'API répond en 0,4 s, mais le rendu en un seul bloc prenait encore 3,1 s, page figée. N'afficher que les lignes visibles aurait cassé la recherche Ctrl+F dans la page. L'utilisateur a donc choisi l'affichage progressif (16.5). **Nouveaux objectifs [choix de Claude]**, sur le build de production :
+  - les premières nouvelles lignes apparaissent moins de 1 s après le clic ;
+  - la page ne se fige jamais plus de 250 ms d'affilée ;
+  - la liste est complète en moins de 5 s.
 - La façon de remettre la liste au retour d'une page de jeu (16.5), qui doit marcher **même après « Show all »**. Garder les quelque 11 600 lignes comme le fait Games dépasserait probablement la place disponible dans le navigateur. On peut par exemple garder seulement le nombre de lignes chargées et la position, puis recharger ces lignes.
 - Le tri « Date earned » de la page d'un jeu (`src/games/trophy-view.ts`) doit utiliser la même règle que 16.4, qui sera partagée.
 - Le partage des styles avec la page d'un jeu, sans rien changer ailleurs : `app/globals.css` est un seul fichier global.
