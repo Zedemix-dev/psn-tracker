@@ -7,17 +7,20 @@ const parisParts = new Intl.DateTimeFormat("en-GB", {
   day: "numeric",
   hour: "2-digit",
   minute: "2-digit",
+  second: "2-digit",
   hourCycle: "h23",
 });
 
 function parts(d: Date) {
-  const get = (type: string) => parisParts.formatToParts(d).find((p) => p.type === type)!.value;
+  const all = parisParts.formatToParts(d);
+  const get = (type: string) => all.find((p) => p.type === type)!.value;
   return {
     day: Number(get("day")),
     month: MONTHS[Number(get("month")) - 1],
     year: get("year"),
     hour: get("hour"),
     minute: get("minute"),
+    second: get("second"),
   };
 }
 
@@ -36,8 +39,15 @@ export function formatDateTime(d: Date): string {
   return `${p.day} ${p.month} ${p.year}, ${p.hour}:${p.minute}`;
 }
 
+export function formatDateTimeSeconds(d: Date): string {
+  const p = parts(d);
+  return `${p.day} ${p.month} ${p.year}, ${p.hour}:${p.minute}:${p.second}`;
+}
+
+const intFormat = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
+
 export function formatInt(n: number): string {
-  return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(n);
+  return intFormat.format(n);
 }
 
 export function formatPercent(n: number): string {
@@ -88,8 +98,14 @@ export function formatLastPlayedLine(lastPlayedAt: Date | null, playSeconds: num
   return playSeconds == null ? base : `${base} | ${formatPlayTime(playSeconds)} played`;
 }
 
-/** Paris wall-clock time, "01:21". */
+/** Paris wall-clock time, "01:21:07". */
 export function formatTime(d: Date): string {
   const p = parts(d);
-  return `${p.hour}:${p.minute}`;
+  return `${p.hour}:${p.minute}:${p.second}`;
+}
+
+/** formatDate and formatTime from a single formatToParts call (one per row of a long list). */
+export function formatDateAndTime(d: Date): { date: string; time: string } {
+  const p = parts(d);
+  return { date: `${p.day} ${p.month} ${p.year}`, time: `${p.hour}:${p.minute}:${p.second}` };
 }

@@ -1,4 +1,5 @@
 import type { Db } from "@/src/db/client";
+import { compareEarnedOrder } from "@/src/lib/earned-order";
 import { formatInt } from "@/src/lib/format";
 import { getAllEarned, type EarnedTrophy } from "@/src/stats/trophies";
 
@@ -27,21 +28,15 @@ function isTrophyMilestone(n: number): boolean {
   return n <= 10_000 ? n % 1000 === 0 : n % 5000 === 0;
 }
 
-const second = (d: Date) => Math.floor(d.getTime() / 1000);
-
-/** Counting order: earnedAt ascending; within the same second the platinum last, then trophyId, then titleId. */
-function compareCounting(a: EarnedTrophy, b: EarnedTrophy): number {
-  return (
-    second(a.earnedAt) - second(b.earnedAt) ||
-    Number(a.type === "platinum") - Number(b.type === "platinum") ||
-    a.trophyId - b.trophyId ||
-    (a.titleId < b.titleId ? -1 : a.titleId > b.titleId ? 1 : 0)
+const byEarnedOrder = (a: EarnedTrophy, b: EarnedTrophy) =>
+  compareEarnedOrder(
+    { earnedAtMs: a.earnedAt.getTime(), type: a.type, trophyId: a.trophyId, titleId: a.titleId },
+    { earnedAtMs: b.earnedAt.getTime(), type: b.type, trophyId: b.trophyId, titleId: b.titleId },
   );
-}
 
 /** `_now` is part of the interface but unused: relative times are rendered by the UI. */
 export function computeMilestones(earned: EarnedTrophy[], _now: Date): Milestone[] {
-  const ordered = [...earned].sort(compareCounting);
+  const ordered = [...earned].sort(byEarnedOrder);
   if (ordered.length === 0) return [];
 
   // pos = index in counting order; entries are pushed in label emission order.

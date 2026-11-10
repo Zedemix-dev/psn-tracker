@@ -48,7 +48,7 @@ const group = (id: string, kicker: string, name: string): GroupData => ({
 const one = [group("default", "Base game", "Game")];
 const two = [...one, group("001", "DLC 1", "Expansion")];
 const list = [
-  trophy(0, { earned: true, earnedDate: "5 Nov 2026", earnedTime: "21:04", earnedAtMs: 1 }),
+  trophy(0, { earned: true, earnedDate: "5 Nov 2026", earnedTime: "21:04:12", earnedAtMs: 1 }),
   trophy(1, { counter: "0/4" }),
   trophy(2, { groupId: "001", rate: null, rateLabel: null, tier: null }),
 ];
@@ -112,7 +112,7 @@ describe("TrophyList", () => {
     const { container } = setup(one);
     const when = container.querySelector(".trophy.earned .when");
     expect(when).toHaveTextContent("5 Nov 2026");
-    expect(when).toHaveTextContent("21:04");
+    expect(when).toHaveTextContent("21:04:12");
   });
 
   it("shows rate and tier, or nothing", () => {
@@ -172,7 +172,7 @@ describe("TrophyList", () => {
   });
 
   it("keeps green for an earned one", () => {
-    const { container } = setup(one, [trophy(1, { unobtainable: true, earned: true, earnedDate: "5 Nov 2026", earnedTime: "21:04", earnedAtMs: 1 })]);
+    const { container } = setup(one, [trophy(1, { unobtainable: true, earned: true, earnedDate: "5 Nov 2026", earnedTime: "21:04:12", earnedAtMs: 1 })]);
     const row = container.querySelector(".trophy")!;
     expect(row).toHaveClass("earned");
     expect(row).not.toHaveClass("lost");

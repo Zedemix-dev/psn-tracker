@@ -1,6 +1,6 @@
 # PSN Tracker : état du projet et feuille de route
 
-*Mis à jour le 9 novembre 2026 : la page Plat Wall est fusionnée dans `main` (PR #9). Prochaine étape : la page Trophy Log, puis Trophy Advisor et Stats. Le déploiement sur le NAS vient après ces trois pages.*
+*Mis à jour le 10 novembre 2026 : la page Trophy Log est terminée sur la branche `feat/trophy-log`. Il reste à créer la Pull Request, vérifier la CI et la fusionner. Prochaine étape : la page Trophy Advisor, puis Stats. Le déploiement sur le NAS vient après ces pages.*
 
 Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un autre PC, commence par le lire. Le fichier `CLAUDE.md` à la racine le demande automatiquement.
 
@@ -22,8 +22,10 @@ Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un aut
 | `docs/superpowers/plans/2026-11-09-unobtainable.md` | Le plan des trophées non obtenables (13 tâches, plus une correction de la surbrillance verte). Terminé. |
 | `docs/superpowers/specs/2026-11-09-psn-tracker-maquette-platwall.html` | Maquette validée du Plat Wall (v3). |
 | `docs/superpowers/plans/2026-11-09-plat-wall.md` | Le plan du Plat Wall (8 tâches). Terminé. |
+| `docs/superpowers/specs/2026-11-10-psn-tracker-maquette-trophylog.html` | Maquette validée du Trophy Log (v2), avec ses données intégrées. |
+| `docs/superpowers/plans/2026-11-10-trophy-log.md` | Le plan du Trophy Log (tâches 1 à 9, dont 8 et 9 ajoutées après la vérification). Terminé. |
 | `deploy/README.md` | Guide pas à pas du déploiement sur le NAS. |
-| `.superpowers/brainstorm/maquettes/` | Toutes les maquettes intermédiaires : `accueil-v1` à `v12`, `jeu-v1` à `v6` (la v6 compare les images de groupe : carrées ou absentes), `platwall-v1` à `v3`. |
+| `.superpowers/brainstorm/maquettes/` | Toutes les maquettes intermédiaires : `accueil-v1` à `v12`, `jeu-v1` à `v6` (la v6 compare les images de groupe : carrées ou absentes), `platwall-v1` à `v3`, `trophylog-v1` et `v2`. |
 
 ## 2. Ce qui est fait (dans `main`)
 
@@ -85,9 +87,29 @@ Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un aut
 - **Build Docker** : il échoue si l'export ne peut pas charger `sharp`, `fontkit` ou la police (`scripts/check-export-deps.cjs`). Job `image` de la CI vert sur la PR #9.
 - 78 fichiers de tests, 663 tests.
 
+### Page Trophy Log (branche `feat/trophy-log`, PR à créer, spec section 16)
+- **Page `/trophy-log`** : tous les trophées obtenus, une ligne par trophée, comme le Trophy Log de psnprofiles.
+  - Chaque ligne : image du jeu (lien), icône sans fond, nom, description, jeu (lien), DLC, plateformes, numéro d'obtention, date et heure avec les secondes, rareté PSN, type.
+  - Tri : Date earned, Alphabetical, Rarity, avec un bouton de sens.
+  - Filtres : plateforme, rareté, type ; Reset remet tout par défaut.
+  - Chargement : 50 lignes, puis 50 de plus au défilement. « Show all » affiche le reste par paquets, sans figer la page.
+  - Retour depuis une page de jeu : même endroit, même après « Show all ».
+- **Numéro d'obtention** : à la même seconde, le platine passe après le dernier trophée de son jeu. Une seule règle sert aux milestones, au tri « Date earned » de la page d'un jeu et au Trophy Log (`src/lib/earned-order.ts`).
+- **Ailleurs sur le site** :
+  - plus aucun fond derrière les icônes de trophées (test `app/icon-backgrounds.test.ts`) ;
+  - les heures d'obtention ont les secondes (page d'un jeu, Timeline, carrousel, milestones) ;
+  - le platine passe en dernier dans le tri « Date earned » de la page d'un jeu.
+- **Vérifié avec les vraies données** le 10 novembre 2026, sur le build de production :
+  - 11 636 trophées, et les 16 milestones « Nth trophy » tombent sur les bons numéros ;
+  - Magicka 2 et Hellblade, filtres, tris, Reset, défilement ;
+  - « Show all » : premières lignes en 0,6 s, liste complète en 4 s, la page ne se fige jamais plus de 150 ms ;
+  - retour après « Show all » sur la même ligne ;
+  - affichage téléphone.
+- 87 fichiers de tests, 756 tests. Le job `pg-smoke` de la CI exécute aussi la requête du Trophy Log sur un vrai PostgreSQL 16.
+
 ## 3. Ce qui reste à faire, dans l'ordre
 1. **Pages restantes**, chacune avec **son propre brainstorming** (spec, section 3), dans cet ordre :
-   - **Trophy Log** ;
+   - **Trophy Log** : terminée. Créer la Pull Request `feat/trophy-log` → `main` depuis github.com, vérifier que la CI est verte (dont le job `pg-smoke`, qui teste la requête du Trophy Log sur un vrai PostgreSQL), puis fusionner ;
    - **Trophy Advisor** : les trophées non obtenus sont déjà stockés avec leur rareté. Le toggle « Hide 0% games » doit aussi en retirer les jeux à 0 %. Son filtre des trophées non obtenables s'appuie sur la colonne `trophies.unobtainable`, déjà remplie (spec 14.2) ;
    - **Stats** : elle reçoit le calendrier « Last 60 days », déjà décrit dans la spec, section 3.
 2. **Déployer sur le NAS** en suivant `deploy/README.md`, **une fois ces pages terminées** (décidé le 9 novembre 2026).

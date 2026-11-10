@@ -54,7 +54,7 @@ export function toEarned(r: Row): EarnedTrophy {
 }
 
 /** Earned trophies of visible (non-hidden) titles. */
-const earnedVisible = and(eq(trophies.earned, true), isNotNull(trophies.earnedAt), eq(titles.hidden, false));
+export const earnedVisible = and(eq(trophies.earned, true), isNotNull(trophies.earnedAt), eq(titles.hidden, false));
 
 function baseQuery(db: Db) {
   return db.select(trophySelection).from(trophies).innerJoin(titles, eq(trophies.titleId, titles.npCommunicationId));

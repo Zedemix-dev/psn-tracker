@@ -1,5 +1,5 @@
 import type { Db } from "@/src/db/client";
-import { playedGames, titles, trophies, type TrophyType } from "@/src/db/schema";
+import { playedGames, titles, trophies, trophyGroups, type TrophyType } from "@/src/db/schema";
 
 export type TitleSeed = {
   id: string;
@@ -45,12 +45,15 @@ export async function insertPlayedGame(
 export type TrophySeed = {
   titleId: string;
   trophyId: number;
+  /** "default" when absent. */
+  groupId?: string;
   type?: TrophyType;
   earnedAt?: Date | null;
   /** A number, or null for an unknown rate. */
   earnedRate?: number | null;
   name?: string;
   detail?: string | null;
+  unobtainable?: boolean;
 };
 
 export async function insertTrophies(db: Db, seeds: TrophySeed[]): Promise<void> {
@@ -59,6 +62,7 @@ export async function insertTrophies(db: Db, seeds: TrophySeed[]): Promise<void>
     seeds.map((s) => ({
       titleId: s.titleId,
       trophyId: s.trophyId,
+      groupId: s.groupId ?? "default",
       type: s.type ?? "bronze",
       name: s.name ?? `Trophy ${s.trophyId}`,
       detail: s.detail === undefined ? `Do thing ${s.trophyId}` : s.detail,
@@ -66,6 +70,11 @@ export async function insertTrophies(db: Db, seeds: TrophySeed[]): Promise<void>
       earned: s.earnedAt != null,
       earnedAt: s.earnedAt ?? null,
       earnedRate: s.earnedRate == null ? null : s.earnedRate.toFixed(2),
+      unobtainable: s.unobtainable ?? false,
     })),
   );
+}
+
+export async function insertGroup(db: Db, seed: { titleId: string; groupId: string; name: string }): Promise<void> {
+  await db.insert(trophyGroups).values(seed);
 }

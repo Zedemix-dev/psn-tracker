@@ -403,7 +403,7 @@ C'est un panneau translucide qui chevauche le bas de la bannière, comme le band
 - **[mon choix] Deux menus**, du même style que les filtres de Games :
   - affichage : All trophies (par défaut), Earned, Unearned ;
   - tri, avec l'étiquette « Sort by » pour les lecteurs d'écran : PSN order (par défaut, ordre des `trophyId`), Date earned, Rarest first.
-    - **Date earned** : les obtenus du plus ancien au plus récent, puis les non obtenus dans l'ordre PSN.
+    - **Date earned** : les obtenus du plus ancien au plus récent, puis les non obtenus dans l'ordre PSN. **[décidé, 10 novembre 2026]** À la même seconde, le platine passe après les autres trophées (16.4).
     - **Rarest first** : rareté PSN croissante, les trophées sans rareté à la fin.
   - **[décidé] Les options du tri ne répètent pas le mot « Order »**, comme sur Games, dont les options n'ont pas de préfixe non plus.
   - Les groupes sont gardés quels que soient l'affichage et le tri : le tri s'applique à l'intérieur de chaque groupe. Un groupe sans trophée visible disparaît. S'il ne reste rien, la liste affiche « No trophy matches this filter. »
@@ -428,9 +428,9 @@ C'est un panneau translucide qui chevauche le bas de la bannière, comme le band
     - Cyberpunk donne 100 % pour le jeu de base et 15 % pour Phantom Liberty, comme psnprofiles.
   - **[décidé]** L'icône de platine d'un en-tête de groupe n'a **aucun fond ni ombre**. Le fond sombre est réservé à l'icône du groupe (défaut de la v3, corrigé).
 - **Ligne de trophée** : ~66 px, icône de 56 px (mesuré sur psnprofiles). De gauche à droite :
-  - l'icône ;
+  - l'icône, **sans fond** (**[décidé, 10 novembre 2026]**, 16.7) ;
   - le nom (15 px, gras) et la description en dessous, **en entier**. Une description longue agrandit la ligne, rien n'est coupé ;
-  - si le trophée est obtenu : la date (« 18 Jul 2022 ») et l'heure (« 01:21 ») sur deux lignes, en vert clair ;
+  - si le trophée est obtenu : la date (« 18 Jul 2022 ») et l'heure avec les secondes (« 01:21:07 », **[décidé, 10 novembre 2026]**, 16.7) sur deux lignes, en vert clair ;
   - la rareté PSN (« 2.30% ») et sa catégorie (« Ultra rare »), avec les paliers de 8.8 ;
   - l'icône officielle du type.
 - **[décidé, 8 novembre 2026] Compteur des trophées à paliers**, comme sur psnprofiles (capture de l'utilisateur, Phantom Blade Zero) :
@@ -579,6 +579,7 @@ Il doit aussi vérifier en pratique la détection des nouveaux DLC (6.4).
 - **Jeux aux trophées non obtenables :** fonctionnalité demandée le 8 novembre 2026, cadrée, maquette validée, construite et vérifiée avec les vraies données le 9 novembre 2026, décrite en 14. Fusionnée dans `main` le 9 novembre 2026 (PR #6).
 - **Ordre de la suite [décidé, 9 novembre 2026] :** les pages Plat Wall, Trophy Log, Trophy Advisor et Stats sont construites **avant** le déploiement sur le NAS.
 - **Page Plat Wall :** cadrée, maquette validée, construite et vérifiée avec les vraies données le 9 novembre 2026, décrite en 15. Fusionnée dans `main` le 9 novembre 2026 (PR #9).
+- **Page Trophy Log :** cadrée, maquette validée, construite et vérifiée avec les vraies données le 10 novembre 2026, décrite en 16. Branche `feat/trophy-log`, Pull Request à créer et fusionner par l'utilisateur.
 
 ## 14. Jeux aux trophées non obtenables
 **[décidé, cadrage du 9 novembre 2026]** Fonctionnalité construite à part, sur la branche `feat/unobtainable`. Maquette validée le 9 novembre 2026 : `docs/superpowers/specs/2026-11-09-psn-tracker-maquette-nonobt.html`, référence pour l'aspect et le CSS. Les choix que l'utilisateur n'a pas faits lui-même sont marqués **[choix de Claude]**.
@@ -803,3 +804,124 @@ Elle remplace la page « Coming soon » de cet onglet.
 - « Download PNG » enregistre le bon fichier avec le bon nom, sur PC et en affichage téléphone.
 - Après plusieurs exports, le nombre de fichiers du dossier des images n'a pas changé.
 - **À vérifier au premier déploiement**, car impossible ici : le texte en Sora dans l'image Docker, la durée de fabrication sur le NAS, et le téléchargement sur un vrai iPhone.
+
+## 16. Page Trophy Log
+**[décidé, brainstorming du 10 novembre 2026]** Page construite à part, sur la branche `feat/trophy-log`. Maquette validée le 10 novembre 2026 (v2) : `docs/superpowers/specs/2026-11-10-psn-tracker-maquette-trophylog.html`, référence pour l'aspect et le CSS. Les choix que l'utilisateur n'a pas faits lui-même sont marqués **[choix de Claude]**. Il les a lus dans la conversation et les a validés avec la description.
+
+### 16.1 Intention
+L'utilisateur va sur le Trophy Log de psnprofiles surtout pour **voir ses derniers trophées obtenus, dans une belle liste chronologique**. Celui de psnprofiles lui convient tel qu'il est. Sa capture montre une ligne par trophée : image du jeu, icône, nom, description, numéro d'obtention, date, rareté et type. La page reprend cette forme, avec la rareté PSN et les règles d'images du site.
+
+### 16.2 Objectifs, non-objectifs, anti-objectifs
+**Objectifs**
+- Tous les trophées obtenus, une ligne chacun, du plus récent au plus ancien par défaut.
+- Trier par date, par ordre alphabétique et par rareté, dans un sens ou dans l'autre.
+- Filtrer par plateforme, par catégorie de rareté et par type, et tout remettre par défaut d'un clic.
+- Chaque trophée porte son numéro d'obtention (« #11,636 »), le même que celui des milestones.
+- Rejoindre la page du jeu d'un clic.
+
+**Non-objectifs**
+- Les colonnes « Achievers » et « Owners » de psnprofiles : le PSN ne fournit que le pourcentage.
+- Une recherche, un filtre par jeu ou par période **[choix de Claude : non demandés]**.
+- Les trophées non obtenus : Trophy Advisor s'en occupera.
+- Un export.
+
+**Anti-objectifs** (ce qui serait un échec même si tout fonctionne)
+- Un platine numéroté ou placé avant le dernier trophée de son jeu (16.4).
+- Un numéro d'obtention différent de celui des milestones, ou qui change avec les filtres ou le tri.
+- Un fond, une ombre ou un cadre derrière une icône de trophée à fond transparent (16.7).
+- Une image rectangulaire (8.9).
+- Une page lente, même après « Show all » sur les quelque 11 600 trophées.
+
+### 16.3 Ce qu'on a vérifié sur les vraies données (10 novembre 2026)
+- 11 636 trophées obtenus, tous datés à la seconde, tous avec une rareté PSN. Aucun jeu masqué.
+- Par type : 230 platines, 990 or, 2 434 argent, 7 982 bronze.
+- Par plateforme, avec la règle de Games : PS4 7 075, PS5 4 561.
+- 1 363 trophées obtenus appartiennent à un DLC. 128 sont aujourd'hui non obtenables (14).
+- **Les 230 platines ont tous été obtenus à la même seconde qu'un autre trophée de leur jeu**, et 539 secondes comptent plusieurs trophées. L'ordre à égalité n'est donc pas un cas rare.
+- Le dernier trophée est « The Heart's Journey » (Phantom Blade Zero), n° 11 636, comme sur psnprofiles.
+- La rareté PSN diffère beaucoup de celle de psnprofiles : « The APB is Not Enough » vaut 4.60 % ici et 22,94 % chez psnprofiles, qui ne compte que ses membres (1).
+
+### 16.4 Numéro d'obtention et ordre par date
+- **[décidé]** Chaque trophée a un numéro : sa place dans l'ordre d'obtention de tous les trophées obtenus, le premier étant le n° 1. Le plus récent porte donc le total.
+- **[décidé, retour sur la maquette v1] À la même seconde, le platine passe après les autres trophées.** Il est forcément obtenu en même temps que le dernier trophée de son jeu, et ne peut pas le précéder. Exemple de Magicka 2 : « Archmage » n° 11 621, puis le platine « You Are The Special » n° 11 622, tous deux à 00:16:37.
+- La règle complète est celle des milestones (`src/stats/milestones.ts`, 8.8) : la seconde d'obtention, puis le platine en dernier, puis le `trophyId`, puis l'identifiant de la liste. **[choix de Claude] Une seule définition** sert aux deux, pour que le n° 10 000 du Trophy Log soit le « 10,000th trophy » des milestones.
+- Le numéro ne change ni avec les filtres ni avec le tri : c'est le rang dans tout le profil.
+- Comme dans le reste du site, seuls comptent les trophées des jeux non masqués.
+- Le tri par date suit exactement cet ordre. Par défaut, du plus grand numéro au plus petit.
+
+### 16.5 La page `/trophy-log`
+Elle remplace la page « Coming soon » de cet onglet.
+- **Haut de page [choix de Claude]** : comme le Plat Wall (15.4), la bannière, le bandeau profil avec « Sync now » et les 6 cases. Ni carrousel ni colonne latérale.
+- **Panneau**, en pleine largeur :
+  - en-tête : à gauche « Zmx969's Trophy Log », avec le pseudo du profil ;
+  - à droite de l'en-tête, le nombre : « 11,636 trophies » sans filtre, « 1,234 of 11,636 trophies match » dès qu'un filtre de plateforme, de rareté ou de type est actif ; puis le bouton « Show all » tant que tout n'est pas chargé, le même que sur Games ;
+  - en dessous, les contrôles (16.6), puis la liste.
+- **Ligne de trophée [décidé, d'après la capture de psnprofiles]**, ~66 px, de gauche à droite :
+  1. **l'image du jeu** [décidé : gardée], 56 px, coins de 10 px : la même que sa ligne dans Games (jaquette carrée, ou icône sur sa tuile, 8.9). C'est un lien vers la page du jeu ;
+  2. **l'icône du trophée**, 56 px, coins de 10 px, **sans aucun fond** [décidé] ;
+  3. le **nom** (15 px, gras), la **description** en dessous, en entier, puis une ligne avec **le nom du jeu**, lien vers sa page [décidé], le nom du DLC pour un trophée de DLC (« · Phantom Liberty ») et les pastilles de plateforme de la liste (8.7) **[choix de Claude]** ;
+  4. le **numéro** (« #11,636 », séparateurs de 8.1), en gris ;
+  5. la **date** (« 9 Nov 2026 ») et l'**heure avec les secondes** (« 15:46:30 ») [décidé], sur deux lignes, en vert clair `#93E2AE`. Heure de Paris au format 24 h, comme la page d'un jeu **[choix de Claude]** : psnprofiles affiche « 2:46:30 PM », dans un autre fuseau ;
+  6. la **rareté PSN** (« 4.60% ») et sa catégorie (« Ultra rare »), avec les paliers de 8.8 ;
+  7. l'**icône officielle du type**, 30 px.
+- La ligne elle-même n'est pas un lien : seuls l'image et le nom du jeu le sont **[choix de Claude]**. Les lignes n'ont pas de fond vert, puisque tous les trophées sont obtenus **[choix de Claude]**.
+- **Trophée devenu non obtenable** : le même « ! » que sur la page d'un jeu pour un trophée obtenu, avec l'infobulle « No longer obtainable. You already have it. » (14.7) **[choix de Claude]**.
+- Sans résultat : « No trophies match these filters. »
+- **Chargement [décidé]** : 50 lignes, puis 50 de plus quand on approche du bas, comme Games (8.7), avec le texte « The next 50 trophies load as you scroll down » et le même « Retry » en cas d'échec. « Show all » charge tout le reste d'un coup.
+  - **[décidé, 10 novembre 2026] Affichage progressif.** Afficher 11 636 lignes d'un seul coup figeait la page environ 3 s. Les lignes reçues s'ajoutent donc à la liste par paquets, un paquet par image affichée, et la page reste utilisable pendant ce temps. « Show all » affiche « Loading… » jusqu'au dernier paquet, et aucune autre page n'est demandée tant qu'il reste des lignes à afficher.
+- **Retour [choix de Claude]** : revenir d'une page de jeu par « précédent » remet les lignes déjà chargées et la position, comme sur Games. Les lignes rechargées s'affichent aussi par paquets. La page défile jusqu'à la position gardée dès que les lignes affichées suffisent à l'atteindre **[choix de Claude]**.
+- **Synchro [choix de Claude]** : les nouveaux trophées apparaissent après une synchro sans recharger la page, comme sur Games.
+- **Écrans étroits [choix de Claude]** :
+  - sous 900 px, l'image du jeu est masquée (le nom du jeu reste un lien), et l'icône passe à 48 px ;
+  - sur téléphone (640 px et moins), le numéro, la date et la rareté passent sous la description, comme sur la page d'un jeu (8.9). **[choix de Claude, vérification du 10 novembre 2026]** À 375 px, ils ne tiennent pas sur une seule ligne : la rareté passe alors à la ligne suivante, ce qui est accepté ;
+  - le numéro reste visible à toutes les largeurs. La maquette v2 le masque entre 640 et 900 px : c'est un défaut, à ne pas reproduire.
+
+### 16.6 Tri et filtres
+- **Tri [décidé]** : Date earned (par défaut), Alphabetical, Rarity.
+  - Alphabetical trie sur le **nom du trophée**, sans tenir compte de la casse **[choix de Claude]**.
+    - **[choix de Claude, vérification du 10 novembre 2026]** Le tri ignore aussi les accents, ainsi que la ponctuation et les espaces en tête du nom. Sur les vraies données, « Z to A » commençait par « …There You Are », « “Endless” » et « À On », et « A to Z » par « Journeyman Librarian », précédé d'une espace. Avec cette règle, « À On » se range dans les A, « “Endless” » dans les E et « …There You Are » dans les T.
+  - Rarity trie sur la rareté PSN. Les trophées sans rareté connue passent en dernier, dans les deux sens **[choix de Claude]**. Il n'y en a aucun aujourd'hui.
+  - À égalité de nom ou de rareté, le plus récent passe devant, **dans les deux sens** **[choix de Claude]**, comme sur le Plat Wall. La maquette inverse aussi l'égalité avec le sens : c'est la spec qui fait foi.
+- **Sens [décidé]** : un bouton, à côté du tri, inverse l'ordre.
+  - **[choix de Claude, validé sur la maquette]** Son libellé dit ce qu'il fait, avec une icône de flèches : « Newest first » / « Oldest first », « A to Z » / « Z to A », « Rarest first » / « Most common first ».
+  - **[choix de Claude]** Changer de tri remet le sens naturel de ce tri : Newest first, A to Z, Rarest first.
+- **Platform [décidé]** : All platforms (par défaut), PS4, PS5. Même règle que Games : un trophée est retenu si la plateforme fait partie de la liste de son jeu.
+- **Rarity [décidé]** : All rarities (par défaut), Ultra rare, Very rare, Rare, Uncommon, Common, avec les paliers de 8.8. Un trophée sans rareté n'apparaît que sous All rarities.
+- **Type [décidé]** : All types (par défaut), Platinum, Gold, Silver, Bronze.
+- **[choix de Claude]** Un seul choix à la fois par filtre, comme sur Games.
+- Un contrôle qui n'est pas sur sa valeur par défaut prend le contour d'accent (8.7). Pour le bouton de sens, la valeur par défaut est le sens naturel du tri choisi **[choix de Claude]** : « A to Z » n'est pas souligné, « Z to A » l'est.
+- **Reset [décidé]** : un bouton remet d'un coup le tri, le sens et les filtres par défaut. **[choix de Claude]** Il n'apparaît que si au moins un réglage a changé, avec le nombre de contrôles soulignés : Alphabetical seul donne « Reset (1) », Alphabetical en « Z to A » avec PS5 donne « Reset (3) ». La maquette compte 2 pour Alphabetical seul : c'est la spec qui fait foi.
+- **[choix de Claude]** Comme sur Games et le Plat Wall, les réglages vivent dans l'adresse de la page, sans être enregistrés en base. Une valeur par défaut n'y figure pas, et une valeur invalide est ignorée. « Précédent » ramène au même affichage, une nouvelle visite repart des valeurs par défaut.
+
+### 16.7 Ailleurs sur le site (même branche)
+- **[décidé] Aucun fond derrière une icône de trophée, nulle part.** Une icône à fond transparent s'affiche telle quelle, comme sur le Plat Wall (15.4).
+  - Un fond semi-transparent (`var(--surface-2)`) est aujourd'hui posé derrière les icônes de la page d'un jeu (8.9), du carrousel (8.6), des panneaux Trophy cabinet, Rarest trophies et Milestones (8.8), et de la liste de l'éditeur du cabinet. Il est retiré partout.
+  - **[choix de Claude]** Le liseré vert (ou rouge, 14.7) autour de l'icône sur la page d'un jeu reste : il marque un trophée obtenu (ou perdu), ce n'est pas un fond.
+  - Seul le fond posé sur l'image de l'icône disparaît. Les fonds des conteneurs restent **[choix de Claude]** : la carte vitrée du trophée détaillé dans le carrousel, et le fond vert (ou rouge) des lignes sur la page d'un jeu.
+  - Les images de jeu sur leur tuile (8.9) ne sont pas concernées.
+- **[décidé] L'heure d'obtention d'un trophée s'affiche avec les secondes** : « 01:21:07 ».
+  - Sur la page d'un jeu : la ligne de trophée (8.9) [décidé] et la Timeline **[choix de Claude]**.
+  - Dans le carrousel et l'infobulle des milestones **[choix de Claude]**, pour qu'un trophée ait la même heure partout.
+  - Les autres heures du site (dernière synchro, historique des synchros) ne changent pas.
+- **[décidé] Page d'un jeu, tri « Date earned »** : à la même seconde, le platine passe après les autres trophées, avec la règle de 16.4. Aujourd'hui, il passe devant.
+
+### 16.8 Laissé au builder
+- L'organisation du code, l'adresse de l'API de pagination et les noms des paramètres d'adresse.
+- La requête. Le numéro est calculé sur tous les trophées obtenus, avant les filtres, et la page doit rester rapide sur les quelque 11 600 trophées.
+- La façon de garder la page fluide après « Show all » (images chargées à la demande, etc.). **Mesuré le 10 novembre 2026** sur le build de production, avec les vraies données : 3,1 s pour les 11 636 lignes (1 s pour l'API, 2,1 s de rendu). Objectif fixé à la vérification **[choix de Claude]** : moins de 2 s. Après la tâche 8, l'API répond en 0,4 s, mais le rendu en un seul bloc prenait encore 3,1 s, page figée. N'afficher que les lignes visibles aurait cassé la recherche Ctrl+F dans la page. L'utilisateur a donc choisi l'affichage progressif (16.5). **Nouveaux objectifs [choix de Claude]**, sur le build de production :
+  - les premières nouvelles lignes apparaissent moins de 1 s après le clic ;
+  - la page ne se fige jamais plus de 250 ms d'affilée ;
+  - la liste est complète en moins de 5 s.
+- La façon de remettre la liste au retour d'une page de jeu (16.5), qui doit marcher **même après « Show all »**. Garder les quelque 11 600 lignes comme le fait Games dépasserait probablement la place disponible dans le navigateur. On peut par exemple garder seulement le nombre de lignes chargées et la position, puis recharger ces lignes.
+- Le tri « Date earned » de la page d'un jeu (`src/games/trophy-view.ts`) doit utiliser la même règle que 16.4, qui sera partagée.
+- Le partage des styles avec la page d'un jeu, sans rien changer ailleurs : `app/globals.css` est un seul fichier global.
+
+### 16.9 Vérification avec les vraies données
+- « 11,636 trophies ». Première ligne : « The Heart's Journey », n° 11 636, 9 Nov 2026, 15:46:30.
+- Magicka 2 : le platine n° 11 622 au-dessus de « Archmage » n° 11 621. Hellblade: Senua's Sacrifice : le platine « Done » n° 11 620 au-dessus de « The Final Battle » n° 11 619, à 21:30:30.
+- Chaque milestone « Nth trophy » tombe sur la ligne du Trophy Log qui porte ce numéro.
+- Filtres : Platinum 230, Gold 990, Silver 2 434, Bronze 7 982, PS4 7 075, PS5 4 561. Reset remet tout.
+- Les tris dans les deux sens, « précédent » depuis une page de jeu, et « Show all » sur les 11 636 lignes sans que la page se fige.
+- Aucun fond derrière les icônes à fond transparent (Hellblade, « Technician » de Persona 5 Royal) : Trophy Log, page d'un jeu, carrousel, Trophy cabinet, Rarest trophies, Milestones, éditeur du cabinet.
+- Page d'un jeu : Magicka 2 triée par Date earned met le platine en dernier ; les heures ont les secondes, Timeline comprise.
+- L'affichage téléphone.
