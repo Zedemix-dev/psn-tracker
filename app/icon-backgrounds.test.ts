@@ -30,3 +30,10 @@ describe("trophy icons", () => {
     }
   });
 });
+
+describe("Trophy Log rows", () => {
+  it("lift content-visibility on the row whose unobtainable tooltip is open", () => {
+    const css = readFileSync(join(process.cwd(), "app/globals.css"), "utf8");
+    expect(css).toMatch(/\.log-row:has\(\.unob:hover,\s*\.unob:focus\)\s*\{[^}]*content-visibility:\s*visible/);
+  });
+});

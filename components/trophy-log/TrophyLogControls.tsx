@@ -41,7 +41,7 @@ const TYPES: [LogType, string][] = [
   ["bronze", "Bronze"],
 ];
 
-const on = (active: boolean) => `select${active ? " on" : ""}`;
+const selectClass = (active: boolean) => `select${active ? " on" : ""}`;
 
 export function TrophyLogControls({ query }: { query: LogQuery }) {
   const router = useRouter();
@@ -55,7 +55,7 @@ export function TrophyLogControls({ query }: { query: LogQuery }) {
   return (
     <div className="log-tools">
       <select
-        className={on(query.sort !== DEFAULT_LOG_QUERY.sort)}
+        className={selectClass(query.sort !== DEFAULT_LOG_QUERY.sort)}
         aria-label="Sort by"
         value={query.sort}
         onChange={(e) => go(withSort(query, e.target.value as LogSort))}
@@ -68,7 +68,7 @@ export function TrophyLogControls({ query }: { query: LogQuery }) {
       </select>
       <button
         type="button"
-        className={`${on(query.order !== naturalOrder(query.sort))} log-dir`}
+        className={`${selectClass(query.order !== naturalOrder(query.sort))} log-dir`}
         title="Reverse the order"
         onClick={() => go({ ...query, order: query.order === "asc" ? "desc" : "asc" })}
       >
@@ -82,7 +82,7 @@ export function TrophyLogControls({ query }: { query: LogQuery }) {
       </button>
       <span className="gap" />
       <select
-        className={on(query.platform !== "all")}
+        className={selectClass(query.platform !== "all")}
         aria-label="Filter by platform"
         value={query.platform}
         onChange={(e) => go({ ...query, platform: e.target.value as LogPlatform })}
@@ -94,7 +94,7 @@ export function TrophyLogControls({ query }: { query: LogQuery }) {
         ))}
       </select>
       <select
-        className={on(query.rarity !== "all")}
+        className={selectClass(query.rarity !== "all")}
         aria-label="Filter by rarity"
         value={query.rarity}
         onChange={(e) => go({ ...query, rarity: e.target.value as LogRarity })}
@@ -106,7 +106,7 @@ export function TrophyLogControls({ query }: { query: LogQuery }) {
         ))}
       </select>
       <select
-        className={on(query.type !== "all")}
+        className={selectClass(query.type !== "all")}
         aria-label="Filter by type"
         value={query.type}
         onChange={(e) => go({ ...query, type: e.target.value as LogType })}

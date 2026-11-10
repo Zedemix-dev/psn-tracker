@@ -441,6 +441,8 @@ button.select.log-dir.on{border-color:var(--accent)}
 .log-panel .empty{padding:40px 16px;text-align:center;font-size:13px;border-top:1px solid var(--line)}
 .log-row{content-visibility:auto;contain-intrinsic-size:auto 66px;display:grid;grid-template-columns:56px 56px minmax(0,1fr) 78px 112px 92px 30px;gap:14px;align-items:center;min-height:66px;padding:5px 16px 5px 5px;border-top:1px solid rgba(255,255,255,.06)}
 .log-row:hover{background:rgba(255,255,255,.04)}
+/* content-visibility clips paint to the row: lift it on the row whose tooltip is open */
+.log-row:has(.unob:hover,.unob:focus){content-visibility:visible}
 .log-row .gl{display:block;width:56px;height:56px;border-radius:10px}
 .log-row .gc{display:block;width:56px;height:56px;border-radius:10px;object-fit:cover;transition:transform .12s ease}
 .log-row .gc.icon{object-fit:contain;background:#0B1022}
