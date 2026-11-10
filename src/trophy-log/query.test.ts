@@ -59,6 +59,10 @@ describe("trophy log query", () => {
     expect(parsePaging(new URLSearchParams("offset=50&all=1"))).toEqual({ offset: 50, limit: LOG_MAX });
     expect(parsePaging(new URLSearchParams("offset=abc&limit=1.5"))).toEqual({ offset: 0, limit: 50 });
   });
+  it("caps a huge offset at LOG_MAX", () => {
+    expect(parsePaging(new URLSearchParams("offset=99999999999999999999999"))).toEqual({ offset: LOG_MAX, limit: 50 });
+    expect(parsePaging(new URLSearchParams(`offset=${"9".repeat(400)}&all=1`))).toEqual({ offset: LOG_MAX, limit: LOG_MAX });
+  });
   it("words the count", () => {
     expect(shownText(11636, 11636, false)).toBe("11,636 trophies");
     expect(shownText(1, 1, false)).toBe("1 trophy");

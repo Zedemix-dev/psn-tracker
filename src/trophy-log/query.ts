@@ -94,9 +94,12 @@ function parseCount(value: string | null): number | null {
   return value !== null && /^\d+$/.test(value) ? Number(value) : null;
 }
 
-/** Lenient: a bad offset is 0, a bad or out-of-range limit is one page; `all=1` lifts the limit to LOG_MAX. */
+/**
+ * Lenient: a bad offset is 0 and one beyond LOG_MAX is LOG_MAX (an empty page), a bad or out-of-range limit
+ * is one page; `all=1` lifts the limit to LOG_MAX.
+ */
 export function parsePaging(params: URLSearchParams): { offset: number; limit: number } {
-  const offset = parseCount(params.get("offset")) ?? 0;
+  const offset = Math.min(parseCount(params.get("offset")) ?? 0, LOG_MAX);
   if (params.get("all") === "1") return { offset, limit: LOG_MAX };
   const limit = parseCount(params.get("limit"));
   return { offset, limit: limit !== null && limit >= 1 && limit <= LOG_MAX ? limit : LOG_PAGE_SIZE };
