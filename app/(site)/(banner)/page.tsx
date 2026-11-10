@@ -14,7 +14,7 @@ import { getCabinet } from "@/src/cabinet/repo";
 import { getDb } from "@/src/db/client";
 import { profile } from "@/src/db/schema";
 import { parseGameQuery, queryGames } from "@/src/games/query";
-import { formatDateTime, formatInt, formatPercent } from "@/src/lib/format";
+import { formatDateTimeSeconds, formatInt, formatPercent } from "@/src/lib/format";
 import { rarityTier } from "@/src/lib/rarity";
 import { getSettings } from "@/src/settings/repo";
 import { getProfileStats } from "@/src/stats/profile-stats";
@@ -55,7 +55,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Sea
     name: t.name,
     detail: t.detail,
     game: t.gameName,
-    when: formatDateTime(t.earnedAt),
+    when: formatDateTimeSeconds(t.earnedAt),
     iconSrc: mediaSrc(t.iconUrl, imageMap),
     type: t.type,
     ratePct: t.earnedRate === null ? null : formatPercent(t.earnedRate),

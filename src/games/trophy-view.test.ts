@@ -22,9 +22,9 @@ const row = (id: number, o: Partial<TrophyRowData> = {}): TrophyRowData => ({
 });
 
 const rows = [
-  row(0, { earned: true, earnedAtMs: 300, rate: 50 }),
+  row(0, { earned: true, earnedAtMs: 300_000, rate: 50 }),
   row(1, { rate: null }),
-  row(2, { earned: true, earnedAtMs: 100, rate: 2 }),
+  row(2, { earned: true, earnedAtMs: 100_000, rate: 2 }),
   row(3, { rate: 2 }),
   row(4),
 ];
@@ -36,6 +36,16 @@ describe("filterAndSort", () => {
   });
   it("sorts by date: earned ascending, then unearned by id", () => {
     expect(ids(filterAndSort(rows, "all", "date"))).toEqual([2, 0, 1, 3, 4]);
+  });
+  it("sorts by date with the platinum after the last trophy of its second", () => {
+    const T = 1_700_000_000_000;
+    const list = [
+      row(0, { type: "platinum", earned: true, earnedAtMs: T + 100 }),
+      row(1),
+      row(3, { earned: true, earnedAtMs: T - 60_000 }),
+      row(5, { type: "gold", earned: true, earnedAtMs: T + 900 }),
+    ];
+    expect(ids(filterAndSort(list, "all", "date"))).toEqual([3, 5, 0, 1]);
   });
   it("sorts by rarity with null last and ties by id", () => {
     expect(ids(filterAndSort(rows, "all", "rarity"))).toEqual([2, 3, 4, 0, 1]);

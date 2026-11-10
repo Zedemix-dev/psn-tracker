@@ -1,3 +1,4 @@
+import { compareEarnedOrder } from "@/src/lib/earned-order";
 import type { TrophyRowData } from "@/src/games/detail";
 
 export type TrophyShow = "all" | "earned" | "unearned";
@@ -25,7 +26,14 @@ export function filterAndSort(rows: TrophyRowData[], show: TrophyShow, sort: Tro
   const byId = (a: TrophyRowData, b: TrophyRowData) => a.id - b.id;
   if (sort === "date") {
     return kept.sort((a, b) => {
-      if (a.earnedAtMs != null && b.earnedAtMs != null) return a.earnedAtMs - b.earnedAtMs || byId(a, b);
+      if (a.earnedAtMs != null && b.earnedAtMs != null) {
+        return (
+          compareEarnedOrder(
+            { earnedAtMs: a.earnedAtMs, type: a.type, trophyId: a.id },
+            { earnedAtMs: b.earnedAtMs, type: b.type, trophyId: b.id },
+          ) || byId(a, b)
+        );
+      }
       if (a.earnedAtMs != null) return -1;
       if (b.earnedAtMs != null) return 1;
       return byId(a, b);

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   formatDate,
   formatDateTime,
+  formatDateTimeSeconds,
   formatDuration,
   formatTime,
   formatHoursTotal,
@@ -72,6 +73,14 @@ describe("format", () => {
 
 describe("formatTime", () => {
   it("formats the Paris wall-clock time", () => {
-    expect(formatTime(new Date("2022-07-17T23:21:00Z"))).toBe("01:21");
+    expect(formatTime(new Date("2022-07-17T23:21:00Z"))).toBe("01:21:00");
+    expect(formatTime(new Date("2022-07-17T23:21:07Z"))).toBe("01:21:07");
+  });
+});
+
+describe("formatDateTimeSeconds", () => {
+  it("adds the seconds and leaves formatDateTime unchanged", () => {
+    expect(formatDateTimeSeconds(new Date("2026-11-04T23:16:37Z"))).toBe("5 Nov 2026, 00:16:37");
+    expect(formatDateTime(new Date("2026-11-04T23:16:37Z"))).toBe("5 Nov 2026, 00:16");
   });
 });

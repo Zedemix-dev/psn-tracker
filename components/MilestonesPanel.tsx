@@ -1,4 +1,4 @@
-import { formatDateTime, formatInt, formatRelative } from "@/src/lib/format";
+import { formatDateTimeSeconds, formatInt, formatRelative } from "@/src/lib/format";
 import type { Milestone } from "@/src/stats/milestones";
 
 /** `iconSrc` is resolved on the server so this stays a plain server component. */
@@ -23,7 +23,7 @@ export function MilestonesPanel({ rows, now }: { rows: MilestoneRow[]; now: Date
             <div className="r">
               <span className="m">{label}</span>
               <br />
-              <span title={formatDateTime(trophy.earnedAt)}>{formatRelative(trophy.earnedAt, now)}</span>
+              <span title={formatDateTimeSeconds(trophy.earnedAt)}>{formatRelative(trophy.earnedAt, now)}</span>
             </div>
           </li>
         ))}

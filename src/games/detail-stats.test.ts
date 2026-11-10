@@ -84,7 +84,7 @@ describe("buildTimeline", () => {
     expect(rows.map((r) => r.label)).toEqual(["First trophy", "Platinum", "Latest trophy", "Gap"]);
     expect(rows[1]).toEqual({ label: "Platinum", note: "Not earned yet", date: "—", time: null });
     expect(rows[0].date).toBe("6 Jul 2022");
-    expect(rows[0].time).toBe("22:10");
+    expect(rows[0].time).toBe("22:10:57");
     expect(rows[3].date).toBeNull();
   });
   it("omits platinum when the game has none", () => {
@@ -101,6 +101,6 @@ describe("buildTimeline", () => {
       now,
     );
     expect(rows[1].note).toBe("1 week, 4 days, 3 hours");
-    expect(rows[1].time).toBe("01:21");
+    expect(rows[1].time).toBe("01:21:00");
   });
 });

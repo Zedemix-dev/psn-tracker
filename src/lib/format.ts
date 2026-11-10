@@ -7,6 +7,7 @@ const parisParts = new Intl.DateTimeFormat("en-GB", {
   day: "numeric",
   hour: "2-digit",
   minute: "2-digit",
+  second: "2-digit",
   hourCycle: "h23",
 });
 
@@ -18,6 +19,7 @@ function parts(d: Date) {
     year: get("year"),
     hour: get("hour"),
     minute: get("minute"),
+    second: get("second"),
   };
 }
 
@@ -34,6 +36,11 @@ export function formatDate(d: Date): string {
 export function formatDateTime(d: Date): string {
   const p = parts(d);
   return `${p.day} ${p.month} ${p.year}, ${p.hour}:${p.minute}`;
+}
+
+export function formatDateTimeSeconds(d: Date): string {
+  const p = parts(d);
+  return `${p.day} ${p.month} ${p.year}, ${p.hour}:${p.minute}:${p.second}`;
 }
 
 export function formatInt(n: number): string {
@@ -88,8 +95,8 @@ export function formatLastPlayedLine(lastPlayedAt: Date | null, playSeconds: num
   return playSeconds == null ? base : `${base} | ${formatPlayTime(playSeconds)} played`;
 }
 
-/** Paris wall-clock time, "01:21". */
+/** Paris wall-clock time, "01:21:07". */
 export function formatTime(d: Date): string {
   const p = parts(d);
-  return `${p.hour}:${p.minute}`;
+  return `${p.hour}:${p.minute}:${p.second}`;
 }
