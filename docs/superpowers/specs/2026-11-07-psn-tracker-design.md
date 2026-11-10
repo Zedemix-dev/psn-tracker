@@ -579,7 +579,8 @@ Il doit aussi vérifier en pratique la détection des nouveaux DLC (6.4).
 - **Jeux aux trophées non obtenables :** fonctionnalité demandée le 8 novembre 2026, cadrée, maquette validée, construite et vérifiée avec les vraies données le 9 novembre 2026, décrite en 14. Fusionnée dans `main` le 9 novembre 2026 (PR #6).
 - **Ordre de la suite [décidé, 9 novembre 2026] :** les pages Plat Wall, Trophy Log, Trophy Advisor et Stats sont construites **avant** le déploiement sur le NAS.
 - **Page Plat Wall :** cadrée, maquette validée, construite et vérifiée avec les vraies données le 9 novembre 2026, décrite en 15. Fusionnée dans `main` le 9 novembre 2026 (PR #9).
-- **Page Trophy Log :** cadrée, maquette validée, construite et vérifiée avec les vraies données le 10 novembre 2026, décrite en 16. Branche `feat/trophy-log`, Pull Request à créer et fusionner par l'utilisateur.
+- **Page Trophy Log :** cadrée, maquette validée, construite et vérifiée avec les vraies données le 10 novembre 2026, décrite en 16. Fusionnée dans `main` le 10 novembre 2026 (PR #11).
+- **[décidé, 10 novembre 2026] Place du bouton « Show all » :** dans l'en-tête d'une liste, il vient toujours **après** le nombre affiché, comme sur le Trophy Log (16.5). Cela vaut pour la page **Trophy Advisor**, à construire ainsi. La liste **Games**, où il est encore avant le nombre (14.6), sera corrigée en même temps que Trophy Advisor. Rien n'est changé dans le code avant cela.
 
 ## 14. Jeux aux trophées non obtenables
 **[décidé, cadrage du 9 novembre 2026]** Fonctionnalité construite à part, sur la branche `feat/unobtainable`. Maquette validée le 9 novembre 2026 : `docs/superpowers/specs/2026-11-09-psn-tracker-maquette-nonobt.html`, référence pour l'aspect et le CSS. Les choix que l'utilisateur n'a pas faits lui-même sont marqués **[choix de Claude]**.
@@ -649,6 +650,7 @@ Tout ce paragraphe est **[choix de Claude]**, vérifié sur les vraies données 
 
 ### 14.6 Liste Games (8.7)
 - **Bouton « Show all »**, dans l'en-tête, à gauche du nombre de jeux.
+  - **[décidé, 10 novembre 2026] À corriger : le bouton doit passer APRÈS le nombre de jeux**, comme sur le Trophy Log (16.5). L'utilisateur l'a demandé en voyant les deux pages côte à côte. Cette correction se fera avec la page Trophy Advisor, sans PR séparée avant. La règle commune est en 13.
   - Visible tant qu'il reste des jeux à charger. Il n'apparaît donc pas si tout tient en 50 jeux ou moins.
   - Au clic : désactivé, libellé « Loading… », puis tous les jeux restants arrivent en une seule requête. Le bouton et la ligne « The next 50 games load as you scroll down » disparaissent, et la page ne bouge pas.
   - Si le chargement échoue : le bouton redevient « Show all » et le message existant « Couldn't load more games. Retry » s'affiche **[choix de Claude]**.
