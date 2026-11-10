@@ -1,7 +1,7 @@
 "use client";
 
 import { createPortal } from "react-dom";
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { saveLogSnapshot, takeLogSnapshot } from "@/components/trophy-log/log-snapshot";
 import { TrophyLogRow } from "@/components/trophy-log/TrophyLogRow";
 import type { LogPage, LogRow } from "@/src/trophy-log/load";
@@ -9,6 +9,9 @@ import { LOG_SHOW_ALL_SLOT_ID, logQueryParams, type LogQuery } from "@/src/troph
 
 /** Rows added to the page per animation frame when a big result arrives (about 80 ms each). */
 export const LOG_RENDER_CHUNK = 300;
+
+// Rows keep their identity from one chunk to the next, so only the new ones render.
+const Row = memo(TrophyLogRow);
 
 export function TrophyLogList({
   initial,
@@ -207,7 +210,7 @@ export function TrophyLogList({
       {items.length === 0 && !more && <p className="empty">{empty}</p>}
       <div onClickCapture={rememberPlace}>
         {items.map((row) => (
-          <TrophyLogRow key={row.key} row={row} />
+          <Row key={row.key} row={row} />
         ))}
       </div>
       {more && (

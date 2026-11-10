@@ -2,6 +2,17 @@
 import "@testing-library/jest-dom/vitest";
 import { act, cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+const renders = vi.hoisted(() => ({ byKey: new Map<string, number>() }));
+vi.mock("@/components/trophy-log/TrophyLogRow", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/components/trophy-log/TrophyLogRow")>();
+  return {
+    ...actual,
+    TrophyLogRow: (props: Parameters<typeof actual.TrophyLogRow>[0]) => {
+      renders.byKey.set(props.row.key, (renders.byKey.get(props.row.key) ?? 0) + 1);
+      return actual.TrophyLogRow(props);
+    },
+  };
+});
 import { saveLogSnapshot } from "@/components/trophy-log/log-snapshot";
 import { LOG_RENDER_CHUNK, TrophyLogList } from "@/components/trophy-log/TrophyLogList";
 import { DEFAULT_LOG_QUERY, LOG_SHOW_ALL_SLOT_ID, type LogQuery } from "@/src/trophy-log/query";
@@ -189,6 +200,19 @@ describe("TrophyLogList", () => {
       expect(rows()).toBe(700);
       expect(screen.queryByRole("button", { name: /Show all|Loading…/ })).toBeNull();
       expect(frames.size).toBe(0);
+    });
+
+    it("does not render the rows already shown again when the next chunk lands", async () => {
+      fakeFrames();
+      renders.byKey.clear();
+      fetchMock.mockResolvedValueOnce(reply(trophies(51, 650), 700));
+      render(list(trophies(1, 50), 700));
+      await act(async () => screen.getByRole("button", { name: "Show all" }).click());
+      await runFrame();
+      expect(rows()).toBe(50 + 2 * LOG_RENDER_CHUNK);
+      expect(renders.byKey.get("NPWR1_00:1")).toBe(1);
+      expect(renders.byKey.get("NPWR1_00:60")).toBe(1);
+      expect(renders.byKey.get("NPWR1_00:400")).toBe(1);
     });
 
     it("asks for nothing more while chunks are pending", async () => {
