@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { RARITY_TIERS, rarityTier } from "@/src/lib/rarity";
+import { RARITY_RANGES, RARITY_TIERS, rarityTier } from "@/src/lib/rarity";
 
 describe("rarity", () => {
   it("maps rarity boundaries", () => {
@@ -9,5 +9,12 @@ describe("rarity", () => {
   });
   it("lists tiers rarest first", () => {
     expect(RARITY_TIERS).toEqual(["Ultra rare", "Very rare", "Rare", "Uncommon", "Common"]);
+  });
+  it("agrees with rarityTier at every bound", () => {
+    for (const tier of RARITY_TIERS) {
+      const [min, max] = RARITY_RANGES[tier];
+      expect(rarityTier(min)).toBe(tier);
+      if (max !== null) expect(rarityTier(max - 0.01)).toBe(tier);
+    }
   });
 });
