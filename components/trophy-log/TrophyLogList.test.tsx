@@ -3,7 +3,7 @@ import "@testing-library/jest-dom/vitest";
 import { act, cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { saveLogSnapshot } from "@/components/trophy-log/log-snapshot";
-import { TrophyLogList } from "@/components/trophy-log/TrophyLogList";
+import { LOG_RENDER_CHUNK, TrophyLogList } from "@/components/trophy-log/TrophyLogList";
 import { DEFAULT_LOG_QUERY, LOG_SHOW_ALL_SLOT_ID, type LogQuery } from "@/src/trophy-log/query";
 import type { LogRow } from "@/src/trophy-log/load";
 
@@ -70,6 +70,30 @@ afterEach(() => {
   fetchMock.mockReset();
   sessionStorage.clear();
 });
+
+// A controllable requestAnimationFrame: callbacks wait until a test runs them.
+let frames = new Map<number, FrameRequestCallback>();
+let nextFrame = 1;
+const cancelled: number[] = [];
+const fakeFrames = () => {
+  frames = new Map();
+  nextFrame = 1;
+  cancelled.length = 0;
+  vi.stubGlobal("requestAnimationFrame", (cb: FrameRequestCallback) => {
+    frames.set(nextFrame, cb);
+    return nextFrame++;
+  });
+  vi.stubGlobal("cancelAnimationFrame", (id: number) => {
+    cancelled.push(id);
+    frames.delete(id);
+  });
+};
+const runFrame = () =>
+  act(async () => {
+    const [id, cb] = [...frames][0];
+    frames.delete(id);
+    cb(0);
+  });
 
 const list = (items: LogRow[], total: number, q = query, snapshotKey = "k") => (
   <TrophyLogList snapshotKey={snapshotKey} initial={{ items, total }} query={q} empty={EMPTY} />
@@ -150,6 +174,50 @@ describe("TrophyLogList", () => {
       expect(screen.queryByRole("button", { name: /Show all|Loading…/ })).toBeNull();
     });
 
+    it("adds a Show all result chunk by chunk", async () => {
+      fakeFrames();
+      fetchMock.mockResolvedValueOnce(reply(trophies(51, 650), 700));
+      render(list(trophies(1, 50), 700));
+      await act(async () => screen.getByRole("button", { name: "Show all" }).click());
+      expect(rows()).toBe(50 + LOG_RENDER_CHUNK);
+      expect(screen.getByRole("button", { name: "Loading…" })).toBeDisabled();
+
+      await runFrame();
+      expect(rows()).toBe(50 + 2 * LOG_RENDER_CHUNK);
+      expect(screen.getByRole("button", { name: "Loading…" })).toBeDisabled();
+      await runFrame();
+      expect(rows()).toBe(700);
+      expect(screen.queryByRole("button", { name: /Show all|Loading…/ })).toBeNull();
+      expect(frames.size).toBe(0);
+    });
+
+    it("asks for nothing more while chunks are pending", async () => {
+      fakeFrames();
+      fetchMock.mockResolvedValueOnce(reply(trophies(51, 650), 700));
+      render(list(trophies(1, 50), 700));
+      await act(async () => screen.getByRole("button", { name: "Show all" }).click());
+      await intersect();
+      await act(async () => screen.getByRole("button", { name: "Loading…" }).click());
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      await runFrame();
+      await intersect();
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    it("stops adding rows after unmount", async () => {
+      fakeFrames();
+      const error = vi.spyOn(console, "error").mockImplementation(() => {});
+      fetchMock.mockResolvedValueOnce(reply(trophies(51, 650), 700));
+      const { unmount } = render(list(trophies(1, 50), 700));
+      await act(async () => screen.getByRole("button", { name: "Show all" }).click());
+      const pending = [...frames.keys()];
+      expect(pending).toHaveLength(1);
+      unmount();
+      expect(cancelled).toContain(pending[0]);
+      expect(frames.size).toBe(0);
+      expect(error).not.toHaveBeenCalled();
+    });
+
     it("makes one request when scrolling races with Show all", async () => {
       fetchMock.mockReturnValueOnce(new Promise<Response>(() => {}));
       render(list(trophies(1, 50), 60));
@@ -208,6 +276,31 @@ describe("TrophyLogList", () => {
         expect(fetchMock).toHaveBeenCalledWith("/api/trophy-log?offset=0&limit=120");
         expect(rows()).toBe(120);
         expect(scrollTo).toHaveBeenCalledWith(0, 3400);
+      });
+
+      it("scrolls back as soon as the page is tall enough", async () => {
+        fakeFrames();
+        saveLogSnapshot({ key: "k", loaded: 900, scrollY: 3400 });
+        let height = 0;
+        vi.spyOn(document.documentElement, "scrollHeight", "get").mockImplementation(() => height);
+        vi.stubGlobal("innerHeight", 800);
+        fetchMock.mockResolvedValueOnce(reply(trophies(1, 900), 1000));
+        await act(async () => {
+          render(list(trophies(1, 50), 1000));
+        });
+        expect(rows()).toBe(LOG_RENDER_CHUNK);
+        expect(scrollTo).not.toHaveBeenCalled();
+
+        height = 4300; // 4300 - 800 = 3500 >= 3400
+        await runFrame();
+        expect(rows()).toBe(2 * LOG_RENDER_CHUNK);
+        expect(scrollTo).toHaveBeenCalledTimes(1);
+        expect(scrollTo).toHaveBeenCalledWith(0, 3400);
+
+        // Frames now: the next chunk, then the follow-up scroll. Run them all.
+        while (frames.size > 0) await runFrame();
+        expect(rows()).toBe(900);
+        expect(scrollTo).toHaveBeenCalledTimes(2); // once now, once on the next frame, no more
       });
 
       it("restores with the filters of the list", async () => {
