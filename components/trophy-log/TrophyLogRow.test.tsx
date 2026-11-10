@@ -1,9 +1,18 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
 import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import type { ReactNode } from "react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { TrophyLogRow } from "@/components/trophy-log/TrophyLogRow";
 import type { LogRow } from "@/src/trophy-log/load";
+
+vi.mock("next/link", () => ({
+  default: ({ href, prefetch, children, ...rest }: { href: string; prefetch?: boolean; children: ReactNode }) => (
+    <a href={href} data-prefetch={String(prefetch)} {...rest}>
+      {children}
+    </a>
+  ),
+}));
 
 const row = (over: Partial<LogRow> = {}): LogRow => ({
   key: "NPWR1_00:5",
@@ -72,5 +81,20 @@ describe("TrophyLogRow", () => {
     expect(container.querySelector("img.gc")).not.toHaveClass("icon");
     rerender(<TrophyLogRow row={row({ gameIsIcon: true })} />);
     expect(container.querySelector("img.gc")).toHaveClass("icon");
+  });
+
+  it("puts a plain image when the game image is a cover", () => {
+    const { container } = render(<TrophyLogRow row={row({ gameIsIcon: false })} />);
+    const img = container.querySelector("a img.gc");
+    expect(img).not.toBeNull();
+    expect(img).not.toHaveClass("icon");
+    expect(img).toHaveAttribute("src", "/media/game.png");
+  });
+
+  it("does not prefetch the game page", () => {
+    render(<TrophyLogRow row={row()} />);
+    const links = screen.getAllByRole("link");
+    expect(links).toHaveLength(2);
+    for (const a of links) expect(a).toHaveAttribute("data-prefetch", "false");
   });
 });

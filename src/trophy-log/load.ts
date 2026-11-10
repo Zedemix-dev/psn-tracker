@@ -36,6 +36,23 @@ const ofTitle = eq(trophies.titleId, titles.npCommunicationId);
 /** Spec 16.4, the order of compareEarnedOrder (src/lib/earned-order.ts): the number of each earned trophy. */
 const earnedNumber = sql<number>`(row_number() over (order by date_trunc('second', ${trophies.earnedAt}), (${trophies.type} = 'platinum'), ${trophies.trophyId}, ${trophies.titleId} collate "C"))::int`;
 
+/** Latin letters with accents and the letter they sort as. lower() only lowercases ASCII under collate "C", so the capitals are listed too. */
+const ACCENT_GROUPS: [string, string][] = [
+  ["a", "àáâãäåÀÁÂÃÄÅ"],
+  ["c", "çÇ"],
+  ["e", "èéêëÈÉÊË"],
+  ["i", "ìíîïÌÍÎÏ"],
+  ["n", "ñÑ"],
+  ["o", "òóôõöÒÓÔÕÖ"],
+  ["u", "ùúûüÙÚÛÜ"],
+  ["y", "ýÿÝ"],
+];
+const ACCENTED = ACCENT_GROUPS.map(([, from]) => from).join("");
+const BASE_LETTERS = ACCENT_GROUPS.map(([to, from]) => to.repeat(from.length)).join("");
+
+/** Spec 16.6: the name without case, accents and leading punctuation or spaces, in code order. */
+const nameKey = sql`regexp_replace(translate(lower(${trophies.name}), ${ACCENTED}, ${BASE_LETTERS}), '^[^a-z0-9]+', '') collate "C"`;
+
 function filtersFor(query: LogQuery): SQL | undefined {
   const conds: SQL[] = [];
   if (query.platform !== "all") conds.push(sql`${query.platform} = any(${titles.platforms})`);
@@ -57,7 +74,7 @@ function orderFor(query: LogQuery, n: SQLWrapper): SQL[] {
     case "date":
       return [sql`${n} ${dir}`];
     case "alphabetical":
-      return [sql`lower(${trophies.name}) collate "C" ${dir}`, newestFirst];
+      return [sql`${nameKey} ${dir}`, newestFirst];
     case "rarity":
       return [sql`${trophies.earnedRate} ${dir} nulls last`, newestFirst];
   }

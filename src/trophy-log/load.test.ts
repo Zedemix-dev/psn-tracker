@@ -151,6 +151,20 @@ describe("queryTrophyLog", () => {
     expect(await names("desc")).toEqual(["Gamma", "beta", "alpha", "Alpha"]);
   });
 
+  it("sorts by name ignoring accents and leading punctuation", async () => {
+    await insertTitle(db, { id: "A" });
+    const names = [" Journeyman", '"A hero"', "…There", "“Endless”", "À On", "Zebra", "apple"];
+    await insertTrophies(
+      db,
+      names.map((name, i) => ({ titleId: "A", trophyId: i + 1, name, earnedAt: at(i + 1) })),
+    );
+    const got = async (order: LogQuery["order"]) =>
+      (await log({ sort: "alphabetical", order })).items.map((r) => r.name);
+    const asc = ['"A hero"', "À On", "apple", "“Endless”", " Journeyman", "…There", "Zebra"];
+    expect(await got("asc")).toEqual(asc);
+    expect(await got("desc")).toEqual([...asc].reverse());
+  });
+
   it("sorts by rarity with unknown rates last in both orders, newest first on a tie", async () => {
     await insertTitle(db, { id: "A" });
     await insertTrophies(db, [
