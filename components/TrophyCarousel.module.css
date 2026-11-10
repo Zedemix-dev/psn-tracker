@@ -1,7 +1,7 @@
 .strip{display:flex;align-items:center;justify-content:space-between;gap:var(--gap);margin-top:16px}
 .item{flex:0 0 var(--icon);height:var(--icon);border:0;padding:0;background:none;color:inherit;font:inherit;cursor:pointer;border-radius:10px;display:flex;align-items:center;gap:12px;text-align:left;position:relative}
 .item[hidden]{display:none}
-.item img{width:var(--icon);height:var(--icon);flex:none;border-radius:10px;object-fit:cover;background:var(--surface-2)}
+.item img{width:var(--icon);height:var(--icon);flex:none;border-radius:10px;object-fit:cover}
 .item:not(.on):hover img{outline:2px solid #fff;outline-offset:2px}
 .on{flex:0 0 var(--card);min-width:0;padding:0 12px 0 0;background:var(--surface);box-shadow:inset 0 0 0 1px var(--line);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);overflow:hidden;cursor:default}
 .det{display:block;min-width:0;flex:1}
