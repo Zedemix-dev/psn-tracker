@@ -13,6 +13,47 @@ export const LOG_RENDER_CHUNK = 300;
 const findRow = (key: string) =>
   document.querySelector<HTMLElement>(`.log-row[data-key="${key.replace(/["\\]/g, "\\$&")}"]`);
 
+const SETTLE_INPUTS = ["wheel", "touchstart", "keydown", "pointerdown"] as const;
+
+/**
+ * Rows near the viewport are measured for real only in the rendering update after our scroll
+ * (content-visibility), and the ones above the saved row grow: it drifts. Put the row back at its
+ * offset once per frame until it stays within 1 px for 3 frames in a row (30 frames at most), or
+ * until the user takes over. Returns the stop function.
+ */
+function settleOnRow(
+  key: string,
+  offset: number,
+  frame: { current: number | null },
+  self: { current: (() => void) | null },
+): () => void {
+  let stable = 0;
+  let frames = 0;
+  const stop = () => {
+    for (const type of SETTLE_INPUTS) window.removeEventListener(type, stop);
+    if (frame.current !== null) cancelAnimationFrame(frame.current);
+    frame.current = null;
+    if (self.current === stop) self.current = null;
+  };
+  for (const type of SETTLE_INPUTS) window.addEventListener(type, stop, { passive: true });
+  const tick = () => {
+    frame.current = null;
+    frames++;
+    const el = findRow(key);
+    if (el) {
+      const top = el.getBoundingClientRect().top;
+      if (Math.abs(top - offset) > 1) {
+        stable = 0;
+        window.scrollTo(0, top + window.scrollY - offset);
+      } else stable++;
+    }
+    if (stable >= 3 || frames >= 30) stop();
+    else frame.current = requestAnimationFrame(tick);
+  };
+  frame.current = requestAnimationFrame(tick);
+  return stop;
+}
+
 /** The first row whose bottom is below the viewport top, and its offset from that top. */
 function topRow(): { key: string; offset: number } | null {
   const rows = document.querySelectorAll<HTMLElement>(".log-row[data-key]");
@@ -51,6 +92,7 @@ export function TrophyLogList({
   const queue = useRef<LogRow[]>([]);
   const chunkFrame = useRef<number | null>(null);
   const scrollFrame = useRef<number | null>(null);
+  const stopSettle = useRef<(() => void) | null>(null);
   const alive = useRef(true);
   const loaded = items.length;
   const more = loaded < total;
@@ -60,6 +102,7 @@ export function TrophyLogList({
     alive.current = true;
     return () => {
       alive.current = false;
+      stopSettle.current?.();
       queue.current = [];
       if (chunkFrame.current !== null) cancelAnimationFrame(chunkFrame.current);
       if (scrollFrame.current !== null) cancelAnimationFrame(scrollFrame.current);
@@ -168,9 +211,16 @@ export function TrophyLogList({
     }
     pendingScroll.current = null;
     window.scrollTo(0, y);
+    const anchorKey = target.anchorKey;
+    const anchorOffset = target.anchorOffset;
+    if (anchorKey !== undefined && anchorOffset !== undefined && findRow(anchorKey)) {
+      stopSettle.current?.();
+      stopSettle.current = settleOnRow(anchorKey, anchorOffset, scrollFrame, stopSettle);
+      return;
+    }
     scrollFrame.current = requestAnimationFrame(() => {
       scrollFrame.current = null;
-      window.scrollTo(0, place() ?? y);
+      window.scrollTo(0, y);
     });
   }, [items]);
 

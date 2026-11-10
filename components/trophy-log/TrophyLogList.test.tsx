@@ -327,27 +327,85 @@ describe("TrophyLogList", () => {
         expect(scrollTo).toHaveBeenCalledTimes(2); // once now, once on the next frame, no more
       });
 
-      it("scrolls back to the saved row, not the saved pixel", async () => {
-        fakeFrames();
-        Object.defineProperty(window, "scrollY", { value: 0, configurable: true });
-        saveLogSnapshot({ key: "k", loaded: 900, scrollY: 3400, anchorKey: "NPWR1_00:450", anchorOffset: -20 });
-        vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (this: HTMLElement) {
-          return { top: this.dataset.key === "NPWR1_00:450" ? 1000 : 0 } as DOMRect;
+      describe("keeping the saved row in place", () => {
+        // A tiny layout: the anchor row sits at document position docY(); its rect follows scrollY.
+        let y = 0;
+        let docY: () => number = () => 1000;
+        const ANCHOR = "NPWR1_00:450";
+        const restore = async () => {
+          fakeFrames();
+          y = 0;
+          scrollTo.mockImplementation(((_x: number, to: number) => {
+            y = to;
+          }) as never);
+          Object.defineProperty(window, "scrollY", { get: () => y, configurable: true });
+          saveLogSnapshot({ key: "k", loaded: 900, scrollY: 3400, anchorKey: ANCHOR, anchorOffset: -20 });
+          vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (this: HTMLElement) {
+            return { top: this.dataset.key === ANCHOR ? docY() - y : 0 } as DOMRect;
+          });
+          fetchMock.mockResolvedValueOnce(reply(trophies(1, 900), 1000));
+          let view!: ReturnType<typeof render>;
+          await act(async () => {
+            view = render(list(trophies(1, 50), 1000));
+          });
+          expect(rows()).toBe(LOG_RENDER_CHUNK); // row 450 is not in yet
+          expect(scrollTo).not.toHaveBeenCalled();
+          await runFrame(); // 600 rows: row 450 is there
+          expect(scrollTo).toHaveBeenCalledTimes(1);
+          expect(scrollTo).toHaveBeenCalledWith(0, 1020); // the row, not the saved pixel 3400
+          return view;
+        };
+        const runAll = async () => {
+          while (frames.size > 0) await runFrame();
+        };
+        beforeEach(() => {
+          docY = () => 1000;
         });
-        fetchMock.mockResolvedValueOnce(reply(trophies(1, 900), 1000));
-        await act(async () => {
-          render(list(trophies(1, 50), 1000));
-        });
-        expect(rows()).toBe(LOG_RENDER_CHUNK); // row 450 is not in yet
-        expect(scrollTo).not.toHaveBeenCalled();
 
-        await runFrame(); // 600 rows: row 450 is there
-        expect(scrollTo).toHaveBeenCalledTimes(1);
-        expect(scrollTo).toHaveBeenCalledWith(0, 1020);
-        while (frames.size > 0) await runFrame();
-        expect(rows()).toBe(900);
-        expect(scrollTo).toHaveBeenCalledTimes(2);
-        expect(scrollTo).toHaveBeenLastCalledWith(0, 1020);
+        it("scrolls back to the saved row, not the saved pixel, then leaves it alone once settled", async () => {
+          await restore();
+          await runAll();
+          expect(rows()).toBe(900);
+          expect(scrollTo).toHaveBeenCalledTimes(1);
+        });
+
+        it("re-places the row while rows above it grow, and stops after 3 stable frames", async () => {
+          await restore();
+          docY = () => 1000 + 2716; // rows above rendered with their real height
+          await runFrame();
+          await runAll();
+          expect(scrollTo).toHaveBeenCalledTimes(2);
+          expect(scrollTo).toHaveBeenLastCalledWith(0, 3736);
+          expect(frames.size).toBe(0);
+        });
+
+        it("gives up after 30 frames when the row never settles", async () => {
+          await restore();
+          let n = 0;
+          docY = () => 1000 + ++n * 50;
+          await runAll();
+          expect(scrollTo).toHaveBeenCalledTimes(1 + 30);
+          expect(frames.size).toBe(0);
+        });
+
+        it("stops on user input", async () => {
+          await restore();
+          docY = () => 5000;
+          act(() => {
+            window.dispatchEvent(new Event("wheel"));
+          });
+          await runAll();
+          expect(scrollTo).toHaveBeenCalledTimes(1);
+        });
+
+        it("schedules nothing after unmount", async () => {
+          const { unmount } = await restore();
+          unmount();
+          expect(frames.size).toBe(0);
+          docY = () => 5000;
+          window.dispatchEvent(new Event("wheel"));
+          expect(scrollTo).toHaveBeenCalledTimes(1);
+        });
       });
 
       it("falls back to the saved pixel when the saved row never comes", async () => {
