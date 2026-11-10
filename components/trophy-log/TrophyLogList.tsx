@@ -2,13 +2,26 @@
 
 import { createPortal } from "react-dom";
 import { memo, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { saveLogSnapshot, takeLogSnapshot } from "@/components/trophy-log/log-snapshot";
+import { saveLogSnapshot, takeLogSnapshot, type LogSnapshot } from "@/components/trophy-log/log-snapshot";
 import { TrophyLogRow } from "@/components/trophy-log/TrophyLogRow";
 import type { LogPage, LogRow } from "@/src/trophy-log/load";
 import { LOG_SHOW_ALL_SLOT_ID, logQueryParams, type LogQuery } from "@/src/trophy-log/query";
 
 /** Rows added to the page per animation frame when a big result arrives (about 80 ms each). */
 export const LOG_RENDER_CHUNK = 300;
+
+const findRow = (key: string) =>
+  document.querySelector<HTMLElement>(`.log-row[data-key="${key.replace(/["\\]/g, "\\$&")}"]`);
+
+/** The first row whose bottom is below the viewport top, and its offset from that top. */
+function topRow(): { key: string; offset: number } | null {
+  const rows = document.querySelectorAll<HTMLElement>(".log-row[data-key]");
+  for (const el of rows) {
+    const rect = el.getBoundingClientRect();
+    if (rect.bottom > 0) return { key: el.dataset.key!, offset: rect.top };
+  }
+  return null;
+}
 
 // Rows keep their identity from one chunk to the next, so only the new ones render.
 const Row = memo(TrophyLogRow);
@@ -33,7 +46,7 @@ export function TrophyLogList({
   const [slot, setSlot] = useState<HTMLElement | null>(null);
   const busy = useRef(false);
   const sentinel = useRef<HTMLDivElement>(null);
-  const pendingScroll = useRef<number | null>(null);
+  const pendingScroll = useRef<Pick<LogSnapshot, "scrollY" | "anchorKey" | "anchorOffset"> | null>(null);
   // Rows received but not rendered yet, one chunk per animation frame (see LOG_RENDER_CHUNK).
   const queue = useRef<LogRow[]>([]);
   const chunkFrame = useRef<number | null>(null);
@@ -115,7 +128,7 @@ export function TrophyLogList({
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const page: LogPage = await res.json();
         if (cancelled) return;
-        pendingScroll.current = snap.scrollY;
+        pendingScroll.current = snap;
         setTotal(page.total);
         enqueue(page.items, true);
       } catch {
@@ -130,26 +143,47 @@ export function TrophyLogList({
     };
   }, [snapshotKey, sort, order, platform, rarity, type, enqueue]);
 
-  // Scroll as soon as the restored rows make the page tall enough to reach the saved place, or
-  // after the last chunk. Again on the next frame, in case the router's own scroll handling ran
-  // in between.
+  // Back: scroll to the saved row (not the saved pixel: rows above it take their real height once
+  // rendered). Only once the chunk holding that row is in the DOM; if it never comes, scrollY after
+  // the last chunk. Again on the next frame, in case the router's own scroll handling ran between.
   useLayoutEffect(() => {
-    const y = pendingScroll.current;
-    if (y === null) return;
-    const reachable = document.documentElement.scrollHeight - window.innerHeight >= y;
-    if (queue.current.length > 0 && !reachable) return;
+    const target = pendingScroll.current;
+    if (target === null) return;
+    const done = queue.current.length === 0;
+    const place = () => {
+      const el = target.anchorKey !== undefined ? findRow(target.anchorKey) : null;
+      if (el && target.anchorOffset !== undefined) {
+        return el.getBoundingClientRect().top + window.scrollY - target.anchorOffset;
+      }
+      return target.anchorKey === undefined ? target.scrollY : null;
+    };
+    let y = place();
+    if (y === null) {
+      if (!done) return;
+      y = target.scrollY;
+    }
+    if (target.anchorKey === undefined && !done) {
+      // No row saved (older snapshot): wait until the page is tall enough for the pixel.
+      if (document.documentElement.scrollHeight - window.innerHeight < y) return;
+    }
     pendingScroll.current = null;
     window.scrollTo(0, y);
     scrollFrame.current = requestAnimationFrame(() => {
       scrollFrame.current = null;
-      window.scrollTo(0, y);
+      window.scrollTo(0, place() ?? y);
     });
   }, [items]);
 
   const rememberPlace = (e: React.MouseEvent) => {
     if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
     if ((e.target as HTMLElement).closest('a[href^="/games/"]')) {
-      saveLogSnapshot({ key: snapshotKey, loaded: items.length, scrollY: window.scrollY });
+      const top = topRow();
+      saveLogSnapshot({
+        key: snapshotKey,
+        loaded: items.length,
+        scrollY: window.scrollY,
+        ...(top ? { anchorKey: top.key, anchorOffset: top.offset } : {}),
+      });
     }
   };
 

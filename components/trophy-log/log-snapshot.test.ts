@@ -15,6 +15,15 @@ describe("log snapshot", () => {
     expect(takeLogSnapshot("k")).not.toBeNull(); // still there after a second mount
   });
 
+  it("round-trips the anchor row and accepts an old snapshot without it", () => {
+    saveLogSnapshot({ key: "k", loaded: 120, scrollY: 3400, anchorKey: "G:5", anchorOffset: -12.5 });
+    expect(takeLogSnapshot("k")).toEqual({ key: "k", loaded: 120, scrollY: 3400, anchorKey: "G:5", anchorOffset: -12.5 });
+    saveLogSnapshot({ key: "k", loaded: 120, scrollY: 3400 });
+    expect(takeLogSnapshot("k")).toEqual({ key: "k", loaded: 120, scrollY: 3400 });
+    saveLogSnapshot({ key: "k", loaded: 120, scrollY: 3400, anchorKey: "G:5" });
+    expect(takeLogSnapshot("k")).toEqual({ key: "k", loaded: 120, scrollY: 3400 });
+  });
+
   it("stores no rows", () => {
     saveLogSnapshot({ key: "k", loaded: 120, scrollY: 3400 });
     expect(Object.keys(JSON.parse(sessionStorage.getItem("trophy-log-list")!)).sort()).toEqual([

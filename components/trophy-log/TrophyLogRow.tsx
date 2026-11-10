@@ -8,7 +8,7 @@ import type { LogRow } from "@/src/trophy-log/load";
 export function TrophyLogRow({ row }: { row: LogRow }) {
   const href = `/games/${encodeURIComponent(row.gameId)}`;
   return (
-    <div className="log-row">
+    <div className="log-row" data-key={row.key}>
       <Link href={href} prefetch={false} className="gl">
         {row.gameIsIcon ? (
           <TileImage tile className="gc icon" src={row.gameSrc} alt={row.gameName} loading="lazy" />

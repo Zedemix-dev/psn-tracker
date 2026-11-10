@@ -327,6 +327,59 @@ describe("TrophyLogList", () => {
         expect(scrollTo).toHaveBeenCalledTimes(2); // once now, once on the next frame, no more
       });
 
+      it("scrolls back to the saved row, not the saved pixel", async () => {
+        fakeFrames();
+        Object.defineProperty(window, "scrollY", { value: 0, configurable: true });
+        saveLogSnapshot({ key: "k", loaded: 900, scrollY: 3400, anchorKey: "NPWR1_00:450", anchorOffset: -20 });
+        vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (this: HTMLElement) {
+          return { top: this.dataset.key === "NPWR1_00:450" ? 1000 : 0 } as DOMRect;
+        });
+        fetchMock.mockResolvedValueOnce(reply(trophies(1, 900), 1000));
+        await act(async () => {
+          render(list(trophies(1, 50), 1000));
+        });
+        expect(rows()).toBe(LOG_RENDER_CHUNK); // row 450 is not in yet
+        expect(scrollTo).not.toHaveBeenCalled();
+
+        await runFrame(); // 600 rows: row 450 is there
+        expect(scrollTo).toHaveBeenCalledTimes(1);
+        expect(scrollTo).toHaveBeenCalledWith(0, 1020);
+        while (frames.size > 0) await runFrame();
+        expect(rows()).toBe(900);
+        expect(scrollTo).toHaveBeenCalledTimes(2);
+        expect(scrollTo).toHaveBeenLastCalledWith(0, 1020);
+      });
+
+      it("falls back to the saved pixel when the saved row never comes", async () => {
+        fakeFrames();
+        saveLogSnapshot({ key: "k", loaded: 900, scrollY: 3400, anchorKey: "NPWR1_00:5000", anchorOffset: 0 });
+        fetchMock.mockResolvedValueOnce(reply(trophies(1, 900), 1000));
+        await act(async () => {
+          render(list(trophies(1, 50), 1000));
+        });
+        await runFrame();
+        expect(scrollTo).not.toHaveBeenCalled();
+        await runFrame();
+        expect(rows()).toBe(900);
+        expect(scrollTo).toHaveBeenCalledWith(0, 3400);
+      });
+
+      it("saves the row at the top of the viewport with its offset", async () => {
+        history.pushState(null, "");
+        render(list(trophies(1, 50), 200));
+        vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (this: HTMLElement) {
+          const n = Number(this.dataset.key?.split(":")[1] ?? 0);
+          return { top: (n - 3) * 100 - 40, bottom: (n - 3) * 100 + 60 } as DOMRect;
+        });
+        const link = document.querySelector<HTMLAnchorElement>('a[href^="/games/"]')!;
+        link.addEventListener("click", (e) => e.preventDefault());
+        await act(async () => link.click());
+        expect(JSON.parse(sessionStorage.getItem("trophy-log-list")!)).toMatchObject({
+          anchorKey: "NPWR1_00:3",
+          anchorOffset: -40,
+        });
+      });
+
       it("restores with the filters of the list", async () => {
         fetchMock.mockResolvedValueOnce(reply(trophies(1, 120), 200));
         await act(async () => {
