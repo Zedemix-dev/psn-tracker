@@ -103,3 +103,9 @@ export function formatTime(d: Date): string {
   const p = parts(d);
   return `${p.hour}:${p.minute}:${p.second}`;
 }
+
+/** formatDate and formatTime from a single formatToParts call (one per row of a long list). */
+export function formatDateAndTime(d: Date): { date: string; time: string } {
+  const p = parts(d);
+  return { date: `${p.day} ${p.month} ${p.year}`, time: `${p.hour}:${p.minute}:${p.second}` };
+}

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   formatDate,
+  formatDateAndTime,
   formatDateTime,
   formatDateTimeSeconds,
   formatDuration,
@@ -82,5 +83,15 @@ describe("formatDateTimeSeconds", () => {
   it("adds the seconds and leaves formatDateTime unchanged", () => {
     expect(formatDateTimeSeconds(new Date("2026-11-04T23:16:37Z"))).toBe("5 Nov 2026, 00:16:37");
     expect(formatDateTime(new Date("2026-11-04T23:16:37Z"))).toBe("5 Nov 2026, 00:16");
+  });
+});
+
+describe("formatDateAndTime", () => {
+  it("matches formatDate and formatTime in one call", () => {
+    for (const iso of ["2022-07-17T23:21:00Z", "2022-07-17T23:21:07Z", "2026-11-04T23:16:37Z"]) {
+      const d = new Date(iso);
+      expect(formatDateAndTime(d)).toEqual({ date: formatDate(d), time: formatTime(d) });
+    }
+    expect(formatDateAndTime(new Date("2022-07-17T23:21:07Z"))).toEqual({ date: "18 Jul 2022", time: "01:21:07" });
   });
 });

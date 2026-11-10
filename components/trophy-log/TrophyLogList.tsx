@@ -162,6 +162,7 @@ export function TrophyLogList({
     if (!snap) return;
     let cancelled = false;
     busy.current = true;
+    setLoadingAll(true); // "Show all" reads Loading… (disabled) until the rows are back
     (async () => {
       try {
         const params = logQueryParams({ sort, order, platform, rarity, type });
@@ -176,7 +177,10 @@ export function TrophyLogList({
         enqueue(page.items, true);
       } catch {
         // The first page stays, from the top.
-        if (!cancelled) busy.current = false;
+        if (!cancelled) {
+          busy.current = false;
+          setLoadingAll(false);
+        }
       }
     })();
     return () => {

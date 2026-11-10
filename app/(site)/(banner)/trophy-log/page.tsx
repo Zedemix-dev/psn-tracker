@@ -42,8 +42,8 @@ export default async function TrophyLogPage({ searchParams }: { searchParams: Pr
         <div className="log-head">
           <h2>{name}&apos;s Trophy Log</h2>
           <div className="log-aside">
-            <span id={LOG_SHOW_ALL_SLOT_ID} />
             <span>{shownText(overall, log.total, isFiltered(query))}</span>
+            <span id={LOG_SHOW_ALL_SLOT_ID} />
           </div>
         </div>
         <TrophyLogControls query={query} />

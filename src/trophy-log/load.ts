@@ -2,7 +2,7 @@ import { and, eq, ne, sql, type SQL, type SQLWrapper } from "drizzle-orm";
 import type { Db } from "@/src/db/client";
 import { titles, trophies, trophyGroups, type TrophyType } from "@/src/db/schema";
 import { loadSiblingIndex, withSiblings } from "@/src/games/siblings";
-import { formatDate, formatPercent, formatTime } from "@/src/lib/format";
+import { formatDateAndTime, formatPercent } from "@/src/lib/format";
 import { RARITY_RANGES, rarityTier, type RarityTier } from "@/src/lib/rarity";
 import { earnedVisible } from "@/src/stats/trophies";
 import { loadImageMap, mediaSrc } from "@/src/sync/images";
@@ -166,6 +166,7 @@ export async function queryTrophyLog(
 
   const items = rows.map((r): LogRow => {
     const rate = r.earnedRate == null ? null : Number(r.earnedRate);
+    const { date, time } = formatDateAndTime(r.earnedAt!);
     return {
       key: `${r.titleId}:${r.trophyId}`,
       n: r.n,
@@ -177,8 +178,8 @@ export async function queryTrophyLog(
       gameName: r.gameName,
       ...gameOf(r),
       dlc: r.dlc,
-      date: formatDate(r.earnedAt!),
-      time: formatTime(r.earnedAt!),
+      date,
+      time,
       ratePct: rate == null ? null : formatPercent(rate),
       tier: rate == null ? null : rarityTier(rate),
       unobtainable: r.unobtainable,

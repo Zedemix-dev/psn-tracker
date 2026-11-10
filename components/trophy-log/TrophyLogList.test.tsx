@@ -170,6 +170,50 @@ describe("TrophyLogList", () => {
     });
     afterEach(() => slot.remove());
 
+    describe("during a Back restore", () => {
+      const pendingRestore = () => {
+        let resolve!: (r: Response) => void;
+        fetchMock.mockReturnValueOnce(new Promise<Response>((r) => (resolve = r)));
+        return (r: Response) => resolve(r);
+      };
+      beforeEach(() => {
+        fakeFrames();
+        saveLogSnapshot({ key: "k", loaded: 900, scrollY: 3400 });
+      });
+
+      it("reads Loading… and is disabled while rows come back, then Show all if rows remain", async () => {
+        const resolve = pendingRestore();
+        await act(async () => {
+          render(list(trophies(1, 50), 1000));
+        });
+        expect(screen.getByRole("button", { name: "Loading…" })).toBeDisabled();
+        await act(async () => resolve(reply(trophies(1, 900), 1000)));
+        expect(screen.getByRole("button", { name: "Loading…" })).toBeDisabled();
+        while (frames.size > 0) await runFrame();
+        expect(rows()).toBe(900);
+        expect(screen.getByRole("button", { name: "Show all" })).toBeEnabled();
+      });
+
+      it("is gone after the last chunk when everything is back", async () => {
+        const resolve = pendingRestore();
+        await act(async () => {
+          render(list(trophies(1, 50), 900));
+        });
+        expect(screen.getByRole("button", { name: "Loading…" })).toBeDisabled();
+        await act(async () => resolve(reply(trophies(1, 900), 900)));
+        while (frames.size > 0) await runFrame();
+        expect(screen.queryByRole("button", { name: /Show all|Loading…/ })).toBeNull();
+      });
+
+      it("reads Show all again when the restore fails", async () => {
+        fetchMock.mockRejectedValueOnce(new Error("offline"));
+        await act(async () => {
+          render(list(trophies(1, 50), 1000));
+        });
+        expect(screen.getByRole("button", { name: "Show all" })).toBeEnabled();
+      });
+    });
+
     it("loads the rest with Show all, then disappears", async () => {
       let resolve!: (r: Response) => void;
       fetchMock.mockReturnValueOnce(new Promise<Response>((r) => (resolve = r)));
