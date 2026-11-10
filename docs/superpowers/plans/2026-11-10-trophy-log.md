@@ -1,5 +1,7 @@
 # PSN Tracker : page Trophy Log, Implementation Plan
 
+> **Statut :** terminé le 10 novembre 2026, tâches 1 à 9, sur la branche `feat/trophy-log`. Les tâches 8 et 9 ont été ajoutées après la vérification avec les vraies données. Les cases ne sont pas cochées : la progression se lit dans `git log` et dans `docs/ETAT-DU-PROJET.md`.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal :** remplacer « Coming soon » de l'onglet Trophy Log par la liste de tous les trophées obtenus : une ligne par trophée avec son numéro d'obtention, tri, sens, filtres, Reset et défilement 50 par 50. Corriger au passage la page d'un jeu, l'heure des trophées et les fonds d'icônes (spec 16.7).

@@ -579,6 +579,7 @@ Il doit aussi vérifier en pratique la détection des nouveaux DLC (6.4).
 - **Jeux aux trophées non obtenables :** fonctionnalité demandée le 8 novembre 2026, cadrée, maquette validée, construite et vérifiée avec les vraies données le 9 novembre 2026, décrite en 14. Fusionnée dans `main` le 9 novembre 2026 (PR #6).
 - **Ordre de la suite [décidé, 9 novembre 2026] :** les pages Plat Wall, Trophy Log, Trophy Advisor et Stats sont construites **avant** le déploiement sur le NAS.
 - **Page Plat Wall :** cadrée, maquette validée, construite et vérifiée avec les vraies données le 9 novembre 2026, décrite en 15. Fusionnée dans `main` le 9 novembre 2026 (PR #9).
+- **Page Trophy Log :** cadrée, maquette validée, construite et vérifiée avec les vraies données le 10 novembre 2026, décrite en 16. Branche `feat/trophy-log`, Pull Request à créer et fusionner par l'utilisateur.
 
 ## 14. Jeux aux trophées non obtenables
 **[décidé, cadrage du 9 novembre 2026]** Fonctionnalité construite à part, sur la branche `feat/unobtainable`. Maquette validée le 9 novembre 2026 : `docs/superpowers/specs/2026-11-09-psn-tracker-maquette-nonobt.html`, référence pour l'aspect et le CSS. Les choix que l'utilisateur n'a pas faits lui-même sont marqués **[choix de Claude]**.

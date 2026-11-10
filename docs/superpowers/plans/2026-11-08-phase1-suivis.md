@@ -6,6 +6,9 @@ Relevés pendant la phase 1 (relectures par tâche, relecture finale de la branc
 - **Arrêt propre du worker** (`docker stop`) : jamais testé dans un conteneur. Le log doit montrer la fin de la synchro en cours, ou un run marqué « Interrupted » au redémarrage.
 - **Réglage des en-têtes du reverse proxy DSM** : après la première connexion en https, le cookie `psnt_session` doit avoir l'option Secure. La procédure est dans `deploy/README.md`, étape 6.4.
 - **Rôle Admin du package GHCR**, à donner une seule fois pour que le nettoyage des anciennes images fonctionne (`deploy/README.md`, étape 1.5).
+- **Trophy Log sur le NAS** (spec 16.8) :
+  - mesurer « Show all » contre les objectifs fixés en local : premières lignes en moins de 1 s, la page jamais figée plus de 250 ms, la liste complète en moins de 5 s. La réponse complète (environ 5 Mo de JSON) arrive avant le premier paquet. Si les premières lignes tardent, demander d'abord les 300 premières lignes à part ;
+  - refaire le retour depuis une page de jeu après « Show all » : on doit retrouver la même ligne.
 - **Export PNG du Plat Wall** (spec 15.8), impossible à vérifier sans Docker ni NAS : le texte s'affiche bien en Sora dans l'image Docker ; la fabrication reste largement sous la limite de 60 s de nginx, avec Rarity et Name cochés sur les 230 platines ; « Download PNG » enregistre le fichier sur un vrai iPhone (vérifier avec Art + Rarity + Name sur les 230 platines, soit environ 20 millions de pixels, car « Download PNG » ne devient actif qu'une fois l'image d'aperçu chargée).
 
 ## Robustesse et sécurité
