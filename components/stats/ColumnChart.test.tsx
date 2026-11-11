@@ -123,6 +123,79 @@ describe("<ColumnChart>", () => {
     expect(container.innerHTML).not.toContain("Infinity");
   });
 
+  describe("with minSlot", () => {
+    const many = { ...props, labels: Array.from({ length: 30 }, (_, i) => `'${i}`), values: Array.from({ length: 30 }, (_, i) => i + 1), minSlot: 24 };
+    const scrollWidth = (n: number) => vi.spyOn(HTMLElement.prototype, "scrollWidth", "get").mockReturnValue(n);
+
+    it("keeps the columns 18 px wide and scrolls when they do not fit", () => {
+      stubMeasure(400);
+      const { container } = draw(many);
+      const side = container.querySelector(".st-side")!;
+      expect(side.querySelector("svg")).toHaveAttribute("width", "724");
+      const hits = side.querySelectorAll("rect.hit");
+      expect(hits).toHaveLength(30);
+      expect(hits[0]).toHaveAttribute("width", "24");
+      const d = side.querySelector("path.col")!.getAttribute("d")!;
+      const m = /^M([\d.]+),[\d.]+V[\d.]+Q[\d.]+,[\d.]+ [\d.]+,[\d.]+H([\d.]+)Q/.exec(d)!;
+      expect(Number(m[1])).toBe(3);
+      const axis = container.querySelector("svg.st-yaxis")!;
+      expect(axis).toHaveAttribute("width", "44");
+      expect(side.contains(axis)).toBe(false);
+      expect(axis.querySelectorAll("text").length).toBeGreaterThan(0);
+      expect(side.querySelector("svg")).toHaveAttribute("aria-label", "Games by release year");
+    });
+
+    it("fills the width when the columns fit", () => {
+      stubMeasure(600);
+      const { container } = draw({ ...many, labels: props.labels, values: props.values });
+      expect(container.querySelector(".st-side svg")).toHaveAttribute("width", "524");
+    });
+
+    it("opens on the most recent years", () => {
+      stubMeasure(400);
+      scrollWidth(724);
+      const { container } = draw(many);
+      expect((container.querySelector(".st-side") as HTMLElement).scrollLeft).toBe(724);
+    });
+
+    it("shows the tooltip of a column in scroll mode", () => {
+      stubMeasure(400);
+      const { container } = draw(many);
+      fireEvent.pointerMove(container.querySelectorAll(".st-side rect.hit")[1], { clientX: 200, clientY: 100 });
+      expect(document.body.querySelector(".st-tip")).toHaveTextContent("2021");
+    });
+
+    it("keeps the tooltip on a mouse click without a drag", () => {
+      stubMeasure(400);
+      scrollWidth(724);
+      const { container } = draw(many);
+      const side = container.querySelector(".st-side") as HTMLElement;
+      const before = side.scrollLeft;
+      const hit = container.querySelectorAll(".st-side rect.hit")[1];
+      fireEvent.pointerDown(hit, { pointerType: "mouse", button: 0, buttons: 1, clientX: 200, clientY: 100 });
+      fireEvent.pointerUp(hit, { pointerType: "mouse", button: 0, clientX: 200, clientY: 100 });
+      expect(document.body.querySelector(".st-tip")).toHaveTextContent("2021");
+      expect(side.scrollLeft).toBe(before);
+    });
+
+    it("has no NaN with one value or only zeros", () => {
+      stubMeasure(400);
+      for (const values of [[7], [0, 0, 0]]) {
+        const { container } = draw({ ...many, labels: values.map(String), values });
+        expect(container.innerHTML).not.toContain("NaN");
+        expect(container.innerHTML).not.toContain("Infinity");
+        cleanup();
+      }
+    });
+
+    it("renders neither a scroller nor an axis without minSlot", () => {
+      stubMeasure(600);
+      const { container } = draw();
+      expect(container.querySelector(".st-side")).toBeNull();
+      expect(container.querySelector("svg.st-yaxis")).toBeNull();
+    });
+  });
+
   it("thins the labels below the given width", () => {
     stubMeasure(300);
     const { container } = draw({ ...props, labelEvery: { every: 2, belowWidth: 700 } });

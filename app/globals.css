@@ -520,6 +520,10 @@ button.select.log-dir.on{border-color:var(--accent)}
 .st-side.fl{-webkit-mask-image:linear-gradient(to right,transparent 0,#000 32px);mask-image:linear-gradient(to right,transparent 0,#000 32px)}
 .st-side.fr{-webkit-mask-image:linear-gradient(to left,transparent 0,#000 32px);mask-image:linear-gradient(to left,transparent 0,#000 32px)}
 .st-side.fl.fr{-webkit-mask-image:linear-gradient(to right,transparent 0,#000 32px,#000 calc(100% - 32px),transparent 100%);mask-image:linear-gradient(to right,transparent 0,#000 32px,#000 calc(100% - 32px),transparent 100%)}
+.st-yc{display:flex}
+.st-yc .st-yaxis{flex:none}
+.st-yc .st-side{flex:1;min-width:0}
+.st-yc svg{width:auto}
 .st-chart text{font-family:var(--font);font-size:11px;fill:var(--muted);font-variant-numeric:tabular-nums}
 .st-chart text.peak{fill:var(--text);font-weight:600}
 /* Donuts */

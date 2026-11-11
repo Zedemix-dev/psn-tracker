@@ -124,6 +124,7 @@ export function StatsPanels({ data }: { data: StatsData }) {
                 ariaLabel="Games by release year"
                 unit={["game", "games"]}
                 titleOf={(i) => String(data.years[i].year)}
+                minSlot={24}
               />
             )}
             {noYear && <div className="st-note">{noYear}</div>}

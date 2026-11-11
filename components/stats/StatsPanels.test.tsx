@@ -139,6 +139,14 @@ describe("<StatsPanels>", () => {
     expect(texts).toEqual(expect.arrayContaining(["'14", "'15", "'16"]));
   });
 
+  it("scrolls the release years sideways, and only them", () => {
+    const { container } = draw(data());
+    const panel = (title: string) => [...container.querySelectorAll("section")].find((s) => s.querySelector("h2")?.textContent === title)!;
+    expect(panel("Games by release year").querySelector(".st-side")).not.toBeNull();
+    expect(panel("Trophies by time").querySelector(".st-side")).toBeNull();
+    expect(panel("Trophies by day").querySelector(".st-side")).toBeNull();
+  });
+
   it("shows No trophies yet. alone when nothing is earned", () => {
     const { container } = draw(data({ total: 0 }));
     expect(container.querySelectorAll("section")).toHaveLength(1);
