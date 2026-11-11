@@ -57,6 +57,7 @@ Le site doit reprendre **la lisibilité épurée de psnprofiles** et **la prése
   - le nom de chaque jour affiché (Mon, Tue … Sun) ;
   - des cases carrées, plus intenses selon le nombre de trophées du jour, avec le nombre exact en infobulle ;
   - un résumé en dessous : nombre de trophées, nombre de platines, meilleur jour.
+  - **[décidé, 11 novembre 2026]** Sur la page Stats, il prend toute la largeur et devient « Last 12 months », avec en plus la plus longue série de jours (18.5).
 - **Le modèle de données doit toutefois stocker dès maintenant tout ce dont ces pages auront besoin** : dates d'obtention, trophées non obtenus avec leur rareté, groupes DLC, temps de jeu, etc. Ces pages n'auront alors pas besoin de resynchroniser l'historique.
 
 ## 4. Contraintes techniques
@@ -1068,3 +1069,194 @@ Elle remplace la page « Coming soon » de cet onglet.
 - Aucun fond derrière les icônes à fond transparent, aucune image rectangulaire.
 - Page Games : « Show all » après le nombre.
 - L'affichage téléphone.
+
+## 18. Page Stats
+**[décidé, brainstorming du 11 novembre 2026]** Page construite à part, sur la branche `feat/stats`. Maquette validée le 11 novembre 2026 (v4) : `docs/superpowers/specs/2026-11-11-psn-tracker-maquette-stats.html`, référence pour l'aspect et le CSS, avec ses données intégrées. Les choix que l'utilisateur n'a pas faits lui-même sont marqués **[choix de Claude]**. Il a validé la maquette qui les applique.
+
+### 18.1 Intention
+L'utilisateur veut **voir l'histoire de sa chasse aux trophées sur une seule page** : ce qu'il a fait ces derniers mois, comment se répartit son profil, comment il a progressé depuis 2016, et quels trophées l'ont fait passer chaque palier de niveau. Ses captures de psnprofiles servent de modèle : les camemberts, « Monthly Activity », « Trophy Progression », « Trophies by Time », « Trophies by Day » et le « Level History ». La page les reprend dans le style du site, avec la rareté PSN, et y ajoute le calendrier retiré de Games (section 3).
+
+### 18.2 Objectifs, non-objectifs, anti-objectifs
+**Objectifs**
+- Voir l'activité récente jour par jour, avec le meilleur jour et la plus longue série de jours.
+- Voir la répartition de la rareté, de la complétion, des points PSN et des plateformes.
+- Voir l'activité par mois et la progression par type de trophée depuis la création du profil.
+- Voir à quelles heures et quels jours les trophées tombent.
+- Voir ses jeux par année de sortie, par éditeur et par genre.
+- Voir la courbe de son niveau et le trophée qui a fait passer chaque palier de 10 niveaux.
+
+**Non-objectifs**
+- **[décidé]** Le zoom à la souris des courbes de psnprofiles.
+- **[décidé]** Une répartition par développeur : le PSN ne fournit que l'éditeur. L'utilisateur a validé la maquette avec les éditeurs à la place, sans source externe.
+- **[décidé]** Une catégorie « Multiplatform » (18.6).
+- Les colonnes « Achievers » et « Owners » de psnprofiles : le PSN ne fournit que le pourcentage.
+- Des filtres ou des réglages sur cette page **[choix de Claude : non demandés]**.
+
+**Anti-objectifs** (ce qui serait un échec même si tout fonctionne)
+- Un palier de niveau attribué à un autre trophée que celui qui a réellement fait franchir le seuil de points.
+- Un jour, un mois, une heure comptés en UTC au lieu de l'heure de Paris : les chiffres ne correspondraient plus aux dates affichées ailleurs sur le site.
+- Un fond, une ombre ou un cadre derrière une icône de trophée à fond transparent (16.7).
+- Une image rectangulaire (8.9).
+- Une infobulle coupée par un panneau ou par le bord de l'écran.
+- Un défilement horizontal de la page, sur téléphone comme sur PC.
+
+### 18.3 Ce qu'on a vérifié sur les vraies données (11 novembre 2026)
+Sur une base synchronisée le 9 novembre 2026 :
+- 11 636 trophées obtenus, tous datés et avec une rareté PSN, sur 266 listes. Premier trophée le 10 novembre 2016.
+- 350 850 points, soit le niveau 536 à 61 %, exactement ce que donne le PSN (`profile.level` et `profile.level_progress`). La table de 18.10 est donc la bonne.
+- Les paliers tombent sur les mêmes trophées que psnprofiles, à la seconde près, une fois l'heure convertie à Paris :
+
+| Niveau | Trophée | Date à Paris |
+|---|---|---|
+| 530 | Do No Evil | 24 Sep 2026, 17:49:53 |
+| 520 | Agile Gladiator | 24 Jul 2026, 20:13:07 |
+| 510 | « This is too much power for one person. » | 23 May 2026, 15:38:01 |
+| 500 | Numismatist | 22 Jan 2024, 19:26:26 |
+| 490 | Getting to Know You | 2 Sep 2022, 21:49:12 |
+
+- 53 paliers, du niveau 10 au niveau 530.
+- Complétion : 241 jeux de 80 à 100 %, 10 de 60 à 79, 8 de 40 à 59, 2 de 20 à 39, 5 de 0 à 19, comme sur psnprofiles. Moyenne par jeu : 94,17 %.
+- Rareté PSN : 1 742 Ultra rare, 1 445 Very rare, 2 339 Rare, 4 321 Uncommon, 1 789 Common. Moyenne : 26,55 %.
+- Points : 69 000 platine, 89 100 or, 73 020 argent, 119 730 bronze.
+- Plateformes (18.6) : 98 PS5, 168 PS4.
+- Sur les 12 derniers mois : 1 773 trophées, 45 platines, meilleur jour 35 trophées le 31 août 2026, plus longue série 61 jours et 515 trophées, du 13 juillet au 11 septembre 2026.
+- Après l'emprunt à une autre version du même jeu (8.9) : 25 jeux sans date de sortie, 6 sans éditeur, 6 sans genre. 63 éditeurs différents. 16 genres, un jeu en ayant jusqu'à 3.
+
+### 18.4 La page `/stats`
+Elle remplace la page « Coming soon » de cet onglet.
+- **Haut de page [choix de Claude]** : comme le Trophy Log (16.5), la bannière, le bandeau profil avec « Sync now » et les 6 cases. Pas de carrousel.
+- **[décidé]** Sous ce haut de page, sur toute la largeur et dans cet ordre :
+  1. le calendrier (18.5) ;
+  2. les 4 camemberts (18.6), sur une ligne ;
+  3. « Monthly activity », puis « Trophy progression » (18.7), chacun sur toute la largeur ;
+  4. « Trophies by time » aux deux tiers et « Trophies by day » au tiers restant (18.8) ;
+  5. « Games by release year », « Games by publisher » et « Games by genre » (18.9), trois colonnes égales ;
+  6. « Level history » (18.10), tout en bas.
+- Chaque bloc est un panneau `.glass` avec son titre en haut à gauche.
+- **[choix de Claude]** La page se met à jour après une synchro sans recharger, comme les autres.
+- **[choix de Claude]** Sans aucun trophée obtenu : un seul panneau « No trophies yet. » sous le haut de page.
+- **Jeux pris en compte** : ceux de Games, jeux masqués sur le PSN exclus. Un jeu sur deux plateformes a deux listes distinctes et compte deux fois, comme dans Games. **[choix de Claude]** Les graphiques de jeux (complétion, plateformes, année, éditeur, genre) respectent « Hide 0% games », comme les 6 cases. Les graphiques de trophées n'en dépendent pas : un jeu à 0 % n'a aucun trophée obtenu.
+- **Heure** : tout ce qui dépend d'un jour, d'un mois, d'une heure ou d'un jour de la semaine est calculé à l'heure de Paris, comme les dates du site (`src/lib/format.ts`).
+- **Écrans étroits [choix de Claude]** :
+  - sous 1280 px, les camemberts passent sur 2 colonnes ;
+  - sous 1100 px, les trois graphiques de jeux s'empilent ;
+  - sous 900 px, « Trophies by time » et « Trophies by day » s'empilent, et les lignes du Level history perdent l'image du jeu et la rareté ;
+  - sur téléphone (640 px et moins), les camemberts sont sur une colonne, le résumé du calendrier passe sur 2 colonnes et les lignes du Level history passent sur deux rangées, avec la rareté de retour.
+
+### 18.5 Le calendrier « Last 12 months »
+Il remplace le « Last 60 days » de la section 3. **[décidé]** Il prend toute la largeur de la page, et couvre donc plus de 60 jours.
+- **[choix de Claude, validé sur la maquette]** **53 semaines**, titrées « Last 12 months » : la dernière colonne est la semaine en cours, les jours à venir n'ont pas de case.
+- **[décidé, section 3]** Une colonne par semaine, une ligne par jour du lundi au dimanche, le nom de chaque jour affiché (Mon … Sun), des cases carrées plus intenses selon le nombre de trophées du jour, le nombre exact en infobulle.
+- **[choix de Claude]** Le nom du mois au-dessus de la première semaine dont le lundi tombe dans ce mois, sauf dans les deux dernières colonnes où il déborderait.
+- **[choix de Claude]** Cinq intensités de la couleur d'accent : 0, 1 à 2, 3 à 6, 7 à 12, 13 et plus. Une légende « Less … More » en haut à droite.
+- Infobulle : la date (« Mon 31 Aug 2026 »), le nombre de trophées et, s'il y en a, de platines.
+- Sous 860 px, le calendrier défile horizontalement dans son panneau et s'ouvre sur les jours les plus récents.
+- **[décidé]** Résumé en dessous, **quatre valeurs équidistantes**, la première calée à gauche et la dernière à droite, chaque libellé centré sous sa valeur :
+  1. le nombre de **trophées** (« Trophies ») ;
+  2. le nombre de **platines** (« Platinums ») ;
+  3. le **meilleur jour** (« Best day ») : son nombre, sa date à côté. **[choix de Claude]** À égalité, le plus récent ;
+  4. **[décidé]** la **plus longue série** de jours consécutifs avec au moins un trophée : « 61 days » et, à côté, « 515 trophies », le nombre de trophées obtenus pendant cette série. Libellé : « Longest streak, 13 Jul 2026 to 11 Sep 2026 ». **[choix de Claude, validé sur la maquette]** Comme les trois autres, elle ne regarde que les jours affichés. À égalité, la plus récente.
+
+### 18.6 Les 4 camemberts
+**[décidé]** Des anneaux comme sur la capture de psnprofiles, avec à gauche l'anneau et sa valeur au centre, à droite la légende : pastille de couleur, nom, nombre exact. Au survol d'une part : son nom, son nombre et sa part en pourcentage.
+- **Rarity** : les trophées obtenus par catégorie de rareté PSN (8.8), d'Ultra rare à Common. Au centre, la rareté moyenne, le même chiffre que la case « Average rarity », avec « Average ». Les trophées sans rareté connue ne comptent pas.
+- **Completion** : les jeux par progression au PSN, en 5 tranches : 80 % – 100 %, 60 % – 79 %, 40 % – 59 %, 20 % – 39 %, 0 % – 19 %. Au centre, la moyenne des progressions des jeux, avec « Average ». **[choix de Claude]** Ce chiffre est la moyenne par jeu, comme sur psnprofiles, et diffère de la case « Completion rate », qui rapporte tous les trophées obtenus à tous les trophées existants.
+- **PSN points** : les points par type, à 300, 90, 30 et 15 points. Au centre, le total, avec « Points ».
+- **Platforms** : **[décidé]** seulement les plateformes sur lesquelles l'utilisateur joue. Une liste qui inclut PS5 compte en **PS5**, y compris une liste PS5 et PC, toutes les autres comptent en **PS4**, y compris les listes partagées avec la PS3 ou la PS Vita. Au centre, le nombre de jeux, avec « Games ».
+
+### 18.7 « Monthly activity » et « Trophy progression »
+Sur l'axe horizontal, **chaque mois** depuis celui du premier trophée jusqu'au mois en cours, y compris les mois sans trophée, avec une étiquette tous les 6 mois (tous les 12 sur un écran étroit), au format « Nov 16 ».
+- **Monthly activity** [décidé] : une courbe du nombre de trophées obtenus chaque mois, dans la couleur d'accent, avec un voile léger dessous. La valeur du mois record est écrite au-dessus de son point.
+- **Trophy progression** [décidé] : les trophées cumulés par type, en aires empilées, platine en bas et bronze en haut, comme sur la capture. Légende en haut à droite avec le total de chaque type.
+- Au survol, une ligne verticale suit la souris et s'accroche au mois le plus proche. L'infobulle donne le mois et sa valeur, ou le total et chaque type pour la progression.
+
+### 18.8 « Trophies by time » et « Trophies by day »
+**[décidé]** Deux graphiques en colonnes, le total de tous les trophées :
+- par heure, de 00 à 23, avec « Paris time » en haut à droite ;
+- par jour de la semaine, de Mon à Sun.
+La valeur de la colonne record est écrite au-dessus d'elle. Au survol d'une colonne : l'heure ou le jour, et son nombre.
+
+### 18.9 « Games by release year », « Games by publisher », « Games by genre »
+Date de sortie, éditeur et genres sont lus avec `withSiblings` : une info manquante est prise chez une autre version du même jeu (8.9).
+- **Games by release year** [décidé] : une colonne par année, de la plus ancienne à la plus récente. Une année sans jeu entre les deux garde sa colonne, à 0. Étiquettes « '14 », « '15 ». Sous le graphique : « 25 games have no release date on PSN. »
+- **Games by publisher** : des barres horizontales triées du plus grand nombre au plus petit, avec le nombre au bout de la barre. Les **15 premiers**, puis une ligne grise « Other (48) » avec le nombre d'éditeurs regroupés. Sous le graphique : « 6 games have no publisher on PSN. »
+  - **[choix de Claude, validé sur la maquette]** Les noms bruts du PSN sont raccourcis par une liste écrite dans le code, et deux noms bruts qui donnent le même nom affiché sont additionnés. Un nom absent de la liste s'affiche tel quel :
+
+  | Nom au PSN | Nom affiché |
+  |---|---|
+  | Square Enix LTD | Square Enix |
+  | BANDAI NAMCO ENTERTAINMENT EUROPE | Bandai Namco |
+  | Activision Blizzard Int'l BV | Activision Blizzard |
+  | SEGA EUROPE LTD | SEGA |
+  | EA Swiss Sarl | Electronic Arts |
+  | Koei Tecmo Europe Ltd | Koei Tecmo |
+  | TMG STUDIOS B.V. | TMG Studios |
+  | CE EUROPE LIMITED | Capcom |
+  | Team 17 Digital LTD | Team17 |
+  | CD PROJEKT RED S.A. | CD Projekt Red |
+  | 505 GAMES S.R.L. | 505 Games |
+  | Larian Studios Games Ltd | Larian Studios |
+
+- **Games by genre** : mêmes barres, tous les genres. Un jeu compte dans chacun de ses genres. Sous le graphique : « A game can have several genres. 6 have none on PSN. »
+- À égalité, l'ordre alphabétique **[choix de Claude]**.
+- Une phrase de bas de graphique disparaît quand son nombre est 0 **[choix de Claude]**.
+
+### 18.10 « Level history »
+**[décidé]** Tout en bas de la page, un seul panneau, avec la courbe du niveau et, en dessous, les trophées qui ont fait passer chaque palier.
+- **Calcul** : les trophées obtenus sont pris dans l'ordre du numéro d'obtention (16.4, `src/lib/earned-order.ts`), leurs points s'additionnent, et le trophée qui atteint ou dépasse le seuil d'un niveau multiple de 10 est celui du palier. Le niveau 1 vaut 0 point. Le passage de chaque niveau coûte :
+
+| Niveaux | Points par niveau |
+|---|---|
+| 1 à 99 | 60 |
+| 100 à 199 | 90 |
+| 200 à 299 | 450 |
+| 300 à 399 | 900 |
+| 400 à 499 | 1 350 |
+| 500 à 599 | 1 800 |
+| 600 à 699 | 2 250 |
+| 700 à 799 | 2 700 |
+| 800 à 899 | 3 150 |
+| 900 à 998 | 3 600 |
+
+- Le niveau du bandeau profil reste celui du PSN : ce calcul ne sert qu'à cette section.
+- **Courbe** [décidé] : un point tous les 10 niveaux, reliés par une ligne dorée, comme sur la capture. L'axe horizontal est le temps, avec une étiquette par année, l'axe vertical le niveau. « A point every 10 levels » en haut à droite. Au survol : la date, le niveau et le nom du trophée du point le plus proche.
+- **Liste [décidé]**, sous la courbe, du palier le plus récent au plus ancien, tous affichés sans pagination. Ligne de ~66 px, de gauche à droite :
+  1. **l'image du jeu**, 56 px, coins de 10 px, la même que sa ligne dans Games, lien vers la page du jeu ;
+  2. **l'icône du trophée**, 56 px, coins de 10 px, **sans aucun fond** ;
+  3. le **nom**, la **description** en entier, puis le **nom du jeu**, lien vers sa page ;
+  4. l'**icône de niveau** du PSN (`components/levelSprite.ts`, palier `floor(niveau / 100) + 1`, 10 au maximum) et le **niveau** ;
+  5. la **date**, et en dessous l'**heure** avec les secondes ;
+  6. la **rareté PSN** (« 18.30% ») et sa catégorie (« Rare ») ;
+  7. l'**icône officielle du type**, 30 px, avec son nom en dessous (« Gold »).
+- La ligne elle-même n'est pas un lien : seuls l'image et le nom du jeu le sont, comme au Trophy Log.
+
+### 18.11 Règles communes aux graphiques
+- **[choix de Claude]** Dessinés en SVG par le site, sans bibliothèque de graphiques, comme sur la maquette. Ils s'adaptent à la largeur de leur panneau et réservent leur hauteur, pour que la page ne saute pas à l'affichage.
+- **Infobulle** : une seule, du style de `.unob .tip`, qui suit la souris, reste dans l'écran et n'est jamais coupée par un panneau. `.glass` piégeant les éléments `position:fixed`, elle passe par `createPortal`.
+- **Couleurs [choix de Claude, validé sur la maquette]** :
+  - graphiques à une seule série : `--accent`, sauf le niveau en `--gold` (#F2C462) ;
+  - types de trophées : platine #6C8AD8, or #B48E26, argent #868FA3, bronze #C2703F. Ce sont des teintes plus sourdes que celles du bandeau, faites pour de grandes surfaces, et le platine y est bleu pour ne pas se confondre avec l'argent ;
+  - rareté : #B3261E, #D6502A, #E8862A, #F2B233, #F7DC5A, d'Ultra rare à Common ;
+  - complétion : #4CCB7A, #3FAE66, #339353, #2A7845, #216038, de la tranche la plus haute à la plus basse ;
+  - plateformes : PS5 #4F8FE8, PS4 #2EAD7F ;
+  - barre « Other » : `--muted`.
+- Grilles en traits pleins très discrets, nombres d'axes en `--muted`.
+
+### 18.12 Laissé au builder
+- L'organisation du code, le découpage en composants et les noms de fichiers.
+- Faire les calculs en SQL ou sur le serveur en TypeScript : le navigateur ne reçoit que les totaux et les 53 lignes de paliers, pas les 11 636 trophées.
+- Le partage des styles, sans rien changer ailleurs : `app/globals.css` est un seul fichier global, les nouvelles classes sont préfixées.
+- Le partage de la ligne du Level history avec celle du Trophy Log, si c'est possible sans changer ce dernier.
+
+### 18.13 Vérification avec les vraies données
+Si une synchro a changé des trophées depuis 18.3, recalculer les chiffres en SQL.
+- Le calendrier : 53 semaines, la dernière colonne est la semaine en cours, et les 4 valeurs de 18.3. Les 4 valeurs sont équidistantes, leurs libellés centrés.
+- Les 4 camemberts : les chiffres de 18.3. Le total de chaque anneau est juste : 11 636 trophées, 266 jeux, 350 850 points.
+- « Monthly activity » : 121 mois, et la somme des mois vaut le nombre de trophées. « Trophy progression » finit sur les totaux par type.
+- La somme des heures et la somme des jours valent le nombre de trophées.
+- Année, éditeur et genre : les nombres, et les phrases sur les jeux sans information.
+- Level history : 53 paliers, les 5 lignes du tableau de 18.3. L'image et le nom du jeu mènent à sa page.
+- Les infobulles dans chaque graphique, y compris au bord droit de la page.
+- Aucun fond derrière les icônes à fond transparent, aucune image rectangulaire.
+- Temps de réponse de la page sur le build de production.
+- L'affichage téléphone : pas de défilement horizontal de la page, et le calendrier s'ouvre sur les jours récents.
