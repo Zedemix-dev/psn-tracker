@@ -10,6 +10,9 @@ export type TitleSeed = {
   hidden?: boolean;
   playSeconds?: number | null;
   platforms?: string[];
+  publisher?: string | null;
+  genres?: string[] | null;
+  releaseDate?: Date | null;
 };
 
 export async function insertTitle(db: Db, seed: TitleSeed): Promise<void> {
@@ -26,6 +29,9 @@ export async function insertTitle(db: Db, seed: TitleSeed): Promise<void> {
     progress: seed.progress ?? (defined === 0 ? 0 : Math.floor((earned / defined) * 100)),
     hidden,
     playSeconds,
+    publisher: seed.publisher ?? null,
+    genres: seed.genres ?? null,
+    releaseDate: seed.releaseDate ?? null,
   });
 }
 
