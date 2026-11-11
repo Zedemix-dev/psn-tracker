@@ -6,7 +6,7 @@ Relevés pendant la phase 1 (relectures par tâche, relecture finale de la branc
 
 ## À vérifier au premier déploiement sur le NAS
 Toutes ces vérifications sont maintenant décrites, avec ce qu'on doit voir, dans `deploy/README.md`, étape 7 « Premier démarrage » (spec 19.2). Le texte d'origine est gardé ci-dessous.
-- **Arrêt propre du worker** (voir le guide, étape 7) (`docker stop`) : jamais testé dans un conteneur. Le log doit montrer la fin de la synchro en cours, ou un run marqué « Interrupted » au redémarrage.
+- **Arrêt propre du worker** (`docker stop`) : jamais testé dans un conteneur. Le log doit montrer la fin de la synchro en cours, ou un run marqué « Interrupted » au redémarrage. À vérifier sur le NAS : voir le guide, étape 7.
 - **Réglage des en-têtes du reverse proxy DSM** : après la première connexion en https, le cookie `psnt_session` doit avoir l'option Secure. La procédure est dans `deploy/README.md`, étape 6.4.
 - **Rôle Admin du package GHCR**, à donner une seule fois pour que le nettoyage des anciennes images fonctionne (`deploy/README.md`, étape 1.5).
 - **Trophy Log sur le NAS** (spec 16.8, voir le guide, étape 7) :
@@ -34,7 +34,7 @@ Toutes ces vérifications sont maintenant décrites, avec ce qu'on doit voir, da
 - **Toggle « Hide 0% games »** : il perd le focus clavier pendant l'enregistrement. **Réglé** (spec 19, branche `fix/followups`).
 - **Compteurs de trophées à 375 px** : le compteur Bronze passe seul à la ligne. **Réglé** (spec 19, branche `fix/followups`).
 - **Paramètre `offset` énorme** dans `/api/games` : il donne une erreur 500 (seulement une fois connecté). **Réglé** (spec 19, branche `fix/followups`).
-- **Bannière** : l'ancien fichier n'est pas supprimé quand on en envoie une nouvelle. Déjà réglé dans le code (`uploadBanner`, vérifié le 11 novembre 2026) : le point était périmé (spec 19.5.7).
+- **Bannière** : l'ancien fichier n'est pas supprimé quand on en envoie une nouvelle. Déjà réglé dans le code (`uploadBanner`, vérifié le 11 novembre 2026) : le point était périmé. **Déjà réglé dans le code** (spec 19.5.7).
 - **Champ npsso** : il est vidé après une erreur. **Réglé** (spec 19, branche `fix/followups`).
 
 ## Divers
@@ -43,14 +43,15 @@ Toutes ces vérifications sont maintenant décrites, avec ce qu'on doit voir, da
 - **Objectif des trophées à paliers** (relevé le 8 novembre 2026) : `trophies.progress_target` est vide pour les 12 434 trophées, alors que la spec (7) demande de le stocker.
   - La synchro le lit dans l'état utilisateur (`trophyProgressTargetValue` de `getUserTrophiesEarnedForTitle`), alors qu'il est dans la définition des trophées (`getTitleTrophies`), vérifié le 8 novembre 2026.
   - **Réglé** par la page d'un jeu (PR #4, fusionnée le 9 novembre 2026) : la synchro lit l'objectif dans `getTitleTrophies`, et la page affiche le compteur des trophées à paliers (spec 6.3, 6.4 et 8.9).
-- **Miniatures** : **Réglé** (spec 19, branche `fix/followups`).
+- **Miniatures** :
   - `src/sync/images.ts` importe `thumbs.ts` de façon statique, et l'isolation de sharp repose sur la liste d'exclusion par défaut de Next ;
   - le nombre de miniatures créées n'est pas affiché dans le journal de synchro.
+  - **Réglé** (spec 19, branche `fix/followups`) (spec 19.7.3).
 - **Tests locaux de bout en bout** : **réglé**, les scripts sont dans `scripts/e2e/` (PR #2) et décrits dans `docs/ETAT-DU-PROJET.md`, section 5.
 
 ## Page d'un jeu (relevés de la relecture du 9 novembre 2026)
 Aucun n'est bloquant. Ils concernent la tuile carrée derrière une image non carrée (`components/TileImage.tsx`, `src/lib/tile-bg.ts`, spec 8.9).
-- **Couleur de la tuile perdue au remontage** (**Réglé** (spec 19, branche `fix/followups`), spec 19.6.1) : elle est lue par chaque image une fois chargée. Un groupe masqué puis réaffiché par le filtre, ou la première apparition dans Games, montre le bleu nuit pendant une image avant la couleur du bord. Mettre la couleur en cache par adresse casserait l'hydratation. La seule vraie solution serait de la calculer dans le worker et de la stocker.
-- **Coins transparents** (laissé tel quel, décidé : spec 19.6.2) : une icône dont le bord est uni mais dont les coins sont transparents (coins arrondis) garde la tuile bleu nuit, car tout le bord doit être opaque. Assouplissement possible : ignorer les 1 ou 2 pixels de chaque extrémité.
-- **Lecture de toute l'image** (**Réglé** (spec 19, branche `fix/followups`), spec 19.6.1 : le navigateur ne lit plus les pixels) : le canevas lit toute l'image pour deux lignes de pixels. C'est sans effet pour des icônes de 320 × 176, mais à revoir si de grandes images passaient un jour par la tuile.
-- **Tests à compléter** (**Réglé** (spec 19, branche `fix/followups`), spec 19.6.3) : le cas d'une image déjà chargée avant l'hydratation n'est pas testé (jsdom), ni la limite de tolérance (16 accepté, 17 refusé).
+- **Couleur de la tuile perdue au remontage** : elle est lue par chaque image une fois chargée. Un groupe masqué puis réaffiché par le filtre, ou la première apparition dans Games, montre le bleu nuit pendant une image avant la couleur du bord. Mettre la couleur en cache par adresse casserait l'hydratation. La seule vraie solution serait de la calculer dans le worker et de la stocker. **Réglé** (spec 19, branche `fix/followups`) (spec 19.6.1).
+- **Coins transparents** : une icône dont le bord est uni mais dont les coins sont transparents (coins arrondis) garde la tuile bleu nuit, car tout le bord doit être opaque. Assouplissement possible : ignorer les 1 ou 2 pixels de chaque extrémité. Laissé tel quel, décidé (spec 19.6.2).
+- **Lecture de toute l'image** : le canevas lit toute l'image pour deux lignes de pixels. C'est sans effet pour des icônes de 320 × 176, mais à revoir si de grandes images passaient un jour par la tuile. **Réglé** (spec 19, branche `fix/followups`) (spec 19.6.1), le navigateur ne lit plus les pixels.
+- **Tests à compléter** : le cas d'une image déjà chargée avant l'hydratation n'est pas testé (jsdom), ni la limite de tolérance (16 accepté, 17 refusé). **Réglé** (spec 19, branche `fix/followups`) (spec 19.6.3).
