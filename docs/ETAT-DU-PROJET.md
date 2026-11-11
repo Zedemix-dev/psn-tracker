@@ -1,6 +1,6 @@
 # PSN Tracker : état du projet et feuille de route
 
-*Mis à jour le 11 novembre 2026 : la page Stats est fusionnée dans `main` (PR #15). Restent deux retouches de la page Stats, puis le déploiement sur le NAS.*
+*Mis à jour le 11 novembre 2026 : les retouches de la page Stats (infobulles au doigt, défilement de côté) sont terminées sur la branche `feat/stats-touch`. Une fois la Pull Request fusionnée, reste le déploiement sur le NAS.*
 
 Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un autre PC, commence par le lire. Le fichier `CLAUDE.md` à la racine le demande automatiquement.
 
@@ -28,8 +28,10 @@ Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un aut
 | `docs/superpowers/plans/2026-11-11-trophy-advisor.md` | Le plan du Trophy Advisor (5 tâches). Terminé. |
 | `docs/superpowers/specs/2026-11-11-psn-tracker-maquette-stats.html` | Maquette validée de la page Stats (v4), avec ses données intégrées. |
 | `docs/superpowers/plans/2026-11-11-stats.md` | Le plan de la page Stats (tâches 1 à 7, dont la 7 ajoutée après la vérification). Terminé. |
+| `docs/superpowers/specs/2026-11-11-psn-tracker-maquette-stats-defilement.html` | Maquette validée du graphique des années qui défile (v6). |
+| `docs/superpowers/plans/2026-11-11-stats-touch.md` | Le plan des infobulles au doigt et du défilement de côté (3 tâches). Terminé. |
 | `deploy/README.md` | Guide pas à pas du déploiement sur le NAS. |
-| `.superpowers/brainstorm/maquettes/` | Toutes les maquettes intermédiaires : `accueil-v1` à `v12`, `jeu-v1` à `v6` (la v6 compare les images de groupe : carrées ou absentes), `platwall-v1` à `v3`, `trophylog-v1` et `v2`, `advisor-v1` à `v4`, `stats-v1` à `v4`. |
+| `.superpowers/brainstorm/maquettes/` | Toutes les maquettes intermédiaires : `accueil-v1` à `v12`, `jeu-v1` à `v6` (la v6 compare les images de groupe : carrées ou absentes), `platwall-v1` à `v3`, `trophylog-v1` et `v2`, `advisor-v1` à `v4`, `stats-v1` à `v6` (les v5 et v6 : le graphique des années qui défile). |
 
 ## 2. Ce qui est fait (dans `main`)
 
@@ -147,17 +149,27 @@ Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un aut
   - affichage téléphone, sans défilement horizontal.
 - 110 fichiers de tests, 968 tests. Aucune migration.
 
+### Stats au doigt et défilement de côté (branche `feat/stats-touch`, spec section 18.14)
+- **Infobulles au doigt** : elles s'affichent tant que le doigt est posé, au-dessus de lui, et disparaissent quand il se lève. Sur les courbes, la ligne verticale suit le doigt qui glisse de côté. Un appui long n'ouvre pas de menu, et les mises en valeur du survol ne valent qu'à la souris.
+- **Défilement de côté sans barre** (`components/stats/useSideScroll.ts`) :
+  - le graphique des années garde des colonnes d'au moins 18 px. Quand elles ne tiennent plus, l'axe reste fixe et les colonnes défilent, ouvertes sur les années récentes ;
+  - le calendrier défile de la même façon sous 860 px ;
+  - clic maintenu à la souris, deux doigts sur le pavé tactile, glissement du doigt sur téléphone, avec un fondu du côté des années cachées.
+- **Vérifié avec les vraies données** le 11 novembre 2026, sur le build de production :
+  - sur PC, le graphique des années ne défile pas et n'a pas changé ;
+  - en largeur téléphone, il s'ouvre sur '26, sans barre ni défilement horizontal de la page, et se déplace au clic maintenu. Le calendrier pareil ;
+  - le doigt, simulé, sur une colonne, une part d'anneau, un jour, une courbe et une année.
+- **À essayer sur un vrai appareil** : l'écran tactile du téléphone et le pavé tactile du Mac, qu'on ne peut pas tester ici.
+- 112 fichiers de tests, 1 009 tests. Aucune migration.
+
 ## 3. Ce qui reste à faire, dans l'ordre
-1. **Retouches de la page Stats**, demandées le 11 novembre 2026 après la fusion :
-   - les infobulles s'affichent aussi au doigt, sur un écran tactile ;
-   - le graphique des jeux par année de sortie défile à gauche et à droite, sans barre de défilement : clic maintenu à la souris, glissement à deux doigts sur le pavé tactile, glissement du doigt sur téléphone.
-2. **Déployer sur le NAS** en suivant `deploy/README.md`, **une fois ces retouches fusionnées** (décidé le 9 novembre 2026).
+1. **Déployer sur le NAS** en suivant `deploy/README.md`, **une fois la Pull Request des retouches de Stats fusionnée** (décidé le 9 novembre 2026).
    - Avant tout, vérifier sur github.com (onglet Actions, le dépôt est privé) que la CI de `main` est verte après la dernière fusion, et que l'image a été publiée.
    - Juste après la première publication, donner une seule fois le rôle **Admin** au dépôt dans « Manage Actions access » du package GHCR (étape 1.5).
    - Faire les vérifications du premier déploiement listées dans `docs/superpowers/plans/2026-11-08-phase1-suivis.md`.
    - À la première synchro de cette version, toutes les listes PS5 sont rechargées une fois (migration 0005), ce qui la rallonge de quelques minutes.
    - Au premier démarrage du worker, la migration 0006 s'applique et la liste des trophées non obtenables se télécharge. Vérifier dans Settings que le bloc « Unobtainable trophies » indique « Up to date » et « 5 of yours ».
-3. **Points de suivi** : à piocher dans `docs/superpowers/plans/2026-11-08-phase1-suivis.md` quand une page touche le même code.
+2. **Points de suivi** : à piocher dans `docs/superpowers/plans/2026-11-08-phase1-suivis.md` quand une page touche le même code.
 
 ## 4. Comment reprendre dans une nouvelle conversation
 Pour démarrer une page, il suffit de le dire, par exemple « On attaque Trophy Log ». Avec le plugin superpowers installé (voir 6), Claude lance de lui-même le bon processus. Pour être sûr, on peut aussi le demander explicitement : « utilise le skill brainstorming ».

@@ -1,5 +1,7 @@
 # PSN Tracker : Stats au doigt et défilement de côté, Implementation Plan
 
+> **Statut :** terminé le 11 novembre 2026, tâches 1 à 3 et une vague de corrections après la relecture finale, sur la branche `feat/stats-touch`. Les cases ne sont pas cochées : la progression se lit dans `git log` et dans `docs/ETAT-DU-PROJET.md`.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal :** sur la page Stats, afficher les infobulles au doigt (tant qu'il est posé), et faire défiler de côté, sans barre, le graphique des années de sortie et le calendrier.
