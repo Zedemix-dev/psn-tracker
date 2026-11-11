@@ -17,7 +17,7 @@ const props = {
   values: [5, 12, 3],
   height: 200,
   ariaLabel: "Games by release year",
-  unit: "games",
+  unit: ["game", "games"] as [string, string],
   titleOf: (i: number) => String(2020 + i),
 };
 const draw = (p: Parameters<typeof ColumnChart>[0] = props) =>
@@ -54,6 +54,27 @@ describe("<ColumnChart>", () => {
     expect(tip.querySelector(".r span")).toHaveTextContent("games");
     fireEvent.pointerLeave(container.querySelectorAll("rect.hit")[1]);
     expect(document.body.querySelector(".st-tip")).toBeNull();
+  });
+
+  it("writes the unit in the singular for 1 and in the plural otherwise", () => {
+    stubMeasure(600);
+    const { container } = draw({ ...props, values: [1, 12, 0] });
+    const unitAt = (i: number) => {
+      fireEvent.pointerMove(container.querySelectorAll("rect.hit")[i], { clientX: 200, clientY: 100 });
+      return (document.body.querySelector(".st-tip .r span") as HTMLElement).textContent;
+    };
+    expect(unitAt(0)).toBe("game");
+    expect(unitAt(1)).toBe("games");
+    expect(unitAt(2)).toBe("games");
+  });
+
+  it("keeps the corner radius within half the column width", () => {
+    stubMeasure(100);
+    const { container } = draw({ ...props, labels: Array(24).fill("a"), values: Array(24).fill(50) });
+    const d = container.querySelector("path.col")!.getAttribute("d")!;
+    const m = /Q[\d.]+,[\d.]+ ([\d.]+),[\d.]+H([\d.]+)Q/.exec(d)!;
+    // the top edge must not run backwards: the end of the first corner is left of the start of the second
+    expect(Number(m[1])).toBeLessThanOrEqual(Number(m[2]));
   });
 
   it("has no NaN when every value is 0", () => {

@@ -11,7 +11,7 @@ type Props = {
   values: number[];
   height: number;
   ariaLabel: string;
-  unit: string;
+  unit: [one: string, many: string];
   titleOf: (i: number) => string;
   labelEvery?: { every: number; belowWidth: number };
 };
@@ -56,7 +56,7 @@ export function ColumnChart({ labels, values, height, ariaLabel, unit, titleOf, 
         {values.map((v, i) => {
           const x = M.l + slot * i + (slot - bw) / 2;
           const y = Y(v);
-          const r = Math.min(4, base - y);
+          const r = Math.min(4, base - y, bw / 2);
           return (
             <g key={i}>
               <path
@@ -72,7 +72,7 @@ export function ColumnChart({ labels, values, height, ariaLabel, unit, titleOf, 
                 height={Math.max(base - M.t, 0)}
                 fill="transparent"
                 onPointerMove={(e) =>
-                  tip.show(e, { title: titleOf(i), rows: [{ color: ACCENT, value: formatInt(values[i]), label: unit }] })
+                  tip.show(e, { title: titleOf(i), rows: [{ color: ACCENT, value: formatInt(values[i]), label: values[i] === 1 ? unit[0] : unit[1] }] })
                 }
                 onPointerLeave={tip.hide}
               />

@@ -103,6 +103,8 @@ describe("<StatsPanels>", () => {
     expect(row()).toHaveTextContent("25 games have no release date on PSN.");
     expect(row()).toHaveTextContent("6 games have no publisher on PSN.");
     expect(row()).toHaveTextContent("A game can have several genres. 6 have none on PSN.");
+    rerender(<StatsPanels data={data({ noGenre: 1 })} />);
+    expect(row()).toHaveTextContent("A game can have several genres. 1 has none on PSN.");
     rerender(<StatsPanels data={data({ noYear: 1, noPublisher: 0, noGenre: 0 })} />);
     expect(row()).toHaveTextContent("1 game has no release date on PSN.");
     expect(row().textContent).not.toMatch(/no publisher/);

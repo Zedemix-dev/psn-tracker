@@ -22,7 +22,7 @@ const TOP_PUBLISHERS = 15;
 function ranked(counts: Map<string, number>): { name: string; games: number }[] {
   return [...counts]
     .map(([name, games]) => ({ name, games }))
-    .sort((a, b) => b.games - a.games || (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
+    .sort((a, b) => b.games - a.games || a.name.localeCompare(b.name, "en", { sensitivity: "base" }));
 }
 
 const bump = (map: Map<string, number>, key: string) => map.set(key, (map.get(key) ?? 0) + 1);

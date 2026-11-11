@@ -14,7 +14,7 @@ const segments = [
 const draw = () =>
   render(
     <ChartTipProvider>
-      <DonutCard title="Platforms" segments={segments} center="4" caption="Games" unit="games" />
+      <DonutCard title="Platforms" segments={segments} center="4" caption="Games" unit={["game", "games"]} />
     </ChartTipProvider>,
   );
 
@@ -42,9 +42,31 @@ describe("<DonutCard>", () => {
     expect(tip).toHaveTextContent("25.0%");
   });
 
+  it("writes the unit in the singular for 1 and in the plural otherwise", () => {
+    const { container } = render(
+      <ChartTipProvider>
+        <DonutCard
+          title="Games"
+          segments={[
+            { label: "a", value: 1, color: "#fff" },
+            { label: "b", value: 2, color: "#000" },
+          ]}
+          center="3"
+          caption="Games"
+          unit={["game", "games"]}
+        />
+      </ChartTipProvider>,
+    );
+    const segs = container.querySelectorAll("circle.seg");
+    fireEvent.pointerMove(segs[0], { clientX: 50, clientY: 50 });
+    expect(document.body.querySelector(".st-tip .r span")).toHaveTextContent(/^game,/);
+    fireEvent.pointerMove(segs[1], { clientX: 50, clientY: 50 });
+    expect(document.body.querySelector(".st-tip .r span")).toHaveTextContent(/^games,/);
+  });
+
   it("draws no segment and no NaN when the total is 0", () => {
     const { container } = render(
-      <DonutCard title="Games" segments={[{ label: "a", value: 0, color: "#fff" }]} center="0" caption="Games" unit="games" />,
+      <DonutCard title="Games" segments={[{ label: "a", value: 0, color: "#fff" }]} center="0" caption="Games" unit={["game", "games"]} />,
     );
     expect(container.querySelectorAll("circle.seg")).toHaveLength(0);
     expect(container.innerHTML).not.toContain("NaN");

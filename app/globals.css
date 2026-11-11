@@ -37,7 +37,7 @@ svg.ico{width:14px;height:14px;flex:none}
 .pill:hover{background:rgba(0,0,0,.65)}
 .pill[aria-current]{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.85)}
 
-/* PSN token alert and provisional pages */
+/* PSN token alert */
 .auth-banner{display:block;padding:9px 24px;text-align:center;font-size:13px;font-weight:500;color:#2B1B00;background:var(--gold);text-decoration:none}
 .auth-banner:hover{text-decoration:underline}
 
@@ -539,7 +539,7 @@ button.select.log-dir.on{border-color:var(--accent)}
 .st-bars .o .b{background:var(--muted)}
 .st-bars .v{font-weight:600;font-variant-numeric:tabular-nums}
 .st-note{padding:0 16px 12px;font-size:11.5px;color:var(--muted)}
-.st-empty{padding:40px 16px;text-align:center;font-size:13px;color:var(--muted)}
+.st-empty{margin:14px 0 64px;padding:40px 16px;text-align:center;font-size:13px;color:var(--muted)}
 /* Tooltip */
 .st-tip{position:fixed;z-index:100;pointer-events:none;display:none;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:#0B1022;box-shadow:0 8px 22px rgba(0,0,0,.5);font-size:12px;line-height:1.4;max-width:300px}
 .st-tip .h{color:var(--muted);font-size:11px;margin-bottom:3px}

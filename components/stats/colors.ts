@@ -3,7 +3,6 @@ export const ACCENT = "#5AA9FF";
 export const LEVEL = "#F2C462";
 export const GRID = "rgba(255,255,255,.09)";
 export const SURFACE = "#141B38";
-export const MUTED = "#A9B3CB";
 
 export const TYPE_COLORS = { platinum: "#6C8AD8", gold: "#B48E26", silver: "#868FA3", bronze: "#C2703F" } as const;
 /** Ultra rare to Common. */

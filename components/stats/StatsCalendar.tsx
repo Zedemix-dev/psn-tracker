@@ -102,8 +102,8 @@ export function StatsCalendar({ data }: { data: CalendarData }) {
           <b>
             {summary.streak ? (
               <>
-                {summary.streak.days} days
-                <small>{formatInt(summary.streak.trophies)} trophies</small>
+                {summary.streak.days} {plural(summary.streak.days, "day", "days")}
+                <small>{formatInt(summary.streak.trophies)} {plural(summary.streak.trophies, "trophy", "trophies")}</small>
               </>
             ) : (
               DASH

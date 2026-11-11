@@ -102,6 +102,12 @@ describe("<StatsCalendar>", () => {
     expect(sum.children).toHaveLength(4);
   });
 
+  it("writes the streak in the singular for 1 day and 1 trophy", () => {
+    const { container } = draw(calendar([], { streak: { days: 1, trophies: 1, from: "1 Sep 2026", to: "1 Sep 2026" } }));
+    const cell = container.querySelector(".st-sum")!.children[3];
+    expect(cell).toHaveTextContent(/^1 day1 trophy/);
+  });
+
   it("writes a dash when there is no best day and no streak", () => {
     const { container } = draw(calendar([], { bestDay: null, streak: null, trophies: 0, platinums: 0 }));
     const sum = container.querySelector(".st-sum") as HTMLElement;

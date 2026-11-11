@@ -20,7 +20,7 @@ export function DonutCard({
   segments: Segment[];
   center: string;
   caption: string;
-  unit: string;
+  unit: [one: string, many: string];
 }) {
   const tip = useChartTip();
   useEffect(() => tip.hide, [tip.hide]);
@@ -49,7 +49,7 @@ export function DonutCard({
         onPointerMove={(e) =>
           tip.show(e, {
             title: s.label,
-            rows: [{ color: s.color, value: formatInt(s.value), label: `${unit}, ${((s.value / total) * 100).toFixed(1)}%` }],
+            rows: [{ color: s.color, value: formatInt(s.value), label: `${s.value === 1 ? unit[0] : unit[1]}, ${((s.value / total) * 100).toFixed(1)}%` }],
           })
         }
         onPointerLeave={tip.hide}

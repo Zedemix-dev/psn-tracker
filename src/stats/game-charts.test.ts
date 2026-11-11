@@ -102,6 +102,11 @@ describe("buildGameCharts", () => {
     expect(c.genres.map((p) => p.name)).toEqual(["Arcade", "Race"]);
   });
 
+  it("breaks ties alphabetically, not by byte order", () => {
+    const c = build(g({ publisher: "TMG Studios" }), g({ publisher: "Team17" }));
+    expect(c.publishers.map((p) => p.name)).toEqual(["Team17", "TMG Studios"]);
+  });
+
   it("counts a game in each of its genres", () => {
     const c = build(g({ genres: ["Action", "RPG"] }), g({ genres: ["Action"] }));
     expect(c.genres).toEqual([

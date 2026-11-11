@@ -54,14 +54,14 @@ export function StatsPanels({ data }: { data: StatsData }) {
             segments={RARITY_LABELS.map((label, i) => ({ label, value: data.rarity.tiers[label], color: RARITY_COLORS[i] }))}
             center={`${data.rarity.average.toFixed(2)}%`}
             caption="Average"
-            unit="trophies"
+            unit={["trophy", "trophies"]}
           />
           <DonutCard
             title="Completion"
             segments={COMPLETION_LABELS.map((label, i) => ({ label, value: data.completion.buckets[i], color: COMPLETION_COLORS[i] }))}
             center={`${data.completion.average.toFixed(2)}%`}
             caption="Average"
-            unit="games"
+            unit={["game", "games"]}
           />
           <DonutCard
             title="PSN points"
@@ -73,7 +73,7 @@ export function StatsPanels({ data }: { data: StatsData }) {
             ]}
             center={formatInt(data.totalPoints)}
             caption="Points"
-            unit="points"
+            unit={["point", "points"]}
           />
           <DonutCard
             title="Platforms"
@@ -83,7 +83,7 @@ export function StatsPanels({ data }: { data: StatsData }) {
             ]}
             center={formatInt(data.games)}
             caption="Games"
-            unit="games"
+            unit={["game", "games"]}
           />
         </div>
 
@@ -97,7 +97,7 @@ export function StatsPanels({ data }: { data: StatsData }) {
               values={data.hours}
               height={240}
               ariaLabel="Trophies by hour of the day"
-              unit="trophies"
+              unit={["trophy", "trophies"]}
               titleOf={(i) => `${HOURS[i]}:00 – ${HOURS[i]}:59`}
               labelEvery={{ every: 2, belowWidth: 620 }}
             />
@@ -108,7 +108,7 @@ export function StatsPanels({ data }: { data: StatsData }) {
               values={data.weekdays}
               height={240}
               ariaLabel="Trophies by day of the week"
-              unit="trophies"
+              unit={["trophy", "trophies"]}
               titleOf={(i) => WEEKDAYS[i]}
             />
           </Panel>
@@ -122,7 +122,7 @@ export function StatsPanels({ data }: { data: StatsData }) {
                 values={data.years.map((y) => y.games)}
                 height={406}
                 ariaLabel="Games by release year"
-                unit="games"
+                unit={["game", "games"]}
                 titleOf={(i) => String(data.years[i].year)}
               />
             )}
@@ -135,7 +135,7 @@ export function StatsPanels({ data }: { data: StatsData }) {
           <Panel title="Games by genre">
             {data.genres.length > 0 && <BarList items={data.genres.map((g) => ({ name: g.name, value: g.games }))} />}
             <div className="st-note">
-              A game can have several genres.{data.noGenre > 0 ? ` ${data.noGenre} have none on PSN.` : ""}
+              A game can have several genres.{data.noGenre > 0 ? ` ${data.noGenre} ${data.noGenre === 1 ? "has" : "have"} none on PSN.` : ""}
             </div>
           </Panel>
         </div>
