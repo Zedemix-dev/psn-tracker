@@ -580,8 +580,8 @@ Il doit aussi vérifier en pratique la détection des nouveaux DLC (6.4).
 - **Ordre de la suite [décidé, 9 novembre 2026] :** les pages Plat Wall, Trophy Log, Trophy Advisor et Stats sont construites **avant** le déploiement sur le NAS.
 - **Page Plat Wall :** cadrée, maquette validée, construite et vérifiée avec les vraies données le 9 novembre 2026, décrite en 15. Fusionnée dans `main` le 9 novembre 2026 (PR #9).
 - **Page Trophy Log :** cadrée, maquette validée, construite et vérifiée avec les vraies données le 10 novembre 2026, décrite en 16. Fusionnée dans `main` le 10 novembre 2026 (PR #11).
-- **[décidé, 10 novembre 2026] Place du bouton « Show all » :** dans l'en-tête d'une liste, il vient toujours **après** le nombre affiché, comme sur le Trophy Log (16.5). Cela vaut pour la page **Trophy Advisor**, à construire ainsi. La liste **Games**, où il est encore avant le nombre (14.6), sera corrigée en même temps que Trophy Advisor. Rien n'est changé dans le code avant cela.
-- **Page Trophy Advisor :** cadrée et maquette validée le 11 novembre 2026, décrite en 17.
+- **[décidé, 10 novembre 2026] Place du bouton « Show all » :** dans l'en-tête d'une liste, il vient toujours **après** le nombre affiché, comme sur le Trophy Log (16.5). Cela vaut pour la page **Trophy Advisor**, à construire ainsi. La liste **Games** (14.6) a été corrigée en même temps que Trophy Advisor.
+- **Page Trophy Advisor :** cadrée, maquette validée, construite et vérifiée avec les vraies données le 11 novembre 2026, décrite en 17.
 
 ## 14. Jeux aux trophées non obtenables
 **[décidé, cadrage du 9 novembre 2026]** Fonctionnalité construite à part, sur la branche `feat/unobtainable`. Maquette validée le 9 novembre 2026 : `docs/superpowers/specs/2026-11-09-psn-tracker-maquette-nonobt.html`, référence pour l'aspect et le CSS. Les choix que l'utilisateur n'a pas faits lui-même sont marqués **[choix de Claude]**.
@@ -650,8 +650,8 @@ Tout ce paragraphe est **[choix de Claude]**, vérifié sur les vraies données 
 - **En cas d'échec, l'ancienne liste et toutes les marques restent en place.** L'échec est affiché dans Settings.
 
 ### 14.6 Liste Games (8.7)
-- **Bouton « Show all »**, dans l'en-tête, à gauche du nombre de jeux.
-  - **[décidé, 10 novembre 2026] À corriger : le bouton doit passer APRÈS le nombre de jeux**, comme sur le Trophy Log (16.5). L'utilisateur l'a demandé en voyant les deux pages côte à côte. Cette correction se fera avec la page Trophy Advisor, sans PR séparée avant. La règle commune est en 13.
+- **Bouton « Show all »**, dans l'en-tête, après le nombre de jeux.
+  - **[décidé, 10 novembre 2026]** Il était à gauche du nombre. Il est passé **après**, comme sur le Trophy Log (16.5) : l'utilisateur l'a demandé en voyant les deux pages côte à côte. Corrigé avec la page Trophy Advisor (17.8). La règle commune est en 13.
   - Visible tant qu'il reste des jeux à charger. Il n'apparaît donc pas si tout tient en 50 jeux ou moins.
   - Au clic : désactivé, libellé « Loading… », puis tous les jeux restants arrivent en une seule requête. Le bouton et la ligne « The next 50 games load as you scroll down » disparaissent, et la page ne bouge pas.
   - Si le chargement échoue : le bouton redevient « Show all » et le message existant « Couldn't load more games. Retry » s'affiche **[choix de Claude]**.
@@ -1039,7 +1039,7 @@ Elle remplace la page « Coming soon » de cet onglet.
 - En-tête : « Incomplete games » à gauche, « 41 games » à droite.
 - **Ligne [choix de Claude, validé sur la maquette]**, de gauche à droite :
   1. **l'image du jeu**, 48 px, coins de 9 px, la même que dans Games ;
-  2. le **nom**, jamais tronqué (8.8), les pastilles de plateforme, et le même « ! » s'il reste des trophées non obtenables comptés, avec l'infobulle « 13 unobtainable trophies » et la cause ;
+  2. le **nom**, jamais tronqué (8.8), les pastilles de plateforme, et le même « ! » s'il reste des trophées non obtenables comptés, avec l'infobulle « 13 unobtainable trophies » et la cause. **[choix de Claude, relecture finale]** L'infobulle s'ouvre sous la ligne, dans la largeur de la colonne, pour ne jamais sortir de l'écran ;
   3. en dessous, la **barre de progression** à la couleur du rang (8.7) et le **pourcentage PSN**. Ils ne changent pas avec les réglages : c'est la progression du jeu au PSN ;
   4. à droite, le **nombre de trophées manquants** en gras, avec « left » en dessous.
 - Toute la ligne est un lien vers la page du jeu **[choix de Claude]**.

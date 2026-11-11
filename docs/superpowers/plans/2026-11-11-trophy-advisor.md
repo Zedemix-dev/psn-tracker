@@ -1,5 +1,7 @@
 # PSN Tracker : page Trophy Advisor, Implementation Plan
 
+> **Statut :** terminé le 11 novembre 2026, tâches 1 à 5, sur la branche `feat/trophy-advisor`. Les cases ne sont pas cochées : la progression se lit dans `git log` et dans `docs/ETAT-DU-PROJET.md`.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal :** remplacer « Coming soon » de l'onglet Trophy Advisor par la liste de tous les trophées non obtenus (tri, sens, filtres, Reset, défilement 50 par 50, trois réglages enregistrés en base) et la colonne des jeux incomplets. Sur la page Games, placer « Show all » après le nombre.

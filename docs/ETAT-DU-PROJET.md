@@ -1,6 +1,6 @@
 # PSN Tracker : état du projet et feuille de route
 
-*Mis à jour le 10 novembre 2026 : la page Trophy Log est fusionnée dans `main` (PR #11). Prochaine étape : la page Trophy Advisor, puis Stats. Le déploiement sur le NAS vient après ces pages.*
+*Mis à jour le 11 novembre 2026 : la page Trophy Advisor est construite et vérifiée sur la branche `feat/trophy-advisor`, à fusionner par une Pull Request. Prochaine étape : la page Stats. Le déploiement sur le NAS vient après.*
 
 Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un autre PC, commence par le lire. Le fichier `CLAUDE.md` à la racine le demande automatiquement.
 
@@ -24,8 +24,10 @@ Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un aut
 | `docs/superpowers/plans/2026-11-09-plat-wall.md` | Le plan du Plat Wall (8 tâches). Terminé. |
 | `docs/superpowers/specs/2026-11-10-psn-tracker-maquette-trophylog.html` | Maquette validée du Trophy Log (v2), avec ses données intégrées. |
 | `docs/superpowers/plans/2026-11-10-trophy-log.md` | Le plan du Trophy Log (tâches 1 à 9, dont 8 et 9 ajoutées après la vérification). Terminé. |
+| `docs/superpowers/specs/2026-11-10-psn-tracker-maquette-advisor.html` | Maquette validée du Trophy Advisor (v4), avec ses données intégrées. |
+| `docs/superpowers/plans/2026-11-11-trophy-advisor.md` | Le plan du Trophy Advisor (5 tâches). Terminé. |
 | `deploy/README.md` | Guide pas à pas du déploiement sur le NAS. |
-| `.superpowers/brainstorm/maquettes/` | Toutes les maquettes intermédiaires : `accueil-v1` à `v12`, `jeu-v1` à `v6` (la v6 compare les images de groupe : carrées ou absentes), `platwall-v1` à `v3`, `trophylog-v1` et `v2`. |
+| `.superpowers/brainstorm/maquettes/` | Toutes les maquettes intermédiaires : `accueil-v1` à `v12`, `jeu-v1` à `v6` (la v6 compare les images de groupe : carrées ou absentes), `platwall-v1` à `v3`, `trophylog-v1` et `v2`, `advisor-v1` à `v4`. |
 
 ## 2. Ce qui est fait (dans `main`)
 
@@ -107,22 +109,34 @@ Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un aut
   - affichage téléphone.
 - 87 fichiers de tests, 756 tests. Le job `pg-smoke` de la CI exécute aussi la requête du Trophy Log sur un vrai PostgreSQL 16. CI verte sur la PR #11.
 
+### Page Trophy Advisor (branche `feat/trophy-advisor`, à fusionner, spec section 17)
+- **Page `/trophy-advisor`** : tous les trophées non obtenus, une ligne par trophée, comme le Trophy Advisor de psnprofiles.
+  - Tri : Rarity (par défaut, du plus courant au plus rare) ou Alphabetical, avec un bouton de sens.
+  - Filtres : plateforme, rareté, type ; Reset remet tout par défaut.
+  - Trois réglages enregistrés en base : « Hide unobtainable », « Hide DLC » et « DLC only » (ces deux derniers s'excluent).
+  - Défilement 50 par 50, « Show all » après le nombre, retour au même endroit depuis une page de jeu.
+- **Colonne « Incomplete games »** : les jeux qui ne sont pas à 100 %, du plus de trophées manquants au moins. Le compteur suit les trois réglages.
+- **Ailleurs** :
+  - sur Games, « Show all » est passé après le nombre ;
+  - le défilement, le retour et les contrôles du Trophy Log sont devenus des composants partagés (`components/ProgressiveList.tsx`, `components/place-snapshot.ts`, `components/trophy-log/ControlParts.tsx`, `src/lib/trophy-filters.ts`), que Stats pourra réutiliser.
+- **Vérifié avec les vraies données** le 11 novembre 2026, sur le build de production :
+  - 798 trophées et 41 jeux, et les nombres des 6 combinaisons de réglages (spec 17.3) ;
+  - le compteur de chaque jeu correspond à ses lignes dans la liste complète ;
+  - filtres, tris, Reset, « Show all », retour depuis la liste et depuis la colonne, réglages gardés après un rechargement ;
+  - affichage téléphone.
+- 96 fichiers de tests, 828 tests. La migration 0007 s'applique au démarrage du worker. Le job `pg-smoke` exécute aussi les requêtes du Trophy Advisor.
+
 ## 3. Ce qui reste à faire, dans l'ordre
-1. **Pages restantes**, chacune avec **son propre brainstorming** (spec, section 3), dans cet ordre :
-   - **Trophy Advisor** :
-     - les trophées non obtenus sont déjà stockés avec leur rareté ;
-     - le toggle « Hide 0% games » doit aussi en retirer les jeux à 0 % ;
-     - son filtre des trophées non obtenables s'appuie sur la colonne `trophies.unobtainable`, déjà remplie (spec 14.2) ;
-     - **[décidé, 10 novembre 2026]** son bouton « Show all » se place **après** le nombre affiché, comme sur le Trophy Log ;
-     - **dans la même branche**, corriger la page **Games**, où « Show all » est encore avant le nombre de jeux (spec 13 et 14.6). Le code n'a pas été changé avant, à la demande de l'utilisateur ;
+1. **Fusionner la Pull Request** `feat/trophy-advisor` → `main`, après avoir vérifié que la CI est verte.
+2. **Page restante**, avec **son propre brainstorming** (spec, section 3) :
    - **Stats** : elle reçoit le calendrier « Last 60 days », déjà décrit dans la spec, section 3.
-2. **Déployer sur le NAS** en suivant `deploy/README.md`, **une fois ces pages terminées** (décidé le 9 novembre 2026).
+3. **Déployer sur le NAS** en suivant `deploy/README.md`, **une fois ces pages terminées** (décidé le 9 novembre 2026).
    - Avant tout, vérifier sur github.com (onglet Actions, le dépôt est privé) que la CI de `main` est verte après la dernière fusion, et que l'image a été publiée.
    - Juste après la première publication, donner une seule fois le rôle **Admin** au dépôt dans « Manage Actions access » du package GHCR (étape 1.5).
    - Faire les vérifications du premier déploiement listées dans `docs/superpowers/plans/2026-11-08-phase1-suivis.md`.
    - À la première synchro de cette version, toutes les listes PS5 sont rechargées une fois (migration 0005), ce qui la rallonge de quelques minutes.
    - Au premier démarrage du worker, la migration 0006 s'applique et la liste des trophées non obtenables se télécharge. Vérifier dans Settings que le bloc « Unobtainable trophies » indique « Up to date » et « 5 of yours ».
-3. **Points de suivi** : à piocher dans `docs/superpowers/plans/2026-11-08-phase1-suivis.md` quand une page touche le même code.
+4. **Points de suivi** : à piocher dans `docs/superpowers/plans/2026-11-08-phase1-suivis.md` quand une page touche le même code.
 
 ## 4. Comment reprendre dans une nouvelle conversation
 Pour démarrer une page, il suffit de le dire, par exemple « On attaque Trophy Log ». Avec le plugin superpowers installé (voir 6), Claude lance de lui-même le bon processus. Pour être sûr, on peut aussi le demander explicitement : « utilise le skill brainstorming ».
