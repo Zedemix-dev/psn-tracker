@@ -1,8 +1,9 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { BannerForm, UnobtainableForm } from "@/components/SettingsForms";
+import { saveNpsso } from "@/app/(site)/(banner)/settings/actions";
+import { BannerForm, NpssoForm, UnobtainableForm } from "@/components/SettingsForms";
 
 vi.mock("@/app/(site)/(banner)/settings/actions", () => ({
   resetBanner: vi.fn(),
@@ -33,5 +34,29 @@ describe("UnobtainableForm", () => {
     render(<UnobtainableForm url="https://x.example/list.json" />);
     expect(screen.getByLabelText("List address")).toHaveValue("https://x.example/list.json");
     expect(screen.getByRole("button", { name: "Save" })).toBeInTheDocument();
+  });
+});
+
+describe("NpssoForm", () => {
+  const TYPED = "a".repeat(64);
+
+  it("keeps the pasted text after an error", async () => {
+    vi.mocked(saveNpsso).mockResolvedValue({ ok: false, message: "Couldn't reach PSN. Try again." });
+    render(<NpssoForm />);
+    const input = screen.getByLabelText("npsso");
+    fireEvent.change(input, { target: { value: TYPED } });
+    fireEvent.click(screen.getByRole("button", { name: "Save token" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("Couldn't reach PSN. Try again.");
+    expect(input).toHaveValue(TYPED);
+  });
+
+  it("empties the field after a success", async () => {
+    vi.mocked(saveNpsso).mockResolvedValue({ ok: true, message: "Token saved. A sync has started." });
+    render(<NpssoForm />);
+    const input = screen.getByLabelText("npsso");
+    fireEvent.change(input, { target: { value: TYPED } });
+    fireEvent.click(screen.getByRole("button", { name: "Save token" }));
+    expect(await screen.findByRole("status")).toHaveTextContent("Token saved");
+    await waitFor(() => expect(input).toHaveValue(""));
   });
 });

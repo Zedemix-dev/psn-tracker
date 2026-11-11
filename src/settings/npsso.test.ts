@@ -3,7 +3,7 @@ import type { Db } from "@/src/db/client";
 import { createFakePsn } from "@/tests/fakes/psn";
 import { createTestDb } from "@/tests/helpers/db";
 import { getSettings } from "@/src/settings/repo";
-import { saveNpssoToken, NPSSO_INVALID, NPSSO_REJECTED, NPSSO_SAVED } from "@/src/settings/npsso";
+import { saveNpssoToken, NPSSO_INVALID, NPSSO_REJECTED, NPSSO_SAVED, NPSSO_UNREACHABLE } from "@/src/settings/npsso";
 
 const KEY = Buffer.alloc(32, 7);
 const NOW = new Date("2026-11-08T10:00:00Z");
@@ -36,6 +36,19 @@ describe("saveNpssoToken", () => {
     const res = await saveNpssoToken(db, psn, KEY, GOOD, NOW);
     expect(res).toEqual({ ok: false, message: NPSSO_REJECTED });
     expect(res.message).toBe("PSN didn't accept this npsso. Sign in again and copy a fresh one.");
+    expect((await getSettings(db)).syncRequestedAt).toBeNull();
+  });
+
+  it("reports an unreachable PSN apart from a refusal and requests no sync", async () => {
+    const psn = {
+      ...createFakePsn(),
+      exchangeNpsso: async () => {
+        throw new TypeError('fetch failed');
+      },
+    };
+    const res = await saveNpssoToken(db, psn, KEY, GOOD, NOW);
+    expect(res).toEqual({ ok: false, message: NPSSO_UNREACHABLE });
+    expect(res.message).toBe("Couldn't reach PSN. Try again.");
     expect((await getSettings(db)).syncRequestedAt).toBeNull();
   });
 
