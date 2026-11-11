@@ -35,13 +35,13 @@ describe("levelCrossings", () => {
 
   it("uses the earned order: within a second the platinum comes last", () => {
     const at = new Date("2024-03-01T10:00:00.000Z");
-    const filler = Array.from({ length: 34 }, (_, i) => trophy("bronze", day(-100 + i))); // 510 points
-    const bronze = trophy("bronze", at); // 525
-    const plat = trophy("platinum", new Date(at.getTime() + 500)); // 825, crosses 540
+    const filler = Array.from({ length: 35 }, (_, i) => trophy("bronze", day(-100 + i))); // 525 points
+    const plat = trophy("platinum", at); // earlier millisecond, same second
+    const bronze = trophy("bronze", new Date(at.getTime() + 500)); // earned order puts it first: 540 reaches level 10
     const a = levelCrossings([plat, bronze, ...filler]);
     const b = levelCrossings([...filler, bronze, plat]);
-    expect(a[0].trophy).toBe(plat);
-    expect(b[0].trophy).toBe(plat);
+    expect(a[0].trophy).toBe(bronze);
+    expect(b[0].trophy).toBe(bronze);
   });
 
   it("returns levels 10, 20, 30 in order, oldest first", () => {
