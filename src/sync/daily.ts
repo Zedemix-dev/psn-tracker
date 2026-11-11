@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import type { Db } from "@/src/db/client";
-import { titles, trophyGroups } from "@/src/db/schema";
+import { playedGames, titles, trophyGroups } from "@/src/db/schema";
 import type { AppConfig } from "@/src/lib/config";
 import type { PsnGateway } from "@/src/psn/gateway";
 import { syncCatalog } from "@/src/sync/catalog";
@@ -20,6 +20,8 @@ export async function runDailyRefresh(
   deps?: SyncDeps,
 ): Promise<SyncRunResult> {
   return executeRun(db, gw, cfg, async () => "daily", now, deps, async ({ gw: paced, auth, progress, failures }) => {
+    // Games recorded as "no trophy list" are looked up again by the next sync (a list may have appeared).
+    await db.update(playedGames).set({ npCommunicationIds: null }).where(sql`${playedGames.npCommunicationIds} = '{}'`);
     const remoteById = new Map((await paced.getTitles(auth)).map((t) => [t.npCommunicationId, t]));
     const stored = await db
       .select({ id: titles.npCommunicationId, service: titles.npServiceName })

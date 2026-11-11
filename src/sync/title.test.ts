@@ -194,6 +194,7 @@ describe("syncTitle", () => {
     expect(after.earnedAt).toEqual(before.earnedAt);
     expect(after.earnedAt).not.toBeNull();
     expect(after.earnedRate).toBe("12.35");
+    expect(after.rareCategory).toBe(2);
   });
 
   it("throws on a user list without earned trophies when PSN counts some, and leaves stored data intact", async () => {

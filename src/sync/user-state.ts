@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import type { Db } from "@/src/db/client";
 import { trophies } from "@/src/db/schema";
 import type { PsnAuth, PsnGateway } from "@/src/psn/gateway";
@@ -17,7 +17,8 @@ export async function refreshUserState(db: Db, gw: PsnGateway, auth: PsnAuth, re
         .update(trophies)
         .set({
           earnedRate: u.earnedRate == null ? null : u.earnedRate.toFixed(2),
-          rareCategory: u.rareCategory,
+          // An empty category from PSN never replaces a known one; a real value, 0 included, does.
+          rareCategory: sql`coalesce(${u.rareCategory}::integer, ${trophies.rareCategory})`,
           progress: u.progress,
           progressedAt: u.progressedAt,
         })

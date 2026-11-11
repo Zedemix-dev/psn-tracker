@@ -51,4 +51,27 @@ describe("refreshUserState", () => {
     });
     expect(rows[1]).toMatchObject({ earnedRate: "5.50", earned: true, earnedAt: earnedBefore.earnedAt });
   });
+
+  it("keeps a known rare category when PSN sends none, and lets a real 0 replace it", async () => {
+    const first = makeTrophies(1);
+    await syncTitle(
+      db,
+      createFakePsn({ titleData: { [ID]: { groups: [makeGroup("default")], ...first } } }),
+      auth,
+      makeRemoteTitle({ defined: { ...ZERO_COUNTS, bronze: 1 } }),
+      now,
+    );
+    const read = async () => (await db.select().from(trophies).where(eq(trophies.trophyId, 0)))[0].rareCategory;
+    expect(await read()).toBe(2);
+
+    const empty = makeTrophies(1);
+    empty.userTrophies[0].rareCategory = null;
+    await refreshUserState(db, createFakePsn({ titleData: { [ID]: { userTrophies: empty.userTrophies } } }), auth, ref);
+    expect(await read()).toBe(2);
+
+    const zero = makeTrophies(1);
+    zero.userTrophies[0].rareCategory = 0;
+    await refreshUserState(db, createFakePsn({ titleData: { [ID]: { userTrophies: zero.userTrophies } } }), auth, ref);
+    expect(await read()).toBe(0);
+  });
 });
