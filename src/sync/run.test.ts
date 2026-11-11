@@ -4,7 +4,7 @@ import path from "node:path";
 import { eq } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Db } from "@/src/db/client";
-import { profile, settings, syncRuns, titles, trophies } from "@/src/db/schema";
+import { images, profile, settings, syncRuns, titles, trophies } from "@/src/db/schema";
 import type { AppConfig } from "@/src/lib/config";
 import { savePsnTokens, getSettings } from "@/src/settings/repo";
 import { isRetryable, withPacing } from "@/src/sync/retry";
@@ -293,6 +293,37 @@ describe("runSync", () => {
     expect(res.status).toBe("success");
     expect(gw.calls.filter((c) => c === `getUserTrophies:${ids[0]}`)).toHaveLength(1);
     expect(gw.calls.filter((c) => c === `getUserTrophies:${ps4}`)).toHaveLength(0);
+  });
+});
+
+describe("runSync unused images", () => {
+  const ORPHAN = "https://image.api.playstation.com/orphan.png";
+  async function seedOrphan() {
+    await fs.mkdir(path.join(mediaDir, "psn"), { recursive: true });
+    await fs.writeFile(path.join(mediaDir, "psn", "orphan.png"), "x");
+    await db.insert(images).values({ url: ORPHAN, localPath: "psn/orphan.png" });
+  }
+  const orphanFile = () =>
+    fs.access(path.join(mediaDir, "psn", "orphan.png")).then(
+      () => true,
+      () => false,
+    );
+
+  it("removes images nothing uses after a clean run and logs the count", async () => {
+    await seedOrphan();
+    const log = vi.spyOn(console, "log").mockImplementation(() => {});
+    await runSync(db, fixture(), cfg, "manual", now, deps);
+    expect(log).toHaveBeenCalledWith("[worker] images: 1 removed");
+    log.mockRestore();
+    expect(await db.select().from(images).where(eq(images.url, ORPHAN))).toHaveLength(0);
+    expect(await orphanFile()).toBe(false);
+  });
+
+  it("removes nothing when a title was skipped", async () => {
+    await seedOrphan();
+    await runSync(db, fixture(ids[1]), cfg, "manual", now, deps);
+    expect(await db.select().from(images).where(eq(images.url, ORPHAN))).toHaveLength(1);
+    expect(await orphanFile()).toBe(true);
   });
 });
 

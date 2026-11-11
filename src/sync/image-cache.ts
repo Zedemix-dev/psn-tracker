@@ -4,7 +4,7 @@ import { and, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
 import type { Db } from "@/src/db/client";
 import { BANNER_OVERRIDES } from "@/src/games/banner-overrides";
 import { gameKey } from "@/src/games/siblings";
-import { images, profile, titles, trophies, trophyGroups } from "@/src/db/schema";
+import { images, playedGames, profile, titles, trophies, trophyGroups } from "@/src/db/schema";
 import { imageHash } from "@/src/sync/images";
 import { computeTileBg, makeThumb } from "@/src/sync/thumbs";
 
@@ -44,9 +44,10 @@ async function collectUrls(db: Db): Promise<string[]> {
   ]);
   const all = new Set<string>();
   for (const rows of sources) for (const { u } of rows) if (u) all.add(u);
-  // Hand-picked banners (spec 8.9) of visible games.
-  const visible = await db.select({ name: titles.name }).from(titles).where(eq(titles.hidden, false));
-  for (const { name } of visible) {
+  // Hand-picked banners (spec 8.9) of every game, hidden ones included: `pruneImages` keeps
+  // exactly what this function collects, so a hidden game that comes back keeps its banner.
+  const named = await db.select({ name: titles.name }).from(titles);
+  for (const { name } of named) {
     const url = BANNER_OVERRIDES[gameKey(name)];
     if (url) all.add(url);
   }
@@ -115,6 +116,62 @@ async function inPool<T>(items: T[], task: (item: T) => Promise<void>): Promise<
     for (let item = queue.pop(); item !== undefined; item = queue.pop()) await task(item);
   };
   await Promise.all(Array.from({ length: Math.min(CONCURRENCY, queue.length) }, worker));
+}
+
+/** Deletes `rel` under `mediaDir`, only when it is a `psn/` file that resolves inside it. */
+async function removeFile(mediaDir: string, rel: string | null): Promise<void> {
+  if (!rel || !rel.startsWith("psn/")) return;
+  const root = path.resolve(mediaDir);
+  const full = path.resolve(root, rel);
+  if (!full.startsWith(path.join(root, "psn") + path.sep)) return;
+  try {
+    await fs.unlink(full);
+  } catch {
+    // Already gone, or not removable: a leftover file is harmless.
+  }
+}
+
+/**
+ * Removes the `images` rows no known URL points to any more, with their file and thumbnail
+ * (`psn/` only: the user's own banner under `banner/` is never touched). Returns the number of
+ * rows removed. When in doubt an image is kept: the played-games URLs, which `collectUrls` does
+ * not download, are kept too.
+ */
+export async function pruneImages(db: Db, mediaDir: string): Promise<number> {
+  const keep = new Set(await collectUrls(db));
+  const played = await Promise.all([
+    db.select({ u: playedGames.imageUrl }).from(playedGames),
+    db.select({ u: playedGames.bannerUrl }).from(playedGames),
+    db.select({ u: playedGames.logoUrl }).from(playedGames),
+  ]);
+  for (const rows of played) for (const { u } of rows) if (u) keep.add(u);
+
+  const all = await db
+    .select({ url: images.url, localPath: images.localPath, thumbPath: images.thumbPath })
+    .from(images);
+  const orphans = all.filter((r) => !keep.has(r.url));
+  if (orphans.length === 0) return 0;
+  const keptPaths = new Set<string>();
+  for (const r of all) {
+    if (!keep.has(r.url)) continue;
+    if (r.localPath) keptPaths.add(r.localPath);
+    if (r.thumbPath) keptPaths.add(r.thumbPath);
+  }
+
+  for (let i = 0; i < orphans.length; i += CHUNK) {
+    await db.delete(images).where(
+      inArray(
+        images.url,
+        orphans.slice(i, i + CHUNK).map((r) => r.url),
+      ),
+    );
+  }
+  for (const r of orphans) {
+    for (const rel of [r.localPath, r.thumbPath]) {
+      if (rel && !keptPaths.has(rel)) await removeFile(mediaDir, rel);
+    }
+  }
+  return orphans.length;
 }
 
 /**

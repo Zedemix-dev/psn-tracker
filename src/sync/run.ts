@@ -6,7 +6,7 @@ import type { PsnAuth, PsnGateway } from "@/src/psn/gateway";
 import { getValidAuth } from "@/src/psn/tokens";
 import { loadTitleState, titleNeedsReload } from "@/src/sync/diff";
 import { syncCatalog } from "@/src/sync/catalog";
-import { cacheImages } from "@/src/sync/image-cache";
+import { cacheImages, pruneImages } from "@/src/sync/image-cache";
 import { syncPlayedGames } from "@/src/sync/played";
 import { defaultSleep, withPacing, type Sleep } from "@/src/sync/retry";
 import { refreshUserState } from "@/src/sync/user-state";
@@ -213,5 +213,9 @@ export async function runSync(
     console.log(
       `[worker] images: ${img.downloaded} downloaded, ${img.failed} failed, ${img.thumbs} thumbnails, ${img.tiles} tile colours`,
     );
+    // Only after a clean run: a skipped title may still need images its rows do not list yet.
+    if (failures.length === 0) {
+      console.log(`[worker] images: ${await pruneImages(db, cfg.mediaDir)} removed`);
+    }
   });
 }

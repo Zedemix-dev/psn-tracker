@@ -5,9 +5,9 @@ import { eq } from "drizzle-orm";
 import sharp from "sharp";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Db } from "@/src/db/client";
-import { images, profile, titles } from "@/src/db/schema";
+import { images, playedGames, profile, titles, trophies, trophyGroups } from "@/src/db/schema";
 import { upsertTitleRow } from "@/src/sync/title";
-import { cacheImages } from "@/src/sync/image-cache";
+import { cacheImages, pruneImages } from "@/src/sync/image-cache";
 import { imageHash } from "@/src/sync/images";
 import { makeRemoteTitle } from "@/tests/fixtures/titles";
 import { createTestDb } from "@/tests/helpers/db";
@@ -49,7 +49,7 @@ describe("cacheImages", () => {
     expect(urls).toContain(LOGO);
   });
 
-  it("downloads the hand-picked banner of a visible game, not of a hidden one", async () => {
+  it("downloads the hand-picked banner of every game, hidden ones included", async () => {
     const GOT = "https://img.psnprofiles.com/hero/l/3220/31500c21-cc5e-4d31-bfcc-9c10cbb55249.jpg";
     await db
       .update(titles)
@@ -64,10 +64,11 @@ describe("cacheImages", () => {
       .update(titles)
       .set({ hidden: true })
       .where(eq(titles.npCommunicationId, "NPWR00001_00"));
+    await db.delete(images);
     const g = okFetch();
     await cacheImages(db, dir2, g);
     await fs.rm(dir2, { recursive: true, force: true });
-    expect(g.mock.calls.map((c) => String(c[0]))).not.toContain(GOT);
+    expect(g.mock.calls.map((c) => String(c[0]))).toContain(GOT);
   });
 
   it("downloads each url once across two calls", async () => {
@@ -251,5 +252,86 @@ describe("cacheImages tile colours", () => {
     await cacheImages(db, dir, f);
     const [row] = await db.select().from(images).where(eq(images.url, ICON));
     expect(row.tileCheckedAt).toBeNull();
+  });
+});
+
+describe("pruneImages", () => {
+  const ORPHAN = "https://image.api.playstation.com/orphan.png";
+  const AVATAR = "https://image.api.playstation.com/avatar.png";
+  const GROUP_ICON = "https://image.api.playstation.com/group.png";
+  const TROPHY_ICON = "https://image.api.playstation.com/trophy.png";
+  const HIDDEN_ICON = "https://image.api.playstation.com/hidden.png";
+  const GOT = "https://img.psnprofiles.com/hero/l/3220/31500c21-cc5e-4d31-bfcc-9c10cbb55249.jpg";
+
+  async function seedImage(url: string, withThumb = true): Promise<{ file: string; thumb: string | null }> {
+    const hash = imageHash(url);
+    const file = `psn/${hash}.png`;
+    const thumb = withThumb ? `psn/thumb/${hash}.webp` : null;
+    await fs.mkdir(path.join(dir, "psn", "thumb"), { recursive: true });
+    await fs.writeFile(path.join(dir, file), "x");
+    if (thumb) await fs.writeFile(path.join(dir, thumb), "x");
+    await db.insert(images).values({ url, localPath: file, thumbPath: thumb, fetchedAt: now });
+    return { file, thumb };
+  }
+  const exists = (rel: string) =>
+    fs.access(path.join(dir, rel)).then(
+      () => true,
+      () => false,
+    );
+
+  it("removes an orphan image: row, file and thumbnail", async () => {
+    const { file, thumb } = await seedImage(ORPHAN);
+    expect(await pruneImages(db, dir)).toBe(1);
+    expect(await db.select().from(images).where(eq(images.url, ORPHAN))).toHaveLength(0);
+    expect(await exists(file)).toBe(false);
+    expect(await exists(thumb!)).toBe(false);
+  });
+
+  it("keeps what is still used, hidden games included", async () => {
+    await db.update(profile).set({ avatarUrl: AVATAR });
+    await db.insert(trophyGroups).values({ titleId: "NPWR00001_00", groupId: "default", name: "g", iconUrl: GROUP_ICON });
+    await db
+      .insert(trophies)
+      .values({ titleId: "NPWR00001_00", trophyId: 0, type: "bronze", name: "t", iconUrl: TROPHY_ICON });
+    await db
+      .update(titles)
+      .set({ iconUrl: HIDDEN_ICON, hidden: true, name: "Game of Thrones" })
+      .where(eq(titles.npCommunicationId, "NPWR00001_00"));
+    const kept = [AVATAR, GROUP_ICON, TROPHY_ICON, HIDDEN_ICON, COVER, GOT];
+    const files: string[] = [];
+    for (const url of kept) files.push((await seedImage(url)).file);
+    await seedImage(ORPHAN);
+
+    expect(await pruneImages(db, dir)).toBe(1);
+    expect(await db.select().from(images)).toHaveLength(kept.length);
+    for (const f of files) expect(await exists(f)).toBe(true);
+  });
+
+  it("keeps the images of the played games", async () => {
+    const PLAYED = "https://image.api.playstation.com/played.png";
+    await db.insert(playedGames).values({ npTitleId: "CUSA1", name: "p", imageUrl: PLAYED });
+    const { file } = await seedImage(PLAYED);
+    expect(await pruneImages(db, dir)).toBe(0);
+    expect(await exists(file)).toBe(true);
+  });
+
+  it("never touches a file outside psn/, even one an orphan row points to", async () => {
+    await fs.mkdir(path.join(dir, "banner"), { recursive: true });
+    await fs.writeFile(path.join(dir, "banner", "mine.png"), "x");
+    await fs.writeFile(path.join(dir, "outside.png"), "x");
+    await db.insert(images).values([
+      { url: ORPHAN, localPath: "banner/mine.png", thumbPath: "psn/../outside.png", fetchedAt: now },
+    ]);
+    expect(await pruneImages(db, dir)).toBe(1);
+    expect(await exists("banner/mine.png")).toBe(true);
+    expect(await exists("outside.png")).toBe(true);
+  });
+
+  it("is not an error when the file is already gone, and removes a row never downloaded", async () => {
+    await db.insert(images).values([
+      { url: ORPHAN, localPath: "psn/missing.png", thumbPath: "psn/thumb/missing.webp", fetchedAt: now },
+      { url: `${ORPHAN}?2`, attempts: 2 },
+    ]);
+    expect(await pruneImages(db, dir)).toBe(2);
   });
 });
