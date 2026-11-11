@@ -18,6 +18,7 @@ type Props = {
 
 const M = { t: 18, r: 4, b: 24, l: 44 };
 const PAD = 32; // .st-chart horizontal padding
+const PAD_BOTTOM = 12; // .st-chart bottom padding (border-box): the drawn chart is height + 12 tall
 
 export function ColumnChart({ labels, values, height, ariaLabel, unit, titleOf, labelEvery }: Props) {
   const [ref, measured] = useWidth<HTMLDivElement>();
@@ -91,7 +92,7 @@ export function ColumnChart({ labels, values, height, ariaLabel, unit, titleOf, 
   }
 
   return (
-    <div ref={ref} className="st-chart" style={{ minHeight: height }}>
+    <div ref={ref} className="st-chart" style={{ minHeight: height + PAD_BOTTOM }}>
       {svg}
     </div>
   );

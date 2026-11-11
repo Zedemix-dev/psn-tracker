@@ -52,5 +52,7 @@ export function tipPosition(
   let top = pointer.y - size.h - 10;
   if (left + size.w > viewport.w - 8) left = pointer.x - size.w - 14;
   if (top < 8) top = pointer.y + 16;
+  left = Math.min(Math.max(left, 8), viewport.w - size.w - 8);
+  top = Math.min(top, viewport.h - size.h - 8);
   return { left, top };
 }

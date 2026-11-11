@@ -55,6 +55,12 @@ describe("tipPosition", () => {
   it("flips left at the right edge", () => {
     expect(tipPosition({ x: 950, y: 300 }, size, viewport).left).toBe(950 - 120 - 14);
   });
+  it("stays on screen near the left edge with a wide tooltip", () => {
+    const pos = tipPosition({ x: 150, y: 300 }, { w: 250, h: 50 }, { w: 375, h: 800 });
+    expect(pos.left).toBe(8);
+    const low = tipPosition({ x: 150, y: 790 }, { w: 250, h: 50 }, { w: 375, h: 800 });
+    expect(low.top).toBeLessThanOrEqual(800 - 50 - 8);
+  });
   it("flips below at the top edge", () => {
     expect(tipPosition({ x: 300, y: 20 }, size, viewport).top).toBe(36);
   });

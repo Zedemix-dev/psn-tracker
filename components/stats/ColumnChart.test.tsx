@@ -32,7 +32,8 @@ describe("<ColumnChart>", () => {
     stubMeasure(0);
     const { container } = draw();
     expect(container.querySelector("svg")).toBeNull();
-    expect((container.querySelector(".st-chart") as HTMLElement).style.minHeight).toBe("200px");
+    // border-box + 12px bottom padding of .st-chart: same total height as the drawn chart (200 + 12)
+    expect((container.querySelector(".st-chart") as HTMLElement).style.minHeight).toBe("212px");
   });
 
   it("draws one column per value and writes the record above it", () => {
