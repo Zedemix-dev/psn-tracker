@@ -53,7 +53,7 @@ const draw = () => {
   return screen.getByTestId("s");
 };
 
-const mouse = { pointerType: "mouse", button: 0, pointerId: 1 };
+const mouse = { pointerType: "mouse", button: 0, buttons: 1, pointerId: 1 };
 
 describe("useSideScroll", () => {
   it("opens at the end", () => {
@@ -107,6 +107,17 @@ describe("useSideScroll", () => {
     const touch = { pointerType: "touch", pointerId: 2 };
     fireEvent.pointerDown(el, { ...touch, clientX: 500 });
     fireEvent.pointerMove(el, { ...touch, clientX: 560 });
+    expect(el.scrollLeft).toBe(300);
+    expect(el.classList.contains("drag")).toBe(false);
+  });
+
+  it("does not drag after the button was released outside", () => {
+    const el = draw();
+    el.scrollLeft = 300;
+    fireEvent.scroll(el);
+    fireEvent.pointerDown(el, { ...mouse, clientX: 500 });
+    fireEvent.pointerMove(el, { ...mouse, clientX: 502 });
+    fireEvent.pointerMove(el, { ...mouse, buttons: 0, clientX: 600 });
     expect(el.scrollLeft).toBe(300);
     expect(el.classList.contains("drag")).toBe(false);
   });

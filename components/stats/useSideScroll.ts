@@ -50,11 +50,22 @@ export function useSideScroll<T extends HTMLElement>() {
     start.current = { x: e.clientX, left: el.scrollLeft, id: e.pointerId, moving: false };
   }, []);
 
+  const end = useCallback(() => {
+    const el = ref.current;
+    const s = start.current;
+    start.current = null;
+    if (!s) return;
+    if (el?.hasPointerCapture?.(s.id)) el.releasePointerCapture?.(s.id);
+    setState((p) => (p.drag ? { ...p, drag: false } : p));
+  }, []);
+
   const onPointerMove = useCallback(
     (e: ReactPointerEvent<T>) => {
       const el = ref.current;
       const s = start.current;
       if (!el || !s) return;
+      // The button was released outside the element, before any capture: the drag is over.
+      if (e.buttons === 0) return end();
       const dx = e.clientX - s.x;
       if (!s.moving) {
         if (Math.abs(dx) <= 3) return;
@@ -65,17 +76,8 @@ export function useSideScroll<T extends HTMLElement>() {
       }
       el.scrollLeft = s.left - dx;
     },
-    [tip],
+    [tip, end],
   );
-
-  const end = useCallback(() => {
-    const el = ref.current;
-    const s = start.current;
-    start.current = null;
-    if (!s) return;
-    if (el?.hasPointerCapture?.(s.id)) el.releasePointerCapture?.(s.id);
-    setState((p) => (p.drag ? { ...p, drag: false } : p));
-  }, []);
 
   const className = ["st-side", state.can && "can", state.drag && "drag", state.fl && "fl", state.fr && "fr"].filter(Boolean).join(" ");
 
