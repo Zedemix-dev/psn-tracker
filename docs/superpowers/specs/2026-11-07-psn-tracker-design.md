@@ -584,6 +584,7 @@ Il doit aussi vérifier en pratique la détection des nouveaux DLC (6.4).
 - **[décidé, 10 novembre 2026] Place du bouton « Show all » :** dans l'en-tête d'une liste, il vient toujours **après** le nombre affiché, comme sur le Trophy Log (16.5). Cela vaut pour la page **Trophy Advisor**, à construire ainsi. La liste **Games** (14.6) a été corrigée en même temps que Trophy Advisor.
 - **Page Trophy Advisor :** cadrée, maquette validée, construite et vérifiée avec les vraies données le 11 novembre 2026, décrite en 17. Fusionnée dans `main` le 11 novembre 2026 (PR #13).
 - **Page Stats :** cadrée, maquette validée, construite et vérifiée avec les vraies données le 11 novembre 2026, décrite en 18. Fusionnée dans `main` le 11 novembre 2026 (PR #15).
+- **Stats au doigt et défilement des années :** demandé le 11 novembre 2026 après la fusion, maquette validée le même jour, décrit en 18.14. À construire avant le déploiement sur le NAS.
 
 ## 14. Jeux aux trophées non obtenables
 **[décidé, cadrage du 9 novembre 2026]** Fonctionnalité construite à part, sur la branche `feat/unobtainable`. Maquette validée le 9 novembre 2026 : `docs/superpowers/specs/2026-11-09-psn-tracker-maquette-nonobt.html`, référence pour l'aspect et le CSS. Les choix que l'utilisateur n'a pas faits lui-même sont marqués **[choix de Claude]**.
@@ -1151,7 +1152,7 @@ Il remplace le « Last 60 days » de la section 3. **[décidé]** Il prend toute
 - **[choix de Claude]** Le nom du mois au-dessus de la première semaine dont le lundi tombe dans ce mois, sauf dans les deux dernières colonnes où il déborderait.
 - **[choix de Claude]** Cinq intensités de la couleur d'accent : 0, 1 à 2, 3 à 6, 7 à 12, 13 et plus. Une légende « Less … More » en haut à droite.
 - Infobulle : la date (« Mon 31 Aug 2026 »), le nombre de trophées et, s'il y en a, de platines.
-- Sous 860 px, le calendrier défile horizontalement dans son panneau et s'ouvre sur les jours les plus récents.
+- Sous 860 px, le calendrier défile horizontalement dans son panneau et s'ouvre sur les jours les plus récents. **[décidé, 11 novembre 2026]** Sans barre de défilement, comme le graphique des années (18.14).
 - **[décidé]** Résumé en dessous, **quatre valeurs équidistantes**, la première calée à gauche et la dernière à droite, chaque libellé centré sous sa valeur :
   1. le nombre de **trophées** (« Trophies ») ;
   2. le nombre de **platines** (« Platinums ») ;
@@ -1179,7 +1180,7 @@ La valeur de la colonne record est écrite au-dessus d'elle. Au survol d'une col
 
 ### 18.9 « Games by release year », « Games by publisher », « Games by genre »
 Date de sortie, éditeur et genres sont lus avec `withSiblings` : une info manquante est prise chez une autre version du même jeu (8.9).
-- **Games by release year** [décidé] : une colonne par année, de la plus ancienne à la plus récente. Une année sans jeu entre les deux garde sa colonne, à 0. Étiquettes « '14 », « '15 ». Sous le graphique : « 25 games have no release date on PSN. »
+- **Games by release year** [décidé] : une colonne par année, de la plus ancienne à la plus récente. Une année sans jeu entre les deux garde sa colonne, à 0. Étiquettes « '14 », « '15 ». Sous le graphique : « 25 games have no release date on PSN. » **[décidé, 11 novembre 2026]** Quand les années ne tiennent plus dans le panneau, il défile de côté (18.14).
 - **Games by publisher** : des barres horizontales triées du plus grand nombre au plus petit, avec le nombre au bout de la barre. Les **15 premiers**, puis une ligne grise « Other (48) » avec le nombre d'éditeurs regroupés. Sous le graphique : « 6 games have no publisher on PSN. »
   - **[choix de Claude, validé sur la maquette]** Les noms bruts du PSN sont raccourcis par une liste écrite dans le code, et deux noms bruts qui donnent le même nom affiché sont additionnés. Un nom absent de la liste s'affiche tel quel :
 
@@ -1233,7 +1234,7 @@ Date de sortie, éditeur et genres sont lus avec `withSiblings` : une info manqu
 
 ### 18.11 Règles communes aux graphiques
 - **[choix de Claude]** Dessinés en SVG par le site, sans bibliothèque de graphiques, comme sur la maquette. Ils s'adaptent à la largeur de leur panneau et réservent leur hauteur, pour que la page ne saute pas à l'affichage.
-- **Infobulle** : une seule, du style de `.unob .tip`, qui suit la souris, reste dans l'écran et n'est jamais coupée par un panneau. `.glass` piégeant les éléments `position:fixed`, elle passe par `createPortal`.
+- **Infobulle** : une seule, du style de `.unob .tip`, qui suit la souris, ou le doigt sur un écran tactile (18.14), reste dans l'écran et n'est jamais coupée par un panneau. `.glass` piégeant les éléments `position:fixed`, elle passe par `createPortal`.
 - **Couleurs [choix de Claude, validé sur la maquette]** :
   - graphiques à une seule série : `--accent`, sauf le niveau en `--gold` (#F2C462) ;
   - types de trophées : platine #6C8AD8, or #B48E26, argent #868FA3, bronze #C2703F. Ce sont des teintes plus sourdes que celles du bandeau, faites pour de grandes surfaces, et le platine y est bleu pour ne pas se confondre avec l'argent ;
@@ -1261,3 +1262,38 @@ Si une synchro a changé des trophées depuis 18.3, recalculer les chiffres en S
 - Aucun fond derrière les icônes à fond transparent, aucune image rectangulaire.
 - Temps de réponse de la page sur le build de production.
 - L'affichage téléphone : pas de défilement horizontal de la page, et le calendrier s'ouvre sur les jours récents.
+
+### 18.14 Infobulles au doigt et défilement de côté
+**[décidé, 11 novembre 2026, après la fusion de la PR #15]** Construit sur la branche `feat/stats-touch`. Maquette validée le 11 novembre 2026 (v6) : `docs/superpowers/specs/2026-11-11-psn-tracker-maquette-stats-defilement.html`, référence pour le graphique des années qui défile. Les infobulles au doigt ont été validées sur description.
+
+**Intention.** L'utilisateur regarde aussi la page sur son téléphone et sur son Mac. Au doigt, les infobulles ne s'affichent pas : elles suivent la souris. Et le graphique des années de sortie gagne une colonne chaque année : sans rien faire, ses colonnes deviendraient de plus en plus fines.
+
+**Infobulles au doigt [décidé]**
+- Poser le doigt sur une colonne, une part d'anneau ou un jour du calendrier affiche son infobulle. Elle reste **tant que le doigt est posé** et disparaît dès qu'il se lève.
+- Sur les courbes (« Monthly activity », « Trophy progression », Level history), le doigt posé place la ligne verticale sur le point le plus proche. Tant qu'il reste posé, la ligne le suit quand il glisse de côté.
+- Un glissement vers le haut ou le bas fait toujours défiler la page, et l'infobulle disparaît.
+- **[choix de Claude]** Quand le doigt glisse d'une colonne à l'autre (« Trophies by time », « Trophies by day »), l'infobulle passe à la colonne sous le doigt.
+- **[choix de Claude, validé]** Au doigt, l'infobulle se place au-dessus du doigt, centrée sur lui, assez haut pour qu'il ne la cache pas. Elle passe en dessous seulement s'il n'y a pas la place en haut de l'écran, et reste dans l'écran.
+- **[choix de Claude, validé]** Un appui long sur un graphique n'ouvre pas de menu et ne sélectionne pas de texte.
+- **[choix de Claude]** Les mises en valeur au survol (contour d'un jour du calendrier, part d'anneau élargie) ne valent que pour les appareils à souris : au doigt, elles resteraient affichées après le lever du doigt.
+- À la souris, rien ne change.
+
+**« Games by release year » [décidé]**
+- Les colonnes ne descendent jamais sous **18 px** de large, soit 24 px avec l'espace entre deux colonnes. Tant que toutes les années tiennent, le graphique reste tel qu'en 18.9.
+- Quand elles ne tiennent plus, il défile à gauche et à droite **dans son panneau**, **sans barre de défilement** :
+  - à la souris, clic maintenu puis glisser, avec le curseur en forme de main ;
+  - sur le pavé tactile du Mac, glissement à deux doigts ;
+  - sur téléphone, glissement du doigt.
+- Il s'ouvre sur les **années les plus récentes**, la dernière contre le bord droit. **[choix de Claude]** Il y revient quand la largeur change (téléphone tourné, fenêtre redimensionnée), sauf si on l'a fait défiler ailleurs.
+- L'axe des nombres reste fixe à gauche, seules les colonnes défilent. L'échelle est celle de toutes les années, même hors de vue.
+- **[choix de Claude, validé sur la maquette]** Un fondu sur le bord gauche ou droit signale qu'il reste des années de ce côté.
+- **[choix de Claude]** Au bout du graphique, le glissement à deux doigts ne déclenche pas le retour à la page précédente du navigateur.
+- **[choix de Claude]** Glisser à la souris cache l'infobulle ouverte. Un clic sans glisser ne fait pas défiler.
+- Sur téléphone, les 13 années de 2026 ne tiennent déjà pas : le graphique y défile dès maintenant.
+
+**Calendrier [choix de Claude, validé]** Sous 860 px, il défile de la même façon : sans barre, clic maintenu à la souris, fondu sur les bords, ouverture sur les jours les plus récents et retour à la fin quand la largeur change.
+
+**Vérification**
+- Dans le navigateur de l'app, avec les vraies données : sur PC, le graphique des années ne défile pas. En largeur téléphone, il défile, s'ouvre sur '26, se déplace au clic maintenu, sans barre et sans défilement horizontal de la page, avec le fondu du côté des années cachées. Le calendrier pareil.
+- Les infobulles au doigt, simulées par des événements tactiles : affichées au doigt posé, cachées au doigt levé, au-dessus du doigt.
+- **Non vérifiable ici** : un vrai écran tactile et le pavé tactile d'un Mac. L'utilisateur les essaie sur ses appareils.
