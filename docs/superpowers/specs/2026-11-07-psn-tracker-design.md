@@ -585,6 +585,7 @@ Il doit aussi vérifier en pratique la détection des nouveaux DLC (6.4).
 - **Page Trophy Advisor :** cadrée, maquette validée, construite et vérifiée avec les vraies données le 11 novembre 2026, décrite en 17. Fusionnée dans `main` le 11 novembre 2026 (PR #13).
 - **Page Stats :** cadrée, maquette validée, construite et vérifiée avec les vraies données le 11 novembre 2026, décrite en 18. Fusionnée dans `main` le 11 novembre 2026 (PR #15).
 - **Stats au doigt et défilement des années :** demandé le 11 novembre 2026 après la fusion, maquette validée le même jour, décrit en 18.14. Construit et vérifié avec les vraies données le 11 novembre 2026. Fusionné dans `main` le 11 novembre 2026 (PR #17).
+- **Points de suivi de la phase 1 :** tous traités avant le déploiement sur le NAS, à la demande de l'utilisateur, cadrés le 11 novembre 2026, décrits en 19.
 
 ## 14. Jeux aux trophées non obtenables
 **[décidé, cadrage du 9 novembre 2026]** Fonctionnalité construite à part, sur la branche `feat/unobtainable`. Maquette validée le 9 novembre 2026 : `docs/superpowers/specs/2026-11-09-psn-tracker-maquette-nonobt.html`, référence pour l'aspect et le CSS. Les choix que l'utilisateur n'a pas faits lui-même sont marqués **[choix de Claude]**.
@@ -1297,3 +1298,77 @@ Si une synchro a changé des trophées depuis 18.3, recalculer les chiffres en S
 - Dans le navigateur de l'app, avec les vraies données : sur PC, le graphique des années ne défile pas. En largeur téléphone, il défile, s'ouvre sur '26, se déplace au clic maintenu, sans barre et sans défilement horizontal de la page, avec le fondu du côté des années cachées. Le calendrier pareil.
 - Les infobulles au doigt, simulées par des événements tactiles : affichées au doigt posé, cachées au doigt levé, au-dessus du doigt.
 - **Non vérifiable ici** : un vrai écran tactile et le pavé tactile d'un Mac. L'utilisateur les essaie sur ses appareils.
+
+## 19. Points de suivi de la phase 1
+**[décidé, cadrage du 11 novembre 2026]** L'utilisateur a demandé de traiter tous les points mis de côté dans `docs/superpowers/plans/2026-11-08-phase1-suivis.md`, avant le déploiement sur le NAS : robustesse et sécurité, performance, interface, tuile carrée, et la section « Divers ». Construit sur la branche `fix/followups`. Maquette validée le 11 novembre 2026 (v2), pour les compteurs du bandeau : `docs/superpowers/specs/2026-11-11-psn-tracker-maquette-suivis.html`. Les choix que l'utilisateur n'a pas faits lui-même sont marqués **[choix de Claude]** ; il a validé chaque partie sur description.
+
+### 19.1 Intention
+Le site va passer sur le NAS. Ces points ne bloquaient rien, mais certains se verraient au premier déploiement (démarrage, en-têtes, images qui s'accumulent), et les autres sont de petits défauts relevés pendant la construction. L'utilisateur veut partir d'une base propre.
+
+**Non-objectifs** : aucune nouvelle page, aucune nouvelle fonction visible en dehors de ce qui est listé ici.
+
+**Anti-objectifs** (ce qui serait un échec même si tout fonctionne)
+- Une image supprimée alors qu'elle sert encore, ou la bannière de l'utilisateur supprimée.
+- Une page qui affiche des chiffres d'avant la dernière synchro à cause d'un cache.
+- Un changement visible à la souris ou sur PC qui n'est pas listé ici.
+
+### 19.2 Guide de déploiement [décidé]
+`deploy/README.md` contient déjà le rôle Admin du package GHCR (étape 1.5) et le cookie Secure (étape 6.4). On y ajoute, à l'étape 7 « Premier démarrage », les vérifications qui n'y sont pas encore :
+- l'arrêt propre du worker (`docker stop`) : le log montre la fin de la synchro en cours, ou un run marqué « Interrupted » au redémarrage ;
+- la première synchro de cette version : toutes les listes PS5 sont rechargées une fois (migration 0005), et Settings montre « Up to date » et « 5 of yours » dans « Unobtainable trophies » (migration 0006) ;
+- le Trophy Log sur le NAS : « Show all » face aux objectifs de 16.8, et le retour depuis une page de jeu sur la même ligne ;
+- l'export PNG du Plat Wall (15.8) : texte en Sora, durée sous 60 s avec Rarity et Name, enregistrement sur un vrai iPhone avec Art, Rarity et Name ;
+- la page Stats sur un téléphone et sur le pavé tactile d'un Mac (18.14) ;
+- les nouveautés de cette section qui ne se vérifient que sur le NAS : la page d'attente au démarrage (19.3) et les en-têtes de protection (19.3).
+Ces mêmes points sont retirés de la section 3 de `docs/ETAT-DU-PROJET.md` au profit d'un renvoi au guide.
+
+### 19.3 Robustesse et sécurité [choix de Claude, validés sur description]
+1. **En-têtes de protection** : toutes les réponses du site interdisent son affichage dans une page d'une autre origine (`X-Frame-Options: DENY` et `Content-Security-Policy: frame-ancestors 'none'`). Les fichiers de `/media` ne peuvent exécuter aucun script, même un SVG venu de Sony (`Content-Security-Policy` avec `sandbox`), et le navigateur ne devine pas leur type (`X-Content-Type-Options: nosniff`). Les en-têtes sont posés par l'app, pas par nginx : rien à changer sur le NAS. **[choix de Claude]** Les en-têtes globaux passent par `headers()` de `next.config.ts`, qui couvre aussi la page de connexion, les fichiers `_next/static` et les redirections, que le proxy ne voit pas. La route `/media` garde les siens (`nosniff`, déjà posé) et ajoute le `sandbox`, qui n'empêche pas l'affichage d'une image dans `<img>`.
+2. **Démarrage** : tant que la base n'a pas toutes les migrations que l'app connaît (le worker les applique à son démarrage), le site répond par une page d'attente au lieu d'une erreur 500 : « Updating… », « This page reloads by itself. », rechargée toutes les 5 s, avec le code 503. Les routes `/api` répondent 503 sans page, export PNG du Plat Wall compris. **[choix de Claude]** Le nombre de migrations attendu est figé au build, depuis le journal des migrations. La vérification se fait dans le proxy, avant tout rendu : un layout ne suffirait pas, car la page se rend en même temps que lui et planterait quand même. Elle ne coûte plus rien une fois la base à jour : le résultat est gardé en mémoire. La page de connexion affiche aussi la page d'attente.
+3. **Token** : quand le PSN est injoignable à l'enregistrement du npsso (erreur réseau ou délai dépassé), Settings affiche « Couldn't reach PSN. Try again. » au lieu de « PSN didn't accept this npsso ». Ce dernier message reste réservé au refus du PSN.
+4. **Demande de synchro** : une demande manuelle (« Sync now ») n'est effacée qu'une fois la synchro terminée. Si `runSync` ou `markRun` lèvent une erreur, elle reste en attente et repart au tour suivant du worker. **[choix de Claude]** Après 3 échecs de suite sur la même demande, elle est abandonnée : un token expiré ne relance pas une synchro vouée à l'échec toutes les minutes, et l'historique des synchros montre les échecs.
+5. **Langue** : la langue des noms et descriptions de trophées (`PSN_LANGUAGE`) est enregistrée avec les définitions. Quand elle change, la synchro suivante recharge les définitions de toutes les listes dans la nouvelle langue, une seule fois. **[choix de Claude]** Elle est enregistrée dans `settings`. Au premier démarrage de cette version, aucune langue n'est encore enregistrée : la langue courante est notée sans rien recharger, pour ne pas rallonger encore la première synchro sur le NAS.
+6. **Jeu sans liste de trophées** : la correspondance « pas de liste » n'est plus gardée pour toujours. Elle est revérifiée au rafraîchissement quotidien.
+7. **CI** : un test vérifie que le worker démarre depuis son paquet final (`node dist/worker.js`), jusqu'à sa connexion à la base. **[choix de Claude]** Il tourne dans le job `pg-smoke`, qui a déjà un vrai PostgreSQL 16.
+
+### 19.4 Performance [choix de Claude, validés sur description]
+1. **Calculs en mémoire** : la table des images (`loadImageMap`) et les données des milestones (`getMilestones`) sont gardées en mémoire par le site et relues seulement quand une synchro s'est terminée depuis. La page Stats ne lit plus la table des images qu'une fois par affichage. Une page ne montre jamais un chiffre d'avant la dernière synchro terminée. **[choix de Claude]** Le site et le worker ne partagent que la base : le cache est invalidé par la fin de tout run, réussi, partiel ou en échec, et par le rafraîchissement quotidien, puisqu'ils écrivent tous en base. La vérification coûte une petite requête par affichage.
+2. **Images inutilisées** : après une synchro réussie, le worker supprime les fichiers d'images, leurs miniatures et leurs lignes `images` qu'aucune donnée n'utilise plus (profil, listes, groupes, trophées, jeux joués, bannières et logos). La bannière envoyée par l'utilisateur n'est jamais concernée. Une image de Sony supprimée à tort serait retéléchargée à la synchro suivante. Le journal de synchro donne le nombre d'images supprimées. **[choix de Claude]** :
+   - « utilisée » veut dire présente quelque part en base : avatar, icône, jaquette, bannière et logo de toutes les listes, **cachées comprises** (une liste cachée peut revenir), icônes de groupes et de trophées, bannières imposées (`BANNER_OVERRIDES`) de toutes les listes ;
+   - seules les lignes `images` et leurs fichiers sous `psn/` sont supprimés, jamais rien sous `banner/` ;
+   - le nettoyage ne suit qu'un run réussi sans aucun échec : après un run partiel, une liste mal chargée pourrait manquer en base.
+
+### 19.5 Interface
+1. **« Sync now » [choix de Claude, validé]** : une fois cliqué, le bouton reste sur « Syncing… » jusqu'à la fin de la synchro, sans réapparaître entre la demande et le démarrage du run. Il affiche « Syncing… » tant qu'une demande attend ou qu'un run tourne.
+2. **Carrousel au doigt [décidé]** : il est en pause tant que le doigt est posé dessus et repart dès qu'il se lève, comme les infobulles de Stats (18.14). À la souris, rien ne change : pause au survol et au focus clavier.
+3. **Liste des jeux [choix de Claude, validé]** : elle continue de charger la page suivante même si une page ne contient que des doublons.
+4. **« Hide 0% games » [choix de Claude, validé]** : le toggle garde le focus du clavier pendant l'enregistrement.
+5. **Compteurs du bandeau sur téléphone [décidé, maquette v2, version B]** : à 640 px et moins, le total « Trophies » prend toute la largeur, sur une ligne (nombre puis libellé), et les 4 types sont en dessous, en 4 colonnes égales, avec les mêmes tailles de texte qu'aujourd'hui. Tout tient sur un téléphone de 320 px. Au-dessus de 640 px, rien ne change.
+6. **`/api/games` [choix de Claude, validé]** : un `offset` ou une `limit` hors des bornes répondent 400, plus jamais 500.
+7. **Bannière** : l'envoi d'une nouvelle bannière supprime l'ancien fichier. C'est déjà le cas dans le code (`uploadBanner`, vérifié le 11 novembre 2026) : le point de la liste était périmé. On ajoute seulement un test s'il manque.
+8. **Champ npsso [choix de Claude, validé]** : il garde le texte collé après une erreur.
+
+### 19.6 Tuile carrée (8.9)
+1. **Couleur enregistrée [choix de Claude, validé]** : la couleur de la tuile est calculée par le worker quand il télécharge l'image, avec la même règle qu'aujourd'hui, et enregistrée avec l'image. Le site la met dès le premier affichage : plus de bleu nuit d'une image avant la couleur, ni au réaffichage. Les images déjà téléchargées reçoivent leur couleur à la synchro suivante. Le navigateur ne lit plus les pixels. **[choix de Claude]** La valeur enregistrée est le fond CSS, comme aujourd'hui (une couleur, ou un dégradé à deux couleurs). La base distingue « pas encore calculée » de « calculée, pas de bord uni », pour ne pas recalculer à chaque synchro. Une image SVG n'a pas de couleur de tuile.
+2. **Coins transparents [décidé]** : la règle ne change pas. Les 3 images à coins arrondis (Dark Souls II et les deux Dragon Quest XI) ne s'affichent de toute façon nulle part sur une tuile : ces jeux ont leur jaquette carrée, celle du tableau de bord de la console, et le site l'utilise déjà. L'utilisateur trouvait que les bandes proposées ne s'accordaient pas avec le bord de ces images.
+3. **Tests** : la limite de tolérance (16 accepté, 17 refusé) et l'opacité (250 acceptée, 249 refusée) sont testées.
+Au 11 novembre 2026, les jeux affichés sur une tuile sont Game of Thrones, Marvel Heroes Omega, Minecraft: Story Mode et Tales from the Borderlands (PS4, sans jaquette chez eux ni chez une autre version).
+
+### 19.7 Divers [choix de Claude, validés sur description]
+1. **Données de test** : `seed:dev` crée aussi des jeux joués, pour que « Hours played » ne vaille plus 0 h en local.
+2. **Catégorie de rareté** : la synchro protège `rare_category` comme `earned_rate` : une valeur vide renvoyée par le PSN ne remplace pas une valeur connue.
+3. **Miniatures** : le journal de synchro donne le nombre de miniatures créées, et la bibliothèque d'images (sharp) n'est chargée que par le worker, par un import dynamique.
+
+### 19.8 Laissé au builder
+- L'endroit exact du cache (19.4) et la façon de savoir qu'une synchro s'est terminée, tant qu'aucune page ne montre de données périmées.
+- Le test de démarrage du worker en CI (19.3.7) : sa forme exacte.
+- Les textes de journal (nombre d'images supprimées, de miniatures créées). **[choix de Claude]** « Le journal » est celui du conteneur worker (les lignes `[worker] …` lues dans Portainer), pas l'historique des synchros de Settings : aucune colonne en plus.
+
+### 19.9 Vérification avec les vraies données
+- Les compteurs du bandeau à 375 et 320 px (version B), et inchangés au-dessus de 640 px.
+- Le carrousel et le bouton « Sync now », le toggle au clavier, la liste des jeux, le champ npsso, l'envoi d'une bannière (l'ancien fichier disparaît).
+- Les en-têtes de protection sur une page et sur `/media`.
+- La page d'attente, en simulant une migration manquante.
+- Une synchro complète en local : nombre d'images supprimées et de miniatures créées dans le journal, aucune image manquante ensuite sur Games, une page de jeu, Plat Wall, Trophy Log, Trophy Advisor et Stats, et la couleur des 4 tuiles dès le premier affichage.
+- Les temps de réponse des pages avant et après le cache.
+- Non vérifiable ici : le test de CI (sur github.com), et tout ce qui est listé pour le NAS (19.2).
