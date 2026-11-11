@@ -40,7 +40,7 @@ function Grid({ w, h, m, sc, fmt }: { w: number; h: number; m: Margin; sc: { ste
 const xOf = (i: number, n: number, w: number, m: Margin) => m.l + ((w - m.l - m.r) * (n > 1 ? i / (n - 1) : 0.5));
 
 function MonthLabels({ months, w, h, m }: { months: MonthPoint[]; w: number; h: number; m: Margin }) {
-  const every = w < 700 ? 12 : 6;
+  const every = w < 420 ? 24 : w < 700 ? 12 : 6; // fewer labels on a phone, or they overlap
   return (
     <>
       {months.map((x, i) =>

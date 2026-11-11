@@ -43,6 +43,7 @@ function LevelChart({ points, w }: { points: LevelRow[]; w: number }) {
   const years: number[] = [];
   for (let y = new Date(t0).getUTCFullYear() + 1; Date.UTC(y, 0, 1) <= t1; y++) years.push(y);
   const ys = points.map((p) => Y(p.level));
+  const narrow = w < 420; // a label every other year, or they overlap
 
   return (
     <svg ref={ref} width={w} height={H} role="img" aria-label="PSN level over time">
@@ -57,11 +58,13 @@ function LevelChart({ points, w }: { points: LevelRow[]; w: number }) {
           </g>
         );
       })}
-      {years.map((y) => (
+      {years.map((y, i) => (
         <g key={y}>
-          <text x={X(Date.UTC(y, 0, 1))} y={H - 6} textAnchor="middle">
-            {y}
-          </text>
+          {(!narrow || i % 2 === 0) && (
+            <text x={X(Date.UTC(y, 0, 1))} y={H - 6} textAnchor="middle">
+              {y}
+            </text>
+          )}
           <line x1={X(Date.UTC(y, 0, 1))} x2={X(Date.UTC(y, 0, 1))} y1={H - M.b} y2={H - M.b + 4} stroke={GRID} />
         </g>
       ))}

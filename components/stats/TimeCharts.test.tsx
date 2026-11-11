@@ -55,9 +55,39 @@ describe("<MonthlyActivity>", () => {
   });
 
   it("labels every 12 months on a narrow screen", () => {
-    stubMeasure(400);
+    stubMeasure(600);
     const { container } = wrap(<MonthlyActivity months={months(14)} />);
     expect(axisLabels(container)).toEqual(["Jan 20", "Jan 21"]);
+  });
+
+  it("labels every 6 months from 700px", () => {
+    stubMeasure(732); // 700 drawn
+    const { container } = wrap(<MonthlyActivity months={months(121)} />);
+    expect(axisLabels(container)).toHaveLength(21);
+  });
+
+  it("labels every 12 months under 700px", () => {
+    stubMeasure(731); // 699 drawn
+    const { container } = wrap(<MonthlyActivity months={months(121)} />);
+    expect(axisLabels(container)).toHaveLength(11);
+  });
+
+  it("labels every 24 months under 420px", () => {
+    stubMeasure(451); // 419 drawn
+    const { container } = wrap(<MonthlyActivity months={months(121)} />);
+    expect(axisLabels(container)).toEqual(["Jan 20", "Jan 22", "Jan 24", "Jan 26", "Jan 28", "Jan 30"]);
+  });
+
+  it("labels every 12 months from 420px", () => {
+    stubMeasure(452); // 420 drawn
+    const { container } = wrap(<MonthlyActivity months={months(121)} />);
+    expect(axisLabels(container)).toHaveLength(11);
+  });
+
+  it("thins the progression labels the same way", () => {
+    stubMeasure(451);
+    const { container } = wrap(<TrophyProgression months={months(121)} counts={counts} />);
+    expect(axisLabels(container)).toHaveLength(6);
   });
 
   it("shows the month and its count, with singular and plural", () => {

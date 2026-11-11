@@ -71,6 +71,27 @@ describe("<LevelHistory>", () => {
     expect(years).toEqual(["2022", "2023"]);
   });
 
+  const decade = [
+    row(520, { earnedAtMs: Date.UTC(2026, 5, 1) }),
+    row(510, { earnedAtMs: Date.UTC(2016, 5, 1) }),
+  ];
+  const yearLabels = (c: HTMLElement) =>
+    [...c.querySelectorAll("svg text")].map((t) => t.textContent ?? "").filter((t) => /^20\d\d$/.test(t));
+
+  it("labels every year from 420px", () => {
+    stubMeasure(452); // 420 drawn
+    const { container } = draw(decade);
+    expect(yearLabels(container)).toHaveLength(10);
+  });
+
+  it("labels every other year under 420px, keeping a tick on each year", () => {
+    stubMeasure(451); // 419 drawn
+    const { container } = draw(decade);
+    expect(yearLabels(container)).toEqual(["2017", "2019", "2021", "2023", "2025"]);
+    const ticks = [...container.querySelectorAll("svg line")].filter((l) => Number(l.getAttribute("y2")) - Number(l.getAttribute("y1")) === 4);
+    expect(ticks).toHaveLength(10);
+  });
+
   it("shows the level, the date and the trophy of the nearest point", () => {
     stubMeasure(832);
     const { container } = draw(rows);
