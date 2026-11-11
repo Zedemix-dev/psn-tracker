@@ -55,6 +55,7 @@ describe("proxy", () => {
     expect(matches("/_nextfoo")).toBe(true);
     expect(matches("/mediafoo")).toBe(true);
     expect(matches("/favicon.xico")).toBe(true);
+    expect(matches("/faviconxico")).toBe(true);
     expect(matches("/media/abc.png")).toBe(false);
     expect(matches("/_next/static/a.js")).toBe(false);
     expect(matches("/_next/image")).toBe(false);
