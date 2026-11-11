@@ -57,6 +57,13 @@
       "when": 1794353137331,
       "tag": "0007_advisor_settings",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1794418364693,
+      "tag": "0008_followups_columns",
+      "breakpoints": true
     }
   ]
 }

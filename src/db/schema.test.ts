@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createTestDb } from "@/tests/helpers/db";
-import { profile, settings, titles, trophies, unobtainableList } from "@/src/db/schema";
+import { images, profile, settings, titles, trophies, unobtainableList } from "@/src/db/schema";
 
 describe("schema", () => {
   it("applies migrations and seeds the singleton rows", async () => {
@@ -74,5 +74,16 @@ describe("schema", () => {
     expect(title.unobtainableNote).toBeNull();
     expect(trophy.unobtainable).toBe(false);
     expect(await db.select().from(unobtainableList)).toEqual([]);
+  });
+
+  it("adds the phase 1 follow-up columns with their defaults", async () => {
+    const db = await createTestDb();
+    const [s] = await db.select().from(settings);
+    expect(s.psnLanguage).toBeNull();
+    expect(s.syncRequestFailures).toBe(0);
+    await db.insert(images).values({ url: "https://example.com/a.png" });
+    const [img] = await db.select().from(images);
+    expect(img.tileBg).toBeNull();
+    expect(img.tileCheckedAt).toBeNull();
   });
 });
