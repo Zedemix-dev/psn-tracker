@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup Stats v3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --banner:url("https://image.api.playstation.com/vulcan/ap/rnd/202202/1517/a1krxU0VRlOC3ULeUjeFGEcA.png");
+  --banner-y:30%;
+  --bg:#0F1631; --surface:rgba(255,255,255,.07); --surface-2:rgba(255,255,255,.12); --line:rgba(255,255,255,.13);
+  --text:#F3F5FB; --muted:#A9B3CB; --accent:#5AA9FF;
+  --plat:#D3E2FF; --gold:#F2C462; --silver:#C9D0DA; --bronze:#DE9563;
+  --font:"Sora",sans-serif; --r-panel:14px; --r-chip:8px;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.4;-webkit-font-smoothing:antialiased}
+img{display:block}
+button{font:inherit;color:inherit}
+a{color:inherit}
+svg.ico{width:14px;height:14px;flex:none}
+.wrap{max-width:1448px;margin:0 auto;padding:0 24px}
+.glass{background:var(--surface);border:1px solid var(--line);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.page-bg{position:fixed;inset:-60px;background:var(--banner) center/cover;filter:blur(44px) brightness(.4) saturate(1.25);z-index:-1}
+.shell{position:relative}
+.hero{position:relative;width:100%;aspect-ratio:1920/520;min-height:240px;max-height:560px;overflow:hidden}
+.hero-img{position:absolute;inset:0;background:var(--banner) center var(--banner-y)/cover no-repeat;-webkit-mask-image:linear-gradient(to bottom,#000 72%,transparent 100%);mask-image:linear-gradient(to bottom,#000 72%,transparent 100%)}
+.topbar{position:absolute;top:0;left:0;right:0;z-index:20}
+.topbar .wrap{display:flex;align-items:center;gap:12px;height:58px}
+.tabs{display:flex;align-items:center;gap:6px;overflow-x:auto;scrollbar-width:none;flex:1;min-width:0}
+.pill{display:inline-flex;align-items:center;gap:7px;padding:6px 13px;border-radius:999px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.16);color:#fff;text-decoration:none;font-size:13px;font-weight:500;white-space:nowrap;flex:none;backdrop-filter:blur(6px)}
+.pill[aria-current]{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.85)}
+.profile{position:relative;z-index:2;margin-top:-72px;display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;align-items:center;gap:22px;padding:12px 20px;border-radius:var(--r-panel)}
+.avatar{width:92px;height:92px;margin-top:-40px;border-radius:50%;object-fit:cover;background:var(--surface-2);border:3px solid rgba(255,255,255,.9)}
+.identity h1{margin:0;font-size:22px;font-weight:700;line-height:1.15}
+.sync-row{display:flex;align-items:center;gap:10px;margin-top:6px;flex-wrap:wrap}
+.sync-when{color:var(--muted);font-size:12px}
+.btn-sync{display:inline-flex;align-items:center;gap:6px;border:0;background:#fff;color:#0F1631;padding:5px 11px;border-radius:999px;cursor:pointer;font-size:12px;font-weight:600}
+.counts{display:flex;align-items:stretch;gap:6px}
+.count{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:64px;padding:6px 8px;border-radius:10px;background:var(--surface-2)}
+.count b{font-size:17px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.count span{display:flex;align-items:center;gap:3px;font-size:11px;margin-top:4px;color:var(--muted)}
+.count span img{width:11px;height:11px}
+.count.plat b{color:var(--plat)} .count.gold b{color:var(--gold)} .count.silver b{color:var(--silver)} .count.bronze b{color:var(--bronze)}
+.level{display:flex;align-items:center;gap:10px;padding-left:20px;border-left:1px solid var(--line)}
+.lvl-icon{width:44px;height:44px;flex:none;background:url(icons/level-sprite.png) 0 55.55%/100% 1000% no-repeat}
+.level .lv{font-size:20px;font-weight:700;line-height:1}
+.level .lv small{display:block;font-size:11px;font-weight:500;line-height:1.2;color:var(--muted);margin-bottom:2px}
+.level .next{margin-top:5px;width:104px;height:3px;background:var(--surface-2);border-radius:2px;overflow:hidden}
+.level .next i{display:block;height:100%;background:var(--silver)}
+.level .next-label{font-size:11px;color:var(--muted);margin-top:3px}
+.stats{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-top:12px}
+.stat{padding:12px 16px;border-radius:12px;min-width:0}
+.stat .label{font-size:12px;color:var(--muted)}
+.stat .value{font-size:28px;font-weight:700;line-height:1.15;margin-top:2px;white-space:nowrap}
+.stat .value small{font-size:18px;font-weight:600;color:var(--muted)}
+@media (max-width:1180px){
+  .profile{grid-template-columns:auto minmax(0,1fr)}
+  .counts{grid-column:1/-1;flex-wrap:wrap}
+  .level{grid-column:1/-1;border-left:0;padding-left:0}
+  .stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+.panel{border-radius:var(--r-panel);overflow:hidden}
+
+/* NEW: Stats page */
+.st-page{display:flex;flex-direction:column;gap:14px;margin-top:14px;padding-bottom:64px}
+.st-head{display:flex;align-items:center;justify-content:space-between;gap:8px 16px;flex-wrap:wrap;padding:14px 16px 8px}
+.st-head h2{margin:0;font-size:15px;font-weight:600;line-height:1.2}
+.st-head .aside{font-size:12px;color:var(--muted)}
+.st-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.st-legend span{display:inline-flex;align-items:center;gap:6px}
+.st-legend b{color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}
+.st-legend i{width:10px;height:10px;border-radius:3px}
+.st-chart{padding:0 16px 12px;position:relative}
+.st-chart svg{display:block;width:100%;overflow:visible;touch-action:pan-y}
+.st-chart text{font-family:var(--font);font-size:11px;fill:var(--muted);font-variant-numeric:tabular-nums}
+.st-chart text.peak{fill:var(--text);font-weight:600}
+
+/* Calendar */
+.st-cal-scroll{overflow-x:auto;padding:0 16px 2px;scrollbar-width:thin}
+.st-cal{min-width:860px}
+.st-cal-months,.st-cal-grid{display:grid;grid-template-columns:32px repeat(53,minmax(0,1fr));gap:3px}
+.st-cal-months{height:16px;font-size:11px;color:var(--muted);margin-bottom:3px}
+.st-cal-months span{white-space:nowrap;overflow:visible}
+.st-cal-grid .d{font-size:11px;color:var(--muted);align-self:center}
+.st-cell{aspect-ratio:1;border-radius:4px;background:var(--surface-2)}
+.st-cell.l1{background:color-mix(in srgb,var(--accent) 28%,transparent)}
+.st-cell.l2{background:color-mix(in srgb,var(--accent) 50%,transparent)}
+.st-cell.l3{background:color-mix(in srgb,var(--accent) 75%,transparent)}
+.st-cell.l4{background:var(--accent)}
+.st-cell.out{visibility:hidden}
+.st-cell:not(.out):hover{outline:1.5px solid #fff;outline-offset:0}
+.st-scale{display:inline-flex;align-items:center;gap:3px;font-size:11px;color:var(--muted)}
+.st-scale .st-cell{width:12px;height:12px;border-radius:3px;aspect-ratio:auto}
+.st-scale .st-cell:hover{outline:0}
+.st-scale span{margin:0 4px}
+.st-sum{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 16px 0;padding:10px 0 14px;border-top:1px solid var(--line)}
+.st-sum>div{text-align:center}
+.st-sum>div:first-child{justify-self:start}
+.st-sum>div:nth-child(2){justify-self:center}
+.st-sum>div:last-child{justify-self:end}
+.st-sum b{display:block;font-size:17px;font-weight:700;line-height:1.15}
+.st-sum b small{font-size:12px;font-weight:500;color:var(--muted);margin-left:4px}
+.st-sum span{font-size:11.5px;color:var(--muted)}
+
+/* Donuts */
+.st-donuts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.st-donut-body{display:grid;grid-template-columns:136px minmax(0,1fr);gap:16px;align-items:center;padding:2px 16px 16px}
+.st-donut-svg{width:136px;height:136px;display:block}
+.st-donut-svg circle.seg{transition:stroke-width .1s;cursor:default}
+.st-donut-svg circle.seg:hover{stroke-width:24}
+.st-donut-svg .big{font-family:var(--font);font-size:19px;font-weight:700;fill:var(--text)}
+.st-donut-svg .cap{font-family:var(--font);font-size:10.5px;fill:var(--muted)}
+.st-dl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px;font-size:12px}
+.st-dl li{display:grid;grid-template-columns:10px minmax(0,1fr) auto;align-items:center;gap:7px}
+.st-dl i{width:10px;height:10px;border-radius:3px}
+.st-dl span{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.st-dl b{font-weight:600;font-variant-numeric:tabular-nums}
+
+/* Rows of charts */
+.st-row-2{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:14px}
+.st-row-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.st-bars{list-style:none;margin:0;padding:0 16px 14px;display:flex;flex-direction:column;gap:2px}
+.st-bars li{display:grid;grid-template-columns:212px minmax(0,1fr);align-items:center;gap:10px;height:24px;font-size:12px}
+.st-bars .n{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.st-bars .t{display:flex;align-items:center;gap:7px;min-width:0}
+.st-bars .b{height:12px;border-radius:0 4px 4px 0;background:var(--accent);flex:none;min-width:2px}
+.st-bars .o .b{background:var(--muted)}
+.st-bars .v{font-weight:600;font-variant-numeric:tabular-nums}
+.st-note{padding:0 16px 12px;font-size:11.5px;color:var(--muted)}
+
+/* Level history */
+.st-lrow{display:grid;grid-template-columns:56px 56px minmax(0,1fr) 100px 106px 92px 56px;gap:14px;align-items:center;min-height:66px;padding:5px 16px 5px 5px;border-top:1px solid rgba(255,255,255,.06)}
+.st-lrow:hover{background:rgba(255,255,255,.04)}
+.st-lrow .gl{display:block;width:56px;height:56px;border-radius:10px}
+.st-lrow .gc{width:56px;height:56px;border-radius:10px;object-fit:cover}
+.st-lrow .gc.icon{object-fit:contain;background:#0B1022}
+.st-lrow .ic{width:56px;height:56px;border-radius:10px;object-fit:cover}
+.st-lrow .nm{font-size:15px;font-weight:600;line-height:1.3}
+.st-lrow .ds{font-size:12.5px;line-height:1.35;color:var(--muted);margin-top:2px}
+.st-lrow .g{font-size:12px;line-height:1.3;color:var(--accent);margin-top:4px}
+.st-lrow .g a{color:var(--accent);text-decoration:none}
+.st-lrow .g a:hover{text-decoration:underline}
+.st-lv{display:flex;align-items:center;justify-content:flex-end;gap:8px}
+.st-lv .sp{width:34px;height:34px;flex:none;background-image:url(icons/level-sprite.png);background-size:100% 1000%;background-repeat:no-repeat}
+.st-lv b{font-size:19px;font-weight:700;font-variant-numeric:tabular-nums}
+.st-dt{text-align:right;font-size:11px;line-height:1.3;color:var(--muted)}
+.st-dt b{display:block;font-size:13px;font-weight:600;line-height:1.25;color:var(--text);white-space:nowrap}
+.st-rt{text-align:right;font-size:11px;line-height:1.3;color:var(--muted)}
+.st-rt b{display:block;font-size:15px;font-weight:600;line-height:1.15;color:var(--text);font-variant-numeric:tabular-nums}
+.st-ty{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10.5px;color:var(--muted)}
+.st-ty img{width:30px;height:30px;object-fit:contain}
+.st-meta{display:contents}
+
+/* Tooltip */
+.st-tip{position:fixed;z-index:100;pointer-events:none;display:none;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:#0B1022;box-shadow:0 8px 22px rgba(0,0,0,.5);font-size:12px;line-height:1.4;max-width:300px}
+.st-tip .h{color:var(--muted);font-size:11px;margin-bottom:3px}
+.st-tip .r{display:flex;align-items:center;gap:7px}
+.st-tip .r u{width:12px;height:2px;border-radius:1px;flex:none}
+.st-tip .r b{font-weight:600;font-variant-numeric:tabular-nums}
+.st-tip .r span{color:var(--muted)}
+
+@media (max-width:1280px){.st-donuts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:1100px){.st-row-3{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:900px){
+  .st-row-2{grid-template-columns:minmax(0,1fr)}
+  .st-lrow{grid-template-columns:48px minmax(0,1fr) 100px 96px 48px;gap:10px}
+  .st-lrow .gl{display:none}
+  .st-lrow .ic{width:48px;height:48px}
+  .st-rt{display:none}
+}
+@media (max-width:640px){
+  .wrap{padding:0 16px}
+  .st-donuts{grid-template-columns:minmax(0,1fr)}
+  .st-lrow{grid-template-columns:44px minmax(0,1fr) 40px;gap:10px;padding:8px 12px}
+  .st-lrow .ic{width:44px;height:44px;align-self:start}
+  .st-meta{display:flex;grid-column:2/-1;grid-row:2;gap:14px;align-items:center;flex-wrap:wrap}
+  .st-lv{justify-content:flex-start}
+  .st-dt,.st-rt{display:block;text-align:left}
+  .st-ty{grid-column:3;grid-row:1;align-self:start}
+}
+
+/* Mockup strip (French, not part of the site) */
+.note{display:flex;align-items:center;justify-content:space-between;gap:8px 12px;flex-wrap:wrap;padding:8px 24px;font-size:12px;color:#2B1B00;background:var(--gold)}
+.note b{font-weight:700}
+</style>
+</head>
+<body>
+<div class="page-bg"></div>
+<div class="note"><span><b>Maquette v3</b> (pas le vrai site). Tes vraies données. Sous la frise : une valeur à gauche, une au centre, une à droite, chaque texte centré sous sa valeur.</span></div>
+
+<div class="shell">
+  <header class="topbar">
+    <div class="wrap">
+      <nav class="tabs" aria-label="Pages">
+        <a class="pill" href="#">Games</a>
+        <a class="pill" href="#">Plat Wall</a>
+        <a class="pill" href="#">Trophy Log</a>
+        <a class="pill" href="#">Trophy Advisor</a>
+        <a class="pill" href="#" aria-current="page">Stats</a>
+      </nav>
+      <a class="pill" href="#">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></g></svg>
+        Settings
+      </a>
+    </div>
+  </header>
+  <div class="hero"><div class="hero-img"></div></div>
+</div>
+
+<main class="wrap">
+  <section class="profile glass">
+    <img class="avatar" src="http://psn-rsc.prod.dl.playstation.net/psn-rsc/avatar/EP0177/CUSA17419_00-AV00000000000037_9202448197AC5CF92114_xl.png" alt="">
+    <div class="identity"><h1>Zmx969</h1><div class="sync-row"><span class="sync-when">Last synced 10 Nov 2026, 02:59</span><button class="btn-sync">Sync now</button></div></div>
+    <div class="counts">
+      <div class="count"><b>11,636</b><span>Trophies</span></div>
+      <div class="count plat"><b>230</b><span><img src="icons/40-platinum.png" alt="">Platinum</span></div>
+      <div class="count gold"><b>990</b><span><img src="icons/40-gold.png" alt="">Gold</span></div>
+      <div class="count silver"><b>2,434</b><span><img src="icons/40-silver.png" alt="">Silver</span></div>
+      <div class="count bronze"><b>7,982</b><span><img src="icons/40-bronze.png" alt="">Bronze</span></div>
+    </div>
+    <div class="level"><div class="lvl-icon"></div><div><div class="lv"><small>PSN level</small>536</div><div class="next"><i style="width:61%"></i></div><div class="next-label">61% to level 537</div></div></div>
+  </section>
+  <section class="stats">
+    <div class="stat glass"><div class="label">Games completed</div><div class="value">225 <small>/ 266</small></div></div>
+    <div class="stat glass"><div class="label">Completion rate</div><div class="value">93.58%</div></div>
+    <div class="stat glass"><div class="label">Average rarity</div><div class="value">26.55%</div></div>
+    <div class="stat glass"><div class="label">Unearned trophies</div><div class="value">798</div></div>
+    <div class="stat glass"><div class="label">Trophies per day</div><div class="value">3.19</div></div>
+    <div class="stat glass"><div class="label">Hours played</div><div class="value">18,811 h</div></div>
+  </section>
+
+  <div class="st-page">
+    <section class="panel glass" aria-label="Last 12 months">
+      <div class="st-head">
+        <h2>Last 12 months</h2>
+        <div class="st-scale">Less<span></span><div class="st-cell"></div><div class="st-cell l1"></div><div class="st-cell l2"></div><div class="st-cell l3"></div><div class="st-cell l4"></div><span></span>More</div>
+      </div>
+      <div class="st-cal-scroll" id="cal-scroll"><div class="st-cal" id="cal"></div></div>
+      <div class="st-sum" id="cal-sum"></div>
+    </section>
+
+    <div class="st-donuts" id="donuts"></div>
+
+    <section class="panel glass"><div class="st-head"><h2>Monthly activity</h2><div class="aside">Trophies earned each month</div></div><div class="st-chart" id="activity"></div></section>
+
+    <section class="panel glass"><div class="st-head"><h2>Trophy progression</h2><div class="st-legend" id="prog-legend"></div></div><div class="st-chart" id="progression"></div></section>
+
+    <div class="st-row-2">
+      <section class="panel glass"><div class="st-head"><h2>Trophies by time</h2><div class="aside">Paris time</div></div><div class="st-chart" id="by-hour"></div></section>
+      <section class="panel glass"><div class="st-head"><h2>Trophies by day</h2></div><div class="st-chart" id="by-day"></div></section>
+    </div>
+
+    <div class="st-row-3">
+      <section class="panel glass"><div class="st-head"><h2>Games by release year</h2></div><div class="st-chart" id="by-year"></div><div class="st-note" id="year-note"></div></section>
+      <section class="panel glass"><div class="st-head"><h2>Games by publisher</h2></div><ul class="st-bars" id="by-publisher"></ul><div class="st-note" id="pub-note"></div></section>
+      <section class="panel glass"><div class="st-head"><h2>Games by genre</h2></div><ul class="st-bars" id="by-genre"></ul><div class="st-note" id="genre-note"></div></section>
+    </div>
+
+    <section class="panel glass">
+      <div class="st-head"><h2>Level history</h2><div class="aside">A point every 10 levels</div></div>
+      <div class="st-chart" id="level"></div>
+      <div id="level-list"></div>
+    </section>
+  </div>
+</main>
+<div class="st-tip" id="tip"></div>
+
+<script src="stats-data-v2.js"></script>
+<script>
+const S=STATS, MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"], WD=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+const TYPES=["platinum","gold","silver","bronze"], TNAME={platinum:"Platinum",gold:"Gold",silver:"Silver",bronze:"Bronze"};
+const TC={platinum:"#6C8AD8",gold:"#B48E26",silver:"#868FA3",bronze:"#C2703F"};
+const ACCENT="#5AA9FF", LEVEL="#F2C462", GRID="rgba(255,255,255,.09)", SURF="#141B38";
+const int=n=>Math.round(n).toLocaleString("en-US");
+const esc=s=>String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");
+const plain=s=>String(s??"").replace(/\[([^\]]+)\]\([^)]+\)/g,"$1");
+const tierOf=r=>r<5?"Ultra rare":r<10?"Very rare":r<20?"Rare":r<50?"Uncommon":"Common";
+
+/* Tooltip */
+const tipEl=document.getElementById("tip");
+function showTip(e,html){tipEl.innerHTML=html;tipEl.style.display="block";const w=tipEl.offsetWidth,h=tipEl.offsetHeight;let x=e.clientX+14,y=e.clientY-h-10;if(x+w>innerWidth-8)x=e.clientX-w-14;if(y<8)y=e.clientY+16;tipEl.style.left=x+"px";tipEl.style.top=y+"px";}
+function hideTip(){tipEl.style.display="none";}
+const tipRow=(c,v,l)=>`<div class="r">${c?`<u style="background:${c}"></u>`:""}<b>${v}</b><span>${esc(l)}</span></div>`;
+
+/* Scales and paths */
+function nice(v,t){const raw=Math.max(v,1)/t,mag=10**Math.floor(Math.log10(raw)),n=raw/mag,step=(n<=1?1:n<=2?2:n<=2.5?2.5:n<=5?5:10)*mag;return{step,max:Math.ceil(v/step)*step};}
+function monotone(p){ // Fritsch-Carlson, never overshoots
+  const n=p.length;if(n<2)return"";const dx=[],m=[],t=[];
+  for(let i=0;i<n-1;i++){dx[i]=p[i+1][0]-p[i][0];m[i]=(p[i+1][1]-p[i][1])/dx[i];}
+  t[0]=m[0];t[n-1]=m[n-2];
+  for(let i=1;i<n-1;i++)t[i]=m[i-1]*m[i]<=0?0:(3*(dx[i-1]+dx[i]))/((2*dx[i]+dx[i-1])/m[i-1]+(dx[i]+2*dx[i-1])/m[i]);
+  let d=`M${p[0][0]},${p[0][1]}`;
+  for(let i=0;i<n-1;i++){const h=dx[i]/3;d+=`C${p[i][0]+h},${p[i][1]+t[i]*h} ${p[i+1][0]-h},${p[i+1][1]-t[i+1]*h} ${p[i+1][0]},${p[i+1][1]}`;}
+  return d;
+}
+function grid(w,m,h,sc,fmt){let g="";for(let v=0;v<=sc.max+1e-6;v+=sc.step){const y=m.t+(h-m.t-m.b)*(1-v/sc.max);g+=`<line x1="${m.l}" x2="${w-m.r}" y1="${y}" y2="${y}" stroke="${GRID}"/><text x="${m.l-8}" y="${y+4}" text-anchor="end">${fmt(v)}</text>`;}return g;}
+const compact=v=>v>=10000?(v/1000)+"K":int(v);
+function crosshair(el,xs,m,h,draw){
+  const svg=el.querySelector("svg"),line=svg.querySelector(".xh");
+  svg.addEventListener("pointermove",e=>{const r=svg.getBoundingClientRect(),x=e.clientX-r.left;let i=0,best=1e9;xs.forEach((v,k)=>{const d=Math.abs(v-x);if(d<best){best=d;i=k;}});line.setAttribute("x1",xs[i]);line.setAttribute("x2",xs[i]);line.style.display="";showTip(e,draw(i));});
+  svg.addEventListener("pointerleave",()=>{line.style.display="none";hideTip();svg.querySelectorAll(".hl").forEach(c=>c.style.display="none");});
+}
+
+/* Calendar */
+function calendar(){
+  const today=new Date(S.today+"T12:00:00Z"),DAY=864e5,dow=(today.getUTCDay()+6)%7,monday=new Date(today-dow*DAY),start=new Date(monday-52*7*DAY);
+  const key=d=>d.toISOString().slice(0,10),lv=n=>n===0?"":n<=2?"l1":n<=6?"l2":n<=12?"l3":"l4";
+  let months='<span></span>',last=-1,rows="";
+  for(let w=0;w<53;w++){const d=new Date(+start+w*7*DAY),m=d.getUTCMonth();if(m!==last&&d.getUTCDate()<=7&&w<51){months+=`<span style="grid-column:${w+2}">${MON[m]}</span>`;}if(d.getUTCDate()<=7)last=m;}
+  let trophies=0,plats=0,best=null;
+  const cells=[];
+  for(let r=0;r<7;r++){rows+=`<div class="d">${WD[r]}</div>`;for(let w=0;w<53;w++){const d=new Date(+start+(w*7+r)*DAY);if(d>today){rows+='<div class="st-cell out"></div>';continue;}const k=key(d),v=S.days[k]||{n:0,p:0};trophies+=v.n;plats+=v.p;if(!best||v.n>best.n)best={n:v.n,d};rows+=`<div class="st-cell ${lv(v.n)}" data-k="${k}"></div>`;}}
+  document.getElementById("cal").innerHTML=`<div class="st-cal-months">${months}</div><div class="st-cal-grid">${rows}</div>`;
+  const fmtDay=d=>`${WD[(d.getUTCDay()+6)%7]} ${d.getUTCDate()} ${MON[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+  document.querySelectorAll("#cal .st-cell[data-k]").forEach(c=>{const k=c.dataset.k,v=S.days[k]||{n:0,p:0},d=new Date(k+"T12:00:00Z");c.addEventListener("pointermove",e=>showTip(e,`<div class="h">${fmtDay(d)}</div>`+tipRow("",int(v.n),v.n===1?"trophy":"trophies")+(v.p?tipRow("",v.p,v.p===1?"platinum":"platinums"):"")));c.addEventListener("pointerleave",hideTip);});
+  document.getElementById("cal-sum").innerHTML=`<div><b>${int(trophies)}</b><span>Trophies</span></div><div><b>${int(plats)}</b><span>Platinums</span></div><div><b>${best.n}<small>${fmtDay(best.d)}</small></b><span>Best day</span></div>`;
+  const sc=document.getElementById("cal-scroll");sc.scrollLeft=sc.scrollWidth;
+}
+
+/* Donuts */
+function donut(title,segs,big,cap,unit){
+  const total=segs.reduce((a,s)=>a+s.v,0),R=54,C=2*Math.PI*R;let off=0,circles="";
+  segs.forEach((s,i)=>{const f=s.v/total,len=Math.max(f*C-2,1.2);circles+=`<circle class="seg" data-i="${i}" cx="68" cy="68" r="${R}" fill="none" stroke="${s.c}" stroke-width="20" stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-off-1}" transform="rotate(-90 68 68)"/>`;off+=f*C;});
+  return{html:`<section class="panel glass"><div class="st-head"><h2>${title}</h2></div><div class="st-donut-body"><svg class="st-donut-svg" viewBox="0 0 136 136" role="img" aria-label="${title}">${circles}<text class="big" x="68" y="70" text-anchor="middle">${big}</text><text class="cap" x="68" y="86" text-anchor="middle">${cap}</text></svg><ul class="st-dl">${segs.map(s=>`<li><i style="background:${s.c}"></i><span>${esc(s.l)}</span><b>${int(s.v)}</b></li>`).join("")}</ul></div></section>`,segs,total,unit};
+}
+function donuts(){
+  const rare=["#B3261E","#D6502A","#E8862A","#F2B233","#F7DC5A"],comp=["#4CCB7A","#3FAE66","#339353","#2A7845","#216038"];
+  const list=[
+    donut("Rarity",Object.entries(S.tiers).map(([l,v],i)=>({l,v,c:rare[i]})),S.avgRate.toFixed(2)+"%","Average","trophies"),
+    donut("Completion",["80% – 100%","60% – 79%","40% – 59%","20% – 39%","0% – 19%"].map((l,i)=>({l,v:S.completion[i],c:comp[i]})),S.avgProgress.toFixed(2)+"%","Average","games"),
+    donut("PSN points",TYPES.map(t=>({l:TNAME[t],v:S.points[t],c:TC[t]})),int(S.totalPoints),"Points","points"),
+    donut("Platforms",[{l:"PS5",v:S.platforms.PS5,c:"#4F8FE8"},{l:"PS4",v:S.platforms.PS4,c:"#2EAD7F"}],int(S.games),"Games","games"),
+  ];
+  const box=document.getElementById("donuts");box.innerHTML=list.map(d=>d.html).join("");
+  box.querySelectorAll("section").forEach((sec,k)=>{const d=list[k];sec.querySelectorAll("circle.seg").forEach(c=>{const s=d.segs[+c.dataset.i];c.addEventListener("pointermove",e=>showTip(e,`<div class="h">${esc(s.l)}</div>`+tipRow(s.c,int(s.v),`${d.unit}, ${(s.v/d.total*100).toFixed(1)}%`)));c.addEventListener("pointerleave",hideTip);});});
+}
+
+/* Monthly activity */
+function activity(){
+  const el=document.getElementById("activity"),w=el.clientWidth-32,h=220,m={t:14,r:12,b:24,l:44},M=S.months,sc=nice(Math.max(...M.map(x=>x.n)),4);
+  const X=i=>m.l+(w-m.l-m.r)*i/(M.length-1),Y=v=>m.t+(h-m.t-m.b)*(1-v/sc.max),pts=M.map((x,i)=>[X(i),Y(x.n)]),line=monotone(pts);
+  const every=w<700?12:6;let xl="";M.forEach((x,i)=>{if(i%every===0)xl+=`<text x="${X(i)}" y="${h-6}" text-anchor="middle">${MON[x.m-1]} ${String(x.y).slice(2)}</text>`;});
+  let pk=0;M.forEach((x,i)=>{if(x.n>M[pk].n)pk=i;});
+  el.innerHTML=`<svg height="${h}" role="img" aria-label="Trophies earned each month">${grid(w,m,h,sc,int)}${xl}<path d="${line}L${X(M.length-1)},${Y(0)}L${X(0)},${Y(0)}Z" fill="${ACCENT}" opacity=".1"/><path d="${line}" fill="none" stroke="${ACCENT}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><circle cx="${X(pk)}" cy="${Y(M[pk].n)}" r="4" fill="${ACCENT}" stroke="${SURF}" stroke-width="2"/><text class="peak" x="${X(pk)}" y="${Y(M[pk].n)-9}" text-anchor="middle">${int(M[pk].n)}</text><line class="xh" y1="${m.t}" y2="${h-m.b}" stroke="rgba(255,255,255,.4)" style="display:none"/><rect x="0" y="0" width="${w}" height="${h}" fill="transparent"/></svg>`;
+  crosshair(el,M.map((_,i)=>X(i)),m,h,i=>`<div class="h">${MON[M[i].m-1]} ${M[i].y}</div>`+tipRow(ACCENT,int(M[i].n),M[i].n===1?"trophy":"trophies"));
+}
+
+/* Trophy progression: stacked, bronze on top */
+function progression(){
+  const el=document.getElementById("progression"),w=el.clientWidth-32,h=300,m={t:12,r:12,b:24,l:48},M=S.months;
+  const tot=x=>x.platinum+x.gold+x.silver+x.bronze,sc=nice(tot(M[M.length-1]),5);
+  const X=i=>m.l+(w-m.l-m.r)*i/(M.length-1),Y=v=>m.t+(h-m.t-m.b)*(1-v/sc.max);
+  const every=w<700?12:6;let xl="";M.forEach((x,i)=>{if(i%every===0)xl+=`<text x="${X(i)}" y="${h-6}" text-anchor="middle">${MON[x.m-1]} ${String(x.y).slice(2)}</text>`;});
+  let base=M.map(()=>0),bands="";
+  for(const t of TYPES){const top=M.map((x,i)=>base[i]+x[t]);const up=monotone(top.map((v,i)=>[X(i),Y(v)]));let down="";for(let i=M.length-1;i>=0;i--)down+=`L${X(i)},${Y(base[i])}`;bands+=`<path d="${up}${down}Z" fill="${TC[t]}" opacity=".88"/><path d="${up}" fill="none" stroke="${SURF}" stroke-width="1.5"/>`;base=top;}
+  el.innerHTML=`<svg height="${h}" role="img" aria-label="Trophies earned over time, by type">${grid(w,m,h,sc,compact)}${xl}${bands}<line class="xh" y1="${m.t}" y2="${h-m.b}" stroke="rgba(255,255,255,.55)" style="display:none"/><rect x="0" y="0" width="${w}" height="${h}" fill="transparent"/></svg>`;
+  document.getElementById("prog-legend").innerHTML=[...TYPES].map(t=>`<span><i style="background:${TC[t]}"></i>${TNAME[t]} <b>${int(S.counts[t])}</b></span>`).join("");
+  crosshair(el,M.map((_,i)=>X(i)),m,h,i=>`<div class="h">${MON[M[i].m-1]} ${M[i].y}</div>`+tipRow("",int(tot(M[i])),"total")+[...TYPES].reverse().map(t=>tipRow(TC[t],int(M[i][t]),TNAME[t])).join(""));
+}
+
+/* Columns */
+function columns(id,labels,values,opts){
+  const el=document.getElementById(id),w=el.clientWidth-32,h=opts.h,m={t:18,r:4,b:24,l:44},sc=nice(Math.max(...values),4),slot=(w-m.l-m.r)/values.length,bw=Math.min(24,slot-6);
+  const Y=v=>m.t+(h-m.t-m.b)*(1-v/sc.max),base=Y(0);let pk=0;values.forEach((v,i)=>{if(v>values[pk])pk=i;});
+  let bars="",xl="";
+  values.forEach((v,i)=>{const x=m.l+slot*i+(slot-bw)/2,y=Y(v),r=Math.min(4,base-y);bars+=`<path d="M${x},${base}V${y+r}Q${x},${y} ${x+r},${y}H${x+bw-r}Q${x+bw},${y} ${x+bw},${y+r}V${base}Z" fill="${ACCENT}" /><rect class="hit" data-i="${i}" x="${m.l+slot*i}" y="${m.t}" width="${slot}" height="${base-m.t}" fill="transparent"/>`;if(i%(opts.skip&&w<opts.skipW?opts.skip:1)===0)xl+=`<text x="${m.l+slot*i+slot/2}" y="${h-6}" text-anchor="middle">${labels[i]}</text>`;});
+  const x=m.l+slot*pk+slot/2;
+  el.innerHTML=`<svg height="${h}" role="img" aria-label="${opts.aria}">${grid(w,m,h,sc,int)}${xl}${bars}<text class="peak" x="${x}" y="${Y(values[pk])-6}" text-anchor="middle">${int(values[pk])}</text></svg>`;
+  el.querySelectorAll(".hit").forEach(r=>{const i=+r.dataset.i;r.addEventListener("pointermove",e=>showTip(e,`<div class="h">${esc(opts.title(i))}</div>`+tipRow(ACCENT,int(values[i]),opts.unit)));r.addEventListener("pointerleave",hideTip);});
+}
+
+/* Horizontal bars */
+function hbars(id,items,max){document.getElementById(id).innerHTML=items.map(it=>`<li class="${it.other?"o":""}"><div class="n" title="${esc(it.l)}">${esc(it.l)}</div><div class="t"><div class="b" style="width:calc((100% - 34px)*${it.v/max})"></div><div class="v">${int(it.v)}</div></div></li>`).join("");}
+const CLEAN={"Square Enix LTD":"Square Enix","BANDAI NAMCO ENTERTAINMENT EUROPE":"Bandai Namco","Activision Blizzard Int'l BV":"Activision Blizzard","SEGA EUROPE LTD":"SEGA","EA Swiss Sarl":"Electronic Arts","Koei Tecmo Europe Ltd":"Koei Tecmo","TMG STUDIOS B.V.":"TMG Studios","CE EUROPE LIMITED":"Capcom","Team 17 Digital LTD":"Team17","CD PROJEKT RED S.A.":"CD Projekt Red","505 GAMES S.R.L.":"505 Games","Larian Studios Games Ltd":"Larian Studios"};
+function games(){
+  const yrs=Object.keys(S.years).map(Number).sort((a,b)=>a-b);
+  columns("by-year",yrs.map(y=>"'"+String(y).slice(2)),yrs.map(y=>S.years[y]),{h:406,aria:"Games by release year",unit:"games",title:i=>String(yrs[i])});
+  document.getElementById("year-note").textContent=S.noYear+" games have no release date on PSN.";
+  const pubs=Object.entries(S.publishers).map(([l,v])=>({l:CLEAN[l]??l,v})).sort((a,b)=>b.v-a.v),top=pubs.slice(0,15),rest=pubs.slice(15),other=rest.reduce((a,p)=>a+p.v,0);
+  const pl=[...top,{l:`Other (${rest.length})`,v:other,other:true}];
+  hbars("by-publisher",pl,Math.max(...pl.map(p=>p.v)));
+  document.getElementById("pub-note").textContent=S.noPublisher+" games have no publisher on PSN.";
+  const gs=Object.entries(S.genres).map(([l,v])=>({l,v})).sort((a,b)=>b.v-a.v);
+  hbars("by-genre",gs,gs[0].v);
+  document.getElementById("genre-note").textContent="A game can have several genres. "+S.noGenre+" have none on PSN.";
+}
+
+/* Level history */
+function level(){
+  const el=document.getElementById("level"),w=el.clientWidth-32,h=240,m={t:14,r:16,b:24,l:44},L=[...S.milestones].reverse();
+  const y0=L[0].ms-45*864e5,t1=L[L.length-1].ms,sc=nice(L[L.length-1].lv,6);
+  const X=t=>m.l+(w-m.l-m.r)*(t-y0)/(t1-y0),Y=v=>m.t+(h-m.t-m.b)*(1-v/sc.max);
+  let xl="";for(let y=new Date(y0).getUTCFullYear()+1;;y++){const t=Date.UTC(y,0,1);if(t>t1)break;xl+=`<text x="${X(t)}" y="${h-6}" text-anchor="middle">${y}</text><line x1="${X(t)}" x2="${X(t)}" y1="${h-m.b}" y2="${h-m.b+4}" stroke="${GRID}"/>`;}
+  const pts=L.map(p=>[X(p.ms),Y(p.lv)]),line=`M${pts.map(p=>p.join(",")).join("L")}`;
+  const dots=pts.map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="4" fill="${LEVEL}" stroke="${SURF}" stroke-width="2"/>`).join("");
+  el.innerHTML=`<svg height="${h}" role="img" aria-label="PSN level over time">${grid(w,m,h,sc,int)}${xl}<path d="${line}" fill="none" stroke="${LEVEL}" stroke-width="2" stroke-linejoin="round"/>${dots}<circle class="hl" r="6" fill="${LEVEL}" stroke="#fff" stroke-width="2" style="display:none"/><line class="xh" y1="${m.t}" y2="${h-m.b}" stroke="rgba(255,255,255,.4)" style="display:none"/><rect x="0" y="0" width="${w}" height="${h}" fill="transparent"/></svg>`;
+  const hl=el.querySelector(".hl");
+  crosshair(el,pts.map(p=>p[0]),m,h,i=>{hl.setAttribute("cx",pts[i][0]);hl.setAttribute("cy",pts[i][1]);hl.style.display="";const p=L[i];return `<div class="h">${p.date}</div>`+tipRow(LEVEL,"Level "+p.lv,"")+`<div class="r"><span>${esc(p.name)}</span></div>`;});
+}
+function levelList(){
+  document.getElementById("level-list").innerHTML=S.milestones.map(p=>{
+    const tier=Math.min(10,Math.floor(p.lv/100)+1);
+    return `<div class="st-lrow">
+      <a class="gl" href="#"><img class="gc ${p.isIcon?"icon":""}" src="${esc(p.img)}" alt="" loading="lazy"></a>
+      <img class="ic" src="${esc(p.icon)}" alt="" loading="lazy">
+      <div><div class="nm">${esc(p.name)}</div><div class="ds">${esc(plain(p.detail))}</div><div class="g"><a href="#">${esc(p.game)}</a></div></div>
+      <div class="st-meta">
+        <div class="st-lv"><div class="sp" style="background-position:0 ${(tier-1)/9*100}%"></div><b>${p.lv}</b></div>
+        <div class="st-dt"><b>${p.date}</b>${p.time}</div>
+        <div class="st-rt">${p.rate==null?"":`<b>${p.rate.toFixed(2)}%</b>${tierOf(p.rate)}`}</div>
+      </div>
+      <div class="st-ty"><img src="icons/40-${p.type}.png" alt="">${TNAME[p.type]}</div>
+    </div>`;}).join("");
+}
+
+function charts(){
+  activity();progression();
+  columns("by-hour",[...Array(24).keys()].map(h=>String(h).padStart(2,"0")),S.hours,{h:240,aria:"Trophies by hour of the day",unit:"trophies",title:i=>`${String(i).padStart(2,"0")}:00 – ${String(i).padStart(2,"0")}:59`,skip:2,skipW:620});
+  columns("by-day",WD,WD.map(d=>S.weekdays[d]),{h:240,aria:"Trophies by day of the week",unit:"trophies",title:i=>WD[i]});
+  games();level();
+}
+calendar();donuts();levelList();charts();
+let raf;new ResizeObserver(()=>{cancelAnimationFrame(raf);raf=requestAnimationFrame(charts);}).observe(document.querySelector(".st-page"));
+</script>
+</body>
+</html>

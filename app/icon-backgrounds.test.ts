@@ -8,6 +8,7 @@ export const ICON_RULES: [file: string, selector: string][] = [
   ["app/globals.css", ".ce-list img:first-child"],
   ["app/globals.css", ".game-page .trophy img.ic"],
   ["app/globals.css", ".log-row .ic"],
+  ["app/globals.css", ".st-lrow .ic"],
   ["components/TrophyCarousel.module.css", ".item img"],
 ];
 

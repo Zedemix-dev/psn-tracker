@@ -24,6 +24,16 @@ function parts(d: Date) {
   };
 }
 
+export type ParisDateParts = { year: number; month: number; day: number; hour: number; weekday: number };
+
+/** Numeric Paris date parts of `d`; month 1-12, weekday 0 = Monday. */
+export function parisDateParts(d: Date): ParisDateParts {
+  const p = parts(d);
+  const month = MONTHS.indexOf(p.month) + 1;
+  const year = Number(p.year);
+  return { year, month, day: p.day, hour: Number(p.hour), weekday: (new Date(Date.UTC(year, month - 1, p.day)).getUTCDay() + 6) % 7 };
+}
+
 /** Calendar year of `d` in Paris. */
 export function parisYear(d: Date): number {
   return Number(parts(d).year);
