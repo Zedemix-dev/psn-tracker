@@ -63,6 +63,15 @@ describe("<StatsCalendar>", () => {
     expect(month.style.gridColumn).toBe("5");
   });
 
+  it("shows the tooltip of a day while a finger is down", () => {
+    const { container } = draw(calendar([12]));
+    const cell = container.querySelector(".st-cal-grid .st-cell:not(.out)") as Element;
+    fireEvent.pointerDown(cell, { pointerType: "touch", clientX: 50, clientY: 50 });
+    expect(document.body.querySelector(".st-tip")).toHaveTextContent("Mon 1 Sep 2026");
+    fireEvent.pointerLeave(cell, { pointerType: "touch" });
+    expect(document.body.querySelector(".st-tip")).toBeNull();
+  });
+
   it("gives a cell the intensity of its count", () => {
     const counts = [0, 2, 3, 6, 7, 12, 13];
     const { container } = draw(calendar(counts));
@@ -115,6 +124,11 @@ describe("<StatsCalendar>", () => {
     expect(sum.children[3].querySelector("b")).toHaveTextContent("–");
     expect(sum.children[3]).toHaveTextContent("Longest streak");
     expect(sum).not.toHaveTextContent("undefined");
+  });
+
+  it("makes the calendar a sideways scroller", () => {
+    const { container } = draw(calendar());
+    expect(container.querySelector(".st-cal-scroll")).toHaveClass("st-side");
   });
 
   it("scrolls to the most recent days on mount", () => {

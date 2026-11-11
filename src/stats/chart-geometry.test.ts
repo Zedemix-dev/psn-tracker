@@ -64,4 +64,13 @@ describe("tipPosition", () => {
   it("flips below at the top edge", () => {
     expect(tipPosition({ x: 300, y: 20 }, size, viewport).top).toBe(36);
   });
+  it("puts a touch tooltip above the finger, centred on it", () => {
+    expect(tipPosition({ x: 200, y: 300 }, { w: 100, h: 40 }, { w: 400, h: 800 }, true)).toEqual({ left: 150, top: 216 });
+  });
+  it("puts a touch tooltip below the finger when there is no room above", () => {
+    expect(tipPosition({ x: 200, y: 60 }, { w: 100, h: 40 }, { w: 400, h: 800 }, true)).toEqual({ left: 150, top: 104 });
+  });
+  it("keeps a touch tooltip inside the screen", () => {
+    expect(tipPosition({ x: 20, y: 300 }, { w: 100, h: 40 }, { w: 400, h: 800 }, true).left).toBe(8);
+  });
 });

@@ -50,4 +50,16 @@ describe("<ChartTipProvider>", () => {
     unmount();
     expect(document.body.querySelector(".st-tip")).toBeNull();
   });
+
+  it("places a touch tooltip above the finger and a mouse one beside the pointer", () => {
+    setup();
+    act(() => api.show({ clientX: 200, clientY: 300, pointerType: "touch" }, content));
+    let tip = document.body.querySelector(".st-tip") as HTMLElement;
+    expect(tip.style.left).toBe("200px");
+    expect(tip.style.top).toBe("256px");
+    act(() => api.show({ clientX: 200, clientY: 300 }, content));
+    tip = document.body.querySelector(".st-tip") as HTMLElement;
+    expect(tip.style.left).toBe("214px");
+    expect(tip.style.top).toBe("290px");
+  });
 });

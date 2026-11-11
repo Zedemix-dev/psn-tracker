@@ -42,12 +42,24 @@ export function compactTick(v: number): string {
   return v >= 10000 ? `${v / 1000}K` : formatInt(v);
 }
 
-/** Tooltip corner: above and right of the pointer, flipped left / below to stay on screen. */
+/**
+ * Tooltip corner: above and right of the pointer, flipped left / below to stay on screen.
+ * With a finger (`touch`) it is centred above it, out of the fingertip's way, or below when there is no room.
+ */
 export function tipPosition(
   pointer: { x: number; y: number },
   size: { w: number; h: number },
   viewport: { w: number; h: number },
+  touch = false,
 ): { left: number; top: number } {
+  if (touch) {
+    let top = pointer.y - size.h - 44;
+    if (top < 8) top = pointer.y + 44;
+    return {
+      left: Math.min(Math.max(pointer.x - size.w / 2, 8), viewport.w - size.w - 8),
+      top: Math.min(top, viewport.h - size.h - 8),
+    };
+  }
   let left = pointer.x + 14;
   let top = pointer.y - size.h - 10;
   if (left + size.w > viewport.w - 8) left = pointer.x - size.w - 14;

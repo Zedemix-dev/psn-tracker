@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup Stats v5</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --banner:url("https://image.api.playstation.com/vulcan/ap/rnd/202202/1517/a1krxU0VRlOC3ULeUjeFGEcA.png");
+  --bg:#0F1631; --surface:rgba(255,255,255,.07); --surface-2:rgba(255,255,255,.12); --line:rgba(255,255,255,.13);
+  --text:#F3F5FB; --muted:#A9B3CB; --accent:#5AA9FF; --gold:#F2C462;
+  --font:"Sora",sans-serif; --r-panel:14px;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.4;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1448px;margin:0 auto;padding:0 24px}
+.glass{background:var(--surface);border:1px solid var(--line);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.page-bg{position:fixed;inset:-60px;background:var(--banner) center/cover;filter:blur(44px) brightness(.4) saturate(1.25);z-index:-1}
+.panel{border-radius:var(--r-panel);overflow:hidden}
+.st-head{display:flex;align-items:center;justify-content:space-between;gap:8px 16px;flex-wrap:wrap;padding:14px 16px 8px}
+.st-head h2{margin:0;font-size:15px;font-weight:600;line-height:1.2}
+.st-chart{padding:0 16px 12px;position:relative}
+.st-chart svg{display:block;overflow:visible}
+.st-chart text{font-family:var(--font);font-size:11px;fill:var(--muted);font-variant-numeric:tabular-nums}
+.st-chart text.peak{fill:var(--text);font-weight:600}
+.st-note{padding:0 16px 12px;font-size:11.5px;color:var(--muted)}
+.st-tip{position:fixed;z-index:100;pointer-events:none;display:none;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:#0B1022;box-shadow:0 8px 22px rgba(0,0,0,.5);font-size:12px;line-height:1.4;max-width:300px}
+.st-tip .h{color:var(--muted);font-size:11px;margin-bottom:3px}
+.st-tip .r{display:flex;align-items:center;gap:7px}
+.st-tip .r u{width:12px;height:2px;border-radius:1px;flex:none}
+.st-tip .r b{font-weight:600;font-variant-numeric:tabular-nums}
+.st-tip .r span{color:var(--muted)}
+
+/* NEW: release-year chart that scrolls sideways */
+.st-yc{display:flex}
+.st-yc .ax{flex:none}
+.st-ys{flex:1;min-width:0;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;overscroll-behavior-x:contain}
+.st-ys::-webkit-scrollbar{display:none}
+.st-ys svg{touch-action:pan-x pan-y}
+.st-ys.can{cursor:grab}
+.st-ys.drag{cursor:grabbing;user-select:none}
+.st-ys.fl{-webkit-mask-image:linear-gradient(to right,transparent 0,#000 32px);mask-image:linear-gradient(to right,transparent 0,#000 32px)}
+.st-ys.fr{-webkit-mask-image:linear-gradient(to left,transparent 0,#000 32px);mask-image:linear-gradient(to left,transparent 0,#000 32px)}
+.st-ys.fl.fr{-webkit-mask-image:linear-gradient(to right,transparent 0,#000 32px,#000 calc(100% - 32px),transparent 100%);mask-image:linear-gradient(to right,transparent 0,#000 32px,#000 calc(100% - 32px),transparent 100%)}
+
+/* Mockup only (French, not part of the site) */
+.note{display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap;padding:8px 24px;font-size:12px;color:#2B1B00;background:var(--gold)}
+.note b{font-weight:700}
+.mock-row{display:flex;flex-wrap:wrap;gap:24px 14px;align-items:flex-start;margin-top:18px;padding-bottom:64px}
+.mock-col{display:flex;flex-direction:column;gap:8px}
+.mock-col.desk{width:440px}
+.mock-col.phone{width:343px}
+.mock-cap{font-size:12px;line-height:1.45;color:#2B1B00;background:var(--gold);border-radius:8px;padding:6px 10px}
+.mock-cap b{font-weight:700}
+</style>
+</head>
+<body>
+<div class="page-bg"></div>
+<div class="note"><span><b>Maquette v5</b> (pas le vrai site). Le graphique des années de sortie. Essaie : clic maintenu puis glisser, ou deux doigts sur le pavé tactile. Aucune barre de défilement.</span></div>
+
+<main class="wrap">
+  <div class="mock-row">
+    <div class="mock-col desk">
+      <div class="mock-cap"><b>Aujourd'hui, sur PC</b> (colonne d'un tiers de page) : tes 13 années tiennent, rien ne défile.</div>
+      <section class="panel glass"><div class="st-head"><h2>Games by release year</h2></div><div class="st-chart" id="today"></div><div class="st-note">25 games have no release date on PSN.</div></section>
+    </div>
+    <div class="mock-col desk">
+      <div class="mock-cap"><b>Dans 10 ans, sur PC</b> (2027 à 2036 inventées) : les colonnes gardent leur largeur et le graphique défile. Il s'ouvre sur les années récentes, l'axe de gauche reste en place, un fondu sur le bord signale qu'il y a d'autres années.</div>
+      <section class="panel glass"><div class="st-head"><h2>Games by release year</h2></div><div class="st-chart" id="later"></div><div class="st-note">25 games have no release date on PSN.</div></section>
+    </div>
+    <div class="mock-col phone">
+      <div class="mock-cap"><b>Aujourd'hui, sur téléphone</b> : les 13 années ne tiennent déjà plus, ça défile au doigt.</div>
+      <section class="panel glass"><div class="st-head"><h2>Games by release year</h2></div><div class="st-chart" id="phone"></div><div class="st-note">25 games have no release date on PSN.</div></section>
+    </div>
+  </div>
+</main>
+<div class="st-tip" id="tip"></div>
+
+<script>
+const YEARS={2014:6,2015:12,2016:20,2017:37,2018:26,2019:18,2020:26,2021:28,2022:24,2023:14,2024:11,2025:7,2026:12};
+const LATER={...YEARS,2027:15,2028:19,2029:22,2030:17,2031:24,2032:20,2033:13,2034:18,2035:16,2036:9};
+const ACCENT="#5AA9FF", GRID="rgba(255,255,255,.09)";
+const int=n=>Math.round(n).toLocaleString("en-US");
+
+const tipEl=document.getElementById("tip");
+function showTip(e,html){tipEl.innerHTML=html;tipEl.style.display="block";const w=tipEl.offsetWidth,h=tipEl.offsetHeight;let x=e.clientX+14,y=e.clientY-h-10;if(x+w>innerWidth-8)x=e.clientX-w-14;if(y<8)y=e.clientY+16;tipEl.style.left=x+"px";tipEl.style.top=y+"px";}
+function hideTip(){tipEl.style.display="none";}
+addEventListener("scroll",hideTip,true);
+function nice(v,t){const raw=Math.max(v,1)/t,mag=10**Math.floor(Math.log10(raw)),n=raw/mag,step=(n<=1?1:n<=2?2:n<=2.5?2.5:n<=5?5:10)*mag;return{step,max:Math.ceil(v/step)*step};}
+
+const MIN_SLOT=24, H=406, M={t:18,r:4,b:24,l:44};
+function yearChart(id,data){
+  const el=document.getElementById(id),years=Object.keys(data).map(Number).sort((a,b)=>a-b),values=years.map(y=>data[y]);
+  const w=el.clientWidth-32,plot=w-M.l-M.r,fit=plot/values.length>=MIN_SLOT,slot=fit?plot/values.length:MIN_SLOT,bw=Math.min(24,slot-6);
+  const inner=slot*values.length+M.r,sc=nice(Math.max(...values),4),Y=v=>M.t+(H-M.t-M.b)*(1-v/sc.max),base=Y(0);
+  let axis="",grid="",bars="",xl="",pk=0;
+  values.forEach((v,i)=>{if(v>values[pk])pk=i;});
+  for(let v=0;v<=sc.max+1e-6;v+=sc.step){const y=Y(v);axis+=`<text x="${M.l-8}" y="${y+4}" text-anchor="end">${int(v)}</text>`;grid+=`<line x1="0" x2="${inner}" y1="${y}" y2="${y}" stroke="${GRID}"/>`;}
+  values.forEach((v,i)=>{const x=slot*i+(slot-bw)/2,y=Y(v),r=Math.min(4,base-y,bw/2);bars+=`<path d="M${x},${base}V${y+r}Q${x},${y} ${x+r},${y}H${x+bw-r}Q${x+bw},${y} ${x+bw},${y+r}V${base}Z" fill="${ACCENT}"/><rect class="hit" data-i="${i}" x="${slot*i}" y="${M.t}" width="${slot}" height="${base-M.t}" fill="transparent"/>`;xl+=`<text x="${slot*i+slot/2}" y="${H-6}" text-anchor="middle">'${String(years[i]).slice(2)}</text>`;});
+  const peak=`<text class="peak" x="${slot*pk+slot/2}" y="${Y(values[pk])-6}" text-anchor="middle">${int(values[pk])}</text>`;
+  el.innerHTML=`<div class="st-yc"><svg class="ax" width="${M.l}" height="${H}" aria-hidden="true">${axis}</svg><div class="st-ys${fit?"":" can"}"><svg width="${inner}" height="${H}" role="img" aria-label="Games by release year">${grid}${bars}${xl}${peak}</svg></div></div>`;
+  const ys=el.querySelector(".st-ys");
+  el.querySelectorAll(".hit").forEach(r=>{const i=+r.dataset.i;r.addEventListener("pointermove",e=>{if(!ys.classList.contains("drag"))showTip(e,`<div class="h">${years[i]}</div><div class="r"><u style="background:${ACCENT}"></u><b>${int(values[i])}</b><span>${values[i]===1?"game":"games"}</span></div>`);});r.addEventListener("pointerleave",hideTip);});
+  const fade=()=>{const max=ys.scrollWidth-ys.clientWidth;ys.classList.toggle("fl",ys.scrollLeft>1);ys.classList.toggle("fr",ys.scrollLeft<max-1);};
+  ys.addEventListener("scroll",fade);
+  ys.scrollLeft=ys.scrollWidth; // open on the most recent years
+  fade();
+  if(fit)return;
+  let drag=null;
+  ys.addEventListener("pointerdown",e=>{if(e.pointerType!=="mouse"||e.button!==0)return;drag={x:e.clientX,s:ys.scrollLeft,id:e.pointerId};});
+  ys.addEventListener("pointermove",e=>{if(!drag)return;const dx=e.clientX-drag.x;if(!ys.classList.contains("drag")&&Math.abs(dx)>3){ys.classList.add("drag");ys.setPointerCapture(drag.id);hideTip();}if(ys.classList.contains("drag"))ys.scrollLeft=drag.s-dx;});
+  const end=()=>{drag=null;ys.classList.remove("drag");};
+  ys.addEventListener("pointerup",end);ys.addEventListener("pointercancel",end);
+}
+yearChart("today",YEARS);
+yearChart("later",LATER);
+yearChart("phone",YEARS);
+</script>
+</body>
+</html>
