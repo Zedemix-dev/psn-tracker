@@ -1165,7 +1165,7 @@ Il remplace le « Last 60 days » de la section 3. **[décidé]** Il prend toute
 - **Platforms** : **[décidé]** seulement les plateformes sur lesquelles l'utilisateur joue. Une liste qui inclut PS5 compte en **PS5**, y compris une liste PS5 et PC, toutes les autres comptent en **PS4**, y compris les listes partagées avec la PS3 ou la PS Vita. Au centre, le nombre de jeux, avec « Games ».
 
 ### 18.7 « Monthly activity » et « Trophy progression »
-Sur l'axe horizontal, **chaque mois** depuis celui du premier trophée jusqu'au mois en cours, y compris les mois sans trophée, avec une étiquette tous les 6 mois (tous les 12 sur un écran étroit), au format « Nov 16 ».
+Sur l'axe horizontal, **chaque mois** depuis celui du premier trophée jusqu'au mois en cours, y compris les mois sans trophée, avec une étiquette tous les 6 mois, tous les 12 quand le graphique fait moins de 700 px de large et tous les 24 quand il fait moins de 420 px, au format « Nov 16 ».
 - **Monthly activity** [décidé] : une courbe du nombre de trophées obtenus chaque mois, dans la couleur d'accent, avec un voile léger dessous. La valeur du mois record est écrite au-dessus de son point.
 - **Trophy progression** [décidé] : les trophées cumulés par type, en aires empilées, platine en bas et bronze en haut, comme sur la capture. Légende en haut à droite avec le total de chaque type.
 - Au survol, une ligne verticale suit la souris et s'accroche au mois le plus proche. L'infobulle donne le mois et sa valeur, ou le total et chaque type pour la progression.
@@ -1219,7 +1219,7 @@ Date de sortie, éditeur et genres sont lus avec `withSiblings` : une info manqu
 | 900 à 998 | 3 600 |
 
 - Le niveau du bandeau profil reste celui du PSN : ce calcul ne sert qu'à cette section.
-- **Courbe** [décidé] : un point tous les 10 niveaux, reliés par une ligne dorée, comme sur la capture. L'axe horizontal est le temps, avec une étiquette par année, l'axe vertical le niveau. « A point every 10 levels » en haut à droite. Au survol : la date, le niveau et le nom du trophée du point le plus proche.
+- **Courbe** [décidé] : un point tous les 10 niveaux, reliés par une ligne dorée, comme sur la capture. L'axe horizontal est le temps, avec une étiquette par année, une année sur deux quand le graphique fait moins de 420 px de large, l'axe vertical le niveau. « A point every 10 levels » en haut à droite. Au survol : la date, le niveau et le nom du trophée du point le plus proche.
 - **Liste [décidé]**, sous la courbe, du palier le plus récent au plus ancien, tous affichés sans pagination. Ligne de ~66 px, de gauche à droite :
   1. **l'image du jeu**, 56 px, coins de 10 px, la même que sa ligne dans Games, lien vers la page du jeu ;
   2. **l'icône du trophée**, 56 px, coins de 10 px, **sans aucun fond** ;
