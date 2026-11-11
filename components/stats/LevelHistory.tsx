@@ -35,7 +35,7 @@ function LevelChart({ points, w }: { points: LevelRow[]; w: number }) {
       }),
     [points],
   );
-  const { ref, index, onMove, onLeave } = useCrosshair(xs, tipFor);
+  const { ref, index, handlers } = useCrosshair(xs, tipFor);
 
   const sc = niceScale(points[points.length - 1].level, 6);
   const Y = (v: number) => M.t + (H - M.t - M.b) * (1 - v / sc.max);
@@ -78,7 +78,7 @@ function LevelChart({ points, w }: { points: LevelRow[]; w: number }) {
           <line className="xh" x1={xs[index]} x2={xs[index]} y1={M.t} y2={H - M.b} stroke="rgba(255,255,255,.4)" />
         </>
       )}
-      <rect className="hit" x={0} y={0} width={w} height={H} fill="transparent" onPointerMove={onMove} onPointerLeave={onLeave} />
+      <rect className="hit" x={0} y={0} width={w} height={H} fill="transparent" {...handlers} />
     </svg>
   );
 }

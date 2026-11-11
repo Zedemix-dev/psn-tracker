@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { formatInt } from "@/src/stats/chart-geometry";
-import { useChartTip } from "./ChartTip";
+import { tipHandlers, useChartTip } from "./ChartTip";
 
 type Segment = { label: string; value: number; color: string };
 
@@ -46,13 +46,10 @@ export function DonutCard({
         strokeDasharray={`${len} ${C - len}`}
         strokeDashoffset={-start - 1}
         transform="rotate(-90 68 68)"
-        onPointerMove={(e) =>
-          tip.show(e, {
-            title: s.label,
-            rows: [{ color: s.color, value: formatInt(s.value), label: `${s.value === 1 ? unit[0] : unit[1]}, ${((s.value / total) * 100).toFixed(1)}%` }],
-          })
-        }
-        onPointerLeave={tip.hide}
+        {...tipHandlers(tip, () => ({
+          title: s.label,
+          rows: [{ color: s.color, value: formatInt(s.value), label: `${s.value === 1 ? unit[0] : unit[1]}, ${((s.value / total) * 100).toFixed(1)}%` }],
+        }))}
       />
     );
   }) : null;

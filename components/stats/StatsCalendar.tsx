@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { formatInt } from "@/src/stats/chart-geometry";
 import type { CalendarData, CalendarDay } from "@/src/stats/trophy-charts";
-import { useChartTip } from "./ChartTip";
+import { tipHandlers, useChartTip } from "./ChartTip";
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const DASH = "–";
@@ -18,16 +18,13 @@ function Cell({ day }: { day: CalendarDay | null }) {
   return (
     <div
       className={`st-cell${intensity(day.trophies)}`}
-      onPointerMove={(e) =>
-        tip.show(e, {
-          title: day.label,
-          rows: [
-            { value: formatInt(day.trophies), label: plural(day.trophies, "trophy", "trophies") },
-            ...(day.platinums > 0 ? [{ value: String(day.platinums), label: plural(day.platinums, "platinum", "platinums") }] : []),
-          ],
-        })
-      }
-      onPointerLeave={tip.hide}
+      {...tipHandlers(tip, () => ({
+        title: day.label,
+        rows: [
+          { value: formatInt(day.trophies), label: plural(day.trophies, "trophy", "trophies") },
+          ...(day.platinums > 0 ? [{ value: String(day.platinums), label: plural(day.platinums, "platinum", "platinums") }] : []),
+        ],
+      }))}
     />
   );
 }

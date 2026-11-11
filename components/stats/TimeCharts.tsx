@@ -83,7 +83,7 @@ function ActivityChart({ months, w }: { months: MonthPoint[]; w: number }) {
       }),
     [months],
   );
-  const { ref, index, onMove, onLeave } = useCrosshair(xs, tipFor);
+  const { ref, index, handlers } = useCrosshair(xs, tipFor);
 
   const sc = niceScale(Math.max(...months.map((x) => x.trophies)), 4);
   const Y = (v: number) => m.t + (h - m.t - m.b) * (1 - v / sc.max);
@@ -104,7 +104,7 @@ function ActivityChart({ months, w }: { months: MonthPoint[]; w: number }) {
         {formatInt(months[pk].trophies)}
       </text>
       <Crosshair x={index === null ? undefined : xs[index]} m={m} h={h} opacity={0.4} />
-      <rect className="hit" x={0} y={0} width={w} height={h} fill="transparent" onPointerMove={onMove} onPointerLeave={onLeave} />
+      <rect className="hit" x={0} y={0} width={w} height={h} fill="transparent" {...handlers} />
     </svg>
   );
 }
@@ -141,7 +141,7 @@ function ProgressionChart({ months, w }: { months: MonthPoint[]; w: number }) {
       }),
     [months],
   );
-  const { ref, index, onMove, onLeave } = useCrosshair(xs, tipFor);
+  const { ref, index, handlers } = useCrosshair(xs, tipFor);
 
   const sc = niceScale(total(months[n - 1]), 5);
   const Y = (v: number) => m.t + (h - m.t - m.b) * (1 - v / sc.max);
@@ -166,7 +166,7 @@ function ProgressionChart({ months, w }: { months: MonthPoint[]; w: number }) {
       <MonthLabels months={months} w={w} h={h} m={m} />
       {bands}
       <Crosshair x={index === null ? undefined : xs[index]} m={m} h={h} opacity={0.55} />
-      <rect className="hit" x={0} y={0} width={w} height={h} fill="transparent" onPointerMove={onMove} onPointerLeave={onLeave} />
+      <rect className="hit" x={0} y={0} width={w} height={h} fill="transparent" {...handlers} />
     </svg>
   );
 }

@@ -1,11 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type PointerEvent, type RefObject } from "react";
-import { useChartTip, type TipContent } from "./ChartTip";
+import { preventTouchMenu, useChartTip, type MarkHandlers, type TipContent } from "./ChartTip";
 
 /**
  * Vertical line that follows the pointer and snaps to the nearest x of `xs`, with the tooltip of that point.
- * Attach `ref` to the svg and `onMove` / `onLeave` to its transparent overlay rect.
+ * Attach `ref` to the svg and spread `handlers` on its transparent overlay rect.
  */
 export function useCrosshair(
   xs: number[],
@@ -13,8 +13,7 @@ export function useCrosshair(
 ): {
   ref: RefObject<SVGSVGElement | null>;
   index: number | null;
-  onMove: (e: PointerEvent) => void;
-  onLeave: () => void;
+  handlers: MarkHandlers;
 } {
   const tip = useChartTip();
   const ref = useRef<SVGSVGElement | null>(null);
@@ -38,5 +37,9 @@ export function useCrosshair(
     tip.hide();
   }, [tip]);
 
-  return { ref, index, onMove, onLeave };
+  return {
+    ref,
+    index,
+    handlers: { onPointerDown: onMove, onPointerMove: onMove, onPointerLeave: onLeave, onPointerCancel: onLeave, onContextMenu: preventTouchMenu },
+  };
 }

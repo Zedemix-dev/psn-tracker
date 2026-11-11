@@ -519,7 +519,6 @@ button.select.log-dir.on{border-color:var(--accent)}
 .st-donut-body{display:grid;grid-template-columns:136px minmax(0,1fr);gap:16px;align-items:center;padding:2px 16px 16px}
 .st-donut-svg{width:136px;height:136px;display:block}
 .st-donut-svg circle.seg{transition:stroke-width .1s;cursor:default}
-.st-donut-svg circle.seg:hover{stroke-width:24}
 .st-donut-svg .big{font-family:var(--font);font-size:19px;font-weight:700;fill:var(--text)}
 .st-donut-svg .cap{font-family:var(--font);font-size:10.5px;fill:var(--muted)}
 .st-dl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px;font-size:12px}
@@ -565,10 +564,14 @@ button.select.log-dir.on{border-color:var(--accent)}
 .st-cell.l3{background:color-mix(in srgb,var(--accent) 75%,transparent)}
 .st-cell.l4{background:var(--accent)}
 .st-cell.out{visibility:hidden}
-.st-cell:not(.out):hover{outline:1.5px solid #fff;outline-offset:0}
 .st-scale{display:inline-flex;align-items:center;gap:3px;font-size:11px;color:var(--muted)}
 .st-scale .st-cell{width:12px;height:12px;border-radius:3px;aspect-ratio:auto}
+@media (hover:hover){
+.st-donut-svg circle.seg:hover{stroke-width:24}
+.st-cell:not(.out):hover{outline:1.5px solid #fff;outline-offset:0}
 .st-scale .st-cell:hover{outline:0}
+}
+.st-chart,.st-donut-svg,.st-cal{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .st-scale span{margin:0 4px}
 .st-sum{display:flex;justify-content:space-between;gap:8px;margin:10px 16px 0;padding:10px 0 14px;border-top:1px solid var(--line)}
 .st-sum>div{text-align:center}

@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { formatInt, niceScale } from "@/src/stats/chart-geometry";
 import { ACCENT, GRID } from "./colors";
-import { useChartTip } from "./ChartTip";
+import { tipHandlers, useChartTip } from "./ChartTip";
 import { useWidth } from "./useWidth";
 
 type Props = {
@@ -71,10 +71,10 @@ export function ColumnChart({ labels, values, height, ariaLabel, unit, titleOf, 
                 width={slot}
                 height={Math.max(base - M.t, 0)}
                 fill="transparent"
-                onPointerMove={(e) =>
-                  tip.show(e, { title: titleOf(i), rows: [{ color: ACCENT, value: formatInt(values[i]), label: values[i] === 1 ? unit[0] : unit[1] }] })
-                }
-                onPointerLeave={tip.hide}
+                {...tipHandlers(tip, () => ({
+                  title: titleOf(i),
+                  rows: [{ color: ACCENT, value: formatInt(values[i]), label: values[i] === 1 ? unit[0] : unit[1] }],
+                }))}
               />
               {i % every === 0 && (
                 <text x={M.l + slot * i + slot / 2} y={height - 6} textAnchor="middle">

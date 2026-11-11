@@ -42,6 +42,15 @@ describe("<DonutCard>", () => {
     expect(tip).toHaveTextContent("25.0%");
   });
 
+  it("shows the tooltip of a segment while a finger is down", () => {
+    const { container } = draw();
+    const seg = container.querySelectorAll("circle.seg")[0];
+    fireEvent.pointerDown(seg, { pointerType: "touch", clientX: 50, clientY: 50 });
+    expect(document.body.querySelector(".st-tip")).toHaveTextContent("PS5");
+    fireEvent.pointerLeave(seg, { pointerType: "touch" });
+    expect(document.body.querySelector(".st-tip")).toBeNull();
+  });
+
   it("writes the unit in the singular for 1 and in the plural otherwise", () => {
     const { container } = render(
       <ChartTipProvider>

@@ -56,6 +56,45 @@ describe("<ColumnChart>", () => {
     expect(document.body.querySelector(".st-tip")).toBeNull();
   });
 
+  it("shows the tooltip while a finger is down and hides it when lifted", () => {
+    stubMeasure(600);
+    const { container } = draw();
+    const hit = container.querySelectorAll("rect.hit");
+    fireEvent.pointerDown(hit[1], { pointerType: "touch", clientX: 200, clientY: 300 });
+    expect(document.body.querySelector(".st-tip")).toHaveTextContent("2021");
+    fireEvent.pointerUp(hit[1], { pointerType: "touch" });
+    fireEvent.pointerLeave(hit[1], { pointerType: "touch" });
+    expect(document.body.querySelector(".st-tip")).toBeNull();
+  });
+
+  it("hides the tooltip when the page takes over the finger", () => {
+    stubMeasure(600);
+    const { container } = draw();
+    const hit = container.querySelectorAll("rect.hit");
+    fireEvent.pointerDown(hit[1], { pointerType: "touch", clientX: 200, clientY: 300 });
+    expect(document.body.querySelector(".st-tip")).not.toBeNull();
+    fireEvent.pointerCancel(hit[1], { pointerType: "touch" });
+    expect(document.body.querySelector(".st-tip")).toBeNull();
+  });
+
+  it("follows the finger from one column to the next", () => {
+    stubMeasure(600);
+    const { container } = draw();
+    const hit = container.querySelectorAll("rect.hit");
+    fireEvent.pointerDown(hit[0], { pointerType: "touch", clientX: 100, clientY: 300 });
+    fireEvent.pointerMove(hit[1], { pointerType: "touch", clientX: 200, clientY: 300 });
+    expect(document.body.querySelector(".st-tip")).toHaveTextContent("2021");
+  });
+
+  it("blocks the long-press menu for a finger only", () => {
+    stubMeasure(600);
+    const { container } = draw();
+    const hit = container.querySelectorAll("rect.hit")[0];
+    const menu = (pointerType: string) => hit.dispatchEvent(new PointerEvent("contextmenu", { pointerType, bubbles: true, cancelable: true }));
+    expect(menu("touch")).toBe(false);
+    expect(menu("mouse")).toBe(true);
+  });
+
   it("writes the unit in the singular for 1 and in the plural otherwise", () => {
     stubMeasure(600);
     const { container } = draw({ ...props, values: [1, 12, 0] });
