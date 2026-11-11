@@ -1,6 +1,6 @@
 # PSN Tracker : état du projet et feuille de route
 
-*Mis à jour le 11 novembre 2026 : la page Stats est terminée sur la branche `feat/stats`. Une fois la Pull Request fusionnée, reste le déploiement sur le NAS.*
+*Mis à jour le 11 novembre 2026 : la page Stats est fusionnée dans `main` (PR #15). Restent deux retouches de la page Stats, puis le déploiement sur le NAS.*
 
 Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un autre PC, commence par le lire. Le fichier `CLAUDE.md` à la racine le demande automatiquement.
 
@@ -128,7 +128,7 @@ Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un aut
   - affichage téléphone.
 - 96 fichiers de tests, 828 tests. La migration 0007 s'applique au démarrage du worker. Le job `pg-smoke` exécute aussi les requêtes du Trophy Advisor.
 
-### Page Stats (branche `feat/stats`, spec section 18)
+### Page Stats (PR #15, fusionnée le 11 novembre 2026, spec section 18)
 - **Page `/stats`**, de haut en bas :
   - le calendrier « Last 12 months », qui remplace le « Last 60 days », avec en dessous les trophées, les platines, le meilleur jour et la plus longue série de jours ;
   - 4 camemberts : rareté, complétion, points PSN, plateformes (PS5 et PS4 seulement) ;
@@ -148,13 +148,16 @@ Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un aut
 - 110 fichiers de tests, 968 tests. Aucune migration.
 
 ## 3. Ce qui reste à faire, dans l'ordre
-1. **Déployer sur le NAS** en suivant `deploy/README.md`, **une fois la Pull Request de la page Stats fusionnée** (décidé le 9 novembre 2026).
+1. **Retouches de la page Stats**, demandées le 11 novembre 2026 après la fusion :
+   - les infobulles s'affichent aussi au doigt, sur un écran tactile ;
+   - le graphique des jeux par année de sortie défile à gauche et à droite, sans barre de défilement : clic maintenu à la souris, glissement à deux doigts sur le pavé tactile, glissement du doigt sur téléphone.
+2. **Déployer sur le NAS** en suivant `deploy/README.md`, **une fois ces retouches fusionnées** (décidé le 9 novembre 2026).
    - Avant tout, vérifier sur github.com (onglet Actions, le dépôt est privé) que la CI de `main` est verte après la dernière fusion, et que l'image a été publiée.
    - Juste après la première publication, donner une seule fois le rôle **Admin** au dépôt dans « Manage Actions access » du package GHCR (étape 1.5).
    - Faire les vérifications du premier déploiement listées dans `docs/superpowers/plans/2026-11-08-phase1-suivis.md`.
    - À la première synchro de cette version, toutes les listes PS5 sont rechargées une fois (migration 0005), ce qui la rallonge de quelques minutes.
    - Au premier démarrage du worker, la migration 0006 s'applique et la liste des trophées non obtenables se télécharge. Vérifier dans Settings que le bloc « Unobtainable trophies » indique « Up to date » et « 5 of yours ».
-2. **Points de suivi** : à piocher dans `docs/superpowers/plans/2026-11-08-phase1-suivis.md` quand une page touche le même code.
+3. **Points de suivi** : à piocher dans `docs/superpowers/plans/2026-11-08-phase1-suivis.md` quand une page touche le même code.
 
 ## 4. Comment reprendre dans une nouvelle conversation
 Pour démarrer une page, il suffit de le dire, par exemple « On attaque Trophy Log ». Avec le plugin superpowers installé (voir 6), Claude lance de lui-même le bon processus. Pour être sûr, on peut aussi le demander explicitement : « utilise le skill brainstorming ».
