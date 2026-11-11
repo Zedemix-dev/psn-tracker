@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { isAuthenticated } from "@/src/auth/require-session";
 import { getConfig } from "@/src/lib/config";
+import { MEDIA_CSP } from "@/src/lib/security-headers";
 import { resolveMediaPath } from "@/src/sync/images";
 
 const CONTENT_TYPES: Record<string, string> = {
@@ -31,6 +32,7 @@ export async function GET(
         "Content-Type": type,
         "Cache-Control": "private, max-age=31536000, immutable",
         "X-Content-Type-Options": "nosniff",
+        "Content-Security-Policy": MEDIA_CSP,
       },
     });
   } catch {

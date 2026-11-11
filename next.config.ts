@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { SITE_HEADERS } from "./src/lib/security-headers";
 
 const nextConfig: NextConfig = {
   output: "standalone",
@@ -10,6 +11,10 @@ const nextConfig: NextConfig = {
   // everything at 12 MB. Accepted for a single-user site.
   // Banner uploads are up to 10 MB; leave room for the multipart envelope. The proxy buffers
   // request bodies too (default 10 MB), so it needs the same limit or the upload is truncated.
+  // Through headers() (not proxy.ts): the proxy matcher skips the login page, _next/static and the favicon.
+  async headers() {
+    return [{ source: "/:path*", headers: SITE_HEADERS }];
+  },
   experimental: { serverActions: { bodySizeLimit: "11mb" }, proxyClientMaxBodySize: "11mb" },
 };
 
