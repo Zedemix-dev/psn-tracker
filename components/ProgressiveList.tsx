@@ -81,7 +81,8 @@ export function ProgressiveList<T extends { key: string }>({
   places: PlaceStore;
   /** The id of the element "Show all" is portaled into. */
   slotId: string;
-  /** Module-level, with a memoised row: only the new rows render from one chunk to the next. */
+  /** Module-level, with a memoised row: only the new rows render from one chunk to the next.
+   *  The row must render a `.log-row[data-key]` element (`findRow` and `topRow` rely on it). */
   renderRow: (row: T) => ReactNode;
   /** Shown instead of the list when there is no row. */
   empty: string;

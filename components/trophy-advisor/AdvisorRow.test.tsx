@@ -59,6 +59,7 @@ describe("AdvisorRow", () => {
   it("shows the counter only when there is one", () => {
     const { container, rerender } = render(<AdvisorRow row={row()} />);
     expect(container.querySelector(".adv-count")).toBeEmptyDOMElement();
+    expect(container.querySelector(".adv-count")).not.toHaveAttribute("title");
     rerender(<AdvisorRow row={row({ counter: "3,626/5,000" })} />);
     expect(screen.getByText("3,626/5,000")).toHaveAttribute("title", "Progress");
   });

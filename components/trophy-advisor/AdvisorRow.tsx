@@ -37,7 +37,7 @@ export function AdvisorRow({ row }: { row: AdvisorRowData }) {
         </div>
       </div>
       <div className="meta">
-        <div className="adv-count" title="Progress">
+        <div className="adv-count" title={row.counter ? "Progress" : undefined}>
           {row.counter}
         </div>
         <div className="rate">

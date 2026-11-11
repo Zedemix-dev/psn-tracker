@@ -44,7 +44,7 @@ export function IncompleteGames({ games }: { games: IncompleteGame[] }) {
                 </div>
               </div>
               <div className="left">
-                <b>{formatInt(g.left)}</b>left
+                <b>{formatInt(g.left)}</b>{" "}left
               </div>
             </Link>
           ))}

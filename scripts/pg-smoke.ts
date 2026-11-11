@@ -144,6 +144,7 @@ async function main(): Promise<void> {
   expect("first takeSyncRequest", await takeSyncRequest(db), true);
   expect("second takeSyncRequest", await takeSyncRequest(db), false);
   await smokeTrophyLog(db);
+  await smokeAdvisor(db);
 }
 
 main().then(
