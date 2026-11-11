@@ -1,6 +1,6 @@
 # PSN Tracker : état du projet et feuille de route
 
-*Mis à jour le 11 novembre 2026 : les retouches de la page Stats (infobulles au doigt, défilement de côté) sont terminées sur la branche `feat/stats-touch`. Une fois la Pull Request fusionnée, reste le déploiement sur le NAS.*
+*Mis à jour le 11 novembre 2026 : les retouches de la page Stats (infobulles au doigt, défilement de côté) sont fusionnées dans `main` (PR #17). Reste le déploiement sur le NAS.*
 
 Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un autre PC, commence par le lire. Le fichier `CLAUDE.md` à la racine le demande automatiquement.
 
@@ -149,7 +149,7 @@ Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un aut
   - affichage téléphone, sans défilement horizontal.
 - 110 fichiers de tests, 968 tests. Aucune migration.
 
-### Stats au doigt et défilement de côté (branche `feat/stats-touch`, spec section 18.14)
+### Stats au doigt et défilement de côté (PR #17, fusionnée le 11 novembre 2026, spec section 18.14)
 - **Infobulles au doigt** : elles s'affichent tant que le doigt est posé, au-dessus de lui, et disparaissent quand il se lève. Sur les courbes, la ligne verticale suit le doigt qui glisse de côté. Un appui long n'ouvre pas de menu, et les mises en valeur du survol ne valent qu'à la souris.
 - **Défilement de côté sans barre** (`components/stats/useSideScroll.ts`) :
   - le graphique des années garde des colonnes d'au moins 18 px. Quand elles ne tiennent plus, l'axe reste fixe et les colonnes défilent, ouvertes sur les années récentes ;
@@ -163,7 +163,7 @@ Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un aut
 - 112 fichiers de tests, 1 009 tests. Aucune migration.
 
 ## 3. Ce qui reste à faire, dans l'ordre
-1. **Déployer sur le NAS** en suivant `deploy/README.md`, **une fois la Pull Request des retouches de Stats fusionnée** (décidé le 9 novembre 2026).
+1. **Déployer sur le NAS** en suivant `deploy/README.md` : toutes les pages prévues sont fusionnées (décidé le 9 novembre 2026). Une fois le site déployé, essayer la page Stats sur le téléphone et sur le pavé tactile du Mac (spec 18.14).
    - Avant tout, vérifier sur github.com (onglet Actions, le dépôt est privé) que la CI de `main` est verte après la dernière fusion, et que l'image a été publiée.
    - Juste après la première publication, donner une seule fois le rôle **Admin** au dépôt dans « Manage Actions access » du package GHCR (étape 1.5).
    - Faire les vérifications du premier déploiement listées dans `docs/superpowers/plans/2026-11-08-phase1-suivis.md`.
