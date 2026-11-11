@@ -126,6 +126,11 @@ describe("<StatsCalendar>", () => {
     expect(sum).not.toHaveTextContent("undefined");
   });
 
+  it("makes the calendar a sideways scroller", () => {
+    const { container } = draw(calendar());
+    expect(container.querySelector(".st-cal-scroll")).toHaveClass("st-side");
+  });
+
   it("scrolls to the most recent days on mount", () => {
     vi.spyOn(HTMLElement.prototype, "scrollWidth", "get").mockReturnValue(1500);
     const { container } = draw(calendar());

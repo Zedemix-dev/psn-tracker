@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { formatInt } from "@/src/stats/chart-geometry";
 import type { CalendarData, CalendarDay } from "@/src/stats/trophy-charts";
 import { tipHandlers, useChartTip } from "./ChartTip";
+import { useSideScroll } from "./useSideScroll";
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const DASH = "–";
@@ -31,11 +32,8 @@ function Cell({ day }: { day: CalendarDay | null }) {
 
 export function StatsCalendar({ data }: { data: CalendarData }) {
   const tip = useChartTip();
-  const scroll = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    // Open on the most recent days.
-    if (scroll.current) scroll.current.scrollLeft = scroll.current.scrollWidth;
-  }, []);
+  // Opens on the most recent days.
+  const side = useSideScroll<HTMLDivElement>();
   useEffect(() => tip.hide, [tip.hide]);
 
   const { summary } = data;
@@ -53,7 +51,7 @@ export function StatsCalendar({ data }: { data: CalendarData }) {
           <span></span>More
         </div>
       </div>
-      <div className="st-cal-scroll" ref={scroll}>
+      <div className={`st-cal-scroll ${side.className}`} ref={side.ref} {...side.handlers}>
         <div className="st-cal">
           <div className="st-cal-months">
             <span></span>

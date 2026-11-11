@@ -512,6 +512,14 @@ button.select.log-dir.on{border-color:var(--accent)}
 .st-legend i{width:10px;height:10px;border-radius:3px}
 .st-chart{padding:0 16px 12px;position:relative}
 .st-chart svg{display:block;width:100%;overflow:visible;touch-action:pan-y}
+.st-side{overflow-x:auto;overflow-y:hidden;scrollbar-width:none;overscroll-behavior-x:contain}
+.st-side::-webkit-scrollbar{display:none}
+.st-side svg{touch-action:pan-x pan-y}
+.st-side.can{cursor:grab}
+.st-side.drag{cursor:grabbing;user-select:none}
+.st-side.fl{-webkit-mask-image:linear-gradient(to right,transparent 0,#000 32px);mask-image:linear-gradient(to right,transparent 0,#000 32px)}
+.st-side.fr{-webkit-mask-image:linear-gradient(to left,transparent 0,#000 32px);mask-image:linear-gradient(to left,transparent 0,#000 32px)}
+.st-side.fl.fr{-webkit-mask-image:linear-gradient(to right,transparent 0,#000 32px,#000 calc(100% - 32px),transparent 100%);mask-image:linear-gradient(to right,transparent 0,#000 32px,#000 calc(100% - 32px),transparent 100%)}
 .st-chart text{font-family:var(--font);font-size:11px;fill:var(--muted);font-variant-numeric:tabular-nums}
 .st-chart text.peak{fill:var(--text);font-weight:600}
 /* Donuts */
@@ -552,7 +560,7 @@ button.select.log-dir.on{border-color:var(--accent)}
 @media (max-width:640px){.st-donuts{grid-template-columns:minmax(0,1fr)}}
 
 /* Stats page: calendar, time charts and level history */
-.st-cal-scroll{overflow-x:auto;padding:0 16px 2px;scrollbar-width:thin}
+.st-cal-scroll{padding:0 16px 2px}
 .st-cal{min-width:860px}
 .st-cal-months,.st-cal-grid{display:grid;grid-template-columns:32px repeat(53,minmax(0,1fr));gap:3px}
 .st-cal-months{height:16px;font-size:11px;color:var(--muted);margin-bottom:3px}
