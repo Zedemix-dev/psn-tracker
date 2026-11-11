@@ -3,6 +3,7 @@ import path from "node:path";
 import { isNotNull } from "drizzle-orm";
 import type { Db } from "@/src/db/client";
 import { images } from "@/src/db/schema";
+import { cachedUntilNextRun } from "@/src/lib/per-sync-cache";
 
 const PLACEHOLDER = "/icons/placeholder.svg";
 const SERVED_DIRS = ["psn", "banner"];
@@ -27,8 +28,15 @@ export function tileBgOf(url: string | null, cached: ImageMap): string | null {
   return (url ? cached.get(url)?.tileBg : null) ?? null;
 }
 
-/** url -> files relative to mediaDir, for downloaded images only. */
-export async function loadImageMap(db: Db): Promise<ImageMap> {
+/**
+ * url -> files relative to mediaDir, for downloaded images only. Kept until the next sync run starts or
+ * ends: the map is shared, callers must not modify it.
+ */
+export function loadImageMap(db: Db): Promise<ImageMap> {
+  return cachedUntilNextRun(db, "image-map", () => readImageMap(db));
+}
+
+async function readImageMap(db: Db): Promise<ImageMap> {
   const rows = await db
     .select({ url: images.url, localPath: images.localPath, thumbPath: images.thumbPath, tileBg: images.tileBg })
     .from(images)

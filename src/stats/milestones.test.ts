@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import type { Db } from "@/src/db/client";
-import type { TrophyType } from "@/src/db/schema";
+import { syncRuns, type TrophyType } from "@/src/db/schema";
 import { computeMilestones, getMilestones, ordinal } from "@/src/stats/milestones";
 import type { EarnedTrophy } from "@/src/stats/trophies";
 import { insertTitle, insertTrophies } from "@/tests/fixtures/profile";
@@ -134,5 +134,14 @@ describe("getMilestones", () => {
     const ms = await getMilestones(db, NOW);
     const first = ms.find((m) => m.label === "First trophy")!;
     expect(first.trophy).toMatchObject({ titleId: "A", trophyId: 1, gameName: "Game A" });
+  });
+
+  it("keeps the result until a run ends, then sees new trophies", async () => {
+    await insertTrophies(db, [{ titleId: "A", trophyId: 1, earnedAt: new Date("2024-01-01T00:00:10Z") }]);
+    expect((await getMilestones(db, NOW)).find((m) => m.label === "First trophy")!.trophy.trophyId).toBe(1);
+    await insertTrophies(db, [{ titleId: "A", trophyId: 2, earnedAt: new Date("2023-01-01T00:00:00Z") }]);
+    expect((await getMilestones(db, NOW)).find((m) => m.label === "First trophy")!.trophy.trophyId).toBe(1);
+    await db.insert(syncRuns).values({ kind: "daily", status: "success", finishedAt: new Date("2026-11-11T10:00:00Z") });
+    expect((await getMilestones(db, NOW)).find((m) => m.label === "First trophy")!.trophy.trophyId).toBe(2);
   });
 });

@@ -1,6 +1,7 @@
 import type { Db } from "@/src/db/client";
 import { compareEarnedOrder } from "@/src/lib/earned-order";
 import { formatInt } from "@/src/lib/format";
+import { cachedUntilNextRun } from "@/src/lib/per-sync-cache";
 import { getAllEarned, type EarnedTrophy } from "@/src/stats/trophies";
 
 export type Milestone = { label: string; trophy: EarnedTrophy };
@@ -83,6 +84,7 @@ export function computeMilestones(earned: EarnedTrophy[], _now: Date): Milestone
   return found.sort((a, b) => b.pos - a.pos).map(({ pos, label }) => ({ label, trophy: ordered[pos] }));
 }
 
-export async function getMilestones(db: Db, now: Date): Promise<Milestone[]> {
-  return computeMilestones(await getAllEarned(db), now);
+/** Computed from the earned trophies only (`now` plays no part), so it is kept until the next run starts or ends. */
+export function getMilestones(db: Db, now: Date): Promise<Milestone[]> {
+  return cachedUntilNextRun(db, "milestones", async () => computeMilestones(await getAllEarned(db), now));
 }
