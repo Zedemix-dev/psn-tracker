@@ -1,11 +1,13 @@
 import { and, eq, isNotNull } from "drizzle-orm";
 import type { Db } from "@/src/db/client";
-import { settings, type PsnAuthStatus } from "@/src/db/schema";
+import { settings, type AdvisorDlc, type PsnAuthStatus } from "@/src/db/schema";
 import { decrypt, encrypt } from "@/src/lib/crypto";
 import type { PsnTokens, StoredPsnTokens } from "@/src/psn/types";
 
 export type Settings = {
   hideZero: boolean;
+  advisorHideUnobtainable: boolean;
+  advisorDlc: AdvisorDlc;
   bannerPath: string | null;
   bannerPosY: number;
   npssoSetAt: Date | null;
@@ -21,6 +23,8 @@ export async function getSettings(db: Db): Promise<Settings> {
   const [row] = await db
     .select({
       hideZero: settings.hideZero,
+      advisorHideUnobtainable: settings.advisorHideUnobtainable,
+      advisorDlc: settings.advisorDlc,
       bannerPath: settings.bannerPath,
       bannerPosY: settings.bannerPosY,
       npssoSetAt: settings.npssoSetAt,
@@ -36,6 +40,14 @@ export async function getSettings(db: Db): Promise<Settings> {
 
 export async function setHideZero(db: Db, on: boolean): Promise<void> {
   await db.update(settings).set({ hideZero: on }).where(ROW);
+}
+
+export async function setAdvisorHideUnobtainable(db: Db, on: boolean): Promise<void> {
+  await db.update(settings).set({ advisorHideUnobtainable: on }).where(ROW);
+}
+
+export async function setAdvisorDlc(db: Db, mode: AdvisorDlc): Promise<void> {
+  await db.update(settings).set({ advisorDlc: mode }).where(ROW);
 }
 
 export async function setBanner(db: Db, path: string | null, posY: number): Promise<void> {

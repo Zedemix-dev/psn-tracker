@@ -332,6 +332,32 @@ describe("TrophyLogList", () => {
       expect(sessionStorage.getItem("trophy-log-list")).toBeNull();
     });
 
+    it("saves the place when a game link outside the list is clicked", async ({ onTestFinished }) => {
+      fetchMock.mockResolvedValueOnce(reply(trophies(51, 20), 200));
+      const { unmount } = render(list(trophies(1, 50), 200));
+      const outside = document.createElement("a");
+      outside.setAttribute("href", "/games/X");
+      outside.addEventListener("click", (e) => e.preventDefault());
+      document.body.append(outside);
+      onTestFinished(() => outside.remove());
+      await intersect();
+      expect(rows()).toBe(70);
+
+      await act(async () => {
+        outside.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, ctrlKey: true }));
+        outside.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, button: 1 }));
+      });
+      expect(sessionStorage.getItem("trophy-log-list")).toBeNull();
+
+      await act(async () => outside.click());
+      expect(JSON.parse(sessionStorage.getItem("trophy-log-list")!)).toMatchObject({ key: "k", loaded: 70 });
+
+      sessionStorage.clear();
+      unmount();
+      outside.click();
+      expect(sessionStorage.getItem("trophy-log-list")).toBeNull();
+    });
+
     describe("with a saved place", () => {
       beforeEach(() => saveLogSnapshot({ key: "k", loaded: 120, scrollY: 3400 }));
 

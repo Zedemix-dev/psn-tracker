@@ -8,6 +8,8 @@ import {
   loadPsnTokens,
   clearUnobtainableRequest,
   requestSync,
+  setAdvisorDlc,
+  setAdvisorHideUnobtainable,
   saveUnobtainableUrl,
   savePsnTokens,
   setBanner,
@@ -34,6 +36,8 @@ describe("settings repo", () => {
     const s = await getSettings(db);
     expect(s).toEqual({
       hideZero: false,
+      advisorHideUnobtainable: false,
+      advisorDlc: "all",
       bannerPath: null,
       bannerPosY: 50,
       npssoSetAt: null,
@@ -42,6 +46,16 @@ describe("settings repo", () => {
       unobtainableListUrl: DEFAULT_UNOBTAINABLE_LIST_URL,
       unobtainableRequestedAt: null,
     });
+  });
+
+  it("starts with every Trophy Advisor setting off", async () => {
+    expect(await getSettings(db)).toMatchObject({ advisorHideUnobtainable: false, advisorDlc: "all" });
+  });
+
+  it("saves the Trophy Advisor settings", async () => {
+    await setAdvisorHideUnobtainable(db, true);
+    await setAdvisorDlc(db, "only");
+    expect(await getSettings(db)).toMatchObject({ advisorHideUnobtainable: true, advisorDlc: "only" });
   });
 
   it("saveUnobtainableUrl writes the address and the request", async () => {

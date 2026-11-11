@@ -50,6 +50,13 @@
       "when": 1794233513003,
       "tag": "0006_unobtainable",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1794353137331,
+      "tag": "0007_advisor_settings",
+      "breakpoints": true
     }
   ]
 }

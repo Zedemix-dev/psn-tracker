@@ -580,7 +580,8 @@ Il doit aussi vérifier en pratique la détection des nouveaux DLC (6.4).
 - **Ordre de la suite [décidé, 9 novembre 2026] :** les pages Plat Wall, Trophy Log, Trophy Advisor et Stats sont construites **avant** le déploiement sur le NAS.
 - **Page Plat Wall :** cadrée, maquette validée, construite et vérifiée avec les vraies données le 9 novembre 2026, décrite en 15. Fusionnée dans `main` le 9 novembre 2026 (PR #9).
 - **Page Trophy Log :** cadrée, maquette validée, construite et vérifiée avec les vraies données le 10 novembre 2026, décrite en 16. Fusionnée dans `main` le 10 novembre 2026 (PR #11).
-- **[décidé, 10 novembre 2026] Place du bouton « Show all » :** dans l'en-tête d'une liste, il vient toujours **après** le nombre affiché, comme sur le Trophy Log (16.5). Cela vaut pour la page **Trophy Advisor**, à construire ainsi. La liste **Games**, où il est encore avant le nombre (14.6), sera corrigée en même temps que Trophy Advisor. Rien n'est changé dans le code avant cela.
+- **[décidé, 10 novembre 2026] Place du bouton « Show all » :** dans l'en-tête d'une liste, il vient toujours **après** le nombre affiché, comme sur le Trophy Log (16.5). Cela vaut pour la page **Trophy Advisor**, à construire ainsi. La liste **Games** (14.6) a été corrigée en même temps que Trophy Advisor.
+- **Page Trophy Advisor :** cadrée, maquette validée, construite et vérifiée avec les vraies données le 11 novembre 2026, décrite en 17.
 
 ## 14. Jeux aux trophées non obtenables
 **[décidé, cadrage du 9 novembre 2026]** Fonctionnalité construite à part, sur la branche `feat/unobtainable`. Maquette validée le 9 novembre 2026 : `docs/superpowers/specs/2026-11-09-psn-tracker-maquette-nonobt.html`, référence pour l'aspect et le CSS. Les choix que l'utilisateur n'a pas faits lui-même sont marqués **[choix de Claude]**.
@@ -649,8 +650,8 @@ Tout ce paragraphe est **[choix de Claude]**, vérifié sur les vraies données 
 - **En cas d'échec, l'ancienne liste et toutes les marques restent en place.** L'échec est affiché dans Settings.
 
 ### 14.6 Liste Games (8.7)
-- **Bouton « Show all »**, dans l'en-tête, à gauche du nombre de jeux.
-  - **[décidé, 10 novembre 2026] À corriger : le bouton doit passer APRÈS le nombre de jeux**, comme sur le Trophy Log (16.5). L'utilisateur l'a demandé en voyant les deux pages côte à côte. Cette correction se fera avec la page Trophy Advisor, sans PR séparée avant. La règle commune est en 13.
+- **Bouton « Show all »**, dans l'en-tête, après le nombre de jeux.
+  - **[décidé, 10 novembre 2026]** Il était à gauche du nombre. Il est passé **après**, comme sur le Trophy Log (16.5) : l'utilisateur l'a demandé en voyant les deux pages côte à côte. Corrigé avec la page Trophy Advisor (17.8). La règle commune est en 13.
   - Visible tant qu'il reste des jeux à charger. Il n'apparaît donc pas si tout tient en 50 jeux ou moins.
   - Au clic : désactivé, libellé « Loading… », puis tous les jeux restants arrivent en une seule requête. Le bouton et la ligne « The next 50 games load as you scroll down » disparaissent, et la page ne bouge pas.
   - Si le chargement échoue : le bouton redevient « Show all » et le message existant « Couldn't load more games. Retry » s'affiche **[choix de Claude]**.
@@ -926,4 +927,144 @@ Elle remplace la page « Coming soon » de cet onglet.
 - Les tris dans les deux sens, « précédent » depuis une page de jeu, et « Show all » sur les 11 636 lignes sans que la page se fige.
 - Aucun fond derrière les icônes à fond transparent (Hellblade, « Technician » de Persona 5 Royal) : Trophy Log, page d'un jeu, carrousel, Trophy cabinet, Rarest trophies, Milestones, éditeur du cabinet.
 - Page d'un jeu : Magicka 2 triée par Date earned met le platine en dernier ; les heures ont les secondes, Timeline comprise.
+- L'affichage téléphone.
+
+## 17. Page Trophy Advisor
+**[décidé, brainstorming des 10 et 11 novembre 2026]** Page construite à part, sur la branche `feat/trophy-advisor`. Maquette validée le 11 novembre 2026 (v4) : `docs/superpowers/specs/2026-11-10-psn-tracker-maquette-advisor.html`, référence pour l'aspect et le CSS, avec ses données intégrées. Les choix que l'utilisateur n'a pas faits lui-même sont marqués **[choix de Claude]**. Il les a lus dans la conversation et a validé la maquette qui les applique.
+
+### 17.1 Intention
+L'utilisateur veut **voir tout ce qu'il lui reste à obtenir, pour choisir quoi aller chercher**. Le Trophy Advisor de psnprofiles lui convient tel qu'il est. Sa capture montre une ligne par trophée non obtenu, du plus courant au plus rare : image du jeu, icône, nom, description, rareté et type. La page reprend cette forme, avec la rareté PSN et les règles d'images du site, et ajoute une colonne qui classe les jeux par nombre de trophées manquants.
+
+### 17.2 Objectifs, non-objectifs, anti-objectifs
+**Objectifs**
+- Tous les trophées non obtenus, une ligne chacun, du plus courant au plus rare par défaut.
+- Trier par rareté et par ordre alphabétique, dans un sens ou dans l'autre.
+- Filtrer par plateforme, par catégorie de rareté et par type.
+- Masquer les trophées non obtenables, masquer ceux des DLC ou ne garder qu'eux, avec trois réglages qui restent d'une visite à l'autre.
+- Voir d'un coup d'œil les jeux qui ne sont pas à 100 %, du plus de trophées manquants au moins.
+
+**Non-objectifs**
+- Les colonnes « Achievers » et « Owners » de psnprofiles : le PSN ne fournit que le pourcentage.
+- Une recherche, un filtre par jeu **[choix de Claude : non demandés]**.
+- Un score, une difficulté ou une estimation de temps : la rareté suffit à l'utilisateur **[choix de Claude : non demandés]**.
+- Toute modification des stats du profil par les trois réglages : ils ne changent que cette page **[choix de Claude]**, comme le filtre de 14.2.
+
+**Anti-objectifs** (ce qui serait un échec même si tout fonctionne)
+- Un compteur de la colonne qui ne correspond pas à ce que la liste contient quand on la filtre sur ce jeu avec les mêmes réglages.
+- Un réglage qui revient à sa position d'origine à la visite suivante.
+- Un fond, une ombre ou un cadre derrière une icône de trophée à fond transparent (16.7).
+- Une image rectangulaire (8.9).
+- Un « Show all » placé avant le nombre (13).
+- Un compteur de trophée à paliers qui déborde sur la rareté (« 38,200/38,280 », 17.4).
+
+### 17.3 Ce qu'on a vérifié sur les vraies données (10 novembre 2026)
+- 798 trophées non obtenus, tous avec une rareté PSN (de 0,10 % à 85,70 %), sur 41 jeux. Aucun jeu masqué, aucun jeu à 0 %.
+- Les 41 jeux qui ne sont pas à 100 % sont exactement ceux qui ont au moins un trophée non obtenu.
+- Par type : 28 platines, 76 or, 193 argent, 501 bronze.
+- 353 appartiennent à un DLC, 17 sont non obtenables.
+- Avec les réglages :
+
+| Réglages actifs | Trophées | Jeux dans la colonne |
+|---|---|---|
+| Aucun | 798 | 41 |
+| Hide unobtainable | 781 | 40 |
+| Hide DLC | 445 | 30 |
+| Hide unobtainable + Hide DLC | 430 | 29 |
+| DLC only | 353 | 17 |
+| Hide unobtainable + DLC only | 351 | 16 |
+
+- 181 trophées sont cachés sur le PSN, avec leur vrai nom et leur vraie description en base. 83 ont un compteur de progression.
+- Un jeu sur deux plateformes a deux listes distinctes (Gran Turismo 7, Stranger of Paradise, Assassin's Creed Valhalla) : il apparaît deux fois, comme dans Games.
+
+### 17.4 La page `/trophy-advisor`
+Elle remplace la page « Coming soon » de cet onglet.
+- **Haut de page [choix de Claude]** : comme le Trophy Log (16.5), la bannière, le bandeau profil avec « Sync now » et les 6 cases. Pas de carrousel.
+- **Deux colonnes** comme Games (8.7, 8.8) : la liste, et à droite une colonne de 450 px (17.7) **[décidé : une colonne à droite ; largeur : choix de Claude]**.
+- **Panneau de la liste** :
+  - en-tête, à gauche : « Zmx969's Trophy Advisor », avec le pseudo du profil, puis juste à côté les trois réglages (17.6), comme « Hide 0% games » sur Games **[choix de Claude]** ;
+  - en-tête, à droite : le nombre, puis le bouton « Show all » **[décidé : après le nombre, 13]** tant que tout n'est pas chargé ;
+  - le nombre : « 798 trophies » sans filtre, « 336 of 798 trophies match » dès qu'un filtre de plateforme, de rareté ou de type est actif. Le total tient compte de « Hide 0% games » et des trois réglages : avec « Hide DLC », c'est « 445 trophies » **[choix de Claude]** ;
+  - en dessous, les contrôles (17.5), puis la liste.
+- **Ligne de trophée [décidé : comme le Trophy Log]**, ~66 px, de gauche à droite :
+  1. **l'image du jeu**, 56 px, coins de 10 px, la même que sa ligne dans Games, lien vers la page du jeu ;
+  2. **l'icône du trophée**, 56 px, coins de 10 px, **sans aucun fond**, en couleur comme sur la capture de psnprofiles ;
+  3. le **nom**, la **description** en entier, puis une ligne avec le **nom du jeu**, lien vers sa page, le nom du DLC pour un trophée de DLC et les pastilles de plateforme ;
+  4. le **compteur** d'un trophée à paliers (« 0/4 », « 3,626/5,000 »), au même format que la page d'un jeu (8.9), vide pour les autres **[choix de Claude]**. **[décidé, retour sur la maquette v3]** La colonne fait 120 px, pour que les plus longs (« 38,200/38,280 », 116 px en 15 px) ne débordent pas sur la rareté. Un compteur encore plus long passe à la ligne au lieu de déborder ;
+  5. la **rareté PSN** (« 85.70% ») et sa catégorie (« Common ») ;
+  6. l'**icône officielle du type**, 30 px.
+- Pas de numéro ni de date, puisque le trophée n'est pas obtenu.
+- La ligne elle-même n'est pas un lien : seuls l'image et le nom du jeu le sont, comme au Trophy Log.
+- **Trophée caché sur le PSN [choix de Claude]** : affiché en entier, nom et description, comme sur la page d'un jeu.
+- **Trophée non obtenable** (quand « Hide unobtainable » est inactif) **[choix de Claude]** : la ligne a la teinte rouge de la page d'un jeu (14.7) et le même « ! », avec l'infobulle « No longer obtainable. » suivie de la cause quand elle est connue. Pas de liseré autour de l'icône, comme sur la maquette.
+- Sans résultat : « No trophies match these filters. » S'il n'y a plus aucun trophée à obtenir avant filtres : « Nothing left to earn. » **[choix de Claude]**
+- **Chargement** : exactement comme le Trophy Log (16.5). 50 lignes, puis 50 de plus quand on approche du bas, avec « The next 50 trophies load as you scroll down » et « Retry » en cas d'échec. « Show all » charge tout le reste, affiché par paquets.
+- **Retour [choix de Claude]** : revenir d'une page de jeu par « précédent » remet les lignes chargées et la position, comme au Trophy Log, que le lien cliqué soit dans la liste ou dans la colonne.
+- **Synchro [choix de Claude]** : la liste et la colonne se mettent à jour après une synchro sans recharger la page.
+- **Écrans étroits [choix de Claude]** :
+  - sous 1400 px, la colonne passe à 360 px ;
+  - sous 1180 px, une seule colonne : la colonne des jeux passe **au-dessus** de la liste, limitée à 300 px de haut avec son propre défilement. En dessous de la liste, le défilement infini l'éloignerait sans cesse ;
+  - sous 900 px, l'image du jeu est masquée (le nom du jeu reste un lien), et l'icône passe à 48 px ;
+  - sur téléphone (640 px et moins), le compteur et la rareté passent sous la description.
+
+### 17.5 Tri et filtres
+- **Tri [décidé]** : Rarity (par défaut), Alphabetical.
+  - Rarity trie sur la rareté PSN. Les trophées sans rareté connue passent en dernier, dans les deux sens **[choix de Claude]**. Il n'y en a aucun aujourd'hui.
+  - Alphabetical trie sur le nom du trophée, avec la règle de 16.6 : sans la casse, les accents, la ponctuation et les espaces en tête **[choix de Claude]**.
+  - À égalité, **dans les deux sens** : le nom du jeu (même règle), puis l'identifiant de la liste, puis l'ordre du trophée dans son jeu **[choix de Claude]**. Les trophées d'un même jeu restent ainsi groupés, et l'ordre est total, pour que les pages ne se chevauchent pas.
+- **Sens [décidé]** : un bouton, à côté du tri, inverse l'ordre.
+  - Son libellé dit ce qu'il fait, comme au Trophy Log : « Most common first » / « Rarest first », « A to Z » / « Z to A ».
+  - **Par défaut : « Most common first »** [choix de Claude, d'après la capture de psnprofiles, où « Descending » va du plus courant au plus rare, validé sur la maquette]. Pour Alphabetical : « A to Z ». Changer de tri remet ce sens naturel.
+- **Platform [décidé]** : All platforms (par défaut), PS4, PS5. Même règle que Games : un trophée est retenu si la plateforme fait partie de la liste de son jeu.
+- **Rarity [décidé]** : All rarities (par défaut), Ultra rare, Very rare, Rare, Uncommon, Common, avec les paliers de 8.8.
+- **Type [décidé]** : All types (par défaut), Platinum, Gold, Silver, Bronze.
+- **[choix de Claude]** Comme au Trophy Log : un seul choix à la fois par filtre, contour d'accent sur un contrôle qui n'est pas sur sa valeur par défaut, réglages dans l'adresse de la page sans enregistrement en base, valeur par défaut absente de l'adresse, valeur invalide ignorée.
+- **Reset [choix de Claude, comme au Trophy Log]** : remet le tri, le sens et les filtres par défaut. Il n'apparaît que si au moins un de ces contrôles a changé, avec leur nombre. **Il ne touche pas aux trois réglages de 17.6.**
+
+### 17.6 Les réglages « Hide unobtainable », « Hide DLC » et « DLC only »
+- **[décidé]** Trois interrupteurs, du même style que « Hide 0% games », **enregistrés en base**, pour rester sur la position choisie d'une visite à l'autre **[pour « DLC only » : choix de Claude, comme les deux autres]**. Ils ne vont pas dans l'adresse de la page **[choix de Claude]**.
+- **[choix de Claude]** Les trois sont inactifs au départ : la première visite montre tous les trophées non obtenus.
+- **Hide unobtainable** retire les trophées marqués `trophies.unobtainable` (14.2).
+- **Hide DLC** retire les trophées d'un groupe autre que `default`.
+- **DLC only** [décidé, 10 novembre 2026] ne garde que les trophées d'un groupe autre que `default`.
+- **[choix de Claude, validé sur la maquette]** « Hide DLC » et « DLC only » s'excluent, puisque les deux ensemble ne montreraient rien : activer l'un coupe l'autre, et le changement est enregistré.
+- **[décidé]** Chacun agit sur **la liste, son nombre et la colonne de droite** (17.7).
+- Effet immédiat, comme « Hide 0% games ». La liste repart du haut.
+- **[décidé, 8.7] « Hide 0% games »**, réglé sur la page Games, retire aussi de la liste et de la colonne les trophées des jeux à 0 %. Il n'a pas d'interrupteur sur cette page **[choix de Claude]**.
+- Comme partout, les jeux masqués sur le PSN sont exclus.
+
+### 17.7 La colonne « Incomplete games »
+- **[décidé]** Un panneau à droite liste **tous les jeux qui ne sont pas à 100 %**, du plus de trophées manquants au moins, **DLC inclus**.
+- **[décidé]** Le compteur de chaque jeu tient compte de **« Hide unobtainable »**, de **« Hide DLC »** et de **« DLC only »**. Un jeu dont le compteur tombe à 0 sort de la colonne **[choix de Claude, validé sur la maquette]** : Marvel Heroes Omega avec « Hide unobtainable » (ses 13 trophées manquants sont non obtenables), Nioh 3 ou SAROS avec « Hide DLC », Rayman Legends avec « DLC only ». Gran Turismo Sport passe de 6 à 2 avec « Hide unobtainable », FINAL FANTASY XIV de 171 à 10 avec « Hide DLC » et à 161 avec « DLC only ».
+- **[choix de Claude, validé sur la maquette]** Elle ne dépend **ni du tri ni des filtres** de plateforme, de rareté et de type.
+- En-tête : « Incomplete games » à gauche, « 41 games » à droite.
+- **Ligne [choix de Claude, validé sur la maquette]**, de gauche à droite :
+  1. **l'image du jeu**, 48 px, coins de 9 px, la même que dans Games ;
+  2. le **nom**, jamais tronqué (8.8), les pastilles de plateforme, et le même « ! » s'il reste des trophées non obtenables comptés, avec l'infobulle « 13 unobtainable trophies » et la cause. **[choix de Claude, relecture finale]** L'infobulle s'ouvre sous la ligne, dans la largeur de la colonne, pour ne jamais sortir de l'écran ;
+  3. en dessous, la **barre de progression** à la couleur du rang (8.7) et le **pourcentage PSN**. Ils ne changent pas avec les réglages : c'est la progression du jeu au PSN ;
+  4. à droite, le **nombre de trophées manquants** en gras, avec « left » en dessous.
+- Toute la ligne est un lien vers la page du jeu **[choix de Claude]**.
+- À égalité de compteur : le nom du jeu (règle de 16.6), puis l'identifiant de la liste **[choix de Claude]**.
+- Tous les jeux s'affichent, sans pagination : ils sont une quarantaine.
+- Sans jeu : « No incomplete games. » **[choix de Claude]**
+
+### 17.8 Ailleurs sur le site (même branche)
+- **[décidé, 13 et 14.6] Page Games** : dans l'en-tête de la liste, le bouton « Show all » passe **après** le nombre de jeux. Rien d'autre ne change sur cette page.
+
+### 17.9 Laissé au builder
+- L'organisation du code, l'adresse de l'API de pagination, les noms des paramètres d'adresse et des colonnes de `settings`.
+- Le partage avec le Trophy Log (`components/trophy-log/TrophyLogList.tsx`, `log-snapshot.ts`, `src/trophy-log/query.ts`, `load.ts`) : réutiliser plutôt que recopier ce qui est identique, sans changer le comportement du Trophy Log.
+- Le partage des styles, sans rien changer ailleurs : `app/globals.css` est un seul fichier global.
+- La migration des trois réglages. Elle s'applique au démarrage du worker, comme les précédentes.
+
+### 17.10 Vérification avec les vraies données
+- « 798 trophies » et « 41 games ». Première ligne : « The Axe's Grudge », Phantom Blade Zero, 85.70 %. Première ligne de la colonne : FINAL FANTASY XIV Online, 171.
+- Les nombres du tableau de 17.3 avec les réglages, et les exemples de 17.7 (si une synchro a changé des trophées depuis, les recalculer en SQL).
+- Les réglages restent après un rechargement et après une déconnexion. Activer « DLC only » coupe « Hide DLC », et inversement.
+- « The Dark Throne » (FFXIV, 38,200/38,280) : le compteur ne touche pas la rareté.
+- Filtres : Platinum 28, Gold 76, Silver 193, Bronze 501, PS4 336. Reset remet les contrôles et laisse les réglages.
+- Les deux tris dans les deux sens, « précédent » depuis la liste et depuis la colonne, « Show all » sans que la page se fige.
+- Le compteur d'un jeu dans la colonne correspond aux lignes de ce jeu dans la liste « Show all », avec les mêmes réglages.
+- Un trophée non obtenable : teinte rouge, « ! » et cause (Marvel Heroes Omega, Gran Turismo Sport).
+- Aucun fond derrière les icônes à fond transparent, aucune image rectangulaire.
+- Page Games : « Show all » après le nombre.
 - L'affichage téléphone.

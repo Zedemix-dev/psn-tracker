@@ -19,6 +19,7 @@ export type TrophyType = "platinum" | "gold" | "silver" | "bronze";
 export type SyncKind = "scheduled" | "manual" | "daily" | "first";
 export type SyncStatus = "running" | "success" | "error";
 export type PsnAuthStatus = "missing" | "valid" | "expired";
+export type AdvisorDlc = "all" | "hide" | "only";
 
 export const DEFAULT_UNOBTAINABLE_LIST_URL = "https://psnp-plus.huskycode.dev/list.json";
 
@@ -171,6 +172,8 @@ export const jobState = pgTable("job_state", {
 export const settings = pgTable("settings", {
   id: integer("id").primaryKey().default(1),
   hideZero: boolean("hide_zero").notNull().default(false),
+  advisorHideUnobtainable: boolean("advisor_hide_unobtainable").notNull().default(false),
+  advisorDlc: text("advisor_dlc").$type<AdvisorDlc>().notNull().default("all"),
   bannerPath: text("banner_path"),
   bannerPosY: integer("banner_pos_y").notNull().default(50),
   npssoEnc: text("npsso_enc"),

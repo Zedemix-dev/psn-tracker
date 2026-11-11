@@ -76,7 +76,8 @@ export function withSort(query: LogQuery, sort: LogSort): LogQuery {
   return { ...query, sort, order: naturalOrder(sort) };
 }
 
-export function isFiltered(query: LogQuery): boolean {
+/** Generic so that a full LogQuery (or one with extra fields) is accepted as well as the three filters alone. */
+export function isFiltered<Q extends Pick<LogQuery, "platform" | "rarity" | "type">>(query: Q): boolean {
   return query.platform !== "all" || query.rarity !== "all" || query.type !== "all";
 }
 

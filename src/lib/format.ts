@@ -109,3 +109,8 @@ export function formatDateAndTime(d: Date): { date: string; time: string } {
   const p = parts(d);
   return { date: `${p.day} ${p.month} ${p.year}`, time: `${p.hour}:${p.minute}:${p.second}` };
 }
+
+/** A trophy's progress toward its target, "3,626/5,000". */
+export function formatCounter(progress: number, target: number): string {
+  return `${formatInt(progress)}/${formatInt(target)}`;
+}

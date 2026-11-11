@@ -5,13 +5,28 @@ import { z } from "zod";
 import { CabinetValidationError, saveCabinet } from "@/src/cabinet/repo";
 import { requireSession } from "@/src/auth/require-session";
 import { getDb } from "@/src/db/client";
-import { setHideZero } from "@/src/settings/repo";
+import type { AdvisorDlc } from "@/src/db/schema";
+import { setAdvisorDlc, setAdvisorHideUnobtainable, setHideZero } from "@/src/settings/repo";
 
 export async function toggleHideZero(on: boolean): Promise<void> {
   await requireSession();
   if (typeof on !== "boolean") throw new Error("Invalid value");
   await setHideZero(await getDb(), on);
   revalidatePath("/");
+}
+
+export async function toggleAdvisorHideUnobtainable(on: boolean): Promise<void> {
+  await requireSession();
+  if (typeof on !== "boolean") throw new Error("Invalid value");
+  await setAdvisorHideUnobtainable(await getDb(), on);
+  revalidatePath("/trophy-advisor");
+}
+
+export async function setAdvisorDlcMode(mode: AdvisorDlc): Promise<void> {
+  await requireSession();
+  if (mode !== "all" && mode !== "hide" && mode !== "only") throw new Error("Invalid value");
+  await setAdvisorDlc(await getDb(), mode);
+  revalidatePath("/trophy-advisor");
 }
 
 const cabinetEntries = z
