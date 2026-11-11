@@ -3,9 +3,9 @@ import type { Db } from "@/src/db/client";
 import { jobState, syncRuns } from "@/src/db/schema";
 import type { AppConfig } from "@/src/lib/config";
 import type { PsnGateway } from "@/src/psn/gateway";
-import { requestSync, takeSyncRequest } from "@/src/settings/repo";
+import { clearSyncRequest, failSyncRequest, peekSyncRequest } from "@/src/settings/repo";
 import { runDailyRefresh } from "@/src/sync/daily";
-import { runSync } from "@/src/sync/run";
+import { runSync, type SyncRunResult } from "@/src/sync/run";
 import { applyUnobtainable } from "@/src/unobtainable/apply";
 import { refreshUnobtainableListIfDue } from "@/src/unobtainable/refresh";
 
@@ -65,9 +65,10 @@ export async function tick(deps: TickDeps, now: Date): Promise<void> {
     deps.log?.(`[worker] unobtainable list refresh failed: ${e instanceof Error ? e.message : String(e)}`);
   }
 
-  const manualRequested = await takeSyncRequest(db);
+  // The request stays in place until its run ends, so the button never sees an idle gap.
+  const seen = await peekSyncRequest(db);
   const kind = decideNextJob(
-    { lastScheduledAt: lastOf("scheduled"), lastDailyAt: lastOf("daily"), manualRequested },
+    { lastScheduledAt: lastOf("scheduled"), lastDailyAt: lastOf("daily"), manualRequested: seen !== null },
     now,
   );
   if (!kind) return;
@@ -75,8 +76,17 @@ export async function tick(deps: TickDeps, now: Date): Promise<void> {
   await markRun(db, kind === "daily" ? "daily" : "scheduled", now);
   deps.log?.(`[worker] ${kind} started`);
   const t0 = Date.now();
-  const result = kind === "daily" ? await deps.runDailyRefresh(db, gw, cfg, now) : await deps.runSync(db, gw, cfg, kind, now);
-  if (kind === "manual" && result.status === "skipped") await requestSync(db, now);
+  let result: SyncRunResult;
+  try {
+    result = kind === "daily" ? await deps.runDailyRefresh(db, gw, cfg, now) : await deps.runSync(db, gw, cfg, kind, now);
+  } catch (e) {
+    result = { status: "error", error: e instanceof Error ? e.message : String(e) };
+  }
+  if (kind === "manual" && seen) {
+    if (result.status === "success") await clearSyncRequest(db, seen);
+    else if (result.status === "error") await failSyncRequest(db, seen);
+    // skipped: another run is going, keep the request and its failure count.
+  }
   deps.log?.(
     `[worker] ${kind} ${result.status} in ${Date.now() - t0} ms${result.error ? `: ${result.error}` : ""}`,
   );

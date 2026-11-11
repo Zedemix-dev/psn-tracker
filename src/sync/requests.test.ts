@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import type { Db } from "@/src/db/client";
 import { syncRuns } from "@/src/db/schema";
-import { requestSync } from "@/src/settings/repo";
+import { eq } from "drizzle-orm";
+import { clearSyncRequest, peekSyncRequest, requestSync } from "@/src/settings/repo";
 import { getSyncStatus } from "@/src/sync/requests";
 import { createTestDb } from "@/tests/helpers/db";
 
@@ -27,6 +28,20 @@ describe("getSyncStatus", () => {
   it("is queued when a request waits and no sync is running", async () => {
     await requestSync(db, T2);
     expect((await getSyncStatus(db)).status).toBe("queued");
+  });
+
+  it("stays queued from the request until a run takes over, then running until it ends", async () => {
+    await requestSync(db, T2);
+    expect((await getSyncStatus(db)).status).toBe("queued");
+    // The worker picks the request up: it stays pending until the run ends, so there is no idle gap.
+    expect((await peekSyncRequest(db))).toEqual(T2);
+    expect((await getSyncStatus(db)).status).toBe("queued");
+    const [run] = await db.insert(syncRuns).values({ kind: "manual", status: "running" }).returning({ id: syncRuns.id });
+    expect((await getSyncStatus(db)).status).toBe("running");
+    await db.update(syncRuns).set({ status: "success", finishedAt: T2 }).where(eq(syncRuns.id, run.id));
+    expect((await getSyncStatus(db)).status).toBe("queued"); // request not cleared yet
+    await clearSyncRequest(db, T2);
+    expect((await getSyncStatus(db)).status).toBe("idle");
   });
 
   it("is running, with progress, even when a request is also waiting", async () => {

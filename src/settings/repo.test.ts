@@ -15,7 +15,9 @@ import {
   setBanner,
   setHideZero,
   setPsnAuthStatus,
-  takeSyncRequest,
+  peekSyncRequest,
+  clearSyncRequest,
+  failSyncRequest,
 } from "@/src/settings/repo";
 
 const key = randomBytes(32);
@@ -110,11 +112,46 @@ describe("settings repo", () => {
     expect((await loadPsnTokens(db, key))?.accessToken).toBe("new-access");
   });
 
-  it("takes a sync request once", async () => {
-    expect(await takeSyncRequest(db)).toBe(false);
-    await requestSync(db, new Date());
-    expect((await getSettings(db)).syncRequestedAt).not.toBeNull();
-    expect(await takeSyncRequest(db)).toBe(true);
-    expect(await takeSyncRequest(db)).toBe(false);
+  describe("sync request", () => {
+    const T = new Date("2026-11-07T10:00:00Z");
+    const failures = async () =>
+      (await db.select({ n: settings.syncRequestFailures }).from(settings))[0].n;
+
+    it("peeks without consuming", async () => {
+      expect(await peekSyncRequest(db)).toBeNull();
+      await requestSync(db, T);
+      expect(await peekSyncRequest(db)).toEqual(T);
+      expect(await peekSyncRequest(db)).toEqual(T);
+    });
+
+    it("clears only a request that still holds the seen value, and resets the failures", async () => {
+      await requestSync(db, T);
+      await failSyncRequest(db, T);
+      await clearSyncRequest(db, new Date("2026-11-07T11:00:00Z"));
+      expect(await peekSyncRequest(db)).toEqual(T);
+      expect(await failures()).toBe(1);
+      await clearSyncRequest(db, T);
+      expect(await peekSyncRequest(db)).toBeNull();
+      expect(await failures()).toBe(0);
+    });
+
+    it("counts failures, and gives up at the third", async () => {
+      await requestSync(db, T);
+      expect(await failSyncRequest(db, T)).toBe(1);
+      expect(await failSyncRequest(db, T)).toBe(2);
+      expect(await peekSyncRequest(db)).toEqual(T);
+      expect(await failSyncRequest(db, T)).toBe(3);
+      expect(await peekSyncRequest(db)).toBeNull();
+      expect(await failures()).toBe(0);
+    });
+
+    it("ignores a failure for a request that was replaced meanwhile", async () => {
+      await requestSync(db, T);
+      const newer = new Date("2026-11-07T11:00:00Z");
+      await requestSync(db, newer);
+      expect(await failSyncRequest(db, T)).toBe(0);
+      expect(await peekSyncRequest(db)).toEqual(newer);
+      expect(await failures()).toBe(0);
+    });
   });
 });

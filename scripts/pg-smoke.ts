@@ -4,7 +4,7 @@ import { eq } from "drizzle-orm";
 import { createDb, type Db } from "@/src/db/client";
 import { runMigrations } from "@/src/db/migrate";
 import { titles, trophies, trophyGroups } from "@/src/db/schema";
-import { requestSync, takeSyncRequest } from "@/src/settings/repo";
+import { clearSyncRequest, peekSyncRequest, requestSync } from "@/src/settings/repo";
 import { countLoggedTrophies, queryTrophyLog } from "@/src/trophy-log/load";
 import { getIncompleteGames, queryAdvisor } from "@/src/trophy-advisor/load";
 import { DEFAULT_ADVISOR_QUERY } from "@/src/trophy-advisor/query";
@@ -140,9 +140,11 @@ async function main(): Promise<void> {
   const db = await createDb(url);
   await runMigrations(db);
   console.log("ok - migrations");
-  await requestSync(db, new Date());
-  expect("first takeSyncRequest", await takeSyncRequest(db), true);
-  expect("second takeSyncRequest", await takeSyncRequest(db), false);
+  const asked = new Date();
+  await requestSync(db, asked);
+  expect("peekSyncRequest keeps the request", (await peekSyncRequest(db)) !== null, true);
+  await clearSyncRequest(db, asked);
+  expect("clearSyncRequest", (await peekSyncRequest(db)) === null, true);
   await smokeTrophyLog(db);
   await smokeAdvisor(db);
 }
