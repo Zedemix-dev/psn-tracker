@@ -13,6 +13,7 @@ const detail = (o: Partial<GameDetail> = {}): GameDetail => ({
   platforms: ["PS5"],
   coverSrc: "/c.png",
   coverIsIcon: false,
+  coverTileBg: null,
   bannerPath: null,
   bannerIsOverride: false,
   logoSrc: null,

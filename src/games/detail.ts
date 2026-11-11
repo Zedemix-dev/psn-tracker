@@ -15,7 +15,7 @@ import { loadSiblingIndex, withSiblings } from "@/src/games/siblings";
 import { guideSearchName, powerPyxRoadmapUrl, psnProfilesGuidesUrl } from "@/src/lib/guide-links";
 import { formatCounter, formatDate, formatInt, formatPercent, formatPlayTime, formatTime } from "@/src/lib/format";
 import { rarityTier, type RarityTier } from "@/src/lib/rarity";
-import { type ImageMap, mediaSrc } from "@/src/sync/images";
+import { type ImageMap, mediaSrc, tileBgOf } from "@/src/sync/images";
 import { unobtainableLabel, unobtainableSituation } from "@/src/unobtainable/labels";
 import { parseNote, type NoteSegment } from "@/src/unobtainable/note";
 
@@ -48,6 +48,8 @@ export type GroupData = {
   iconSrc: string;
   /** The image is the page cover (PS4 list): fills its square frame instead of being contained. */
   iconIsCover: boolean;
+  /** Stored colour of the tile behind the icon; null when the icon fills its frame. */
+  iconTileBg: string | null;
   earned: number;
   total: number;
   counts: Record<TrophyType, [number, number]>;
@@ -62,6 +64,7 @@ export type GameDetail = {
   platforms: ("PS4" | "PS5")[];
   coverSrc: string;
   coverIsIcon: boolean;
+  coverTileBg: string | null;
   /** Path relative to MEDIA_DIR; null when not downloaded yet. */
   bannerPath: string | null;
   /** The banner is a hand-picked one (already 1920x520, shown without logo). */
@@ -133,7 +136,8 @@ export async function getGameDetail(
   const groupIds = [...new Set([...groupInfo.keys(), ...rows.map((r) => r.groupId)])].sort((a, b) =>
     a === "default" ? -1 : b === "default" ? 1 : a < b ? -1 : a > b ? 1 : 0,
   );
-  const coverSrc = mediaSrc(info.coverUrl ?? info.coverFallbackUrl, imageMap, "full");
+  const coverUrl = info.coverUrl ?? info.coverFallbackUrl;
+  const coverSrc = mediaSrc(coverUrl, imageMap, "full");
   // PS4 lists show the Games-list image on every group (the cover, or the list icon when there is no cover);
   // PS5 lists keep each group icon.
   const groupsUseListImage = !title.platforms.includes("PS5");
@@ -151,6 +155,7 @@ export async function getGameDetail(
         ? "complete"
         : "incomplete";
     const info = groupInfo.get(gid);
+    const iconUrl = groupsUseListImage ? coverUrl : gid === "default" ? title.iconUrl : (info?.iconUrl ?? null);
     return {
       id: gid,
       kicker: i === 0 ? "Base game" : `DLC ${i}`,
@@ -159,6 +164,7 @@ export async function getGameDetail(
         ? coverSrc
         : mediaSrc(gid === "default" ? title.iconUrl : (info?.iconUrl ?? null), imageMap),
       iconIsCover: groupsFillFrame,
+      iconTileBg: groupsFillFrame ? null : tileBgOf(iconUrl, imageMap),
       earned: members.filter((m) => m.earned).length,
       total: members.length,
       counts,
@@ -194,6 +200,7 @@ export async function getGameDetail(
     platforms: (["PS4", "PS5"] as const).filter((p) => title.platforms.includes(p)),
     coverSrc,
     coverIsIcon: info.coverIsIcon,
+    coverTileBg: info.coverIsIcon ? tileBgOf(coverUrl, imageMap) : null,
     bannerPath: info.bannerUrl ? (imageMap.get(info.bannerUrl)?.path ?? null) : null,
     bannerIsOverride: info.bannerIsOverride,
     logoSrc: info.logoUrl && imageMap.has(info.logoUrl) ? mediaSrc(info.logoUrl, imageMap, "full") : null,

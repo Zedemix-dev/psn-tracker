@@ -21,7 +21,7 @@ export function IncompleteGames({ games }: { games: IncompleteGame[] }) {
           {games.map((g) => (
             <Link key={g.id} href={`/games/${encodeURIComponent(g.id)}`} prefetch={false} className="adv-game">
               {g.coverIsIcon ? (
-                <TileImage tile className="icon" src={g.coverSrc} alt="" loading="lazy" />
+                <TileImage tile bg={g.coverTileBg} className="icon" src={g.coverSrc} alt="" loading="lazy" />
               ) : (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={g.coverSrc} alt="" loading="lazy" />

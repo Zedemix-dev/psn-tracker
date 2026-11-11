@@ -3,7 +3,7 @@ import { formatLastPlayedLine } from "@/src/lib/format";
 import { unobtainableLabel } from "@/src/unobtainable/labels";
 import { notePlainText } from "@/src/unobtainable/note";
 import { type SiblingIndex, withSiblings } from "@/src/games/siblings";
-import { type ImageMap, mediaSrc } from "@/src/sync/images";
+import { type ImageMap, mediaSrc, tileBgOf } from "@/src/sync/images";
 
 export type GameStatus = "plat-earned" | "plat-missing" | "complete" | "incomplete";
 export type GameRank = "S" | "A" | "B" | "C" | "D" | "E" | "F";
@@ -15,6 +15,8 @@ export type GameRowData = {
   coverSrc: string;
   /** True when the title has no cover art and coverSrc is the (square) trophy-list icon. */
   coverIsIcon: boolean;
+  /** Stored edge colour of the tile behind the icon; null when the cover is not on a tile. */
+  coverTileBg: string | null;
   earnedTotal: number;
   definedTotal: number;
   counts: Record<TrophyType, [earned: number, defined: number]>;
@@ -52,12 +54,14 @@ export function toGameRow(title: GameTitle, imageMap: ImageMap, siblings: Siblin
     title.earnedPlatinum + title.earnedGold + title.earnedSilver + title.earnedBronze;
   const definedTotal =
     title.definedPlatinum + title.definedGold + title.definedSilver + title.definedBronze;
+  const coverUrl = info.coverUrl ?? info.coverFallbackUrl;
   return {
     id: title.npCommunicationId,
     name: title.name,
     platforms: (["PS4", "PS5"] as const).filter((p) => title.platforms.includes(p)),
-    coverSrc: mediaSrc(info.coverUrl ?? info.coverFallbackUrl, imageMap),
+    coverSrc: mediaSrc(coverUrl, imageMap),
     coverIsIcon: info.coverIsIcon,
+    coverTileBg: info.coverIsIcon ? tileBgOf(coverUrl, imageMap) : null,
     earnedTotal,
     definedTotal,
     counts: {

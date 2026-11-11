@@ -24,6 +24,7 @@ export type LevelRow = {
   gameName: string;
   gameSrc: string; // the image of the game's row in Games
   gameIsIcon: boolean;
+  gameTileBg: string | null;
   date: string; // "9 Nov 2026"
   time: string; // "15:46:30"
   ratePct: string | null; // "18.30%"

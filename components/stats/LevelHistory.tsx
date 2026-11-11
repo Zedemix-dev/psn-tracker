@@ -89,7 +89,7 @@ function LevelItem({ row }: { row: LevelRow }) {
     <div className="st-lrow">
       <Link href={href} prefetch={false} className="gl">
         {row.gameIsIcon ? (
-          <TileImage tile className="gc icon" src={row.gameSrc} alt={row.gameName} loading="lazy" />
+          <TileImage tile bg={row.gameTileBg} className="gc icon" src={row.gameSrc} alt={row.gameName} loading="lazy" />
         ) : (
           // eslint-disable-next-line @next/next/no-img-element
           <img className="gc" src={row.gameSrc} alt={row.gameName} loading="lazy" />

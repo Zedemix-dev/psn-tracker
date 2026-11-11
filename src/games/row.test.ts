@@ -78,6 +78,7 @@ describe("toGameRow", () => {
       platforms: ["PS4", "PS5"],
       coverSrc: "/media/psn/c.png",
       coverIsIcon: false,
+      coverTileBg: null,
       earnedTotal: 4,
       definedTotal: 10,
       counts: { platinum: [1, 1], gold: [1, 2], silver: [0, 3], bronze: [2, 4] },
@@ -115,6 +116,16 @@ describe("toGameRow", () => {
   it("has no unobtainable data when the count is 0", () => {
     const row = toGameRow(title({ unobtainableCount: 0, unobtainableNote: "stale" }), new Map(), new Map());
     expect(row.unobtainable).toBeNull();
+  });
+
+  it("gives the stored tile colour of the icon of a game without cover, and none for a cover", () => {
+    const map = new Map([
+      ["https://img/icon.png", { path: "psn/i.png", thumb: null, tileBg: "#102030" }],
+      ["https://img/cover.png", { path: "psn/c.png", thumb: null, tileBg: "#ffffff" }],
+    ]);
+    expect(toGameRow(title({ coverUrl: null }), map, new Map()).coverTileBg).toBe("#102030");
+    expect(toGameRow(title(), map, new Map()).coverTileBg).toBeNull();
+    expect(toGameRow(title({ coverUrl: null }), new Map(), new Map()).coverTileBg).toBeNull();
   });
 
   it("falls back to the icon without cover and to the last trophy date without play data", () => {

@@ -25,6 +25,7 @@ export type AdvisorRow = {
   gameName: string;
   gameSrc: string; // the image of the game's row in Games
   gameIsIcon: boolean; // true: the trophy-list icon, shown whole on its tile
+  gameTileBg: string | null; // the stored colour of that tile
   dlc: string | null; // group name, only when groupId is not "default"
   platforms: ("PS4" | "PS5")[];
   counter: string | null; // "3,626/5,000", only with a target and a progress
@@ -42,6 +43,7 @@ export type IncompleteGame = {
   platforms: ("PS4" | "PS5")[];
   coverSrc: string;
   coverIsIcon: boolean;
+  coverTileBg: string | null;
   progress: number; // the PSN progress of the game, whatever the settings
   rank: GameRank;
   left: number; // trophies left under the scope
@@ -176,6 +178,7 @@ export async function getIncompleteGames(db: Db, scope: AdvisorScope): Promise<I
       platforms: row.platforms,
       coverSrc: row.coverSrc,
       coverIsIcon: row.coverIsIcon,
+      coverTileBg: row.coverTileBg,
       progress: row.progress,
       rank: row.rank,
       left: c.left,

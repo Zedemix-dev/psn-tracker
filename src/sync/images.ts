@@ -22,6 +22,11 @@ export function mediaSrc(
   return `/media/${size === "thumb" && entry.thumb ? entry.thumb : entry.path}`;
 }
 
+/** Stored edge colour of a cached image, for its square tile; null when unknown or not cached. */
+export function tileBgOf(url: string | null, cached: ImageMap): string | null {
+  return (url ? cached.get(url)?.tileBg : null) ?? null;
+}
+
 /** url -> files relative to mediaDir, for downloaded images only. */
 export async function loadImageMap(db: Db): Promise<ImageMap> {
   const rows = await db

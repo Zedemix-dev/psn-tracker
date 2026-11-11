@@ -1,7 +1,7 @@
 import { type SiblingIndex, withSiblings } from "@/src/games/siblings";
-import { type ImageMap, mediaSrc } from "@/src/sync/images";
+import { type ImageMap, mediaSrc, tileBgOf } from "@/src/sync/images";
 
-export type GameImage = { gameSrc: string; gameIsIcon: boolean };
+export type GameImage = { gameSrc: string; gameIsIcon: boolean; gameTileBg: string | null };
 
 /**
  * The image of a game's row in Games (as toGameRow gives it), worked out once per game.
@@ -15,9 +15,12 @@ export function gameImages(siblings: SiblingIndex, imageMap: ImageMap): (titleId
     if (!image) {
       const title = titleById.get(titleId);
       const info = title && withSiblings(title, siblings);
+      const url = info ? (info.coverUrl ?? info.coverFallbackUrl) : null;
+      const gameIsIcon = info ? info.coverIsIcon : false;
       image = {
-        gameSrc: mediaSrc(info ? (info.coverUrl ?? info.coverFallbackUrl) : null, imageMap),
-        gameIsIcon: info ? info.coverIsIcon : false,
+        gameSrc: mediaSrc(url, imageMap),
+        gameIsIcon,
+        gameTileBg: gameIsIcon ? tileBgOf(url, imageMap) : null,
       };
       cache.set(titleId, image);
     }

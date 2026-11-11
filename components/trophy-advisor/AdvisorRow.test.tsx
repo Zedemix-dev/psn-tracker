@@ -24,6 +24,7 @@ const row = (over: Partial<AdvisorRowData> = {}): AdvisorRowData => ({
   gameName: "The Game",
   gameSrc: "/media/game.png",
   gameIsIcon: false,
+  gameTileBg: null,
   dlc: null,
   platforms: ["PS5"],
   counter: null,

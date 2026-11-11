@@ -166,6 +166,26 @@ describe("getGameDetail group images", () => {
     }
   });
 
+  it("gives the tile colour of the image on the cover and on the contained group icons", async () => {
+    const tinted: ImageMap = new Map([
+      ["https://img.example/icon.png", { path: "psn/icon.png", thumb: null, tileBg: "#102030" }],
+      ["https://img.example/dlc.png", { path: "psn/dlc.png", thumb: null, tileBg: "#304050" }],
+    ]);
+    await addTitle({ platforms: ["PS4"] });
+    await addGroups();
+    const d = await getGameDetail(db, "NPWR1", tinted, NOW);
+    expect(d!.coverTileBg).toBe("#102030");
+    expect(d!.groups.map((g) => g.iconTileBg)).toEqual(["#102030", "#102030"]);
+    await db.delete(trophies);
+    await db.delete(trophyGroups);
+    await db.delete(titles);
+    await addTitle({ platforms: ["PS5"], coverUrl: cover });
+    await addGroups();
+    const ps5 = await getGameDetail(db, "NPWR1", tinted, NOW);
+    expect(ps5!.coverTileBg).toBeNull();
+    expect(ps5!.groups.map((g) => g.iconTileBg)).toEqual(["#102030", "#304050"]);
+  });
+
   it("shows the list icon, contained, on every group of a PS4 list without a cover", async () => {
     await addTitle({ platforms: ["PS4"] });
     await addGroups();

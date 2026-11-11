@@ -16,6 +16,7 @@ const game = (n: number): GameRowData => ({
   platforms: ["PS5"],
   coverSrc: "/c.png",
   coverIsIcon: false,
+  coverTileBg: null,
   earnedTotal: 1,
   definedTotal: 2,
   counts: { platinum: [0, 0], gold: [0, 0], silver: [0, 0], bronze: [1, 2] },

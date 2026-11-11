@@ -27,6 +27,7 @@ const row = (level: number, over: Partial<LevelRow> = {}): LevelRow => ({
   gameName: `Game ${level}`,
   gameSrc: `/media/game-${level}.png`,
   gameIsIcon: false,
+  gameTileBg: null,
   date: "9 Nov 2026",
   time: "15:46:30",
   ratePct: "18.30%",

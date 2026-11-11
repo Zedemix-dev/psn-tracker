@@ -15,6 +15,7 @@ const game = (g: Partial<GameRowData> = {}): GameRowData => ({
   platforms: ["PS4"],
   coverSrc: "/media/cover.png",
   coverIsIcon: false,
+  coverTileBg: null,
   earnedTotal: 47,
   definedTotal: 47,
   counts: { platinum: [1, 1], gold: [2, 2], silver: [14, 14], bronze: [30, 30] },

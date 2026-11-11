@@ -52,6 +52,7 @@ describe("getStatsData", () => {
       gameName: "Game A",
       gameSrc: "/icons/placeholder.svg",
       gameIsIcon: true,
+      gameTileBg: null,
       date: "1 Oct 2026",
       time: "12:01:00",
       ratePct: "18.30%",
