@@ -3,7 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import sharp from "sharp";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { makeThumb } from "@/src/sync/thumbs";
+import { computeTileBg, makeThumb } from "@/src/sync/thumbs";
 
 let dir: string;
 beforeEach(async () => {
@@ -47,5 +47,50 @@ describe("makeThumb", () => {
     await fs.writeFile(src, Buffer.from([1, 2, 3]));
     await expect(makeThumb(src, out)).rejects.toThrow();
     expect(await fs.readdir(dir)).toEqual(["bad.png"]);
+  });
+});
+
+describe("computeTileBg", () => {
+  const write = async (name: string, data: Buffer | string) => {
+    const file = path.join(dir, name);
+    await fs.writeFile(file, data);
+    return file;
+  };
+  const rect = (w: number, h: number, background: string) =>
+    sharp({ create: { width: w, height: h, channels: 4, background } });
+
+  it("returns the colour of the two facing edges of a wide image", async () => {
+    const logo = await sharp({ create: { width: 20, height: 10, channels: 4, background: "#ffcc00" } })
+      .png()
+      .toBuffer();
+    const buf = await rect(40, 20, "#102030")
+      .composite([{ input: logo, left: 10, top: 5 }])
+      .png()
+      .toBuffer();
+    expect(await computeTileBg(await write("wide.png", buf))).toBe("#102030");
+  });
+
+  it("returns a split gradient when top and bottom differ", async () => {
+    const bottom = await rect(40, 5, "#0000ff").png().toBuffer();
+    const buf = await rect(40, 20, "#ff0000")
+      .composite([{ input: bottom, left: 0, top: 15 }])
+      .png()
+      .toBuffer();
+    expect(await computeTileBg(await write("split.png", buf))).toBe(
+      "linear-gradient(#ff0000 50%, #0000ff 50%)",
+    );
+  });
+
+  it("returns null for a square image", async () => {
+    expect(await computeTileBg(await write("sq.png", await rect(20, 20, "#102030").png().toBuffer()))).toBeNull();
+  });
+
+  it("returns null for an SVG without loading it", async () => {
+    const svg = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"40\" height=\"20\"><rect width=\"40\" height=\"20\"/></svg>";
+    expect(await computeTileBg(await write("a.svg", svg))).toBeNull();
+  });
+
+  it("rejects on a corrupt image", async () => {
+    await expect(computeTileBg(await write("bad.png", Buffer.from([1, 2, 3])))).rejects.toThrow();
   });
 });

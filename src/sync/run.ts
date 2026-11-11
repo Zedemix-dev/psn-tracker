@@ -6,7 +6,7 @@ import type { PsnAuth, PsnGateway } from "@/src/psn/gateway";
 import { getValidAuth } from "@/src/psn/tokens";
 import { loadTitleState, titleNeedsReload } from "@/src/sync/diff";
 import { syncCatalog } from "@/src/sync/catalog";
-import { cacheImages } from "@/src/sync/images";
+import { cacheImages } from "@/src/sync/image-cache";
 import { syncPlayedGames } from "@/src/sync/played";
 import { defaultSleep, withPacing, type Sleep } from "@/src/sync/retry";
 import { refreshUserState } from "@/src/sync/user-state";
@@ -209,6 +209,9 @@ export async function runSync(
       }
     }
     await syncCatalog(db, paced, auth, "missing", now);
-    await cacheImages(db, cfg.mediaDir, deps?.fetchImpl);
+    const img = await cacheImages(db, cfg.mediaDir, deps?.fetchImpl);
+    console.log(
+      `[worker] images: ${img.downloaded} downloaded, ${img.failed} failed, ${img.thumbs} thumbnails, ${img.tiles} tile colours`,
+    );
   });
 }

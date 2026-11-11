@@ -50,6 +50,18 @@ describe("edgeBackground", () => {
     expect(edgeBackground(data, 18, 32)).toBe("linear-gradient(to right, #c80a0a 50%, #0a14c8 50%)");
   });
 
+  it("accepts a channel 16 away from the edge mean, refuses 17", () => {
+    // A 2x1 image is one edge of two pixels: red 0 and d give a mean of d/2, so each is d/2 away.
+    const wide = (d: number) => image(2, 1, (x) => (x === 0 ? BLACK : [d, 0, 0, 255]));
+    expect(edgeBackground(wide(32), 2, 1)).toBe("#100000");
+    expect(edgeBackground(wide(34), 2, 1)).toBeNull();
+  });
+
+  it("accepts alpha 250, refuses 249", () => {
+    expect(edgeBackground(landscape([0, 0, 0, 250], [0, 0, 0, 250]), 32, 18)).toBe("#000000");
+    expect(edgeBackground(landscape([0, 0, 0, 249], [0, 0, 0, 249]), 32, 18)).toBeNull();
+  });
+
   it("returns null for a square or empty image (no bands to fill)", () => {
     expect(edgeBackground(image(8, 8, () => BLACK), 8, 8)).toBeNull();
     expect(edgeBackground(new Uint8ClampedArray(0), 0, 0)).toBeNull();

@@ -47,7 +47,7 @@ describe("getGameDetail borrowing", () => {
       bannerUrl: "https://img.example/banner.png",
       publisher: "Studio",
     });
-    const map: ImageMap = new Map([["https://img.example/banner.png", { path: "psn/b.png", thumb: null }]]);
+    const map: ImageMap = new Map([["https://img.example/banner.png", { path: "psn/b.png", thumb: null, tileBg: null }]]);
     const d = await getGameDetail(db, "P4", map, NOW);
     expect(d!.bannerPath).toBe("psn/b.png");
     expect(d!.publisher).toBe("Studio");
@@ -58,7 +58,7 @@ describe("getGameDetail borrowing", () => {
 
 describe("getGameDetail hand-picked banner", () => {
   const URL_ = "https://img.psnprofiles.com/hero/l/14795/05bf48f1-d893-41d8-b1f7-1ea0bfcc3bc0.jpg";
-  const map: ImageMap = new Map([[URL_, { path: "psn/dauntless.jpg", thumb: null }]]);
+  const map: ImageMap = new Map([[URL_, { path: "psn/dauntless.jpg", thumb: null, tileBg: null }]]);
 
   it("uses the downloaded override when no version has a banner, without logo", async () => {
     await addTitle({ name: "Dauntless" });
@@ -76,7 +76,7 @@ describe("getGameDetail hand-picked banner", () => {
   it("keeps its own banner over the override", async () => {
     const own = "https://img.example/own.png";
     await addTitle({ name: "Dauntless", bannerUrl: own });
-    const both: ImageMap = new Map([...map, [own, { path: "psn/own.png", thumb: null }]]);
+    const both: ImageMap = new Map([...map, [own, { path: "psn/own.png", thumb: null, tileBg: null }]]);
     const d = await getGameDetail(db, "NPWR1", both, NOW);
     expect(d!.bannerPath).toBe("psn/own.png");
     expect(d!.bannerIsOverride).toBe(false);
@@ -142,9 +142,9 @@ describe("getGameDetail", () => {
 describe("getGameDetail group images", () => {
   const cover = "https://img.example/cover.png";
   const map: ImageMap = new Map([
-    [cover, { path: "psn/cover.png", thumb: null }],
-    ["https://img.example/icon.png", { path: "psn/icon.png", thumb: null }],
-    ["https://img.example/dlc.png", { path: "psn/dlc.png", thumb: null }],
+    [cover, { path: "psn/cover.png", thumb: null, tileBg: null }],
+    ["https://img.example/icon.png", { path: "psn/icon.png", thumb: null, tileBg: null }],
+    ["https://img.example/dlc.png", { path: "psn/dlc.png", thumb: null, tileBg: null }],
   ]);
   async function addGroups() {
     await db.insert(trophyGroups).values({ titleId: "NPWR1", groupId: "default", name: "Base" });
