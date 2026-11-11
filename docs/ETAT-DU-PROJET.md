@@ -1,6 +1,6 @@
 # PSN Tracker : état du projet et feuille de route
 
-*Mis à jour le 11 novembre 2026 : la page Trophy Advisor est construite et vérifiée sur la branche `feat/trophy-advisor`, à fusionner par une Pull Request. Prochaine étape : la page Stats. Le déploiement sur le NAS vient après.*
+*Mis à jour le 11 novembre 2026 : la page Trophy Advisor est fusionnée dans `main` (PR #13). Prochaine étape : la page Stats. Le déploiement sur le NAS vient après.*
 
 Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un autre PC, commence par le lire. Le fichier `CLAUDE.md` à la racine le demande automatiquement.
 
@@ -109,7 +109,7 @@ Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un aut
   - affichage téléphone.
 - 87 fichiers de tests, 756 tests. Le job `pg-smoke` de la CI exécute aussi la requête du Trophy Log sur un vrai PostgreSQL 16. CI verte sur la PR #11.
 
-### Page Trophy Advisor (branche `feat/trophy-advisor`, à fusionner, spec section 17)
+### Page Trophy Advisor (PR #13, fusionnée le 11 novembre 2026, spec section 17)
 - **Page `/trophy-advisor`** : tous les trophées non obtenus, une ligne par trophée, comme le Trophy Advisor de psnprofiles.
   - Tri : Rarity (par défaut, du plus courant au plus rare) ou Alphabetical, avec un bouton de sens.
   - Filtres : plateforme, rareté, type ; Reset remet tout par défaut.
@@ -127,16 +127,15 @@ Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un aut
 - 96 fichiers de tests, 828 tests. La migration 0007 s'applique au démarrage du worker. Le job `pg-smoke` exécute aussi les requêtes du Trophy Advisor.
 
 ## 3. Ce qui reste à faire, dans l'ordre
-1. **Fusionner la Pull Request** `feat/trophy-advisor` → `main`, après avoir vérifié que la CI est verte.
-2. **Page restante**, avec **son propre brainstorming** (spec, section 3) :
+1. **Page restante**, avec **son propre brainstorming** (spec, section 3) :
    - **Stats** : elle reçoit le calendrier « Last 60 days », déjà décrit dans la spec, section 3.
-3. **Déployer sur le NAS** en suivant `deploy/README.md`, **une fois ces pages terminées** (décidé le 9 novembre 2026).
+2. **Déployer sur le NAS** en suivant `deploy/README.md`, **une fois ces pages terminées** (décidé le 9 novembre 2026).
    - Avant tout, vérifier sur github.com (onglet Actions, le dépôt est privé) que la CI de `main` est verte après la dernière fusion, et que l'image a été publiée.
    - Juste après la première publication, donner une seule fois le rôle **Admin** au dépôt dans « Manage Actions access » du package GHCR (étape 1.5).
    - Faire les vérifications du premier déploiement listées dans `docs/superpowers/plans/2026-11-08-phase1-suivis.md`.
    - À la première synchro de cette version, toutes les listes PS5 sont rechargées une fois (migration 0005), ce qui la rallonge de quelques minutes.
    - Au premier démarrage du worker, la migration 0006 s'applique et la liste des trophées non obtenables se télécharge. Vérifier dans Settings que le bloc « Unobtainable trophies » indique « Up to date » et « 5 of yours ».
-4. **Points de suivi** : à piocher dans `docs/superpowers/plans/2026-11-08-phase1-suivis.md` quand une page touche le même code.
+3. **Points de suivi** : à piocher dans `docs/superpowers/plans/2026-11-08-phase1-suivis.md` quand une page touche le même code.
 
 ## 4. Comment reprendre dans une nouvelle conversation
 Pour démarrer une page, il suffit de le dire, par exemple « On attaque Trophy Log ». Avec le plugin superpowers installé (voir 6), Claude lance de lui-même le bon processus. Pour être sûr, on peut aussi le demander explicitement : « utilise le skill brainstorming ».
