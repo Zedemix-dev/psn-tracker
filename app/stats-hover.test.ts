@@ -38,4 +38,8 @@ describe("Stats hover styles", () => {
     const rule = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].find((m) => m[1].split(",").map((s) => s.trim()).includes(sel) && m[2].includes("user-select:none"));
     expect(rule?.[2]).toContain("-webkit-touch-callout:none");
   });
+
+  it("chart texts let the pointer through to the marks under them", () => {
+    expect(css).toMatch(/\.st-chart text\{[^}]*pointer-events:none/);
+  });
 });

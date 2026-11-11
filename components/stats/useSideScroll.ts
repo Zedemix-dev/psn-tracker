@@ -11,57 +11,61 @@ type State = { can: boolean; fl: boolean; fr: boolean; drag: boolean };
  * and lets a mouse drag the content. A finger is left to the browser.
  */
 export function useSideScroll<T extends HTMLElement>() {
-  const ref = useRef<T>(null);
+  const [node, setNode] = useState<T | null>(null);
+  const ref = useCallback((n: T | null) => setNode(n), []);
   const tip = useChartTip();
   const [state, setState] = useState<State>({ can: false, fl: false, fr: false, drag: false });
   const pinned = useRef(true);
+  const size = useRef({ sw: -1, cw: -1 });
   const start = useRef<{ x: number; left: number; id: number; moving: boolean } | null>(null);
 
   const measure = useCallback(() => {
-    const el = ref.current;
+    const el = node;
     if (!el) return;
-    if (pinned.current) el.scrollLeft = el.scrollWidth;
-    const can = el.scrollWidth > el.clientWidth + 1;
+    // Back to the newest end only when the size changed: never in answer to a scroll or a re-render.
+    const sw = el.scrollWidth;
+    const cw = el.clientWidth;
+    if (pinned.current && (size.current.sw !== sw || size.current.cw !== cw)) el.scrollLeft = sw;
+    size.current = { sw, cw };
+    const can = sw > cw + 1;
     const fl = can && el.scrollLeft > 1;
-    const fr = can && el.scrollLeft < el.scrollWidth - el.clientWidth - 1;
+    const fr = can && el.scrollLeft < sw - cw - 1;
     setState((s) => (s.can === can && s.fl === fl && s.fr === fr ? s : { ...s, can, fl, fr }));
-  }, []);
+  }, [node]);
 
   // After every render, and whenever the container is resized.
   useLayoutEffect(measure);
   useEffect(() => {
-    const el = ref.current;
-    if (!el || typeof ResizeObserver === "undefined") return;
+    if (!node || typeof ResizeObserver === "undefined") return;
     const ro = new ResizeObserver(measure);
-    ro.observe(el);
+    ro.observe(node);
     return () => ro.disconnect();
-  }, [measure]);
+  }, [node, measure]);
 
   const onScroll = useCallback(() => {
-    const el = ref.current;
-    if (!el) return;
-    pinned.current = el.scrollLeft >= el.scrollWidth - el.clientWidth - 1;
+    if (!node) return;
+    pinned.current = node.scrollLeft >= node.scrollWidth - node.clientWidth - 1;
     measure();
-  }, [measure]);
+  }, [node, measure]);
 
   const onPointerDown = useCallback((e: ReactPointerEvent<T>) => {
-    const el = ref.current;
+    const el = node;
     if (!el || e.pointerType !== "mouse" || e.button !== 0 || el.scrollWidth <= el.clientWidth + 1) return;
     start.current = { x: e.clientX, left: el.scrollLeft, id: e.pointerId, moving: false };
-  }, []);
+  }, [node]);
 
   const end = useCallback(() => {
-    const el = ref.current;
+    const el = node;
     const s = start.current;
     start.current = null;
     if (!s) return;
     if (el?.hasPointerCapture?.(s.id)) el.releasePointerCapture?.(s.id);
     setState((p) => (p.drag ? { ...p, drag: false } : p));
-  }, []);
+  }, [node]);
 
   const onPointerMove = useCallback(
     (e: ReactPointerEvent<T>) => {
-      const el = ref.current;
+      const el = node;
       const s = start.current;
       if (!el || !s) return;
       // The button was released outside the element, before any capture: the drag is over.
@@ -76,7 +80,7 @@ export function useSideScroll<T extends HTMLElement>() {
       }
       el.scrollLeft = s.left - dx;
     },
-    [tip, end],
+    [node, tip, end],
   );
 
   const className = ["st-side", state.can && "can", state.drag && "drag", state.fl && "fl", state.fr && "fr"].filter(Boolean).join(" ");

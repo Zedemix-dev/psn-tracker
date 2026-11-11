@@ -3,15 +3,18 @@ import "@testing-library/jest-dom/vitest";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ChartTipProvider, useChartTip } from "@/components/stats/ChartTip";
+import { useState } from "react";
 import { useSideScroll } from "@/components/stats/useSideScroll";
 
 let scrollWidth = 1500;
 let clientWidth = 600;
 let observe: () => void = () => {};
+let observed: unknown[] = [];
 
 beforeEach(() => {
   scrollWidth = 1500;
   clientWidth = 600;
+  observed = [];
   vi.spyOn(HTMLElement.prototype, "scrollWidth", "get").mockImplementation(() => scrollWidth);
   vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockImplementation(() => clientWidth);
   vi.stubGlobal(
@@ -20,7 +23,9 @@ beforeEach(() => {
       constructor(cb: () => void) {
         observe = cb;
       }
-      observe() {}
+      observe(n: unknown) {
+        observed.push(n);
+      }
       unobserve() {}
       disconnect() {}
     },
@@ -159,5 +164,45 @@ describe("useSideScroll", () => {
     scrollWidth = 2500;
     act(() => observe());
     expect(el.scrollLeft).toBe(100);
+  });
+
+  it("does not write scrollLeft on a scroll event nor on a re-render while at the end", () => {
+    const el = draw();
+    const owner = Object.prototype.hasOwnProperty.call(HTMLElement.prototype, "scrollLeft") ? HTMLElement.prototype : Element.prototype;
+    const desc = Object.getOwnPropertyDescriptor(owner, "scrollLeft")!;
+    const set = vi.fn(function (this: Element, v: number) {
+      desc.set!.call(this, v);
+    });
+    Object.defineProperty(owner, "scrollLeft", { ...desc, set, configurable: true });
+    try {
+      fireEvent.scroll(el);
+      expect(set).not.toHaveBeenCalled();
+      // A re-render caused by a state change (the drag class) at the end.
+      fireEvent.pointerDown(el, { ...mouse, clientX: 500 });
+      fireEvent.pointerMove(el, { ...mouse, clientX: 510 });
+      set.mockClear();
+      fireEvent.pointerUp(el, { ...mouse, clientX: 510 });
+      expect(el.classList.contains("drag")).toBe(false);
+      expect(set).not.toHaveBeenCalled();
+    } finally {
+      Object.defineProperty(owner, "scrollLeft", desc);
+    }
+  });
+
+  it("observes a scroller that only renders after a later re-render", () => {
+    function Late() {
+      const side = useSideScroll<HTMLDivElement>();
+      const [on, setOn] = useState(false);
+      return (
+        <>
+          <button onClick={() => setOn(true)}>show</button>
+          {on && <div data-testid="late" ref={side.ref} className={side.className} {...side.handlers} />}
+        </>
+      );
+    }
+    render(<Late />);
+    expect(observed).toHaveLength(0);
+    fireEvent.click(screen.getByText("show"));
+    expect(observed).toContain(screen.getByTestId("late"));
   });
 });

@@ -524,7 +524,7 @@ button.select.log-dir.on{border-color:var(--accent)}
 .st-yc .st-yaxis{flex:none}
 .st-yc .st-side{flex:1;min-width:0}
 .st-yc svg{width:auto}
-.st-chart text{font-family:var(--font);font-size:11px;fill:var(--muted);font-variant-numeric:tabular-nums}
+.st-chart text{pointer-events:none;font-family:var(--font);font-size:11px;fill:var(--muted);font-variant-numeric:tabular-nums}
 .st-chart text.peak{fill:var(--text);font-weight:600}
 /* Donuts */
 .st-donuts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}

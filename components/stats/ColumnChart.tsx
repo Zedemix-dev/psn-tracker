@@ -33,11 +33,11 @@ export function ColumnChart({ labels, values, height, ariaLabel, unit, titleOf, 
   let svg = null;
   if (w !== null && values.length > 0) {
     const sc = niceScale(Math.max(0, ...values), 4);
-    const plot = (w - M.l - M.r) / values.length;
-    const slot = minSlot === undefined ? plot : Math.max(minSlot, plot);
-    const scrolling = minSlot !== undefined;
-    const x0 = scrolling ? 0 : M.l; // the scrolling SVG has no axis margin: the axis is its own SVG
-    const svgW = scrolling ? slot * values.length + M.r : w;
+    const fitSlot = (w - M.l - M.r) / values.length;
+    const slot = minSlot === undefined ? fitSlot : Math.max(minSlot, fitSlot);
+    const split = minSlot !== undefined;
+    const x0 = split ? 0 : M.l; // the split layout's plot SVG has no axis margin: the axis is its own SVG
+    const svgW = split ? slot * values.length + M.r : w;
     const bw = Math.max(Math.min(24, slot - 6), 1);
     const Y = (v: number) => M.t + (height - M.t - M.b) * (1 - v / sc.max);
     const base = Y(0);
@@ -62,7 +62,7 @@ export function ColumnChart({ labels, values, height, ariaLabel, unit, titleOf, 
           return (
             <g key={k}>
               <line x1={x0} x2={svgW - M.r} y1={y} y2={y} stroke={GRID} />
-              {!scrolling && axisLabel(k)}
+              {!split && axisLabel(k)}
             </g>
           );
         })}
@@ -103,7 +103,7 @@ export function ColumnChart({ labels, values, height, ariaLabel, unit, titleOf, 
       </svg>
     );
 
-    svg = scrolling ? (
+    svg = split ? (
       <div className="st-yc">
         <svg className="st-yaxis" width={M.l} height={height} aria-hidden="true">
           {ticksList.map((k) => (

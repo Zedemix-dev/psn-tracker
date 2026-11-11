@@ -11,6 +11,7 @@ type Api = { show(e: { clientX: number; clientY: number; pointerType?: string },
 export type MarkHandlers = {
   onPointerDown: (e: ReactPointerEvent<Element>) => void;
   onPointerMove: (e: ReactPointerEvent<Element>) => void;
+  onPointerUp: (e: ReactPointerEvent<Element>) => void;
   onPointerLeave: () => void;
   onPointerCancel: () => void;
   onContextMenu: (e: ReactMouseEvent) => void;
@@ -34,6 +35,9 @@ export function tipHandlers(tip: Api, content: () => TipContent): MarkHandlers {
       tip.show(e, content());
     },
     onPointerMove: (e) => tip.show(e, content()),
+    onPointerUp: (e) => {
+      if (e.pointerType === "touch") tip.hide();
+    },
     onPointerLeave: tip.hide,
     onPointerCancel: tip.hide,
     onContextMenu: preventTouchMenu,

@@ -40,6 +40,15 @@ export function useCrosshair(
   return {
     ref,
     index,
-    handlers: { onPointerDown: onMove, onPointerMove: onMove, onPointerLeave: onLeave, onPointerCancel: onLeave, onContextMenu: preventTouchMenu },
+    handlers: {
+      onPointerDown: onMove,
+      onPointerMove: onMove,
+      onPointerUp: (e) => {
+        if (e.pointerType === "touch") onLeave();
+      },
+      onPointerLeave: onLeave,
+      onPointerCancel: onLeave,
+      onContextMenu: preventTouchMenu,
+    },
   };
 }

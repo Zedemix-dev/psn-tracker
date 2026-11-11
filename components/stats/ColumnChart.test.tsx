@@ -67,6 +67,28 @@ describe("<ColumnChart>", () => {
     expect(document.body.querySelector(".st-tip")).toBeNull();
   });
 
+  it("hides the tooltip as soon as the finger is lifted, and keeps it for a mouse button release", () => {
+    stubMeasure(600);
+    const { container } = draw();
+    const hit = container.querySelectorAll("rect.hit");
+    fireEvent.pointerDown(hit[1], { pointerType: "touch", clientX: 200, clientY: 300 });
+    fireEvent.pointerUp(hit[1], { pointerType: "touch" });
+    expect(document.body.querySelector(".st-tip")).toBeNull();
+    fireEvent.pointerMove(hit[1], { pointerType: "mouse", clientX: 200, clientY: 300 });
+    fireEvent.pointerUp(hit[1], { pointerType: "mouse" });
+    expect(document.body.querySelector(".st-tip")).not.toBeNull();
+  });
+
+  it("releases the pointer capture a touch pointer got on the column", () => {
+    stubMeasure(600);
+    const { container } = draw();
+    const hit = container.querySelectorAll("rect.hit")[1] as Element;
+    const release = vi.fn();
+    Object.assign(hit, { hasPointerCapture: () => true, releasePointerCapture: release });
+    fireEvent.pointerDown(hit, { pointerType: "touch", pointerId: 7, clientX: 200, clientY: 300 });
+    expect(release).toHaveBeenCalledWith(7);
+  });
+
   it("hides the tooltip when the page takes over the finger", () => {
     stubMeasure(600);
     const { container } = draw();

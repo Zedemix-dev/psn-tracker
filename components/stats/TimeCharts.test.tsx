@@ -102,6 +102,19 @@ describe("<MonthlyActivity>", () => {
     expect(document.body.querySelector(".st-tip")).toBeNull();
   });
 
+  it("hides the crosshair and the tooltip when the finger is lifted, not for a mouse", () => {
+    stubMeasure(832);
+    const { container } = wrap(<MonthlyActivity months={months(3)} />);
+    const hit = container.querySelector("rect.hit") as Element;
+    fireEvent.pointerDown(hit, { pointerType: "touch", clientX: 1000, clientY: 50 });
+    fireEvent.pointerUp(hit, { pointerType: "touch" });
+    expect(container.querySelector("line.xh")).toBeNull();
+    expect(document.body.querySelector(".st-tip")).toBeNull();
+    fireEvent.pointerMove(hit, { pointerType: "mouse", clientX: 1000, clientY: 50 });
+    fireEvent.pointerUp(hit, { pointerType: "mouse" });
+    expect(container.querySelector("line.xh")).toBeInTheDocument();
+  });
+
   it("shows the month and its count, with singular and plural", () => {
     stubMeasure(832);
     const { container } = wrap(<MonthlyActivity months={months(3, (i) => (i === 1 ? 1 : 10))} />);
