@@ -16,8 +16,8 @@ export async function refreshUserState(db: Db, gw: PsnGateway, auth: PsnAuth, re
       await tx
         .update(trophies)
         .set({
-          earnedRate: u.earnedRate == null ? null : u.earnedRate.toFixed(2),
-          // An empty category from PSN never replaces a known one; a real value, 0 included, does.
+          // An empty rate or category from PSN never replaces a known one; a real value, 0 included, does.
+          earnedRate: sql`coalesce(${u.earnedRate == null ? null : u.earnedRate.toFixed(2)}::numeric, ${trophies.earnedRate})`,
           rareCategory: sql`coalesce(${u.rareCategory}::integer, ${trophies.rareCategory})`,
           progress: u.progress,
           progressedAt: u.progressedAt,

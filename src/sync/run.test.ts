@@ -101,6 +101,18 @@ describe("runSync language", () => {
     expect(defsCalls(again)).toBe(0);
   });
 
+  it("reloads again, and only, a title that failed during the language change", async () => {
+    await runSync(db, fixture(), cfg, "manual", now, deps);
+    const fr = { ...cfg, psnLanguage: "fr-FR" };
+    const failing = fixture(ids[1]);
+    const res = await runSync(db, failing, fr, "scheduled", now, deps);
+    expect(res.status).toBe("success");
+    expect(await storedLanguage()).toBe("fr-FR");
+    const gw = fixture();
+    await runSync(db, gw, fr, "scheduled", now, deps);
+    expect(gw.calls.filter((c) => c.startsWith("getTrophyDefs")).map((c) => c.split(":")[1])).toEqual([ids[1]]);
+  });
+
   it("keeps the old language when the run fails early, so the next run retries", async () => {
     await runSync(db, fixture(), cfg, "manual", now, deps);
     const bad = createFakePsn({ failures: [{ method: "getProfile" }] });

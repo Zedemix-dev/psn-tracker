@@ -74,4 +74,26 @@ describe("refreshUserState", () => {
     await refreshUserState(db, createFakePsn({ titleData: { [ID]: { userTrophies: zero.userTrophies } } }), auth, ref);
     expect(await read()).toBe(0);
   });
+
+  it("keeps a known earned rate when PSN sends none, and lets a real 0 replace it", async () => {
+    await syncTitle(
+      db,
+      createFakePsn({ titleData: { [ID]: { groups: [makeGroup("default")], ...makeTrophies(1) } } }),
+      auth,
+      makeRemoteTitle({ defined: { ...ZERO_COUNTS, bronze: 1 } }),
+      now,
+    );
+    const read = async () => (await db.select().from(trophies).where(eq(trophies.trophyId, 0)))[0].earnedRate;
+    expect(await read()).toBe("12.35");
+
+    const empty = makeTrophies(1);
+    empty.userTrophies[0].earnedRate = null;
+    await refreshUserState(db, createFakePsn({ titleData: { [ID]: { userTrophies: empty.userTrophies } } }), auth, ref);
+    expect(await read()).toBe("12.35");
+
+    const zero = makeTrophies(1);
+    zero.userTrophies[0].earnedRate = 0;
+    await refreshUserState(db, createFakePsn({ titleData: { [ID]: { userTrophies: zero.userTrophies } } }), auth, ref);
+    expect(await read()).toBe("0.00");
+  });
 });

@@ -154,6 +154,7 @@ export async function runSync(
     const languageChanged = !!stored0?.language && stored0.language !== cfg.psnLanguage;
 
     const reloaded = new Set<string>();
+    const failedInLanguageRun: string[] = [];
     for (const remote of remoteTitles) {
       let updated = 0;
       try {
@@ -166,10 +167,16 @@ export async function runSync(
         }
       } catch (err) {
         failures.push(describeFailure(remote.npCommunicationId, err));
+        if (languageChanged) failedInLanguageRun.push(remote.npCommunicationId);
       }
       await progress.titleDone(updated);
     }
 
+    // A title that failed while the language changed still has old-language definitions: a null
+    // syncedAt makes titleNeedsReload reload that title (and only it) on the next run.
+    if (failedInLanguageRun.length > 0) {
+      await db.update(titles).set({ syncedAt: null }).where(inArray(titles.npCommunicationId, failedInLanguageRun));
+    }
     // Stored only once the titles have been gone through: a run that throws earlier retries the reload.
     if (stored0 && stored0.language !== cfg.psnLanguage) {
       await db.update(settings).set({ psnLanguage: cfg.psnLanguage }).where(eq(settings.id, 1));

@@ -133,4 +133,18 @@ describe("runDailyRefresh", () => {
     const rows = await db.select().from(trophies).where(eq(trophies.titleId, ID));
     expect(rows.map((r) => r.rareCategory)).toEqual([2, 2]);
   });
+
+  it("keeps a known earned rate when PSN sends none, and replaces it by a real value", async () => {
+    const { defs, userTrophies } = makeTrophies(2);
+    userTrophies.forEach((u) => (u.earnedRate = null));
+    const gw = createFakePsn({
+      titles: [makeRemoteTitle({ defined: { platinum: 0, gold: 0, silver: 0, bronze: 2 } })],
+      titleData: { [ID]: { groups: [makeGroup("default")], defs, userTrophies } },
+    });
+    await runDailyRefresh(db, gw, cfg, later, deps);
+    const rates = async () => (await db.select().from(trophies).where(eq(trophies.titleId, ID))).map((r) => r.earnedRate);
+    expect(await rates()).toEqual(["1.30", "1.30"]);
+    await runDailyRefresh(db, gwWith(0.5), cfg, later, deps);
+    expect(await rates()).toEqual(["0.50", "0.50"]);
+  });
 });
