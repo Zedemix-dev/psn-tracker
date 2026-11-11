@@ -583,7 +583,7 @@ Il doit aussi vérifier en pratique la détection des nouveaux DLC (6.4).
 - **Page Trophy Log :** cadrée, maquette validée, construite et vérifiée avec les vraies données le 10 novembre 2026, décrite en 16. Fusionnée dans `main` le 10 novembre 2026 (PR #11).
 - **[décidé, 10 novembre 2026] Place du bouton « Show all » :** dans l'en-tête d'une liste, il vient toujours **après** le nombre affiché, comme sur le Trophy Log (16.5). Cela vaut pour la page **Trophy Advisor**, à construire ainsi. La liste **Games** (14.6) a été corrigée en même temps que Trophy Advisor.
 - **Page Trophy Advisor :** cadrée, maquette validée, construite et vérifiée avec les vraies données le 11 novembre 2026, décrite en 17. Fusionnée dans `main` le 11 novembre 2026 (PR #13).
-- **Page Stats :** cadrée, maquette validée, construite et vérifiée avec les vraies données le 11 novembre 2026, décrite en 18.
+- **Page Stats :** cadrée, maquette validée, construite et vérifiée avec les vraies données le 11 novembre 2026, décrite en 18. Fusionnée dans `main` le 11 novembre 2026 (PR #15).
 
 ## 14. Jeux aux trophées non obtenables
 **[décidé, cadrage du 9 novembre 2026]** Fonctionnalité construite à part, sur la branche `feat/unobtainable`. Maquette validée le 9 novembre 2026 : `docs/superpowers/specs/2026-11-09-psn-tracker-maquette-nonobt.html`, référence pour l'aspect et le CSS. Les choix que l'utilisateur n'a pas faits lui-même sont marqués **[choix de Claude]**.
