@@ -25,14 +25,17 @@ export function GameList({
 }) {
   const [items, setItems] = useState(initial.items);
   const [total, setTotal] = useState(initial.total);
+  // How many rows the server has handed out so far. It can run ahead of items.length when a page
+  // only held games already shown, so the next request must start from here, not from items.length.
+  const [offset, setOffset] = useState(initial.items.length);
+  const [exhausted, setExhausted] = useState(false);
   const [failed, setFailed] = useState(false);
   const [loadingAll, setLoadingAll] = useState(false);
   const [slot, setSlot] = useState<HTMLElement | null>(null);
   const busy = useRef(false);
   const sentinel = useRef<HTMLDivElement>(null);
   const pendingScroll = useRef<number | null>(null);
-  const loaded = items.length;
-  const more = loaded < total;
+  const more = !exhausted && offset < total;
   const { state, platform, sort, q, unobtainable } = query;
 
   // The "Show all" slot lives in the server-rendered header; look it up once mounted.
@@ -48,6 +51,7 @@ export function GameList({
     pendingScroll.current = snap.scrollY;
     setItems(snap.items);
     setTotal(snap.total);
+    setOffset(snap.items.length);
   }, [snapshotKey]);
 
   // Once the restored rows are in the DOM (the page is tall enough), scroll. Again on the next
@@ -77,7 +81,7 @@ export function GameList({
       if (all) setLoadingAll(true);
       try {
         const params = gameQueryParams({ state, platform, sort, q, unobtainable });
-        params.set("offset", String(loaded));
+        params.set("offset", String(offset));
         if (all) params.set("all", "1");
         const res = await fetch(`/api/games?${params}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -87,6 +91,10 @@ export function GameList({
           return [...prev, ...page.items.filter((r) => !seen.has(r.id))];
         });
         setTotal(page.total);
+        setOffset(offset + page.items.length);
+        // The server's answer decides the end: an empty page means no more data, whatever the
+        // number of new rows was.
+        if (page.items.length === 0) setExhausted(true);
       } catch {
         setFailed(true);
       } finally {
@@ -94,7 +102,7 @@ export function GameList({
         setLoadingAll(false);
       }
     },
-    [state, platform, sort, q, unobtainable, loaded],
+    [state, platform, sort, q, unobtainable, offset],
   );
   const loadMore = useCallback(() => load(false), [load]);
 

@@ -162,6 +162,27 @@ describe("GameList", () => {
     expect(rows()).toBe(52);
   });
 
+  it("keeps loading after a page made only of games already shown", async () => {
+    fetchMock.mockResolvedValueOnce(reply(games(1, 50), 120));
+    render(<GameList snapshotKey="k" initial={{ items: games(1, 50), total: 120 }} query={query} />);
+    await intersect();
+    expect(rows()).toBe(50);
+    expect(screen.getByText(FOOTER)).toBeInTheDocument();
+
+    fetchMock.mockResolvedValueOnce(reply(games(51, 50), 120));
+    await intersect();
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(new URL(String(fetchMock.mock.calls[1][0]), "http://x").searchParams.get("offset")).toBe("100");
+    expect(rows()).toBe(100);
+  });
+
+  it("stops when the server has nothing more to give", async () => {
+    fetchMock.mockResolvedValueOnce(reply([], 120));
+    render(<GameList snapshotKey="k" initial={{ items: games(1, 50), total: 120 }} query={query} />);
+    await intersect();
+    expect(screen.queryByText(FOOTER)).toBeNull();
+  });
+
   describe("coming back from a game page", () => {
     const scrollTo = vi.fn();
     const realScrollTo = window.scrollTo;

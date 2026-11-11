@@ -157,6 +157,63 @@ describe("<TrophyCarousel>", () => {
     expect(pressed()).toBe(2);
   });
 
+  describe("with a finger", () => {
+    const touch = { pointerType: "touch" } as const;
+
+    it("pauses on pointerdown and resumes on pointerup", () => {
+      render(<TrophyCarousel trophies={trophies} />);
+      const strip = screen.getByLabelText("Latest trophies");
+      fireEvent.pointerDown(strip, touch);
+      act(() => void vi.advanceTimersByTime(20000));
+      expect(pressed()).toBe(0);
+      fireEvent.pointerUp(strip, touch);
+      act(() => void vi.advanceTimersByTime(6000));
+      expect(pressed()).toBe(1);
+    });
+
+    it("resumes on pointercancel", () => {
+      render(<TrophyCarousel trophies={trophies} />);
+      const strip = screen.getByLabelText("Latest trophies");
+      fireEvent.pointerDown(strip, touch);
+      fireEvent.pointerCancel(strip, touch);
+      act(() => void vi.advanceTimersByTime(6000));
+      expect(pressed()).toBe(1);
+    });
+
+    it("is not left paused by the compatibility mouse events of a tap", () => {
+      render(<TrophyCarousel trophies={trophies} />);
+      const strip = screen.getByLabelText("Latest trophies");
+      fireEvent.pointerDown(strip, touch);
+      fireEvent.pointerUp(strip, touch);
+      fireEvent.mouseEnter(strip);
+      fireEvent.mouseOver(strip);
+      act(() => void vi.advanceTimersByTime(6000));
+      expect(pressed()).toBe(1);
+    });
+
+    it("still pauses on a mouse hover afterwards", () => {
+      render(<TrophyCarousel trophies={trophies} />);
+      const strip = screen.getByLabelText("Latest trophies");
+      fireEvent.pointerDown(strip, touch);
+      fireEvent.pointerUp(strip, touch);
+      fireEvent.pointerEnter(strip, { pointerType: "mouse" });
+      fireEvent.mouseEnter(strip);
+      act(() => void vi.advanceTimersByTime(20000));
+      expect(pressed()).toBe(0);
+    });
+
+    it("keeps keyboard focus pausing after the finger lifts", () => {
+      keyboardFocus(true);
+      render(<TrophyCarousel trophies={trophies} />);
+      const strip = screen.getByLabelText("Latest trophies");
+      fireEvent.focusIn(screen.getAllByRole("button")[0]);
+      fireEvent.pointerDown(strip, touch);
+      fireEvent.pointerUp(strip, touch);
+      act(() => void vi.advanceTimersByTime(20000));
+      expect(pressed()).toBe(0);
+    });
+  });
+
   it("leaves no pending timer after unmount", () => {
     const { unmount } = render(<TrophyCarousel trophies={trophies} />);
     unmount();

@@ -10,6 +10,8 @@ export function HideZeroToggle({ checked }: { checked: boolean }) {
   const [pending, startTransition] = useTransition();
 
   function change(next: boolean) {
+    // Ignore a second click while saving; the input stays enabled so it keeps keyboard focus.
+    if (pending) return;
     setOn(next);
     startTransition(async () => {
       try {
@@ -23,7 +25,7 @@ export function HideZeroToggle({ checked }: { checked: boolean }) {
 
   return (
     <label className="toggle">
-      <input type="checkbox" checked={on} disabled={pending} onChange={(e) => change(e.target.checked)} />
+      <input type="checkbox" checked={on} aria-busy={pending} onChange={(e) => change(e.target.checked)} />
       <span className="track" aria-hidden="true" />
       Hide 0% games
     </label>

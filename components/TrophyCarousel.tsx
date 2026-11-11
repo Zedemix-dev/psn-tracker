@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type FocusEvent } from "react";
+import { useEffect, useRef, useState, type FocusEvent, type PointerEvent } from "react";
 import { fitCount } from "@/components/carousel-fit";
 import { TrophyTypeIcon } from "@/components/TrophyTypeIcon";
 import type { TrophyType } from "@/src/db/schema";
@@ -35,7 +35,11 @@ export function TrophyCarousel({ trophies }: { trophies: CarouselTrophy[] }) {
   const [visible, setVisible] = useState(trophies.length);
   const [hovered, setHovered] = useState(false);
   const [keyboardFocused, setKeyboardFocused] = useState(false);
-  const paused = hovered || keyboardFocused;
+  const [touching, setTouching] = useState(false);
+  // A tap fires compatibility mouse events (mouseenter now, mouseleave only on a later tap
+  // elsewhere): after a touch they must not pause. A real mouse pointer event clears this.
+  const touched = useRef(false);
+  const paused = hovered || touching || keyboardFocused;
   // Bumped on every manual restart so the timer and its bar start over.
   const [cycle, setCycle] = useState(0);
 
@@ -78,6 +82,19 @@ export function TrophyCarousel({ trophies }: { trophies: CarouselTrophy[] }) {
     }
     setKeyboardFocused(visibleFocus);
   };
+  const onPointerDown = (e: PointerEvent) => {
+    if (e.pointerType !== "touch") return;
+    touched.current = true;
+    setTouching(true);
+  };
+  const onTouchEnd = (e: PointerEvent) => {
+    if (e.pointerType !== "touch") return;
+    setTouching(false);
+    restart();
+  };
+  const onMousePointer = (e: PointerEvent) => {
+    if (e.pointerType === "mouse") touched.current = false;
+  };
   const onBlur = (e: FocusEvent<HTMLDivElement>) => {
     if (e.currentTarget.contains(e.relatedTarget as Node | null)) return;
     setKeyboardFocused(false);
@@ -92,7 +109,15 @@ export function TrophyCarousel({ trophies }: { trophies: CarouselTrophy[] }) {
       className={styles.strip}
       aria-label="Latest trophies"
       role="group"
-      onMouseEnter={() => setHovered(true)}
+      onPointerEnter={onMousePointer}
+      onPointerMove={onMousePointer}
+      onPointerDown={onPointerDown}
+      onPointerUp={onTouchEnd}
+      onPointerCancel={onTouchEnd}
+      onPointerLeave={onTouchEnd}
+      onMouseEnter={() => {
+        if (!touched.current) setHovered(true);
+      }}
       onMouseLeave={() => {
         setHovered(false);
         restart();
