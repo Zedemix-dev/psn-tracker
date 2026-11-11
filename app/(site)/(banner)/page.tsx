@@ -75,10 +75,10 @@ export default async function Home({ searchParams }: { searchParams: Promise<Sea
               <HideZeroToggle checked={hideZero} />
             </div>
             <div className="head-right">
-              <span id={SHOW_ALL_SLOT_ID} />
               <span className="aside">
                 {formatInt(games.total)} {games.total === 1 ? "game" : "games"}
               </span>
+              <span id={SHOW_ALL_SLOT_ID} />
             </div>
           </div>
           <GameFilters query={query} />
