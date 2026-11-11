@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { isAuthenticated } from "@/src/auth/require-session";
 import { getDb } from "@/src/db/client";
-import { parseGameQuery, queryGames } from "@/src/games/query";
+import { hasValidPaging, parseGameQuery, queryGames } from "@/src/games/query";
 import { getSettings } from "@/src/settings/repo";
 
 export async function GET(req: Request) {
@@ -11,6 +11,9 @@ export async function GET(req: Request) {
   const db = await getDb();
   const { hideZero } = await getSettings(db);
   const { searchParams } = new URL(req.url);
+  if (!hasValidPaging(searchParams)) {
+    return NextResponse.json({ error: "Invalid offset or limit" }, { status: 400 });
+  }
   const query = parseGameQuery(searchParams);
   return NextResponse.json(await queryGames(db, query, { hideZero, all: searchParams.get("all") === "1" }));
 }
