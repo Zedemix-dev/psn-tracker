@@ -13,6 +13,7 @@ import {
   formatPercent,
   formatPlayTime,
   formatRelative,
+  parisDateParts,
 } from "@/src/lib/format";
 
 describe("format", () => {
@@ -101,5 +102,16 @@ describe("formatCounter", () => {
   it("groups thousands on both numbers", () => {
     expect(formatCounter(3626, 5000)).toBe("3,626/5,000");
     expect(formatCounter(0, 4)).toBe("0/4");
+  });
+});
+
+describe("parisDateParts", () => {
+  it("reads the Paris date, hour and weekday in summer", () => {
+    expect(parisDateParts(new Date("2026-08-31T22:30:00Z"))).toEqual({ year: 2026, month: 9, day: 1, hour: 0, weekday: 1 });
+  });
+  it("reads the Paris date in winter, with Monday as 0 and Sunday as 6", () => {
+    expect(parisDateParts(new Date("2026-01-01T23:30:00Z"))).toEqual({ year: 2026, month: 1, day: 2, hour: 0, weekday: 4 });
+    expect(parisDateParts(new Date("2026-11-08T12:00:00Z")).weekday).toBe(6);
+    expect(parisDateParts(new Date("2026-11-09T12:00:00Z")).weekday).toBe(0);
   });
 });
