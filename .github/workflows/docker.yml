@@ -66,6 +66,13 @@ jobs:
           MEDIA_DIR: ${{ runner.temp }}/media
         run: node scripts/worker-smoke.mjs
 
+  # The real nginx image with the real config, in front of a stub app (not required by "image").
+  nginx-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - run: bash scripts/ci/nginx-smoke.sh
+
   image:
     runs-on: ubuntu-latest
     needs: [test, pg-smoke]

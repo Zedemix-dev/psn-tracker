@@ -96,11 +96,11 @@ export function GameInfoPanel({ detail }: { detail: GameDetail }) {
           <div>
             <dt>Guides</dt>
             <dd>
-              <a href={detail.guides.powerPyx} target="_blank" rel="noopener">
+              <a href={detail.guides.powerPyx} target="_blank" rel="noopener noreferrer">
                 PowerPyx roadmap <ExtIcon />
               </a>
               <br />
-              <a href={detail.guides.psnProfiles} target="_blank" rel="noopener">
+              <a href={detail.guides.psnProfiles} target="_blank" rel="noopener noreferrer">
                 PSNProfiles guides <ExtIcon />
               </a>
             </dd>

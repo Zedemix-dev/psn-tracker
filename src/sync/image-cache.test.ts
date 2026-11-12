@@ -7,7 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Db } from "@/src/db/client";
 import { images, playedGames, profile, titles, trophies, trophyGroups } from "@/src/db/schema";
 import { upsertTitleRow } from "@/src/sync/title";
-import { cacheImages, pruneImages } from "@/src/sync/image-cache";
+import { cacheImages, IMAGE_TIMEOUT_MS, pruneImages } from "@/src/sync/image-cache";
 import { imageHash } from "@/src/sync/images";
 import { makeRemoteTitle } from "@/tests/fixtures/titles";
 import { createTestDb } from "@/tests/helpers/db";
@@ -134,6 +134,30 @@ describe("cacheImages", () => {
     expect(r.failed).toBeGreaterThanOrEqual(2);
     const ok = await cacheImages(db, dir, okFetch());
     expect(ok.failed).toBe(0);
+    expect(ok.downloaded).toBe(r.failed);
+  });
+
+  it("downloads with a 30 s timeout signal", async () => {
+    const f = vi.fn(async (_url: string | URL | Request, _init?: RequestInit) => new Response(new Uint8Array([1]), { status: 200 }));
+    await cacheImages(db, dir, f);
+    const init = f.mock.calls[0][1] as RequestInit;
+    expect(init.signal).toBeInstanceOf(AbortSignal);
+    expect(init.signal!.aborted).toBe(false);
+    expect(IMAGE_TIMEOUT_MS).toBe(30_000);
+  });
+
+  it("a timed-out download counts as failed and is retried next time", async () => {
+    const slow = vi.fn(async (_url: string | URL | Request, _init?: RequestInit) => {
+      throw new DOMException("slow", "TimeoutError");
+    });
+    const r = await cacheImages(db, dir, slow);
+    expect(r.downloaded).toBe(0);
+    expect(r.failed).toBeGreaterThanOrEqual(2);
+    const [row] = await db.select().from(images).where(eq(images.url, ICON));
+    expect(row.attempts).toBe(1);
+    expect(row.localPath).toBeNull();
+    expect(await fs.readdir(path.join(dir, "psn")).catch(() => [])).toEqual([]);
+    const ok = await cacheImages(db, dir, okFetch());
     expect(ok.downloaded).toBe(r.failed);
   });
 

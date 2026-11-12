@@ -12,6 +12,8 @@ import { computeTileBg, makeThumb } from "@/src/sync/thumbs";
 const CONCURRENCY = 4;
 // Postgres caps bind parameters per statement.
 const CHUNK = 500;
+// A download (headers and body) that takes longer counts as failed, and is retried next sync.
+export const IMAGE_TIMEOUT_MS = 30_000;
 const EXTENSIONS = ["png", "jpg", "jpeg", "webp", "gif", "svg"];
 const CONTENT_TYPE_EXT: Record<string, string> = {
   "image/png": "png",
@@ -61,7 +63,7 @@ async function downloadOne(
   fetchImpl: typeof fetch,
 ): Promise<boolean> {
   try {
-    const res = await fetchImpl(url);
+    const res = await fetchImpl(url, { signal: AbortSignal.timeout(IMAGE_TIMEOUT_MS) });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const bytes = Buffer.from(await res.arrayBuffer());
     const rel = `psn/${imageHash(url)}.${extensionOf(url, res.headers.get("content-type"))}`;

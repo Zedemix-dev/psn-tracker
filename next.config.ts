@@ -3,6 +3,7 @@ import { MEDIA_CSP, SITE_HEADERS } from "./src/lib/security-headers";
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  poweredByHeader: false,
   // PGlite (dev/test database) must not be bundled: it loads its wasm via file URLs.
   // sharp and fontkit (Plat Wall PNG) are native / font-parsing packages: traced into standalone, not bundled.
   serverExternalPackages: ["@electric-sql/pglite", "sharp", "fontkit"],

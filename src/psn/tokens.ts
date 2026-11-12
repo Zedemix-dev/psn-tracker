@@ -1,10 +1,12 @@
 import type { Db } from "@/src/db/client";
 import { loadPsnTokens, savePsnTokens, setPsnAuthStatus } from "@/src/settings/repo";
-import type { PsnGateway } from "@/src/psn/gateway";
+import type { PsnTokens } from "@/src/psn/types";
+import { PsnRefusedError, type PsnGateway } from "@/src/psn/gateway";
 
 export const NPSSO_PATTERN = /^[A-Za-z0-9]{64}$/;
 // Longer than a sync (~15 min at most), so the token never expires mid-run.
 const REFRESH_MARGIN_MS = 30 * 60_000;
+const PSN_TIMEOUT_MS = 20_000;
 
 export async function getValidAuth(
   db: Db,
@@ -18,18 +20,34 @@ export async function getValidAuth(
     return { accessToken: stored.accessToken };
   }
   let fresh;
+  const refreshing = gw.refresh(stored.refreshToken);
   try {
-    fresh = await gw.refresh(stored.refreshToken);
-  } catch {
-    await setPsnAuthStatus(db, "expired");
-    return "expired";
+    fresh = await withTimeout(refreshing, PSN_TIMEOUT_MS);
+  } catch (e) {
+    if (e instanceof PsnRefusedError) {
+      await setPsnAuthStatus(db, "expired");
+      return "expired";
+    }
+    // Neither a refusal nor proof the token is bad: leave the status alone.
+    if (isUnreachable(e)) {
+      if (e instanceof DOMException && e.name === "TimeoutError") keepLateRefresh(db, key, refreshing);
+      throw new Error("Couldn't reach PSN");
+    }
+    throw new Error(`PSN token refresh failed (${e instanceof Error ? e.message : String(e)})`);
   }
   // A DB error here is not an auth problem: it propagates as is.
   await savePsnTokens(db, key, fresh);
   return { accessToken: fresh.accessToken };
 }
 
-const EXCHANGE_TIMEOUT_MS = 20_000;
+/** The run already failed, but a refresh that answers later still returns usable tokens: keep them. */
+function keepLateRefresh(db: Db, key: Buffer, refreshing: Promise<PsnTokens>): void {
+  refreshing.then(
+    (tokens) => savePsnTokens(db, key, tokens).catch(() => {}),
+    () => {},
+  );
+}
+
 const NETWORK_CODES = new Set(["ECONNRESET", "ECONNREFUSED", "ENOTFOUND", "EAI_AGAIN", "ETIMEDOUT", "UND_ERR_CONNECT_TIMEOUT"]);
 
 /** True when the call never got an answer from PSN (network down, DNS, timeout), as opposed to PSN refusing. */
@@ -60,7 +78,7 @@ export async function connectWithNpsso(
   if (!NPSSO_PATTERN.test(npsso)) return "invalid";
   let tokens;
   try {
-    tokens = await withTimeout(gw.exchangeNpsso(npsso), EXCHANGE_TIMEOUT_MS);
+    tokens = await withTimeout(gw.exchangeNpsso(npsso), PSN_TIMEOUT_MS);
   } catch (e) {
     return isUnreachable(e) ? "unreachable" : "invalid";
   }

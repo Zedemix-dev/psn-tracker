@@ -76,10 +76,10 @@ Le site doit reprendre **la lisibilité épurée de psnprofiles** et **la prése
 - **[mon choix]** L'identifiant et le mot de passe (ou son hash) sont définis par variables d'environnement du conteneur. Il n'y a pas de page d'inscription.
 - **[décidé] Session sans fin** : l'utilisateur ne veut pas se reconnecter tous les mois.
   - Les navigateurs plafonnent la durée de vie d'un cookie (environ 400 jours pour Chrome). Le cookie de session est donc **prolongé à chaque visite**, ce qui revient en pratique à une session infinie. **[mon choix]**
-  - Les sessions sont enregistrées côté serveur. Le bouton « Log out » de Settings les invalide. **[mon choix]**
+  - Les sessions sont enregistrées côté serveur. Le bouton « Log out » de Settings les invalide. **[mon choix]** Depuis le 12 novembre 2026, la base ne garde que l'empreinte de l'identifiant, et une session non vue depuis 400 jours est supprimée (20.7).
   - Le cookie est `httpOnly`. Il est `Secure` quand le site est ouvert en HTTPS, ce qui laisse fonctionner un éventuel accès en HTTP par l'IP locale du NAS. **[mon choix]**
 - **[mon choix]** Les tentatives de connexion sont limitées, parce que le site est exposé sur internet.
-  - On s'appuie pour cela sur la vraie IP du client, transmise par le reverse proxy de DSM puis par nginx (en-têtes `X-Forwarded-For` / `X-Forwarded-Proto`).
+  - On s'appuie pour cela sur la vraie IP du client, transmise par le reverse proxy de DSM puis par nginx (en-têtes `X-Forwarded-For` / `X-Forwarded-Proto`). nginx ne fait confiance qu'au proxy DSM, pas au réseau local (20.6).
 - **[mon choix]** Le NPSSO et les tokens PSN dérivés sont stockés **chiffrés** en base, avec une clé fournie par variable d'environnement. Ils ne sont jamais renvoyés au navigateur : la page Settings n'affiche que leur état.
 
 ## 6. Synchronisation PSN
@@ -587,6 +587,7 @@ Il doit aussi vérifier en pratique la détection des nouveaux DLC (6.4).
 - **Stats au doigt et défilement des années :** demandé le 11 novembre 2026 après la fusion, maquette validée le même jour, décrit en 18.14. Construit et vérifié avec les vraies données le 11 novembre 2026. Fusionné dans `main` le 11 novembre 2026 (PR #17).
 - **Points de suivi de la phase 1 :** tous traités avant le déploiement sur le NAS, à la demande de l'utilisateur, cadrés le 11 novembre 2026, décrits en 19. Construits et vérifiés avec les vraies données, fusionnés dans `main` le 12 novembre 2026 (PR #19).
 - **[décidé, 12 novembre 2026] Audit du 11 novembre 2026 :** le bilan `a_reprendre.md`, écrit par une autre session, reste dans le dépôt : ses points devront être vérifiés ou corrigés un jour. Son point S1 (`sandbox` de `/media`) est corrigé dans la PR #19. Le reste n'est ni décidé ni commencé : chaque point retenu passera par le processus habituel, et les retouches de design par une validation de l'utilisateur.
+- **[décidé, 12 novembre 2026] Suites de l'audit, lots 1 et 2 :** P1, S2, R1, S3, S4, S5, S6 et R2 sont traités avant le déploiement sur le NAS, sur la branche `fix/audit`, décrits en 20. Construits et vérifiés avec les vraies données le 12 novembre 2026. Le lot 3, S7 et les retouches de design D1 à D7 restent pour plus tard.
 
 ## 14. Jeux aux trophées non obtenables
 **[décidé, cadrage du 9 novembre 2026]** Fonctionnalité construite à part, sur la branche `feat/unobtainable`. Maquette validée le 9 novembre 2026 : `docs/superpowers/specs/2026-11-09-psn-tracker-maquette-nonobt.html`, référence pour l'aspect et le CSS. Les choix que l'utilisateur n'a pas faits lui-même sont marqués **[choix de Claude]**.
@@ -1373,3 +1374,98 @@ Au 11 novembre 2026, les jeux affichés sur une tuile sont Game of Thrones, Marv
 - Une synchro complète en local : nombre d'images supprimées et de miniatures créées dans le journal, aucune image manquante ensuite sur Games, une page de jeu, Plat Wall, Trophy Log, Trophy Advisor et Stats, et la couleur des 4 tuiles dès le premier affichage.
 - Les temps de réponse des pages avant et après le cache.
 - Non vérifiable ici : le test de CI (sur github.com), et tout ce qui est listé pour le NAS (19.2).
+
+## 20. Suites du check-up du 11 novembre 2026
+**[décidé, 12 novembre 2026]** L'utilisateur traite les lots 1 et 2 de l'audit `a_reprendre.md` (sa section 9), avant le déploiement sur le NAS : **P1, S2 et R1** (lot 1), puis **S3, S4, S5, S6 et R2** (lot 2, durcissement). Il a validé chaque lot sur description. Construit sur la branche `fix/audit` et vérifié avec les vraies données le 12 novembre 2026 (20.11) ; le job `nginx-smoke` de la CI et les points du NAS restent à voir. Les choix que l'utilisateur n'a pas faits lui-même sont marqués **[choix de Claude]**.
+
+Ne sont **pas** traités ici, et restent notés dans `a_reprendre.md` : le lot 3 (P2, P3, P4, R3, Q1, Q2, Q4, Q5, Q6), S7 (garder ou non le npsso), les retouches de design D1 à D7 (à valider sur maquette), et les points que l'audit laisse pour après le NAS (Q3, P5, P6, P7, S8, S9, Q7). S10 est un risque accepté.
+
+### 20.1 Intention
+Le site va passer sur le NAS, exposé sur internet. Ces points le rendent plus rapide hors de la maison (P1), plus juste quand le PSN a un souci (R1) et plus difficile à attaquer (S2 à S6, R2). En temps normal, rien ne change à l'écran.
+
+**Non-objectifs** : aucune nouvelle page, aucun changement visible en dehors des messages listés ici, aucun durcissement des conteneurs (S9) ni de la chaîne de build (S8).
+
+**Anti-objectifs** (ce qui serait un échec même si tout fonctionne)
+- Être déconnecté par cette version : les sessions en cours sont gardées.
+- Un « PSN token expired » affiché alors que le PSN n'a rien refusé, ou l'inverse : un token vraiment refusé sans aucun bandeau.
+- Un utilisateur bloqué par la limite de connexion à cause d'un autre, parce que nginx verrait toutes les connexions sous une même adresse.
+- Une page plus lente, ou une réponse en flux (streaming) retenue par nginx.
+- Une configuration nginx cassée qui arrive sur le NAS sans avoir jamais été lancée.
+
+### 20.2 P1 : compression des réponses JSON [choix de Claude, validé sur description]
+- `deploy/nginx/default.conf` active gzip pour `application/json`, au-delà de 1 Ko, y compris pour les requêtes venues du proxy DSM (`gzip_proxied any`), avec `Vary: Accept-Encoding`. **[choix de Claude]** Niveau de compression 5.
+- nginx ne recompresse jamais une réponse déjà compressée : les pages, les réponses RSC et les fichiers statiques, déjà compressés par Next, ne changent pas. **[choix de Claude]** `text/x-component` n'est pas ajouté : Next compresse déjà ces réponses, et nginx pourrait retenir un flux pour le compresser.
+- Aucun changement dans l'app.
+- Effet attendu : `/api/trophy-log?all=1` (environ 6,4 Mo) passe sous 1 Mo.
+- Ce PC n'a ni nginx ni Docker : la configuration est testée dans la CI (20.9) et vérifiée sur le NAS (`deploy/README.md`, étape 7).
+
+### 20.3 S2 : serveurs de test limités au PC [choix de Claude, validé sur description]
+- `npm run e2e:web` (`next dev`) écoute sur `127.0.0.1` seulement.
+- **[choix de Claude]** Le lanceur du build de production entre dans le dépôt : `scripts/e2e/prod.mjs`, appelé par `npm run e2e:prod`. Il lance `next start` sur `127.0.0.1:3000` avec `.data/e2e.env`, après `npm run build`. Il remplace le script local `.data/e2e-prod.mjs`, qui ne suivait pas d'un PC à l'autre. `docs/ETAT-DU-PROJET.md`, section 5, le décrit.
+
+### 20.4 R1 : token PSN, refus ou panne [choix de Claude, validé sur description]
+Constat en plus de l'audit : quand le PSN refuse un token, la bibliothèque `psn-api` ne lève aucune erreur. Elle renvoie un objet sans token, et la synchro plante plus loin (chiffrement d'une valeur vide) avec un message technique, sans jamais afficher « PSN token expired ».
+1. **Refus** : quand la réponse du PSN à un renouvellement ou à un échange de npsso ne contient pas de token utilisable (access token et refresh token non vides, durées numériques), le gateway lève une erreur de refus au lieu de renvoyer des valeurs vides.
+2. **Renouvellement** (`getValidAuth`, `src/psn/tokens.ts`) :
+   - refus du PSN : le statut passe à `expired`, le run échoue avec « PSN token expired » et le bandeau s'affiche (comme aujourd'hui) ;
+   - PSN injoignable (`isUnreachable` : réseau, DNS, délai dépassé) : le statut ne change pas, le run échoue avec « Couldn't reach PSN », aucun bandeau ;
+   - toute autre erreur pendant le renouvellement (par exemple une page d'erreur HTML de Sony) : le statut ne change pas, le run échoue avec « PSN token refresh failed (<message d'origine>) ».
+   - Le renouvellement a le même délai maximal que l'échange du npsso : 20 s. **[choix de Claude]** Ce délai couvre tout le renouvellement, reprises comprises. Les reprises existantes sur erreur réseau (1, 2 puis 4 s) restent.
+   - **[choix de Claude]** Un renouvellement qui répond après ces 20 s est quand même enregistré : le run a déjà échoué avec « Couldn't reach PSN », mais le token reçu n'est pas perdu.
+   - **[choix de Claude]** Le contrôle du refus se fait dans le gateway, avant tout autre traitement de la réponse : `isUnreachable` prend toute `TypeError` pour une panne réseau, et une réponse mal formée ne doit pas être prise pour une panne.
+   - La synchro suivante réessaie normalement. Une demande « Sync now » reste abandonnée après 3 échecs (19.3.4).
+3. **Enregistrement d'un npsso** : une réponse sans token donne « PSN didn't accept this npsso » au lieu d'une erreur.
+4. **Risque accepté** : `psn-api` ne donne pas le code HTTP. Une réponse JSON sans token, même renvoyée par une panne de Sony, compte comme un refus. Les pannes de Sony renvoient d'habitude une page HTML, qui tombe dans le cas « autre erreur ».
+
+### 20.5 S3 : en-têtes de sécurité [choix de Claude, validé sur description]
+- Toutes les réponses du site (`SITE_HEADERS`, `/media` compris) ajoutent `Referrer-Policy: same-origin` et `X-Content-Type-Options: nosniff`.
+- `poweredByHeader: false` : plus d'en-tête `X-Powered-By: Next.js`.
+- Les liens PowerPyx et PSNProfiles de la page d'un jeu passent en `rel="noopener noreferrer"`, comme les autres liens externes du site.
+- `/media` garde sa CSP avec `sandbox` (19.3.1).
+- **HSTS** : posé par le proxy inversé DSM, le seul à voir le HTTPS (case HSTS de la règle), ni par l'app ni par nginx. `deploy/README.md` l'ajoute à l'étape 6 et le vérifie à l'étape 7. Une fois l'en-tête vu, le navigateur refuse le HTTP sur ce nom de domaine pendant longtemps ; l'accès par l'adresse IP du NAS n'est pas concerné.
+
+### 20.6 S4 : nginx et la vraie adresse du client [choix de Claude, validé sur description]
+- `deploy/nginx/default.conf` ne fait plus confiance qu'à `127.0.0.0/8` et `172.16.0.0/12` (le proxy DSM passe par le pont Docker). `10.0.0.0/8` et `192.168.0.0/16` sont retirés : un appareil du réseau local ne peut plus inventer son adresse avec `X-Forwarded-For`. Le commentaire du fichier dit maintenant ce qui se passe vraiment.
+- Le guide ajoute deux vérifications :
+  - étape 3 : l'adresse du réseau `psn-net` (Portainer → Networks) doit être dans `172.16.0.0/12`. Sinon, mettre cette adresse à la place de `172.16.0.0/12` dans `default.conf` ;
+  - étape 7 : après une visite depuis le téléphone en données mobiles, le journal du conteneur `nginx` montre l'adresse publique du téléphone, et pas `172.x.x.1`.
+- Le test de la CI (20.9) vérifie qu'une adresse inventée est ignorée.
+
+### 20.7 S5 : sessions [choix de Claude, validé sur description]
+- La base ne garde plus l'identifiant de session, mais son empreinte SHA-256 (64 caractères hexadécimaux). Le cookie ne change pas.
+- **Migration 0009** : elle convertit les sessions existantes sur place. Personne n'est déconnecté. **[choix de Claude]** SQL écrit à la main, sans changement de schéma : `encode(sha256(convert_to(id, 'UTF8')), 'hex')`, valable sur PostgreSQL 16 comme sur PGlite. Pendant la mise à jour, la page d'attente (19.3.2) couvre le moment où l'app attend la migration.
+- Une session non vue depuis plus de 400 jours (la durée du cookie, `SESSION_MAX_AGE_S`) est refusée et supprimée. Le cookie étant prolongé à chaque visite, la « session sans fin » de la spec 5 ne change pas.
+- Chaque nouvelle connexion supprime les sessions périmées. « Log out » supprime toujours toutes les sessions.
+
+### 20.8 S6 et R2 : connexion et images [choix de Claude, validé sur description]
+- **Connexion** : un identifiant ou un mot de passe de plus de 256 caractères est refusé sans calcul bcrypt, avec le même message « Wrong username or password. », et compte comme une tentative.
+- **Limiteur de tentatives** : à chaque tentative, il oublie les adresses dont toutes les tentatives sont plus vieilles que la fenêtre de 15 minutes.
+- **Images (R2)** : un téléchargement d'image a un délai maximal de 30 s, en-têtes et contenu compris (`AbortSignal.timeout`). Passé ce délai, l'image compte comme un échec (`failed` dans le journal du worker) et elle est retentée à la synchro suivante.
+
+### 20.9 Test de la configuration nginx dans la CI [choix de Claude]
+- Un nouveau job lance, dans Docker, l'image `nginx:1.27-alpine` de `stack-infra.yml` avec le vrai `deploy/nginx/default.conf`, devant un faux site joignable sous le nom `app` sur le port 3000. Ce faux site renvoie un JSON de plusieurs Ko et l'en-tête `X-Real-IP` qu'il a reçu. **[choix de Claude]** Les conteneurs sont sur un réseau Docker créé pour le test, comme `psn-net` : le résolveur `127.0.0.11` de `default.conf` n'existe que sur ce type de réseau. La requête de test passe par ce réseau, comme le proxy DSM passe par le pont Docker.
+- Le job vérifie :
+  - que nginx démarre avec cette configuration ;
+  - qu'une requête avec `Accept-Encoding: gzip` reçoit le JSON compressé (`Content-Encoding: gzip`) ;
+  - qu'une requête avec `X-Forwarded-For: 203.0.113.9, 192.168.1.50` arrive au site avec l'adresse `192.168.1.50` : la première, inventée, est ignorée.
+- **[choix de Claude]** Le job ne bloque pas la publication de l'image : `default.conf` n'est pas dans l'image, il est copié à la main sur le NAS.
+
+### 20.10 Documentation
+- `deploy/README.md` : étape 3 (adresse de `psn-net`), étape 6 (HSTS), étape 7 (nouveaux en-têtes au point 5, compression au point 8, vraie adresse dans le journal de nginx), et le rappel de remplacer `default.conf` sur le NAS.
+- `docs/ETAT-DU-PROJET.md` : `npm run e2e:prod` en section 5, le bilan de cette branche.
+- `a_reprendre.md` : chaque point traité est marqué fait, les autres « non traité ».
+
+### 20.11 Vérification avec les vraies données
+Sur le build de production local (`npm run build`, puis `npm run e2e:db`, `npm run e2e:worker` et `npm run e2e:prod`), connecté :
+- **S2** : le port 3000 n'écoute que sur `127.0.0.1`, pour `e2e:web` comme pour `e2e:prod`.
+- **S3** : les en-têtes d'une page, d'une réponse `/api` et d'une image `/media`, lus sur une vraie réponse : `Referrer-Policy`, `nosniff`, plus de `X-Powered-By`, et la CSP inchangée.
+- **S5** : toujours connecté après la migration 0009 ; la table `sessions` ne contient que des empreintes ; déconnexion puis reconnexion ; une session vieillie à la main de 401 jours renvoie vers la page de connexion et disparaît de la table.
+- **S6** : un mot de passe de 300 caractères donne « Wrong username or password. ».
+- **R1** : un vrai renouvellement auprès du PSN (token d'accès vieilli à la main en base) passe, puis la synchro va au bout : la nouvelle vérification du gateway accepte une vraie réponse. Le PSN injoignable, simulé pour le seul worker, donne « Couldn't reach PSN » dans l'historique, sans bandeau.
+- **R2** : une synchro complète télécharge toujours les images.
+- **Non vérifiable ici** : P1 et S4 (pas de nginx ni de Docker sur ce PC), vérifiés par le job de la CI (20.9) sur github.com, puis sur le NAS (`deploy/README.md`, étape 7) ; HSTS, sur le NAS.
+
+### 20.12 Laissé au builder
+- La forme de l'erreur de refus du gateway et l'endroit exact du contrôle.
+- La forme du job de la CI (20.9), tant qu'il teste le vrai `default.conf` avec la vraie image nginx.
+- La façon de simuler le PSN injoignable pour la vérification (20.11), sans rien ajouter au code de production.

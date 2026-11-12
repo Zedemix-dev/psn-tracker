@@ -61,7 +61,22 @@ const GAMELIST_URL = "https://m.np.playstation.com/api/gamelist/v2/users/me/titl
 const CATALOG_URL = "https://m.np.playstation.com/api/catalog/v2/concepts";
 const LOGO_WIDTH = 800;
 
+/** PSN answered the token request but did not hand out tokens (invalid or revoked grant). */
+export class PsnRefusedError extends Error {
+  name = "PsnRefusedError";
+  constructor() {
+    super("PSN refused the token request");
+  }
+}
+
+const isText = (v: unknown): v is string => typeof v === "string" && v !== "";
+const isSeconds = (v: unknown): v is number => typeof v === "number" && Number.isFinite(v);
+
+// psn-api never throws on an HTTP refusal: it returns an object whose fields are undefined.
 function toTokens(r: AuthTokensResponse, now = Date.now()): PsnTokens {
+  if (!isText(r.accessToken) || !isText(r.refreshToken) || !isSeconds(r.expiresIn) || !isSeconds(r.refreshTokenExpiresIn)) {
+    throw new PsnRefusedError();
+  }
   return {
     accessToken: r.accessToken,
     accessExpiresAt: new Date(now + r.expiresIn * 1000),

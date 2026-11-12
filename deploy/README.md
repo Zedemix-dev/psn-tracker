@@ -38,6 +38,11 @@ Créer une fois le réseau partagé par les deux stacks :
 - Portainer → **Networks → Add network** : nom `psn-net`, driver `bridge` ; ou
 - en SSH : `sudo docker network create psn-net`.
 
+Ensuite, vérifier son adresse (le « sous-réseau ») : Portainer → **Networks** → `psn-net`, colonne **IPV4 IPAM Subnet** ; ou en SSH `sudo docker network inspect psn-net`. Elle doit commencer par `172.16.` à `172.31.`.
+
+- Si c'est le cas, il n'y a rien à faire : `default.conf` fait déjà confiance à `172.16.0.0/12`, qui couvre toutes ces adresses.
+- Sinon (par exemple `10.x.x.x` ou `192.168.x.x`), ouvrir `/volume1/docker/psn-tracker/nginx/default.conf` sur le NAS et remplacer `172.16.0.0/12` par ce sous-réseau, puis redémarrer le conteneur `nginx` (seulement si la stack `infra` tourne déjà : à cette étape elle n'existe pas encore, elle est créée à l'étape 5, et nginx lira alors le fichier modifié). Sans cela, nginx ne reconnaît pas le proxy DSM : toutes les connexions sembleraient venir de la même adresse, et la limite de tentatives de connexion bloquerait tout le monde.
+
 ## 4. Secrets
 
 Préparez trois valeurs :
@@ -71,7 +76,8 @@ Préparez trois valeurs :
 2. Certificat : **Panneau de configuration → Sécurité → Certificat → Ajouter** → Let's Encrypt pour `psn.<votre-nom>.synology.me`, puis *Configurer* pour associer ce certificat à la règle de proxy.
 3. Le site doit être servi **à la racine** du nom d'hôte (pas de sous-chemin comme `/psn`).
 4. Vérification fonctionnelle : après connexion en HTTPS, le cookie `psnt_session` doit porter le drapeau **Secure** (outils du navigateur → Stockage/Application → Cookies, ou en-tête de réponse `Set-Cookie … Secure`). Sinon, ajoutez manuellement l'en-tête `X-Forwarded-Proto` (valeur `$scheme`) dans la règle DSM (onglet *En-têtes personnalisés* → Créer → personnalisé). Sans lui, le cookie n'est pas sécurisé.
-5. Redirection du port 443 de votre box vers le NAS si vous voulez y accéder depuis l'extérieur.
+5. Cocher **HSTS** dans la règle du proxy inversé (onglet **Général** de la règle). C'est DSM qui pose cet en-tête : il est le seul à voir le HTTPS, ni l'app ni nginx ne le posent. Conséquence : une fois l'en-tête reçu, le navigateur refuse le HTTP sur ce nom de domaine pendant longtemps. L'accès par l'adresse IP du NAS n'est pas concerné.
+6. Redirection du port 443 de votre box vers le NAS si vous voulez y accéder depuis l'extérieur.
 
 ## 7. Premier démarrage
 
@@ -87,9 +93,10 @@ Ces points ne se vérifient que sur le NAS. Chaque point dit à quel moment le f
    - Ce qu'on doit voir : tant que le worker migre, le site affiche une page « Updating… » avec le texte « This page reloads by itself. ». Elle se recharge toutes les 5 s (code 503), puis le site normal revient seul.
    - Pas bon : une erreur 500, ou une page d'attente qui ne part jamais. Dans ce cas, lisez les logs du conteneur `worker`.
 5. **En-têtes de protection.** *Quand : dès la première connexion.* Ouvrez le site dans le navigateur, puis les outils de développement (F12) → onglet **Réseau** → rechargez → cliquez sur la requête de la page → **En-têtes de réponse**.
-   - Sur une page : `X-Frame-Options: DENY` et `Content-Security-Policy: frame-ancestors 'none'`.
-   - Sur une image sous `/media/…` : `Content-Security-Policy: default-src 'none'; style-src 'unsafe-inline'; sandbox; frame-ancestors 'none'`, et `X-Content-Type-Options: nosniff`. L'image s'affiche toujours normalement dans les pages.
-   - Ces en-têtes sont posés par l'app : il n'y a rien à régler dans nginx ni dans DSM.
+   - Sur une page : `X-Frame-Options: DENY`, `Content-Security-Policy: frame-ancestors 'none'`, `Referrer-Policy: same-origin`, `X-Content-Type-Options: nosniff` et `Strict-Transport-Security` (posé par DSM, voir étape 6). Il ne doit y avoir aucun en-tête `X-Powered-By`.
+   - Sur une image sous `/media/…` : `Content-Security-Policy: default-src 'none'; style-src 'unsafe-inline'; sandbox; frame-ancestors 'none'`, `X-Content-Type-Options: nosniff` et `Referrer-Policy: same-origin`. L'image s'affiche toujours normalement dans les pages.
+   - Tous ces en-têtes sont posés par l'app, sauf `Strict-Transport-Security`, posé par DSM : il n'y a rien à régler dans nginx.
+   - Pas bon : pas de `Strict-Transport-Security` (revoir la case HSTS de l'étape 6).
 6. **Première synchro de cette version.** *Quand : une fois la première synchro terminée.*
    - Ce qu'on doit voir : toutes les listes de trophées PS5 sont rechargées une fois (migration 0005), donc la synchro est plus longue que d'habitude.
    - Dans **Settings**, la carte « Unobtainable trophies » montre « Up to date » et « 5 of yours » (migration 0006).
@@ -100,7 +107,8 @@ Ces points ne se vérifient que sur le NAS. Chaque point dit à quel moment le f
 7. **Arrêt propre du worker.** *Quand : pendant la synchro suivante, ou en en déclenchant une avec « Sync now ».* Dès que **Sync history** montre un run en cours, arrêtez le conteneur `worker` dans Portainer (`docker stop`), puis relancez-le.
    - Ce qu'on doit voir : soit le log montre la fin de la synchro en cours, soit le run apparaît comme « Interrupted » dans **Sync history** au redémarrage.
 8. **Trophy Log, « Show all ».** *Quand : après la première synchro.* Ouvrez Trophy Log et cliquez sur **Show all**.
-   - Objectifs : premières lignes en moins de 1 s, page jamais figée plus de 250 ms, liste complète en moins de 5 s (la réponse fait environ 5 Mo de JSON).
+   - Objectifs : premières lignes en moins de 1 s, page jamais figée plus de 250 ms, liste complète en moins de 5 s (la réponse fait environ 6 Mo de JSON avant compression).
+   - Dans l'onglet **Réseau** (F12), la réponse de `/api/trophy-log?all=1` porte `Content-Encoding: gzip`, et sa taille transférée est bien plus petite que sa taille réelle (environ 6 Mo). Pas bon : pas de `Content-Encoding`, ou une taille transférée de plusieurs Mo (vérifier que `default.conf` du NAS est la dernière version, étape 8).
    - Si les premières lignes tardent, notez-le : il faudra demander d'abord les 300 premières lignes à part.
    - Ouvrez une page de jeu depuis la liste, puis revenez en arrière : vous devez retrouver la même ligne.
 9. **Export PNG du Plat Wall.** *Quand : après la première synchro.* Ouvrez Plat Wall, cochez Art, Rarity et Name sur les 230 platines.
@@ -110,16 +118,20 @@ Ces points ne se vérifient que sur le NAS. Chaque point dit à quel moment le f
 10. **Page Stats sur écran tactile.** *Quand : après la première synchro.* Ouvrez Stats sur un téléphone et sur un Mac avec pavé tactile.
     - Au doigt : poser le doigt sur une colonne, une part d'anneau ou un jour affiche l'infobulle tant que le doigt reste posé. Un glissement vertical fait défiler la page.
     - « Games by release year » défile de côté (téléphone : glissement du doigt ; Mac : deux doigts), s'ouvre sur les années les plus récentes, et le glissement à deux doigts ne fait pas revenir à la page précédente du navigateur.
+11. **Vraie adresse du client.** *Quand : dès la première connexion.* Ouvrez le site depuis le téléphone en données mobiles (pas en Wi-Fi), puis dans Portainer : **Containers → `nginx` → Logs**.
+    - Ce qu'on doit voir : la ligne de votre visite montre l'adresse publique du téléphone.
+    - Pas bon : `172.x.x.1` (l'adresse du pont Docker). nginx ne reconnaît alors pas le proxy DSM : revoyez l'étape 3 (sous-réseau de `psn-net`).
 
 ## 8. Mises à jour
 
 1. Pousser (ou fusionner) sur `main`.
 2. Attendre que l'exécution GitHub Actions soit verte (onglet Actions) : l'image `latest` est alors republiée.
-3. Dans Portainer : **Stacks → `psn-site` → Update the stack → Re-pull image and redeploy**. (Si `default.conf` change, remplacez le fichier sur le NAS puis redémarrez le conteneur `nginx`.)
+3. Dans Portainer : **Stacks → `psn-site` → Update the stack → Re-pull image and redeploy**.
+4. Si `deploy/nginx/default.conf` a changé, remplacez le fichier sur le NAS (`/volume1/docker/psn-tracker/nginx/default.conf`) puis redémarrez le conteneur `nginx` (Portainer → Containers → `nginx` → Restart). Il n'est pas dans l'image : il ne se met pas à jour tout seul. **La version qui apporte la compression gzip et les plages de confiance `127.0.0.0/8` et `172.16.0.0/12` le change : à faire à cette mise à jour**, puis refaire les points 5, 8 et 11 de l'étape 7.
 
 ## 9. Dépannage
 
 - **Erreur « Invalid Server Actions request » / origine refusée** : l'en-tête `Host` n'est pas transmis jusqu'à l'app. Vérifier que le proxy DSM conserve le nom d'hôte et que `default.conf` contient `proxy_set_header Host $host;` et `X-Forwarded-Host $host;`.
 - **Erreur 413 (Request Entity Too Large)** sur l'envoi d'une bannière : limite `client_max_body_size 12m` dans `default.conf` (mise à jour du fichier sur le NAS + redémarrage de `nginx`). Le reverse proxy DSM n'impose pas de limite par défaut.
 - **« Syncing… » bloqué** : regarder les logs du conteneur `worker` (Portainer → Containers → `worker` → Logs). Un `npsso` expiré (Settings) ou une erreur réseau PSN sont les causes habituelles.
-- **`http://<ip-du-nas>:8080` ne répond pas** : voulu. Le port 8080 n'est publié que sur `127.0.0.1` du NAS (le proxy DSM y accède en local), afin qu'un appareil du réseau local ne puisse pas contourner le proxy et falsifier `X-Forwarded-For`. Utilisez l'adresse HTTPS. Une connexion qui échoue sur l'adresse HTTPS signale plutôt un `ADMIN_PASSWORD_HASH` mal échappé (voir étape 4).
+- **`http://<ip-du-nas>:8080` ne répond pas** : voulu. Le port 8080 n'est publié que sur `127.0.0.1` du NAS (le proxy DSM y accède en local), afin qu'un appareil du réseau local ne puisse pas contourner le proxy et falsifier `X-Forwarded-For`. Utilisez l'adresse HTTPS. nginx ne fait confiance qu'au proxy DSM (adresses `127.0.0.0/8` et `172.16.0.0/12`) pour `X-Forwarded-For`. Une connexion qui échoue sur l'adresse HTTPS signale plutôt un `ADMIN_PASSWORD_HASH` mal échappé (voir étape 4).

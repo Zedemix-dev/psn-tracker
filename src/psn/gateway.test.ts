@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { catalogLocale, createPsnGateway, parseIsoDuration } from "@/src/psn/gateway";
+import { catalogLocale, createPsnGateway, parseIsoDuration, PsnRefusedError } from "@/src/psn/gateway";
 
 type Req = { url: URL; headers: Record<string, string> };
 let requests: Req[];
@@ -20,7 +20,9 @@ beforeEach(() => {
       requests.push({ url, headers: { ...(init?.headers as Record<string, string>) } });
       const route = routes.find(([re]) => re.test(url.pathname));
       if (!route) throw new Error(`unexpected request ${url}`);
-      return new Response(JSON.stringify(route[1](url)), { status: 200 });
+      const body = route[1](url);
+      if (body instanceof Response) return body;
+      return new Response(JSON.stringify(body), { status: 200 });
     }),
   );
 });
@@ -39,6 +41,58 @@ describe("parseIsoDuration", () => {
 
 describe("createPsnGateway", () => {
   const gw = createPsnGateway("en-GB");
+
+  describe("token answers", () => {
+    const good = { access_token: "a", expires_in: 3600, refresh_token: "r", refresh_token_expires_in: 5183999 };
+
+    it("refresh accepts a real token answer", async () => {
+      on(/oauth\/token$/, () => good);
+      const t = await gw.refresh("old");
+      expect(t.accessToken).toBe("a");
+      expect(t.refreshToken).toBe("r");
+      expect(Number.isNaN(t.accessExpiresAt.getTime())).toBe(false);
+      expect(Number.isNaN(t.refreshExpiresAt.getTime())).toBe(false);
+    });
+
+    it("refresh throws PsnRefusedError when PSN answers without a token", async () => {
+      on(/oauth\/token$/, () => ({ error: "invalid_grant", error_description: "Invalid refresh token" }));
+      await expect(gw.refresh("old")).rejects.toBeInstanceOf(PsnRefusedError);
+    });
+
+    it("refresh throws PsnRefusedError on an empty token or a non-numeric expiry", async () => {
+      on(/oauth\/token$/, () => ({ ...good, access_token: "" }));
+      await expect(gw.refresh("old")).rejects.toBeInstanceOf(PsnRefusedError);
+      routes = [];
+      on(/oauth\/token$/, () => ({ ...good, expires_in: "3600" }));
+      await expect(gw.refresh("old")).rejects.toBeInstanceOf(PsnRefusedError);
+    });
+
+    it("exchangeNpsso accepts a real token answer", async () => {
+      on(/oauth\/authorize$/, () => new Response(null, { status: 302, headers: { location: "com.scee.psxandroid.scecompcall://redirect/?code=v3.abc" } }));
+      on(/oauth\/token$/, () => good);
+      const t = await gw.exchangeNpsso("n".repeat(64));
+      expect(t.accessToken).toBe("a");
+      expect(t.refreshToken).toBe("r");
+      expect(Number.isNaN(t.accessExpiresAt.getTime())).toBe(false);
+      expect(Number.isNaN(t.refreshExpiresAt.getTime())).toBe(false);
+    });
+
+    it("exchangeNpsso throws PsnRefusedError when the token answer has no token", async () => {
+      on(/oauth\/authorize$/, () => new Response(null, { status: 302, headers: { location: "com.scee.psxandroid.scecompcall://redirect/?code=v3.abc" } }));
+      on(/oauth\/token$/, () => ({ error: "invalid_grant" }));
+      await expect(gw.exchangeNpsso("n".repeat(64))).rejects.toBeInstanceOf(PsnRefusedError);
+    });
+
+    it("a non-JSON answer is not a refusal", async () => {
+      on(/oauth\/token$/, () => new Response("<html>503</html>", { status: 503 }));
+      const err = await gw.refresh("old").then(
+        () => null,
+        (e: unknown) => e,
+      );
+      expect(err).toBeInstanceOf(Error);
+      expect(err).not.toBeInstanceOf(PsnRefusedError);
+    });
+  });
 
   it("sends Accept-Language and the auth header on every call", async () => {
     on(/trophySummary/, () => ({ accountId: "1", trophyLevel: "42", progress: 7, tier: 5, earnedTrophies: counts }));
