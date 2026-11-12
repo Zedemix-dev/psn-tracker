@@ -41,7 +41,7 @@ Créer une fois le réseau partagé par les deux stacks :
 Ensuite, vérifier son adresse (le « sous-réseau ») : Portainer → **Networks** → `psn-net`, colonne **IPV4 IPAM Subnet** ; ou en SSH `sudo docker network inspect psn-net`. Elle doit commencer par `172.16.` à `172.31.`.
 
 - Si c'est le cas, il n'y a rien à faire : `default.conf` fait déjà confiance à `172.16.0.0/12`, qui couvre toutes ces adresses.
-- Sinon (par exemple `10.x.x.x` ou `192.168.x.x`), ouvrir `/volume1/docker/psn-tracker/nginx/default.conf` sur le NAS et remplacer `172.16.0.0/12` par ce sous-réseau, puis redémarrer le conteneur `nginx`. Sans cela, nginx ne reconnaît pas le proxy DSM : toutes les connexions sembleraient venir de la même adresse, et la limite de tentatives de connexion bloquerait tout le monde.
+- Sinon (par exemple `10.x.x.x` ou `192.168.x.x`), ouvrir `/volume1/docker/psn-tracker/nginx/default.conf` sur le NAS et remplacer `172.16.0.0/12` par ce sous-réseau, puis redémarrer le conteneur `nginx` (seulement si la stack `infra` tourne déjà : à cette étape elle n'existe pas encore, elle est créée à l'étape 5, et nginx lira alors le fichier modifié). Sans cela, nginx ne reconnaît pas le proxy DSM : toutes les connexions sembleraient venir de la même adresse, et la limite de tentatives de connexion bloquerait tout le monde.
 
 ## 4. Secrets
 

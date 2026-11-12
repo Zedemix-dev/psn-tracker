@@ -236,6 +236,8 @@ npm run e2e:prod     # site en mode production sur http://127.0.0.1:3000 (lancer
 npm run e2e:sql -- "select count(*) from titles"   # requête SQL ponctuelle
 ```
 
+`e2e:prod` et `e2e:web` utilisent tous deux le port 3000 : un seul des deux tourne à la fois.
+
 Ensuite : se connecter avec l'identifiant de test, coller le NPSSO dans Settings, puis attendre la première synchro (~15 min pour 266 jeux).
 
 - Le worker exécute le code source (tsx) : après une modification de la synchro, il faut le redémarrer.

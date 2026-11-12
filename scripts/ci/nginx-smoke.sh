@@ -30,7 +30,25 @@ docker run -d --name "$proxy" --network "$net" \
 docker exec "$proxy" nginx -t
 echo "ok - nginx -t accepts deploy/nginx/default.conf"
 
+# Pull the curl image explicitly so a failed pull fails at once with a clear message.
+if ! docker pull "$curl_image" >/dev/null; then
+  echo "FAIL - could not pull $curl_image"
+  exit 1
+fi
+
 fetch() { docker run --rm --network "$net" "$curl_image" -sS "$@"; }
+
+# Runs a check's curl call; if curl itself fails (transport error), prints a FAIL line with what
+# was received instead of letting set -e abort silently.
+fetch_or_fail() {
+  local label="$1"; shift
+  local out
+  if ! out="$(fetch "$@" 2>&1)"; then
+    echo "FAIL - $label: the request itself failed, received: $out"
+    exit 1
+  fi
+  printf '%s' "$out"
+}
 
 ready=0
 for _ in $(seq 1 30); do
@@ -46,7 +64,7 @@ if [ "$ready" != 1 ]; then
 fi
 echo "ok - nginx answers through to the stub app"
 
-headers="$(fetch -o /dev/null -D - -H 'Accept-Encoding: gzip' "http://$proxy/big.json")"
+headers="$(fetch_or_fail "/big.json" -o /dev/null -D - -H 'Accept-Encoding: gzip' "http://$proxy/big.json")"
 if ! printf '%s\n' "$headers" | grep -qi '^content-encoding: gzip'; then
   echo "FAIL - /big.json is not gzipped; headers received:"
   printf '%s\n' "$headers"
@@ -54,7 +72,14 @@ if ! printf '%s\n' "$headers" | grep -qi '^content-encoding: gzip'; then
 fi
 echo "ok - JSON is gzipped"
 
-body="$(fetch -H 'X-Forwarded-For: 203.0.113.9, 192.168.1.50' "http://$proxy/ip")"
+headers10="$(fetch_or_fail "/big.json over HTTP/1.0" --http1.0 -o /dev/null -D - -H 'Accept-Encoding: gzip' "http://$proxy/big.json")"
+if ! printf '%s\n' "$headers10" | grep -qi '^content-encoding: gzip'; then
+  echo "FAIL - /big.json is not gzipped for an HTTP/1.0 request; headers received: $headers10"
+  exit 1
+fi
+echo "ok - JSON is gzipped for an HTTP/1.0 request"
+
+body="$(fetch_or_fail "/ip" -H 'X-Forwarded-For: 203.0.113.9, 192.168.1.50' "http://$proxy/ip")"
 case "$body" in
   *'"realIp":"192.168.1.50"'*) echo "ok - a forged X-Forwarded-For does not win (got 192.168.1.50)" ;;
   *) echo "FAIL - expected \"realIp\":\"192.168.1.50\", received: $body"; exit 1 ;;

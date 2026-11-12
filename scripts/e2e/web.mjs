@@ -1,4 +1,4 @@
-// Local end-to-end launcher: loads .data/e2e.env (git-ignored), then runs `next dev` on port 3000.
+// Local end-to-end launcher: loads .data/e2e.env (git-ignored), then runs `next dev` on 127.0.0.1:3000.
 // next dev re-spawns itself with NODE_OPTIONS, which rejects --env-file, hence this wrapper.
 import { spawn } from "node:child_process";
 process.loadEnvFile(".data/e2e.env");
