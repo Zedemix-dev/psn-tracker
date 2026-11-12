@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as images from "@/src/sync/images";
+import * as earnedTrophies from "./trophies";
 import type { Db } from "@/src/db/client";
 import { insertTitle, insertTrophies } from "@/tests/fixtures/profile";
 import { createTestDb } from "@/tests/helpers/db";
@@ -23,6 +24,18 @@ async function seedPlatinums(titleId: string, n: number, rate: number | null = 1
 }
 
 describe("getStatsData", () => {
+  it("reads the earned trophies once per run and per Paris day", async () => {
+    const spy = vi.spyOn(earnedTrophies, "getAllEarned");
+    await insertTitle(db, { id: "A", progress: 100 });
+    await getStatsData(db, { hideZero: false, now: new Date("2026-11-12T09:00:00Z") });
+    await getStatsData(db, { hideZero: false, now: new Date("2026-11-12T21:00:00Z") });
+    expect(spy).toHaveBeenCalledTimes(1);
+    // 23:30 UTC is already the 13th in Paris.
+    await getStatsData(db, { hideZero: false, now: new Date("2026-11-12T23:30:00Z") });
+    expect(spy).toHaveBeenCalledTimes(2);
+    spy.mockRestore();
+  });
+
   it("reads the image map once, or not at all when the page hands it over", async () => {
     const spy = vi.spyOn(images, "loadImageMap");
     await insertTitle(db, { id: "A", progress: 100 });

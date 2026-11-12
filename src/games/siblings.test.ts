@@ -1,6 +1,14 @@
 import { beforeEach, describe, expect, it } from "vitest";
+import { eq } from "drizzle-orm";
+import { getGameDetail } from "@/src/games/detail";
+import { parseGameQuery, queryGames } from "@/src/games/query";
+import { getStatsData } from "@/src/stats/load";
+import { advisorScope, getIncompleteGames, queryAdvisor } from "@/src/trophy-advisor/load";
+import { DEFAULT_ADVISOR_QUERY } from "@/src/trophy-advisor/query";
+import { queryTrophyLog } from "@/src/trophy-log/load";
+import { DEFAULT_LOG_QUERY } from "@/src/trophy-log/query";
 import type { Db } from "@/src/db/client";
-import { titles } from "@/src/db/schema";
+import { syncRuns, titles, trophies } from "@/src/db/schema";
 import { gameKey, loadSiblingIndex, withSiblings } from "@/src/games/siblings";
 import { createTestDb } from "@/tests/helpers/db";
 
@@ -93,5 +101,52 @@ describe("withSiblings", () => {
     await add("H4", "Game", ["PS4"]);
     await add("H5", "Game", ["PS5"], { hidden: true, publisher: "Hidden" });
     expect((await resolve("H4")).publisher).toBeNull();
+  });
+});
+
+describe("loadSiblingIndex cache", () => {
+  it("is reused until a run ends", async () => {
+    await add("A", "Same Game", ["PS5"]);
+    const first = await loadSiblingIndex(db);
+    expect(await loadSiblingIndex(db)).toBe(first);
+    const [run] = await db.insert(syncRuns).values({ kind: "daily", status: "running" }).returning();
+    await db.update(syncRuns).set({ status: "success", finishedAt: new Date("2026-11-12T10:00:00Z") }).where(eq(syncRuns.id, run.id));
+    await add("B", "Other Game", ["PS5"]);
+    const second = await loadSiblingIndex(db);
+    expect(second).not.toBe(first);
+    expect(second.size).toBe(2);
+  });
+
+  it("is not changed by the callers", async () => {
+    await add("A", "Same Game", ["PS5"], { lastPlayedAt: new Date("2026-11-01T00:00:00Z"), publisher: "Pub" });
+    await add("B", "Same Game", ["PS4"], { coverUrl: "https://img/b-cover.png" });
+    await add("C", "Zed", ["PS5"]);
+    await db.insert(trophies).values(
+      ["A", "B", "C"].map((titleId) => ({
+        titleId,
+        trophyId: 1,
+        groupId: "default",
+        type: "bronze" as const,
+        name: "T",
+        detail: "d",
+        iconUrl: "https://img/t.png",
+        earned: titleId !== "C",
+        earnedAt: titleId !== "C" ? new Date("2026-10-01T10:00:00Z") : null,
+      })),
+    );
+    const index = await loadSiblingIndex(db);
+    const before = structuredClone(index);
+    const paging = { offset: 0, limit: 100 };
+    const scope = advisorScope({ hideZero: false, advisorHideUnobtainable: false, advisorDlc: "all" });
+
+    await queryGames(db, parseGameQuery(new URLSearchParams()), { hideZero: false });
+    await getGameDetail(db, "B", new Map(), new Date("2026-11-12T10:00:00Z"));
+    await queryTrophyLog(db, DEFAULT_LOG_QUERY, paging);
+    await queryAdvisor(db, DEFAULT_ADVISOR_QUERY, scope, paging);
+    await getIncompleteGames(db, scope);
+    await getStatsData(db, { hideZero: false, now: new Date("2026-11-12T10:00:00Z") });
+
+    expect(await loadSiblingIndex(db)).toBe(index);
+    expect(index).toEqual(before);
   });
 });
