@@ -231,7 +231,8 @@ Le site et le worker ont besoin d'une même base. On utilise PGlite servi comme 
 npm run e2e:env      # une fois par PC : crée .data/e2e.env avec un identifiant de test (ligne 2 du fichier)
 npm run e2e:db       # base sur 127.0.0.1:5433 (à laisser tourner)
 npm run e2e:worker   # worker de synchro (à laisser tourner, applique les migrations)
-npm run e2e:web      # site sur http://localhost:3000 (ou configuration « e2e-web » du navigateur de l'app)
+npm run e2e:web      # site sur http://127.0.0.1:3000 (ou configuration « e2e-web » du navigateur de l'app)
+npm run e2e:prod     # site en mode production sur http://127.0.0.1:3000 (lancer « npm run build » avant)
 npm run e2e:sql -- "select count(*) from titles"   # requête SQL ponctuelle
 ```
 
