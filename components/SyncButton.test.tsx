@@ -11,6 +11,7 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh }) }));
 const status = (s: Partial<SyncStatus>): SyncStatus => ({
   status: "idle",
   lastSuccessAt: null,
+  lastFinishedAt: null,
   error: null,
   titlesDone: 0,
   titlesTotal: 0,
