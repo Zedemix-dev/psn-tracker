@@ -75,28 +75,6 @@ jobs:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
       - run: bash scripts/ci/nginx-smoke.sh
 
-  # The real image (built from the Dockerfile, layers shared with "image" through the GHA cache) run with the
-  # hardened settings of deploy/stack-site.yml in front of a real PostgreSQL. Not required by "image":
-  # it neither delays nor blocks the publication on main (it only reads the cache).
-  stack-smoke:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
-      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
-      - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
-        env:
-          DOCKER_BUILD_RECORD_UPLOAD: false
-        with:
-          context: .
-          platforms: linux/amd64
-          load: true
-          push: false
-          provenance: false
-          sbom: false
-          tags: psn-tracker:ci
-          cache-from: type=gha
-      - run: bash scripts/ci/stack-smoke.sh psn-tracker:ci
-
   image:
     runs-on: ubuntu-latest
     needs: [test, pg-smoke]
@@ -121,6 +99,7 @@ jobs:
           tags: |
             type=raw,value=latest
             type=sha,prefix=sha-,format=short
+      # Build once, load it into the local Docker, test that exact image, then push those same tags (main only).
       - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         env:
           # No build-record artifact per run: the job summary is enough, and artifacts eat the storage quota.
@@ -128,14 +107,30 @@ jobs:
         with:
           context: .
           platforms: linux/amd64
-          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          load: true
+          push: false
           # One plain image per push (no attestation manifests), so each push is a single GHCR version.
           provenance: false
           sbom: false
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: |
+            ${{ steps.meta.outputs.tags }}
+            psn-tracker:ci
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+      # The real image with the hardened settings of deploy/stack-site.yml, in front of a real PostgreSQL.
+      # A failure here blocks the publication below.
+      - name: Test the hardened containers
+        run: bash scripts/ci/stack-smoke.sh psn-tracker:ci
+      - name: Push the tested image to GHCR
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          TAGS: ${{ steps.meta.outputs.tags }}
+        run: |
+          set -euo pipefail
+          for tag in $TAGS; do
+            docker push "$tag"
+          done
       # Keep the 3 newest images (the current one + 2 to roll back to); older ones are deleted.
       # Needs the package's "Manage Actions access" to give this repository the Admin role (see deploy/README.md).
       - name: Prune old images in GHCR

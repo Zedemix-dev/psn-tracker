@@ -42,7 +42,7 @@ docker volume create "$media" >/dev/null
 
 docker run -d --name "$db" --network "$net" --network-alias postgres \
   -e POSTGRES_USER=psn -e POSTGRES_PASSWORD=psn -e POSTGRES_DB=psn \
-  --health-cmd "pg_isready -U psn -d psn" --health-interval 2s --health-timeout 5s --health-retries 30 \
+  --health-cmd "pg_isready -h 127.0.0.1 -U psn -d psn" --health-interval 2s --health-timeout 5s --health-retries 30 \
   postgres:16-alpine >/dev/null
 
 for _ in $(seq 1 60); do
@@ -55,6 +55,13 @@ if [ "$(docker inspect -f '{{.State.Health.Status}}' "$db")" != "healthy" ]; the
   exit 1
 fi
 echo "ok - postgres is healthy"
+
+# The media folder must be writable by uid 1000 without any capability, as on the NAS.
+if ! docker run --rm --cap-drop ALL --security-opt no-new-privileges:true --user node   -v "$media:/data/media" "$image" sh -c 'touch /data/media/.w && rm /data/media/.w'; then
+  echo "FAIL - /data/media is not writable by the node user" >&2
+  exit 1
+fi
+echo "ok - the media volume is writable"
 
 # Exactly the settings of deploy/stack-site.yml.
 hardening=(
@@ -87,7 +94,8 @@ started=0
 healthy=0
 SECONDS=0
 while [ "$SECONDS" -lt "$deadline_s" ]; do
-  if [ "$started" = 0 ] && docker logs "$worker" 2>&1 | grep -qF "[worker] started"; then
+  logs="$(docker logs "$worker" 2>&1)" || true
+  if [ "$started" = 0 ] && grep -qF "[worker] started" <<<"$logs"; then
     started=1
     echo "ok - the worker logged [worker] started"
   fi
