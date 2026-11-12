@@ -64,6 +64,13 @@
       "when": 1794418364693,
       "tag": "0008_followups_columns",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1794475754548,
+      "tag": "0009_hash_session_ids",
+      "breakpoints": true
     }
   ]
 }

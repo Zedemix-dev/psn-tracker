@@ -6,7 +6,8 @@ import { sessions } from "@/src/db/schema";
 import { createTestDb } from "@/tests/helpers/db";
 import { verifyLogin } from "@/src/auth/password";
 import { createLoginLimiter } from "@/src/auth/rate-limit";
-import { createSession, deleteAllSessions, validateSession } from "@/src/auth/sessions";
+import { SESSION_MAX_AGE_S } from "@/src/auth/cookie";
+import { createSession, deleteAllSessions, hashSessionId, validateSession } from "@/src/auth/sessions";
 
 const NOW = new Date("2026-11-07T10:00:00Z");
 
@@ -35,7 +36,7 @@ describe("sessions", () => {
   it("refreshes lastSeenAt only when older than one hour", async () => {
     const id = await createSession(db, NOW);
     const lastSeen = async () =>
-      (await db.select().from(sessions).where(eq(sessions.id, id)))[0].lastSeenAt;
+      (await db.select().from(sessions).where(eq(sessions.id, hashSessionId(id))))[0].lastSeenAt;
 
     const soon = new Date(NOW.getTime() + 59 * 60_000);
     await validateSession(db, id, soon);
@@ -44,6 +45,40 @@ describe("sessions", () => {
     const later = new Date(NOW.getTime() + 61 * 60_000);
     await validateSession(db, id, later);
     expect((await lastSeen()).getTime()).toBe(later.getTime());
+  });
+
+  it("stores only the hash of the session id", async () => {
+    const id = await createSession(db, NOW);
+    const rows = await db.select().from(sessions);
+    expect(rows).toHaveLength(1);
+    expect(rows[0].id).toBe(hashSessionId(id));
+    expect(rows[0].id).not.toBe(id);
+    expect(hashSessionId(id)).toMatch(/^[0-9a-f]{64}$/);
+  });
+
+  it("rejects and deletes a session not seen for more than 400 days", async () => {
+    const id = await createSession(db, NOW);
+    const limit = SESSION_MAX_AGE_S * 1000;
+    expect(await validateSession(db, id, new Date(NOW.getTime() + limit))).toBe(true);
+    const other = await createSession(db, NOW);
+    expect(await validateSession(db, other, new Date(NOW.getTime() + limit + 1))).toBe(false);
+    const left = await db.select().from(sessions);
+    expect(left.map((r) => r.id)).toEqual([hashSessionId(id)]);
+    expect(await validateSession(db, id, new Date(NOW.getTime() + 2 * limit + 1))).toBe(false);
+    expect(await db.select().from(sessions)).toHaveLength(0);
+  });
+
+  it("createSession sweeps expired sessions", async () => {
+    await createSession(db, new Date(NOW.getTime() - 401 * 24 * 60 * 60_000));
+    const fresh = await createSession(db, NOW);
+    const rows = await db.select().from(sessions);
+    expect(rows.map((r) => r.id)).toEqual([hashSessionId(fresh)]);
+  });
+
+  it("any cookie value is just an unknown session", async () => {
+    for (const value of ["", "x".repeat(5000), "é💥 ;="]) {
+      expect(await validateSession(db, value, NOW)).toBe(false);
+    }
   });
 });
 

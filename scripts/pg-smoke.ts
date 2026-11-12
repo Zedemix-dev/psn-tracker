@@ -1,6 +1,7 @@
 // CI smoke test against a real Postgres (postgres.js paths the PGlite tests cannot cover).
 // Usage: DATABASE_URL=postgres://... npx tsx scripts/pg-smoke.ts
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
+import { hashSessionId } from "@/src/auth/sessions";
 import { createDb, type Db } from "@/src/db/client";
 import { runMigrations } from "@/src/db/migrate";
 import { titles, trophies, trophyGroups } from "@/src/db/schema";
@@ -145,6 +146,11 @@ async function main(): Promise<void> {
   expect("peekSyncRequest keeps the request", (await peekSyncRequest(db)) !== null, true);
   await clearSyncRequest(db, asked);
   expect("clearSyncRequest", (await peekSyncRequest(db)) === null, true);
+  const hashed = (await db.execute(
+    sql`select encode(sha256(convert_to('pre-0009-session', 'UTF8')), 'hex') as h`,
+  )) as unknown as { h: string }[] | { rows: { h: string }[] };
+  const hashRows = Array.isArray(hashed) ? hashed : hashed.rows;
+  expect("migration 0009 hashes like hashSessionId", hashRows[0].h, hashSessionId("pre-0009-session"));
   await smokeTrophyLog(db);
   await smokeAdvisor(db);
 }
