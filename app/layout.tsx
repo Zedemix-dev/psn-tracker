@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
-import { Sora } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 
-const sora = Sora({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
+// The variable TTF is shipped in the repo (also read by the Plat Wall PNG export), so the build needs no network.
+const sora = localFont({
+  src: "../public/fonts/Sora-Variable.ttf",
+  weight: "300 700",
   variable: "--font-sora",
   display: "swap",
 });
