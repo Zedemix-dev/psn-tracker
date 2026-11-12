@@ -88,7 +88,7 @@ Ces points ne se vérifient que sur le NAS. Chaque point dit à quel moment le f
    - Pas bon : une erreur 500, ou une page d'attente qui ne part jamais. Dans ce cas, lisez les logs du conteneur `worker`.
 5. **En-têtes de protection.** *Quand : dès la première connexion.* Ouvrez le site dans le navigateur, puis les outils de développement (F12) → onglet **Réseau** → rechargez → cliquez sur la requête de la page → **En-têtes de réponse**.
    - Sur une page : `X-Frame-Options: DENY` et `Content-Security-Policy: frame-ancestors 'none'`.
-   - Sur une image sous `/media/…` : `Content-Security-Policy` avec `sandbox`, et `X-Content-Type-Options: nosniff`. L'image s'affiche toujours normalement dans les pages.
+   - Sur une image sous `/media/…` : `Content-Security-Policy: default-src 'none'; style-src 'unsafe-inline'; sandbox; frame-ancestors 'none'`, et `X-Content-Type-Options: nosniff`. L'image s'affiche toujours normalement dans les pages.
    - Ces en-têtes sont posés par l'app : il n'y a rien à régler dans nginx ni dans DSM.
 6. **Première synchro de cette version.** *Quand : une fois la première synchro terminée.*
    - Ce qu'on doit voir : toutes les listes de trophées PS5 sont rechargées une fois (migration 0005), donc la synchro est plus longue que d'habitude.

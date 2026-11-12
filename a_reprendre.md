@@ -2,6 +2,10 @@
 
 Ce fichier est destiné à l'agent (ou à la personne) qui reprend le projet. Il donne le résultat d'un audit complet et la liste, par priorité, de ce qu'il reste à corriger. **Rien n'a été modifié dans le code pendant l'audit** : ce fichier est le seul ajout.
 
+> **Suivi au 12 novembre 2026, après la fusion de la PR #19 (`fix/followups`)** : l'utilisateur garde ce fichier, car ses points devront être vérifiés ou corrigés un jour.
+> - **Fait** : S1, corrigé dans la PR #19 (voir sa section) ; la mise à jour de `docs/ETAT-DU-PROJET.md` demandée en section 8 ; la valeur exacte de la CSP de `/media` dans `deploy/README.md`, étape 7, point 5.
+> - **À faire** : tout le reste, sur une branche `fix/audit`, en suivant l'ordre de la section 9. Rien n'est commencé.
+
 ## 1. Ce qui a été audité, et comment
 
 - **Version auditée** : branche `fix/followups`, commit `e28f726` (16 commits d'avance sur `main`, spec section 19).
@@ -20,7 +24,7 @@ Ce fichier est destiné à l'agent (ou à la personne) qui reprend le projet. Il
 - Les temps mesurés l'ont été pendant qu'une synchro tournait : ils ne valent pas référence.
 
 ### À savoir avant de toucher au dépôt
-- **Une autre session Claude exécutait le plan `docs/superpowers/plans/2026-11-11-followups.md` pendant l'audit**, dans ce même dossier (tâche 14 terminée, vérification avec les vraies données en cours). Avant de commencer : regarder `git status`, `git log`, et `.superpowers/sdd/2026-11-11-followups/progress.md` s'il existe sur ce PC. Ne rien écraser, ne pas changer de branche tant que cette branche n'est pas fusionnée.
+- ~~Une autre session Claude exécutait le plan `docs/superpowers/plans/2026-11-11-followups.md` pendant l'audit.~~ Cette branche est fusionnée (PR #19, 12 novembre 2026) : partir d'un `main` à jour.
 - `.claude/launch.json` est modifié en local (configuration `e2e-prod`) et n'est pas commité : c'est voulu, ne pas l'ajouter.
 - Le processus de `CLAUDE.md` s'applique à tout ce qui suit : décision reportée dans la spec, plan, branche, vérification avec les vraies données, PR créée par l'utilisateur. **Les points de design (section 6) demandent une validation de l'utilisateur avant toute construction.**
 
@@ -30,15 +34,17 @@ Ce fichier est destiné à l'agent (ou à la personne) qui reprend le projet. Il
 |---|---|---|
 | Design | **Bon** | Conforme aux mesures de la spec sur les 7 pages, aucune image cassée ni rectangulaire, aucun défilement horizontal à 375 px. 7 retouches mineures, surtout sur téléphone. |
 | Code | **Propre** | Typage strict sans `any`, aucun `TODO`, SQL toujours paramétré, 1 114 tests. Quelques doublons et pas de linter. |
-| Sécurité | **Bonne, 1 défaut réel** | Le `sandbox` de `/media` n'est pas appliqué en production (S1). Le reste est du durcissement. |
+| Sécurité | **Bonne, 1 défaut réel** | Le `sandbox` de `/media` n'est pas appliqué en production (S1, corrigé depuis dans la PR #19). Le reste est du durcissement. |
 | Performances | **Bonnes** | Pages en ~200 ms. Un gain net et facile : compresser les réponses JSON (P1). |
 | Conformité à la spec | **Conforme, 3 écarts** | S1 (19.3.1), le bandeau « token expired » sur panne réseau (R1), les nombres de l'historique des synchros (D5). |
 
-Rien de bloquant pour le déploiement, mais **S1, P1, S2 et R1 sont à faire avant** : ils sont courts et le premier contredit la spec.
+Rien de bloquant pour le déploiement, mais **S1, P1, S2 et R1 sont à faire avant** : ils sont courts et le premier contredit la spec. *(12 novembre : S1 est corrigé ; restent P1, S2 et R1.)*
 
 ## 3. Priorité 1 : à corriger avant le déploiement sur le NAS
 
 ### S1. Le `sandbox` de `/media` est écrasé par l'en-tête global (sécurité, moyenne)
+> **Corrigé dans la PR #19** (commit `771bd27`). `next.config.ts` ajoute une règle `/media/:path*` après la règle globale : Next applique les règles dans l'ordre et la dernière l'emporte pour une même clé. La valeur `MEDIA_CSP` vient de `src/lib/security-headers.ts`, partagée par la configuration et la route : `default-src 'none'; style-src 'unsafe-inline'; sandbox; frame-ancestors 'none'`. Vérifié sur le build de production local, connecté, avec `fetch("/media/…")`. `deploy/README.md`, étape 7, point 5, donne maintenant cette valeur exacte. Le commentaire faux de Q5 est toujours là.
+
 - **Constat, mesuré sur le serveur de production local** : une image servie par `/media/psn/...` répond avec `Content-Security-Policy: frame-ancestors 'none'`, et non avec `default-src 'none'; style-src 'unsafe-inline'; sandbox`. `X-Content-Type-Options: nosniff` et `Cache-Control`, posés par la même route, sont bien là.
 - **Cause** : `next.config.ts` applique `SITE_HEADERS` à `source: "/:path*"`, donc aussi à `/media`. Pour une même clé, l'en-tête de `headers()` remplace celui que pose la route (`app/media/[...path]/route.ts:35`).
 - **Pourquoi les tests ne le voient pas** : `app/media/[...path]/route.test.ts` appelle la route seule, sans la configuration de Next.
@@ -126,7 +132,7 @@ Non défauts, vérifiés : les textes coupés par « … » dans la carte du car
 | Q2 | **Doublons** : `pick` écrit 4 fois (`src/games/query.ts`, `src/plat-wall/query.ts`, `src/trophy-advisor/query.ts`, `src/trophy-log/query.ts`), `escapeLike` 2 fois, `earnedVisible` 2 fois (`src/cabinet/repo.ts:16`, `src/stats/trophies.ts:57`). | Les regrouper dans `src/lib/`. |
 | Q3 | **Deux listes à défilement** : `components/GameList.tsx` avec `list-snapshot.ts`, et `components/ProgressiveList.tsx` avec `place-snapshot.ts`, qui font presque la même chose. | Passer Games sur `ProgressiveList`. Chantier à part, avec ses tests de retour arrière. |
 | Q4 | **Paramètres inutilisés** : `_now` dans `computeMilestones` (`src/stats/milestones.ts:39`) et dans `upsertTitleRow` (`src/sync/title.ts:37`). | Les retirer. |
-| Q5 | **Commentaire faux** dans `next.config.ts` : il dit que le proxy saute la page de connexion, alors que `proxy.ts` la traite. | Corriger la phrase en même temps que S1. |
+| Q5 | **Commentaire faux** dans `next.config.ts` : il dit que le proxy saute la page de connexion, alors que `proxy.ts` la traite. | Corriger la phrase (S1 a été corrigé sans elle). |
 | Q6 | **Police téléchargée au build** : `app/layout.tsx` utilise `next/font/google`, donc le build dépend de Google Fonts, alors que `public/fonts/Sora-Variable.ttf` est déjà dans le dépôt pour l'export PNG. | `next/font/local` avec ce fichier : un build reproductible, sans réseau. |
 | Q7 | **`app/globals.css`** : un seul fichier de 48 Ko pour tout le site. Lisible, mais chaque page le charge en entier. | Sans urgence. À découper par page en modules CSS si une nouvelle page arrive. |
 
@@ -150,16 +156,16 @@ Points forts à garder : pas un seul `any` ni `@ts-ignore` hors tests, aucun `TO
 | 16. Trophy Log | Conforme | Numéros, heures avec secondes, ordre. Voir P1 pour « Show all ». |
 | 17. Trophy Advisor | Conforme | 3 réglages, colonne de 41 jeux. Les réglages n'ont pas été actionnés (lecture seule). |
 | 18. Stats | Conforme | Les 6 blocs dans l'ordre, niveau 530 sur « Do No Evil ». |
-| 19. Suivis | **Écart sur 19.3.1** | S1. Le reste est en place dans le code. La vérification 19.9 était en cours dans l'autre session. |
+| 19. Suivis | **Écart sur 19.3.1** | S1. Le reste est en place dans le code. La vérification 19.9 était en cours dans l'autre session. *(12 novembre : S1 corrigé et 19.9 faite, PR #19 fusionnée.)* |
 
-**Documentation à mettre à jour en fin de branche `fix/followups`** : `docs/ETAT-DU-PROJET.md` ne parle pas encore de cette branche, et sa section 3 liste toujours les vérifications du premier déploiement que la spec 19.2 demande de remplacer par un renvoi au guide. À faire par la session qui termine la branche, ou à vérifier après sa fusion.
+**Documentation à mettre à jour en fin de branche `fix/followups`** : `docs/ETAT-DU-PROJET.md` ne parle pas encore de cette branche, et sa section 3 liste toujours les vérifications du premier déploiement que la spec 19.2 demande de remplacer par un renvoi au guide. À faire par la session qui termine la branche, ou à vérifier après sa fusion. *(Fait dans la PR #19.)*
 
 ## 9. Ordre de travail conseillé
 
-1. **Attendre la fin de `fix/followups`** (vérification 19.9, PR, fusion par l'utilisateur), puis `git switch main` et `git pull`.
+1. ~~**Attendre la fin de `fix/followups`**~~ : fusionnée (PR #19). Partir de `git switch main` puis `git pull`.
 2. **Écrire la décision dans la spec** : une section 20 « Suites du check-up du 11 novembre 2026 », qui reprend les points retenus par l'utilisateur. Lui demander ce qu'il garde : S7 et toute la section 6 sont ses choix.
 3. **Plan** dans `docs/superpowers/plans/` et branche `fix/audit` :
-   - lot 1, avant le déploiement : S1, P1, S2, R1 ;
+   - lot 1, avant le déploiement : P1, S2, R1 (S1 est fait) ;
    - lot 2, durcissement : S3, S4, S5, S6, R2 ;
    - lot 3, confort : P2, P3, P4, R3, Q1, Q2, Q4, Q5, Q6 ;
    - lot 4, design, après validation : D1 à D7.
