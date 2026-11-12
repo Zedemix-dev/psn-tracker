@@ -18,6 +18,8 @@ describe("security headers", () => {
     expect(SITE_HEADERS).toEqual([
       { key: "X-Frame-Options", value: "DENY" },
       { key: "Content-Security-Policy", value: "frame-ancestors 'none'" },
+      { key: "Referrer-Policy", value: "same-origin" },
+      { key: "X-Content-Type-Options", value: "nosniff" },
     ]);
   });
   it("next.config headers() applies the site headers to every path, then the media CSP", async () => {
@@ -40,5 +42,15 @@ describe("security headers", () => {
       expect(h["content-security-policy"]).toBe("frame-ancestors 'none'");
       expect(h["x-frame-options"]).toBe("DENY");
     }
+  });
+  it("after the merge, every path gets the referrer policy and nosniff", async () => {
+    for (const p of ["/", "/login", "/api/games", "/media/psn/a.svg", "/_next/static/x.js"]) {
+      const h = await headersFor(p);
+      expect(h["referrer-policy"]).toBe("same-origin");
+      expect(h["x-content-type-options"]).toBe("nosniff");
+    }
+  });
+  it("does not advertise Next.js", () => {
+    expect(nextConfig.poweredByHeader).toBe(false);
   });
 });

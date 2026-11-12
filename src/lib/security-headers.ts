@@ -1,7 +1,9 @@
-/** Headers for every response of the site: it must never be rendered inside a frame. */
+/** Headers for every response of the site: never rendered inside a frame, referrer kept same-origin, no MIME sniffing. */
 export const SITE_HEADERS: { key: string; value: string }[] = [
   { key: "X-Frame-Options", value: "DENY" },
   { key: "Content-Security-Policy", value: "frame-ancestors 'none'" },
+  { key: "Referrer-Policy", value: "same-origin" },
+  { key: "X-Content-Type-Options", value: "nosniff" },
 ];
 
 /** Files under /media may be user-influenced (SVG): they cannot run any script. Images in <img> still display. */

@@ -72,6 +72,7 @@ describe("GameInfoPanel", () => {
     expect(pyx).toHaveAttribute("href", "https://pyx.example/x");
     expect(psnp).toHaveAttribute("href", "https://psnp.example/y");
     expect(pyx).toHaveAttribute("target", "_blank");
-    expect(pyx).toHaveAttribute("rel", "noopener");
+    expect(pyx).toHaveAttribute("rel", "noopener noreferrer");
+    expect(psnp).toHaveAttribute("rel", "noopener noreferrer");
   });
 });
