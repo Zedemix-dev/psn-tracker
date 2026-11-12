@@ -1,6 +1,6 @@
 # PSN Tracker : état du projet et feuille de route
 
-*Mis à jour le 12 novembre 2026 : les lots 1 et 2 de l'audit `a_reprendre.md` sont fusionnés dans `main` (PR #21), CI verte. Reste le déploiement sur le NAS. Le reste de l'audit est noté comme non traité.*
+*Mis à jour le 12 novembre 2026 : tous les points de l'audit `a_reprendre.md` sauf le design sont faits et vérifiés sur la branche `fix/audit-suite` (PR à créer). Ensuite : les retouches de design D1 à D7 sur maquettes, puis le déploiement sur le NAS.*
 
 Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un autre PC, commence par le lire. Le fichier `CLAUDE.md` à la racine le demande automatiquement.
 
@@ -32,8 +32,9 @@ Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un aut
 | `docs/superpowers/plans/2026-11-11-stats-touch.md` | Le plan des infobulles au doigt et du défilement de côté (3 tâches). Terminé. |
 | `docs/superpowers/specs/2026-11-11-psn-tracker-maquette-suivis.html` | Maquette validée des compteurs du bandeau sur téléphone (v2, version B). |
 | `docs/superpowers/plans/2026-11-11-followups.md` | Le plan des points de suivi de la phase 1 (14 tâches). Terminé. |
-| `a_reprendre.md` | Audit complet du 11 novembre 2026, écrit par une autre session : points à vérifier ou corriger un jour, par priorité. S1 est corrigé (PR #19) ; P1, S2, R1, S3, S4, S5, S6 et R2 sont fusionnés (PR #21, spec 20) ; chaque autre point est marqué « Non traité ». |
+| `a_reprendre.md` | Audit complet du 11 novembre 2026, écrit par une autre session. S1 est corrigé (PR #19) ; P1, S2, R1, S3 à S6 et R2 sont fusionnés (PR #21, spec 20) ; tous les autres points sauf le design sont faits sur `fix/audit-suite` (spec 21) ; restent les retouches de design D1 à D7. |
 | `docs/superpowers/plans/2026-11-12-audit.md` | Le plan des lots 1 et 2 de l'audit (10 tâches). Terminé, fusionné (PR #21). |
+| `docs/superpowers/plans/2026-11-12-audit-suite.md` | Le plan de la fin de l'audit hors design (13 tâches pour les agents, plus les relevés et la vérification). Terminé sur `fix/audit-suite`. |
 | `deploy/README.md` | Guide pas à pas du déploiement sur le NAS. |
 | `.superpowers/brainstorm/maquettes/` | Toutes les maquettes intermédiaires : `accueil-v1` à `v12`, `jeu-v1` à `v6` (la v6 compare les images de groupe : carrées ou absentes), `platwall-v1` à `v3`, `trophylog-v1` et `v2`, `advisor-v1` à `v4`, `stats-v1` à `v6` (les v5 et v6 : le graphique des années qui défile), `suivis-v1` et `v2` (compteurs du bandeau sur téléphone, tuile des images à coins arrondis). |
 
@@ -216,15 +217,42 @@ L'utilisateur a choisi le 12 novembre 2026 de traiter, avant le déploiement, le
 - **CI verte** sur github.com, dont les jobs `nginx-smoke` (vrai nginx, vrai `default.conf`) et `pg-smoke` (empreinte des sessions sur un vrai PostgreSQL 16). Reste à vérifier sur le NAS : la compression, HSTS et la vraie adresse du client (guide, étape 7).
 - 123 fichiers de tests, 1 145 tests. Migration 0009.
 
+### Fin de l'audit, hors design (branche `fix/audit-suite`, spec section 21, PR à créer)
+L'utilisateur a décidé le 12 novembre 2026 de finir **tous** les points restants de `a_reprendre.md` avant le déploiement. Cette branche les traite tous, sauf le design (D1 à D7, branche suivante) :
+- **S7, npsso** : il n'est plus gardé ; la migration 0010 supprime la colonne. Personne ne doit le recoller.
+- **P2, P3, caches** : Stats et l'index des jeux restent en mémoire jusqu'à la synchro suivante. Le cache se vide aussi quand la liste des non obtenables est appliquée (date `applied_at`, migration 0010). Stats répond en environ 35 ms au lieu de 200.
+- **P4, page d'un jeu** : elle ne se redessine plus toutes les 3 s pendant une synchro, seulement une fois à la fin de chaque synchro.
+- **P6, P7, R3, worker** : couleur de tuile pour les seules icônes ; 500 synchros gardées dans l'historique ; le rafraîchissement quotidien télécharge les images.
+- **Q1, linter** : ESLint (configuration officielle de Next), lancé par `npm run lint` et par la CI. Il vit dans son propre dossier `tools/eslint/`, avec une copie de TypeScript 6, car ESLint ne lit pas encore TypeScript 7 ; le projet garde une seule TypeScript 7.
+- **Q2, Q4, Q5** : fonctions en double regroupées, paramètres inutiles retirés, commentaire corrigé.
+- **Q3, liste Games** : elle utilise la liste partagée avec Trophy Log et Trophy Advisor. Elle garde ses lignes dans l'historique de l'onglet, donc le retour depuis une page de jeu reste immédiat.
+- **Q6, police** : Sora vient du dépôt (`next/font/local`), le build ne dépend plus de Google Fonts.
+- **Q7, CSS** : `globals.css` est découpé par page (`app/styles/`).
+- **P5, tests** : Vitest en projets node et jsdom, avec des processus partagés là où c'est sûr ; gain modeste (environ 6 %), car les tests avec base de données restent isolés.
+- **S8, versions figées** : image de départ Docker et actions GitHub désignées par leur empreinte ; `next` 16.4.6, `postgres` 4.1.1, PGlite 0.5.16, pglite-socket 0.2.19 ; **Dependabot** propose les mises à jour chaque semaine (`sharp` exclu : il se met à jour à la main avec le `Dockerfile`).
+- **S9, conteneurs durcis** : `app` et `worker` sans droits système, limités à 768 Mo (tas Node à 576 Mo) et en priorité basse pour le processeur (`cpu_shares: 512`, Plex passe d'abord) ; `postgres` 512 Mo, `nginx` 64 Mo ; un healthcheck pour `app`. La CI lance la vraie image avec ces réglages devant un vrai PostgreSQL avant de la publier.
+- **S10** : risque accepté, noté en spec 14.5.
+- **Guide de déploiement** : conteneur « healthy », partage du NAS avec Plex (étape 7, point 12), mise à jour des deux stacks, PR de Dependabot, que faire si un conteneur est tué faute de mémoire.
+- **Vérifié avec les vraies données** le 12 novembre 2026, sur le build de production :
+  - migration 0010 appliquée, synchro sans recoller le npsso ;
+  - temps de réponse : Games 80 à 100 ms, Stats environ 35 ms, Trophy Log et Trophy Advisor environ 60 ms ;
+  - cache vidé après une synchro et après un « Save » de la liste des non obtenables ;
+  - la page d'un jeu se redessine une fois, à la fin de la synchro ;
+  - rafraîchissement quotidien avec son étape d'images ;
+  - CSS découpé : style calculé de chaque élément identique sur 9 pages à 1 630 et 375 px ; police locale : rendu identique ;
+  - liste Games : styles identiques, retour arrière immédiat (après une page et après « Show all »), filtres, tri, recherche ;
+  - pics de mémoire : 436 Mo pour l'export PNG le plus lourd, 436 Mo pour le worker sur les miniatures des bannières 4K.
+- **Non vérifiable ici** : la CI sur github.com (jobs `test` avec le linter, `pg-smoke`, `nginx-smoke`, `image` avec les conteneurs durcis) et le NAS (guide, étape 7, dont le point 12).
+- 127 fichiers de tests, 1 181 tests. Migration 0010.
+
 ## 3. Ce qui reste à faire, dans l'ordre
-1. **Déployer sur le NAS** en suivant `deploy/README.md` (décidé le 9 novembre 2026). Les points de suivi sont fusionnés (PR #19). Les lots 1 et 2 de l'audit sont fusionnés (PR #21) : copier le nouveau `deploy/nginx/default.conf` sur le NAS (guide, étape 2).
+1. **Fusionner `fix/audit-suite`** (PR à créer), après avoir vérifié sur github.com que les quatre jobs de la CI sont verts.
+2. **Retouches de design D1 à D7** (`a_reprendre.md`, section 6), sur une branche `feat/design-retouches` : maquettes dans le navigateur de l'app, validées par l'utilisateur avant toute construction (décidé le 12 novembre 2026 : avant le déploiement).
+3. **Déployer sur le NAS** en suivant `deploy/README.md` (décidé le 9 novembre 2026, après la fin de l'audit). Copier le nouveau `deploy/nginx/default.conf` (étape 2) et les deux stacks à jour.
    - Avant tout, vérifier sur github.com (onglet Actions, le dépôt est privé) que la CI de `main` est verte après la dernière fusion, et que l'image a été publiée.
-   - Juste après la première publication, donner une seule fois le rôle **Admin** au dépôt dans « Manage Actions access » du package GHCR (étape 1.5).
-   - Faire les vérifications du premier déploiement de l'étape 7 du guide. Chacune dit quand la faire et ce qu'on doit voir.
-2. **Points de l'audit** (`a_reprendre.md`) :
-   - les lots 1 et 2 sont fusionnés dans `main` (PR #21, CI verte) ;
-   - restent, non traités par décision du 12 novembre 2026 : le lot 3 (P2, P3, P4, R3, Q1, Q2, Q4, Q5, Q6), S7 (garder ou non le npsso, choix de l'utilisateur), les retouches de design D1 à D7 (à valider sur maquette avant toute construction), et les points laissés pour après le NAS (Q3, P5, P6, P7, S8, S9, Q7). Chaque point porte sa mention dans le fichier.
-3. **Points laissés tels quels** : `docs/superpowers/plans/2026-11-08-phase1-suivis.md` marque chaque point réglé ; ce qui reste est un choix assumé (coins transparents de la tuile, spec 19.6).
+   - Juste après la première publication, donner une seule fois le rôle **Admin** au dépôt dans « Manage Actions access » du package GHCR (étape 1.5). Vérifier aussi qu'une publication n'ajoute qu'une version au package et que l'étiquette `sha-…` précédente se télécharge toujours.
+   - Faire les vérifications du premier déploiement de l'étape 7 du guide, dont le partage du NAS avec Plex (point 12).
+4. **Points laissés tels quels** : `docs/superpowers/plans/2026-11-08-phase1-suivis.md` marque chaque point réglé ; ce qui reste est un choix assumé (coins transparents de la tuile, spec 19.6). Dans `a_reprendre.md`, après cette branche, il ne reste que D1 à D7.
 
 ## 4. Comment reprendre dans une nouvelle conversation
 Pour démarrer une page, il suffit de le dire, par exemple « On attaque Trophy Log ». Avec le plugin superpowers installé (voir 6), Claude lance de lui-même le bon processus. Pour être sûr, on peut aussi le demander explicitement : « utilise le skill brainstorming ».
@@ -260,6 +288,8 @@ npm run e2e:worker   # worker de synchro (à laisser tourner, applique les migra
 npm run e2e:web      # site sur http://127.0.0.1:3000 (ou configuration « e2e-web » du navigateur de l'app)
 npm run e2e:prod     # site en mode production sur http://127.0.0.1:3000 (lancer « npm run build » avant)
 npm run e2e:sql -- "select count(*) from titles"   # requête SQL ponctuelle
+npm ci --prefix tools/eslint   # une fois par PC : outils du linter (dossier à part, TypeScript 6)
+npm run lint         # linter, 0 erreur et 0 avertissement attendus
 ```
 
 `e2e:prod` et `e2e:web` utilisent tous deux le port 3000 : un seul des deux tourne à la fois.
@@ -270,7 +300,7 @@ Ensuite : se connecter avec l'identifiant de test, coller le NPSSO dans Settings
 - Sous Windows, arrêter `npm run e2e:worker` n'arrête que npm : les processus `node.exe` du worker continuent. Avant de le relancer, les arrêter, sinon plusieurs workers synchronisent en même temps.
 
 ## 6. Mettre en place un autre PC
-1. Cloner `https://github.com/Zedemix-dev/psn-tracker` (dépôt privé), puis `npm ci`.
+1. Cloner `https://github.com/Zedemix-dev/psn-tracker` (dépôt privé), puis `npm ci` et `npm ci --prefix tools/eslint` (le linter a son propre dossier).
 2. Dans Claude Code, installer les plugins **superpowers** et **frontend-design**, depuis le marketplace officiel `claude-plugins-official`. Sans superpowers, les skills du processus (brainstorming, plans, subagent-driven) n'existent pas.
 3. Pour les tests en local : `npm run e2e:env`.
 4. `AGENTS.md` (consignes Next.js 16 que `CLAUDE.md` demande de lire) est ignoré par git : il est créé au premier `npm run dev` ou `npm run e2e:web`. Les guides de Next sont dans `node_modules/next/dist/docs/` après `npm ci`.

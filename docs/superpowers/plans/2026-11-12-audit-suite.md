@@ -1,5 +1,7 @@
 # PSN Tracker : fin de l'audit hors design (branche `fix/audit-suite`), Implementation Plan
 
+> **Statut :** tâches 1 à 15 terminées le 12 novembre 2026 sur la branche `fix/audit-suite`, avec les relevés C1 et C2, des corrections après relecture (tâches 2, 5, 8, 11, 12) et une vague de corrections après la relecture finale. Les cases ne sont pas cochées : la progression se lit dans `git log` et dans `docs/ETAT-DU-PROJET.md`.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal :** finir tous les points restants de `a_reprendre.md` sauf le design : S7, P2, P3, P4, P6, P7, R3, Q1 à Q7, P5, S8, S9 (plus Dependabot), S10 étant déjà noté en spec 14.5.
