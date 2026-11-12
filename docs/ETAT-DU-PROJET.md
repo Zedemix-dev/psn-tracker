@@ -1,6 +1,6 @@
 # PSN Tracker : état du projet et feuille de route
 
-*Mis à jour le 12 novembre 2026 : tous les points de suivi de la phase 1 sont réglés et fusionnés dans `main` (PR #19), CI verte. Reste le déploiement sur le NAS. L'audit `a_reprendre.md` liste d'autres points à reprendre un jour.*
+*Mis à jour le 12 novembre 2026 : les lots 1 et 2 de l'audit `a_reprendre.md` sont faits et vérifiés sur la branche `fix/audit` (PR à créer). Ensuite : la fusionner, puis déployer sur le NAS. Le reste de l'audit est noté comme non traité.*
 
 Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un autre PC, commence par le lire. Le fichier `CLAUDE.md` à la racine le demande automatiquement.
 
@@ -32,7 +32,8 @@ Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un aut
 | `docs/superpowers/plans/2026-11-11-stats-touch.md` | Le plan des infobulles au doigt et du défilement de côté (3 tâches). Terminé. |
 | `docs/superpowers/specs/2026-11-11-psn-tracker-maquette-suivis.html` | Maquette validée des compteurs du bandeau sur téléphone (v2, version B). |
 | `docs/superpowers/plans/2026-11-11-followups.md` | Le plan des points de suivi de la phase 1 (14 tâches). Terminé. |
-| `a_reprendre.md` | Audit complet du 11 novembre 2026, écrit par une autre session : points à vérifier ou corriger un jour, par priorité. S1 est corrigé (PR #19), le reste n'est pas commencé. |
+| `a_reprendre.md` | Audit complet du 11 novembre 2026, écrit par une autre session : points à vérifier ou corriger un jour, par priorité. S1 est corrigé (PR #19) ; P1, S2, R1, S3, S4, S5, S6 et R2 sont faits sur `fix/audit` (spec 20) ; chaque autre point est marqué « Non traité ». |
+| `docs/superpowers/plans/2026-11-12-audit.md` | Le plan des lots 1 et 2 de l'audit (10 tâches). Terminé sur `fix/audit`. |
 | `deploy/README.md` | Guide pas à pas du déploiement sur le NAS. |
 | `.superpowers/brainstorm/maquettes/` | Toutes les maquettes intermédiaires : `accueil-v1` à `v12`, `jeu-v1` à `v6` (la v6 compare les images de groupe : carrées ou absentes), `platwall-v1` à `v3`, `trophylog-v1` et `v2`, `advisor-v1` à `v4`, `stats-v1` à `v6` (les v5 et v6 : le graphique des années qui défile), `suivis-v1` et `v2` (compteurs du bandeau sur téléphone, tuile des images à coins arrondis). |
 
@@ -192,12 +193,37 @@ Tous les points mis de côté pendant la phase 1 sont réglés, à la demande de
 - **CI verte** sur github.com après la fusion. Reste à vérifier sur le NAS ce que décrit le guide, étape 7.
 - 122 fichiers de tests, 1 121 tests. Migration 0008.
 
+### Suites de l'audit, lots 1 et 2 (branche `fix/audit`, spec section 20, PR à créer)
+L'utilisateur a choisi le 12 novembre 2026 de traiter, avant le déploiement, les lots 1 et 2 de l'audit `a_reprendre.md` :
+- **P1, compression** : nginx compresse les réponses JSON (Next ne le fait pas pour `/api` : 6,4 Mo pour « Show all » du Trophy Log), aussi pour les requêtes HTTP/1.0 du proxy DSM.
+- **S2, serveurs de test** : `e2e:web` et le nouveau `e2e:prod` n'écoutent que sur `127.0.0.1`.
+- **R1, token PSN** : `psn-api` ne signalait jamais un refus, donc un vrai token refusé n'affichait jamais « PSN token expired ». Le site distingue maintenant :
+  - le refus (bandeau « PSN token expired ») ;
+  - le PSN injoignable (« Couldn't reach PSN » dans l'historique, sans bandeau) ;
+  - toute autre erreur (« PSN token refresh failed (…) »).
+  Le renouvellement a un délai de 20 s, et une réponse qui arrive après ce délai est quand même enregistrée.
+- **S3, en-têtes** : `Referrer-Policy: same-origin` et `nosniff` partout, plus de `X-Powered-By`, `noreferrer` sur les liens PowerPyx et PSNProfiles. HSTS se coche dans la règle du proxy DSM (guide, étape 6).
+- **S4, vraie adresse du client** : nginx ne fait plus confiance qu'au pont Docker et à la boucle locale. Un job de la CI, `nginx-smoke`, lance le vrai nginx avec le vrai `default.conf` et vérifie la compression et le refus d'une adresse inventée.
+- **S5, sessions** : la base ne garde que l'empreinte SHA-256 de l'identifiant, et une session non vue depuis 400 jours est supprimée. La migration 0009 convertit les sessions existantes : personne n'est déconnecté.
+- **S6, connexion** : un identifiant ou un mot de passe de plus de 256 caractères est refusé sans calcul bcrypt, et le compteur de tentatives oublie les adresses qui ne reviennent pas.
+- **R2, images** : un téléchargement est abandonné après 30 s et retenté à la synchro suivante.
+- **Guide de déploiement** : sous-réseau de `psn-net` (étape 3), HSTS (étape 6), nouveaux en-têtes, compression et vraie adresse dans le journal de nginx (étape 7, points 5, 8 et 11), `default.conf` à remplacer sur le NAS (étape 8).
+- **Vérifié avec les vraies données** le 12 novembre 2026, sur le build de production :
+  - page d'attente avant la migration 0009, puis les 4 sessions converties, la session d'avant la migration toujours valide, une session vieillie de 401 jours refusée et supprimée, déconnexion et reconnexion ;
+  - PSN bloqué pour le seul worker : « Couldn't reach PSN » dans l'historique, sans bandeau, statut inchangé ; puis un vrai renouvellement et une synchro complète ;
+  - en-têtes lus sur une page, une réponse `/api` et une image `/media` ;
+  - un mot de passe trop long ; l'écoute sur `127.0.0.1` seulement.
+- **Non vérifiable ici** : le job `nginx-smoke` et la vérification des sessions dans `pg-smoke`, à regarder sur github.com ; la compression, HSTS et la vraie adresse, sur le NAS (guide, étape 7).
+- 123 fichiers de tests, 1 145 tests. Migration 0009.
+
 ## 3. Ce qui reste à faire, dans l'ordre
-1. **Déployer sur le NAS** en suivant `deploy/README.md` (décidé le 9 novembre 2026). Les points de suivi sont fusionnés (PR #19).
+1. **Déployer sur le NAS** en suivant `deploy/README.md` (décidé le 9 novembre 2026). Les points de suivi sont fusionnés (PR #19). Fusionner d'abord `fix/audit` (lots 1 et 2 de l'audit), puis copier son `deploy/nginx/default.conf` sur le NAS.
    - Avant tout, vérifier sur github.com (onglet Actions, le dépôt est privé) que la CI de `main` est verte après la dernière fusion, et que l'image a été publiée.
    - Juste après la première publication, donner une seule fois le rôle **Admin** au dépôt dans « Manage Actions access » du package GHCR (étape 1.5).
    - Faire les vérifications du premier déploiement de l'étape 7 du guide. Chacune dit quand la faire et ce qu'on doit voir.
-2. **Points de l'audit** (`a_reprendre.md`) : gardés pour plus tard, à la demande de l'utilisateur (12 novembre 2026). Rien n'est décidé ni commencé. Le fichier propose un ordre (sa section 9) et une branche `fix/audit`. Il conseille de faire P1 (compresser les réponses JSON), S2 (serveurs de test limités au PC) et R1 (pas de « token expired » sur une panne réseau) avant le déploiement : c'est à l'utilisateur de choisir. Les retouches de design D1 à D7 demandent sa validation avant toute construction.
+2. **Points de l'audit** (`a_reprendre.md`) :
+   - les lots 1 et 2 sont faits sur la branche `fix/audit` (PR à créer et fusionner, puis vérifier la CI) ;
+   - restent, non traités par décision du 12 novembre 2026 : le lot 3 (P2, P3, P4, R3, Q1, Q2, Q4, Q5, Q6), S7 (garder ou non le npsso, choix de l'utilisateur), les retouches de design D1 à D7 (à valider sur maquette avant toute construction), et les points laissés pour après le NAS (Q3, P5, P6, P7, S8, S9, Q7). Chaque point porte sa mention dans le fichier.
 3. **Points laissés tels quels** : `docs/superpowers/plans/2026-11-08-phase1-suivis.md` marque chaque point réglé ; ce qui reste est un choix assumé (coins transparents de la tuile, spec 19.6).
 
 ## 4. Comment reprendre dans une nouvelle conversation
