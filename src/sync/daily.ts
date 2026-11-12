@@ -4,6 +4,7 @@ import { playedGames, titles, trophyGroups } from "@/src/db/schema";
 import type { AppConfig } from "@/src/lib/config";
 import type { PsnGateway } from "@/src/psn/gateway";
 import { syncCatalog } from "@/src/sync/catalog";
+import { cacheImages } from "@/src/sync/image-cache";
 import { describeFailure, executeRun, type SyncDeps, type SyncRunResult } from "@/src/sync/run";
 import { syncTitle } from "@/src/sync/title";
 import { refreshUserState } from "@/src/sync/user-state";
@@ -53,5 +54,10 @@ export async function runDailyRefresh(
       await progress.titleDone(updated);
     }
     await syncCatalog(db, paced, auth, "all", now);
+    // A reloaded title may bring new images. Never pruned here: only a clean sync cleans up.
+    const img = await cacheImages(db, cfg.mediaDir, deps?.fetchImpl);
+    console.log(
+      `[worker] images: ${img.downloaded} downloaded, ${img.failed} failed, ${img.thumbs} thumbnails, ${img.tiles} tile colours`,
+    );
   });
 }

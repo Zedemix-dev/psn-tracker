@@ -82,6 +82,6 @@ export async function connectWithNpsso(
   } catch (e) {
     return isUnreachable(e) ? "unreachable" : "invalid";
   }
-  await savePsnTokens(db, key, tokens, npsso, now);
+  await savePsnTokens(db, key, tokens, now);
   return "ok";
 }

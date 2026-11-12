@@ -145,13 +145,14 @@ function ProgressionChart({ months, w }: { months: MonthPoint[]; w: number }) {
 
   const sc = niceScale(total(months[n - 1]), 5);
   const Y = (v: number) => m.t + (h - m.t - m.b) * (1 - v / sc.max);
-  let base = months.map(() => 0);
-  const bands = TYPES.map((t) => {
+  const stacked: number[][] = [];
+  const bands = TYPES.map((t, k) => {
+    const base = stacked[k - 1] ?? months.map(() => 0);
     const top = months.map((x, i) => base[i] + x[t]);
     const up = monotonePath(top.map((v, i) => [xs[i], Y(v)]));
     let down = "";
     for (let i = n - 1; i >= 0; i--) down += `L${xs[i]},${Y(base[i])}`;
-    base = top;
+    stacked.push(top);
     return (
       <g key={t}>
         <path className="band" data-type={t} d={`${up}${down}Z`} fill={TYPE_COLORS[t]} opacity={0.88} />

@@ -16,7 +16,7 @@ import {
 function Row({ t }: { t: TrophyRowData }) {
   return (
     <div className={`trophy${t.earned ? " earned" : t.unobtainable ? " lost" : ""}`}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
+      {/* eslint-disable-next-line @next/next/no-img-element -- images are already cached and sized by the app, no next/image optimizer wanted */}
       <img className="ic" src={t.iconSrc} alt="" loading="lazy" />
       <div>
         <div className="n">

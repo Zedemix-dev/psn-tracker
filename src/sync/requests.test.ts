@@ -19,10 +19,23 @@ describe("getSyncStatus", () => {
     expect(await getSyncStatus(db)).toEqual({
       status: "idle",
       lastSuccessAt: null,
+      lastFinishedAt: null,
       error: null,
       titlesDone: 0,
       titlesTotal: 0,
     });
+  });
+
+  it("returns the end of the latest finished run, success or error", async () => {
+    await db.insert(syncRuns).values({ kind: "manual", status: "success", startedAt: T1, finishedAt: T1 });
+    expect((await getSyncStatus(db)).lastFinishedAt).toBe(T1.toISOString());
+    await db.insert(syncRuns).values({ kind: "manual", status: "error", startedAt: T2, finishedAt: T2, error: "boom" });
+    expect(await getSyncStatus(db)).toMatchObject({
+      lastFinishedAt: T2.toISOString(),
+      lastSuccessAt: T1.toISOString(),
+    });
+    await db.insert(syncRuns).values({ kind: "manual", status: "running" });
+    expect((await getSyncStatus(db)).lastFinishedAt).toBe(T2.toISOString());
   });
 
   it("is queued when a request waits and no sync is running", async () => {

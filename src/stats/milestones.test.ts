@@ -6,7 +6,6 @@ import type { EarnedTrophy } from "@/src/stats/trophies";
 import { insertTitle, insertTrophies } from "@/tests/fixtures/profile";
 import { createTestDb } from "@/tests/helpers/db";
 
-const NOW = new Date("2030-01-01T00:00:00Z");
 const BASE = Date.UTC(2020, 0, 1);
 
 function make(
@@ -33,7 +32,7 @@ const labels = (ms: ReturnType<typeof computeMilestones>) => ms.map((m) => m.lab
 
 describe("computeMilestones", () => {
   it("returns nothing without trophies", () => {
-    expect(computeMilestones([], NOW)).toEqual([]);
+    expect(computeMilestones([])).toEqual([]);
   });
 
   it("numbers same-second trophies with the platinum last", () => {
@@ -42,7 +41,7 @@ describe("computeMilestones", () => {
       make(1000, { sec: 600, type: "platinum" }),
       make(900, { sec: 600, type: "silver" }),
     ];
-    const ms = computeMilestones(earned, NOW);
+    const ms = computeMilestones(earned);
     const m500 = ms.find((m) => m.label === "500th trophy")!;
     expect(m500.trophy.type).toBe("silver");
     const plat = ms.filter((m) => m.trophy.type === "platinum").map((m) => m.label);
@@ -51,14 +50,14 @@ describe("computeMilestones", () => {
   });
 
   it("emits one entry per label for a single platinum and orders newest first", () => {
-    const ms = computeMilestones([make(1, { type: "platinum" }), make(2)], NOW);
+    const ms = computeMilestones([make(1, { type: "platinum" }), make(2)]);
     expect(labels(ms)).toEqual(["First trophy", "First platinum", "Latest platinum", "Fastest platinum"]);
     expect(ms.every((m) => m.trophy.trophyId === 1)).toBe(true);
   });
 
   it("labels the 75th and 225th platinum and the 1,337th trophy", () => {
     const plats = Array.from({ length: 225 }, (_, k) => make(k, { type: "platinum" }));
-    const ms = computeMilestones([...plats, ...run(1200, 1000)], NOW);
+    const ms = computeMilestones([...plats, ...run(1200, 1000)]);
     const all = labels(ms);
     expect(all).toContain("75th platinum");
     expect(all).toContain("225th platinum");
@@ -73,7 +72,7 @@ describe("computeMilestones", () => {
 
   it("goes every 50 platinums after the 250th, and every 5,000 trophies after the 10,000th", () => {
     const plats = Array.from({ length: 400 }, (_, k) => make(k, { type: "platinum" }));
-    const all = labels(computeMilestones([...plats, ...run(19_600, 1000)], NOW));
+    const all = labels(computeMilestones([...plats, ...run(19_600, 1000)]));
     for (const l of ["225th platinum", "250th platinum", "300th platinum", "350th platinum", "400th platinum"]) {
       expect(all).toContain(l);
     }
@@ -93,7 +92,7 @@ describe("computeMilestones", () => {
       make(3, { titleId: "B", sec: 2000 }),
       make(4, { titleId: "B", sec: 2060, type: "platinum" }),
     ];
-    const fast = computeMilestones(earned, NOW).find((m) => m.label === "Fastest platinum")!;
+    const fast = computeMilestones(earned).find((m) => m.label === "Fastest platinum")!;
     expect(fast.trophy.trophyId).toBe(4);
   });
 
@@ -106,7 +105,7 @@ describe("computeMilestones", () => {
       make(4, { titleId: "B", earnedAt: at(10, 0) }),
       make(5, { titleId: "B", earnedAt: at(10, 500), type: "platinum" }),
     ];
-    const fast = computeMilestones(earned, NOW).find((m) => m.label === "Fastest platinum")!;
+    const fast = computeMilestones(earned).find((m) => m.label === "Fastest platinum")!;
     expect(fast.trophy.trophyId).toBe(5);
   });
 
@@ -131,17 +130,17 @@ describe("getMilestones", () => {
       { titleId: "A", trophyId: 2, earnedAt: new Date("2024-01-01T00:00:20Z"), type: "platinum" },
       { titleId: "H", trophyId: 1, earnedAt: new Date("2023-01-01T00:00:00Z") },
     ]);
-    const ms = await getMilestones(db, NOW);
+    const ms = await getMilestones(db);
     const first = ms.find((m) => m.label === "First trophy")!;
     expect(first.trophy).toMatchObject({ titleId: "A", trophyId: 1, gameName: "Game A" });
   });
 
   it("keeps the result until a run ends, then sees new trophies", async () => {
     await insertTrophies(db, [{ titleId: "A", trophyId: 1, earnedAt: new Date("2024-01-01T00:00:10Z") }]);
-    expect((await getMilestones(db, NOW)).find((m) => m.label === "First trophy")!.trophy.trophyId).toBe(1);
+    expect((await getMilestones(db)).find((m) => m.label === "First trophy")!.trophy.trophyId).toBe(1);
     await insertTrophies(db, [{ titleId: "A", trophyId: 2, earnedAt: new Date("2023-01-01T00:00:00Z") }]);
-    expect((await getMilestones(db, NOW)).find((m) => m.label === "First trophy")!.trophy.trophyId).toBe(1);
+    expect((await getMilestones(db)).find((m) => m.label === "First trophy")!.trophy.trophyId).toBe(1);
     await db.insert(syncRuns).values({ kind: "daily", status: "success", finishedAt: new Date("2026-11-11T10:00:00Z") });
-    expect((await getMilestones(db, NOW)).find((m) => m.label === "First trophy")!.trophy.trophyId).toBe(2);
+    expect((await getMilestones(db)).find((m) => m.label === "First trophy")!.trophy.trophyId).toBe(2);
   });
 });

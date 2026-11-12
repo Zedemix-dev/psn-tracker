@@ -1,3 +1,4 @@
+import "../../styles/games.css";
 import { GameFilters } from "@/components/GameFilters";
 import { GameList } from "@/components/GameList";
 import { SHOW_ALL_SLOT_ID } from "@/components/game-query-string";
@@ -47,7 +48,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Sea
     getCabinet(db),
     getRarest(db, 5),
     getRarityBreakdown(db),
-    getMilestones(db, now),
+    getMilestones(db),
   ]);
   // JSON-safe for the client component: no Date crosses the boundary.
   const carousel: CarouselTrophy[] = latest.map((t) => ({

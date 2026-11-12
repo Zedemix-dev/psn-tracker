@@ -71,7 +71,7 @@ export function GameFilters({ query }: { query: GameQuery }) {
       go({ ...query, q });
     }, DEBOUNCE_MS);
     return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- go is recreated on every render: listing it would restart the debounce timer each time
   }, [text, query]);
 
   return (

@@ -1,7 +1,8 @@
 import { eq } from "drizzle-orm";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Db } from "@/src/db/client";
-import { syncRuns } from "@/src/db/schema";
+import { syncRuns, unobtainableList } from "@/src/db/schema";
+import { applyUnobtainable } from "@/src/unobtainable/apply";
 import { createTestDb } from "@/tests/helpers/db";
 import { cachedUntilNextRun } from "./per-sync-cache";
 
@@ -17,6 +18,17 @@ describe("cachedUntilNextRun", () => {
     const b = await cachedUntilNextRun(db, "k", load);
     expect(load).toHaveBeenCalledTimes(1);
     expect(b).toBe(a);
+  });
+
+  it("the cache marker changes when the unobtainable list is applied", async () => {
+    await db.insert(unobtainableList).values({ id: 1, entries: [] });
+    const load = vi.fn(async () => 1);
+    await cachedUntilNextRun(db, "k", load);
+    await cachedUntilNextRun(db, "k", load);
+    expect(load).toHaveBeenCalledTimes(1);
+    await applyUnobtainable(db);
+    await cachedUntilNextRun(db, "k", load);
+    expect(load).toHaveBeenCalledTimes(2);
   });
 
   it("keeps one entry per key", async () => {
@@ -59,5 +71,28 @@ describe("cachedUntilNextRun", () => {
     const load = vi.fn<() => Promise<number>>().mockRejectedValueOnce(new Error("boom")).mockResolvedValue(2);
     await expect(cachedUntilNextRun(db, "k", load)).rejects.toThrow("boom");
     expect(await cachedUntilNextRun(db, "k", load)).toBe(2);
+  });
+
+  it("reuses an entry only while marker and validity match", async () => {
+    const load = vi.fn(async () => 1);
+    await cachedUntilNextRun(db, "k", load, "2026-11-12");
+    await cachedUntilNextRun(db, "k", load, "2026-11-12");
+    expect(load).toHaveBeenCalledTimes(1);
+    await cachedUntilNextRun(db, "k", load, "2026-11-13");
+    expect(load).toHaveBeenCalledTimes(2);
+    await db.insert(syncRuns).values({ kind: "daily", status: "running" });
+    await cachedUntilNextRun(db, "k", load, "2026-11-13");
+    expect(load).toHaveBeenCalledTimes(3);
+  });
+
+  it("replaces the entry when validity changes, without growing", async () => {
+    await cachedUntilNextRun(db, "k", async () => 1, "day 1");
+    await cachedUntilNextRun(db, "k", async () => 2, "day 2");
+    // Back to the first validity: the entry was replaced, so it loads again.
+    const load = vi.fn(async () => 3);
+    expect(await cachedUntilNextRun(db, "k", load, "day 1")).toBe(3);
+    expect(load).toHaveBeenCalledTimes(1);
+    // A single entry is held for the key: the other validity is gone.
+    expect(await cachedUntilNextRun(db, "k", async () => 4, "day 2")).toBe(4);
   });
 });

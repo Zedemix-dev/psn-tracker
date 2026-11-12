@@ -14,6 +14,6 @@ type Props = Omit<ImgHTMLAttributes<HTMLImageElement>, "style" | "src" | "alt"> 
  * very first render, so a contained rectangle and its bands read as a single square (spec 8.9).
  */
 export function TileImage({ tile, bg, src, alt, ...rest }: Props) {
-  // eslint-disable-next-line @next/next/no-img-element
+  // eslint-disable-next-line @next/next/no-img-element -- images are already cached and sized by the app, no next/image optimizer wanted
   return <img src={src} alt={alt} {...rest} style={tile && bg ? { background: bg } : undefined} />;
 }

@@ -8,6 +8,7 @@ const content: TipContent = { title: "Mar 2026", rows: [{ color: "#5AA9FF", valu
 
 let api: ReturnType<typeof useChartTip>;
 function Probe() {
+  // eslint-disable-next-line react-hooks/globals -- test probe: hands the hook result to the test body
   api = useChartTip();
   return null;
 }

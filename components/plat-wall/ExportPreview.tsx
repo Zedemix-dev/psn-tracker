@@ -87,7 +87,7 @@ export function ExportPreview({
         </div>
       )}
       <div className="ov-frame" hidden={!ready}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
+        {/* eslint-disable-next-line @next/next/no-img-element -- images are already cached and sized by the app, no next/image optimizer wanted */}
         <img
           key={src}
           src={src}

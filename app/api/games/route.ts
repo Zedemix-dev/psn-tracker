@@ -15,5 +15,13 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Invalid offset or limit" }, { status: 400 });
   }
   const query = parseGameQuery(searchParams);
-  return NextResponse.json(await queryGames(db, query, { hideZero, all: searchParams.get("all") === "1" }));
+  // hasValidPaging has checked it: empty, or a safe non-negative integer.
+  const limit = searchParams.get("limit");
+  return NextResponse.json(
+    await queryGames(db, query, {
+      hideZero,
+      all: searchParams.get("all") === "1",
+      limit: limit ? Number(limit) : undefined,
+    }),
+  );
 }

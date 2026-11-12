@@ -17,12 +17,14 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: npm ci --prefix tools/eslint
+      - run: npm run lint
       - run: npx vitest run
       - run: npx tsc --noEmit
 
@@ -45,8 +47,8 @@ jobs:
     env:
       DATABASE_URL: postgres://psn:psn@localhost:5432/psn
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: 22
           cache: npm
@@ -70,7 +72,7 @@ jobs:
   nginx-smoke:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
       - run: bash scripts/ci/nginx-smoke.sh
 
   image:
@@ -80,38 +82,58 @@ jobs:
       contents: read
       packages: write
     steps:
-      - uses: actions/checkout@v5
-      - uses: docker/setup-buildx-action@v4
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
       - name: Log in to GHCR
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: docker/login-action@v4
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Image tags
         id: meta
-        uses: docker/metadata-action@v6
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
         with:
           images: ghcr.io/zedemix-dev/psn-tracker
           tags: |
             type=raw,value=latest
             type=sha,prefix=sha-,format=short
-      - uses: docker/build-push-action@v7
+      # Build once, load it into the local Docker, test that exact image, then push those same tags (main only).
+      - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         env:
           # No build-record artifact per run: the job summary is enough, and artifacts eat the storage quota.
           DOCKER_BUILD_RECORD_UPLOAD: false
         with:
           context: .
           platforms: linux/amd64
-          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          load: true
+          push: false
           # One plain image per push (no attestation manifests), so each push is a single GHCR version.
           provenance: false
           sbom: false
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: |
+            ${{ steps.meta.outputs.tags }}
+            psn-tracker:ci
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+      # The real image with the hardened settings of deploy/stack-site.yml, in front of a real PostgreSQL.
+      # A failure here blocks the publication below.
+      - name: Test the hardened containers
+        run: bash scripts/ci/stack-smoke.sh psn-tracker:ci
+      - name: Push the tested image to GHCR
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          TAGS: ${{ steps.meta.outputs.tags }}
+        run: |
+          set -euo pipefail
+          # The sha tag(s) first and latest last: a failed push never leaves latest moved while the job is red.
+          for tag in $(printf '%s
+' $TAGS | grep -v ':latest$') $(printf '%s
+' $TAGS | grep ':latest$'); do
+            docker push "$tag"
+          done
       # Keep the 3 newest images (the current one + 2 to roll back to); older ones are deleted.
       # Needs the package's "Manage Actions access" to give this repository the Admin role (see deploy/README.md).
       - name: Prune old images in GHCR

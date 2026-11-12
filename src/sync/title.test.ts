@@ -255,20 +255,20 @@ describe("syncTitle and unobtainable marks", () => {
 
 describe("upsertTitleRow", () => {
   it("leaves the unobtainable summary intact", async () => {
-    await upsertTitleRow(db, makeRemoteTitle(), now);
+    await upsertTitleRow(db, makeRemoteTitle());
     await db.update(titles).set({ unobtainableCount: 2, unobtainableNote: "n" });
-    await upsertTitleRow(db, makeRemoteTitle({ name: "Renamed" }), now);
+    await upsertTitleRow(db, makeRemoteTitle({ name: "Renamed" }));
     const [t] = await db.select().from(titles);
     expect(t.unobtainableCount).toBe(2);
     expect(t.unobtainableNote).toBe("n");
   });
 
   it("does not touch cover, play time, syncedAt or groupsCheckedAt", async () => {
-    await upsertTitleRow(db, makeRemoteTitle(), now);
+    await upsertTitleRow(db, makeRemoteTitle());
     await db
       .update(titles)
       .set({ coverUrl: "c", playSeconds: 9, playCount: 2, syncedAt: now, groupsCheckedAt: now });
-    await upsertTitleRow(db, makeRemoteTitle({ name: "Renamed", progress: 40 }), new Date());
+    await upsertTitleRow(db, makeRemoteTitle({ name: "Renamed", progress: 40 }));
     const [t] = await db.select().from(titles);
     expect(t.name).toBe("Renamed");
     expect(t.progress).toBe(40);

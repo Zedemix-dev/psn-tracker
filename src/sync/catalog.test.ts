@@ -19,7 +19,7 @@ beforeEach(async () => {
 
 async function seed(ids: string[], conceptId: number | null) {
   for (const id of ids) {
-    await upsertTitleRow(db, makeRemoteTitle({ npCommunicationId: id }), now);
+    await upsertTitleRow(db, makeRemoteTitle({ npCommunicationId: id }));
     await db.update(titles).set({ conceptId }).where(eq(titles.npCommunicationId, id));
   }
 }

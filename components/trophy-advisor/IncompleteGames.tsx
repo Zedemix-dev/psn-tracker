@@ -23,7 +23,7 @@ export function IncompleteGames({ games }: { games: IncompleteGame[] }) {
               {g.coverIsIcon ? (
                 <TileImage tile bg={g.coverTileBg} className="icon" src={g.coverSrc} alt="" loading="lazy" />
               ) : (
-                // eslint-disable-next-line @next/next/no-img-element
+                // eslint-disable-next-line @next/next/no-img-element -- images are already cached and sized by the app, no next/image optimizer wanted
                 <img src={g.coverSrc} alt="" loading="lazy" />
               )}
               <div>

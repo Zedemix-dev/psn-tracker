@@ -81,6 +81,7 @@ Le site doit reprendre **la lisibilité épurée de psnprofiles** et **la prése
 - **[mon choix]** Les tentatives de connexion sont limitées, parce que le site est exposé sur internet.
   - On s'appuie pour cela sur la vraie IP du client, transmise par le reverse proxy de DSM puis par nginx (en-têtes `X-Forwarded-For` / `X-Forwarded-Proto`). nginx ne fait confiance qu'au proxy DSM, pas au réseau local (20.6).
 - **[mon choix]** Le NPSSO et les tokens PSN dérivés sont stockés **chiffrés** en base, avec une clé fournie par variable d'environnement. Ils ne sont jamais renvoyés au navigateur : la page Settings n'affiche que leur état.
+  - **[décidé, 12 novembre 2026, audit S7]** Le NPSSO n'est plus gardé : il sert une fois, à obtenir les tokens, puis il est oublié. Seuls les tokens PSN restent en base, chiffrés, avec la date du dernier collage du NPSSO (21.2).
 
 ## 6. Synchronisation PSN
 
@@ -587,6 +588,7 @@ Il doit aussi vérifier en pratique la détection des nouveaux DLC (6.4).
 - **Stats au doigt et défilement des années :** demandé le 11 novembre 2026 après la fusion, maquette validée le même jour, décrit en 18.14. Construit et vérifié avec les vraies données le 11 novembre 2026. Fusionné dans `main` le 11 novembre 2026 (PR #17).
 - **Points de suivi de la phase 1 :** tous traités avant le déploiement sur le NAS, à la demande de l'utilisateur, cadrés le 11 novembre 2026, décrits en 19. Construits et vérifiés avec les vraies données, fusionnés dans `main` le 12 novembre 2026 (PR #19).
 - **[décidé, 12 novembre 2026] Audit du 11 novembre 2026 :** le bilan `a_reprendre.md`, écrit par une autre session, reste dans le dépôt : ses points devront être vérifiés ou corrigés un jour. Son point S1 (`sandbox` de `/media`) est corrigé dans la PR #19. Le reste n'est ni décidé ni commencé : chaque point retenu passera par le processus habituel, et les retouches de design par une validation de l'utilisateur.
+- **[décidé, 12 novembre 2026] Ordre :** avant le déploiement sur le NAS, l'utilisateur finit **tous** les points restants de `a_reprendre.md`, y compris ceux que l'audit gardait pour après le NAS. Deux branches : `fix/audit-suite` (tout sauf le design, décrit en 21, construit et vérifié le 12 novembre 2026), puis `feat/design-retouches` (D1 à D7, sur maquettes validées).
 - **[décidé, 12 novembre 2026] Suites de l'audit, lots 1 et 2 :** P1, S2, R1, S3, S4, S5, S6 et R2 sont traités avant le déploiement sur le NAS, sur la branche `fix/audit`, décrits en 20. Construits et vérifiés avec les vraies données le 12 novembre 2026, fusionnés dans `main` le 12 novembre 2026 (PR #21), CI verte. Le lot 3, S7 et les retouches de design D1 à D7 restent pour plus tard.
 
 ## 14. Jeux aux trophées non obtenables
@@ -654,6 +656,7 @@ Tout ce paragraphe est **[choix de Claude]**, vérifié sur les vraies données 
 - Garde-fous, parce que l'adresse et le contenu viennent de l'extérieur : `http` ou `https` seulement, délai maximum de 30 s, taille maximum de 10 Mo.
 - La réponse est refusée si ce n'est pas du JSON, si `version` n'est pas `2`, ou s'il ne reste aucune entrée valide. Une entrée mal formée est ignorée individuellement.
 - **En cas d'échec, l'ancienne liste et toutes les marques restent en place.** L'échec est affiché dans Settings.
+- **[décidé, 12 novembre 2026] Risque accepté (audit S10)** : le worker télécharge l'adresse depuis le réseau Docker, donc une adresse interne (`http://postgres:5432`, l'interface du NAS) serait acceptée. On le laisse ainsi : seul l'utilisateur connecté peut changer l'adresse, et la réponse n'est jamais affichée.
 
 ### 14.6 Liste Games (8.7)
 - **Bouton « Show all »**, dans l'en-tête, après le nombre de jeux.
@@ -1469,3 +1472,88 @@ Sur le build de production local (`npm run build`, puis `npm run e2e:db`, `npm r
 - La forme de l'erreur de refus du gateway et l'endroit exact du contrôle.
 - La forme du job de la CI (20.9), tant qu'il teste le vrai `default.conf` avec la vraie image nginx.
 - La façon de simuler le PSN injoignable pour la vérification (20.11), sans rien ajouter au code de production.
+
+## 21. Fin de l'audit, hors design (branche `fix/audit-suite`)
+**[décidé, 12 novembre 2026]** Après la PR #22, l'utilisateur finit tous les points restants de `a_reprendre.md` avant le déploiement sur le NAS, y compris ceux que l'audit gardait pour après. Cette section couvre la branche `fix/audit-suite` : S7, le lot 3 (P2, P3, P4, R3, Q1, Q2, Q4, Q5, Q6), les points d'après le NAS (Q3, P5, P6, P7, S8, S9, Q7) et S10 (une note, en 14.5). Les retouches de design D1 à D7 suivront sur leur propre branche, sur maquettes validées. L'utilisateur a validé chaque groupe sur description. Construit et vérifié avec les vraies données le 12 novembre 2026 (21.7) ; restent la CI sur github.com et les vérifications du NAS. Les choix qu'il n'a pas faits lui-même sont marqués **[choix de Claude]**.
+
+### 21.1 Intention
+Partir sur le NAS avec un dépôt sans dette connue : moins de secrets gardés, des pages qui relisent moins la base, un code vérifié par un linter, des tests plus rapides, une image et des conteneurs plus sûrs.
+
+**Non-objectifs** : aucune nouvelle page, aucun changement visible à l'écran (le design est la branche suivante), aucune mise à jour majeure de dépendance.
+
+**Anti-objectifs** (ce qui serait un échec même si tout fonctionne)
+- Une page qui montre des données d'avant la dernière synchro ou d'avant le dernier téléchargement de la liste des non obtenables, à cause d'un cache.
+- Un changement visible sur une page : une couleur, une marge ou une police qui bouge (Q6, Q7), ou une liste Games qui défile, filtre ou revient en arrière autrement qu'avant (Q3).
+- Un test qui échoue au hasard après l'accélération de la suite (P5).
+- Un conteneur qui ne démarre plus sur le NAS, ou qui est tué faute de mémoire pendant un export PNG ou une synchro (S9).
+- Un des autres conteneurs du NAS (Plex, qBittorrent, Radarr, Sonarr, Homebridge) gêné par le PSN Tracker, en mémoire ou en processeur (S9).
+- Être déconnecté, ou devoir recoller le npsso, à cause de cette version.
+
+### 21.2 S7 : le npsso n'est plus gardé [décidé]
+- Le npsso sert à obtenir les tokens, puis il est oublié. `savePsnTokens` n'enregistre plus `npsso_enc`, seulement la date du collage (`npsso_set_at`), qui sert au bandeau « PSN token is N days old » (après 50 jours).
+- **Migration 0010** : la colonne `npsso_enc` est supprimée, avec la valeur déjà enregistrée. Les tokens PSN ne changent pas : personne ne doit recoller son npsso. La même migration ajoute la date d'application de la liste des non obtenables (21.3.3).
+- La spec 5 est corrigée.
+
+### 21.3 Performance et robustesse [choix de Claude, validés sur description]
+1. **P2, Stats** : les données de la page (`getStatsData`) sont gardées en mémoire par `cachedUntilNextRun`, une entrée par valeur du réglage « Hide 0% games ». La page ne relit plus les trophées obtenus à chaque affichage. **[choix de Claude]** Le jour de Paris (le calendrier change à minuit) fait partie de la validité de l'entrée, pas de sa clé : l'entrée d'un nouveau jour remplace celle de la veille, et la mémoire ne grossit pas jour après jour.
+2. **P3, liste des jeux** : `loadSiblingIndex` est gardé en mémoire de la même façon. Il sert à Games, à la page d'un jeu, au Trophy Log, au Trophy Advisor et à Stats.
+3. **Marqueur du cache [choix de Claude]** : `applyUnobtainable` (`src/unobtainable/apply.ts`) modifie `titles` et `trophies` en dehors d'une synchro. Il tourne après chaque run non sauté (`src/worker/scheduler.ts`), donc **après** que le run a écrit sa fin, et aussi après le téléchargement d'une nouvelle liste. Il enregistre donc lui-même une date d'application (colonne ajoutée par la migration 0010), et le marqueur de `cachedUntilNextRun` la lit avec celui des runs, pour tous les caches. Une page ne montre jamais de données d'avant la dernière synchro ni d'avant la dernière liste appliquée.
+4. **P4, page d'un jeu** : elle ne se redessine plus toutes les 3 s pendant une synchro ni toutes les minutes au repos. Elle suit `/api/sync` comme le bouton « Sync now », et se redessine une seule fois à la fin de chaque run, **qu'il ait réussi ou échoué**, y compris un run commencé et fini entre deux interrogations **[choix de Claude]**. La forme (un mode de `AutoRefresh` ou un petit composant) est laissée au builder. **[choix de Claude]** Settings garde son rafraîchissement actuel, qui montre l'avancement en direct dans l'historique.
+5. **P6, couleur de tuile** : elle n'est calculée que pour les images qui peuvent être affichées sur une tuile : les adresses présentes dans `titles.icon_url` (une icône de liste montrée comme jaquette quand `coverIsIcon` est vrai, y compris empruntée à une autre version) ou dans `trophy_groups.icon_url`. Une adresse qui sert aussi ailleurs garde sa couleur. Les bannières, logos, jaquettes carrées, avatars et icônes de trophées n'en ont plus. **[choix de Claude]** Les couleurs déjà calculées pour ces images restent en base : elles ne gênent pas.
+6. **P7, historique des synchros** : à la fin de chaque run, une fois son statut final écrit, seuls les 500 derniers runs (par identifiant) sont gardés dans `sync_runs` **[choix de Claude]**, soit environ trois mois ; le run qui vient de finir n'est jamais supprimé. Settings en affiche toujours 20.
+7. **R3, nouveau DLC** : le rafraîchissement quotidien télécharge aussi les images (miniatures et couleurs de tuile comprises), comme la synchro normale, à la fin de son travail et avant d'écrire son statut final, même si certains jeux ont échoué. Il ne supprime aucune image (le nettoyage reste après une synchro réussie, 19.4.2).
+
+### 21.4 Qualité du code [choix de Claude, validés sur description]
+1. **Q1, linter** : ESLint avec la configuration officielle de Next (`eslint`, `eslint-config-next`, outils de développement seulement, jamais dans l'image), lancé par `npm run lint` et par le job `test` de la CI, avant les tests. Tout ce qu'il signale est corrigé. Une règle n'est désactivée que sur une ligne précise, avec la raison écrite à côté. Les 20 désactivations existantes sont revues une par une.
+2. **Q2, doublons** : `pick`, `escapeLike` et `earnedVisible` sont écrits une seule fois, dans `src/lib/`.
+3. **Q3, une seule liste à défilement** : la liste Games passe sur `components/ProgressiveList.tsx` et `components/place-snapshot.ts`, et `components/list-snapshot.ts` disparaît. **[choix de Claude]** Aujourd'hui `ProgressiveList` est taillée pour les trophées (clé `key`, lignes `.log-row[data-key]`, textes « trophies », conteneur sans classe) : elle est généralisée par des paramètres (clé d'une ligne, sélecteur de ligne, nom des éléments dans les textes, classe du conteneur), sans rien changer au Trophy Log ni au Trophy Advisor. `/api/games` applique enfin le paramètre `limit` (déjà validé, jamais appliqué). **[choix de Claude]** Comme avant, la liste Games garde ses lignes dans l'historique de l'onglet (`keepRows`) : le retour depuis une page de jeu les remet aussitôt, sans requête ni « Loading… ». `limit` sert de repli si ces lignes manquent. Trophy Log et Trophy Advisor, dont les lignes sont trop nombreuses pour être gardées, rechargent leurs lignes comme aujourd'hui (16.x, 17.x). Rien ne change pour l'utilisateur : chargement 50 par 50 au défilement, « Show all » après le nombre, filtres, tris, recherche, « Hide 0% games », pages de doublons sautées (19.5.3), retour au même endroit depuis une page de jeu, même après « Show all ». Les tests de retour arrière de `GameList.test.tsx` sont réécrits pour la nouvelle liste et couvrent les mêmes cas.
+4. **Q4** : les paramètres inutilisés `_now` de `computeMilestones` et `upsertTitleRow` sont retirés.
+5. **Q5** : le commentaire faux de `next.config.ts` sur le proxy et la page de connexion est corrigé.
+6. **Q6, police** : `next/font/local` avec `public/fonts/Sora-Variable.ttf` remplace `next/font/google`. Le build ne dépend plus du réseau. Le rendu reste identique : mêmes graisses, même famille CSS.
+7. **Q7, CSS par page** : `app/globals.css` est découpé en une base commune (couleurs, typographie, bandeau, menu, éléments partagés) et en fichiers par page, chacun importé par la page ou le composant qui l'utilise. **[choix de Claude]** Pas de modules CSS : les noms de classes ne changent pas. **Vérification [choix de Claude]** : le style calculé de chaque élément de chaque page (Games, page d'un jeu, Plat Wall, Trophy Log, Trophy Advisor, Stats, Settings, connexion) est relevé à 1 630 et à 375 px avant et après, et les deux relevés sont comparés automatiquement : aucune différence.
+8. **P5, tests plus rapides** : deux projets Vitest (`node` et `jsdom`), et des processus partagés (`isolate: false`) là où les fichiers n'ont aucun état commun. La suite complète passe trois fois de suite sans échec avant le commit.
+
+### 21.5 Build et conteneurs
+1. **S8, versions figées [choix de Claude, validé sur description]** :
+   - les images de départ du `Dockerfile` (`node:22-alpine`) sont désignées par leur empreinte (`@sha256:…`), la version restant en commentaire ;
+   - les actions GitHub de `.github/workflows/docker.yml` sont désignées par l'empreinte de leur commit, la version restant en commentaire ;
+   - mises à jour mineures : `next` 16.4.6, `postgres` 4.1.1, `@electric-sql/pglite` 0.5.16, `@electric-sql/pglite-socket` 0.2.19 **seulement si** la rustine de `scripts/e2e/db.mjs` fonctionne toujours (sinon elle reste en 0.2.18, avec la raison dans `package.json` ou le guide) ;
+   - `drizzle-kit` n'est pas touché : aucune version corrigée de sa faille `esbuild` n'existe au 12 novembre 2026, et il n'entre pas dans l'image ;
+   - la stack `psn-site` garde l'étiquette `latest` (le « Re-pull and redeploy » de Portainer en dépend). **[choix de Claude]** Les images de `stack-infra.yml` (`postgres:16-alpine`, `nginx:1.27-alpine`) gardent leur étiquette : elles se mettent à jour à la main sur le NAS, et une empreinte ne protégerait rien de plus.
+2. **Dependabot [décidé]** : `.github/dependabot.yml` propose chaque semaine les mises à jour de `npm`, des images `docker` du `Dockerfile` et des actions GitHub. **[choix de Claude]** Les mises à jour mineures et correctives sont groupées en une PR par écosystème ; une mise à jour majeure arrive seule. L'utilisateur fusionne ces PR une fois la CI verte, comme les autres ; elles ne demandent pas de branche `docs/…`.
+3. **S9, conteneurs durcis [choix de Claude, validé sur description]** dans `deploy/stack-site.yml`, pour `app` et `worker` :
+   - `cap_drop: [ALL]` et `security_opt: ["no-new-privileges:true"]` ;
+   - **[décidé, 12 novembre 2026] Partage du NAS** : le DS1522+ a 8 Go et fait déjà tourner Plex, qBittorrent, Radarr, Sonarr et Homebridge. Le PSN Tracker ne doit jamais les empêcher de bien fonctionner. Ses limites servent donc d'abord à protéger ces conteneurs ;
+   - une limite de mémoire (`mem_limit`) pour chaque conteneur du PSN Tracker, fixée sur les pics mesurés en local avec une marge d'environ 50 % **[choix de Claude]** : l'export PNG du Plat Wall avec Art, Rarity et Name pour `app`, une synchro complète (images comprises) pour `worker`. `postgres` et `nginx` (`stack-infra.yml`) reçoivent aussi une limite. Le total de la stack est écrit dans le guide ;
+   - **[choix de Claude]** la mémoire de Node est plafonnée sous la limite du conteneur (`--max-old-space-size`, environ 75 % de la limite), pour que Node libère sa mémoire avant d'être tué ;
+   - **[choix de Claude, revu le 12 novembre 2026]** une priorité de processeur plutôt qu'un plafond : `cpu_shares: 512` pour `app` et `worker` (1 024 par défaut pour les autres conteneurs). Quand Plex et le PSN Tracker veulent le processeur en même temps, Plex en reçoit deux fois plus ; quand le NAS est calme, le PSN Tracker va aussi vite qu'avant. Un plafond (`cpus`) a été écarté : sur beaucoup de NAS Synology, le noyau ne gère pas ce réglage et le conteneur refuserait de démarrer ;
+   - **Valeurs mesurées en local le 12 novembre 2026** : pic de 436 Mo pour `app` pendant l'export PNG avec Art, Rarity et Name (230 platines, 4 s), pic de 436 Mo pour `worker` en refaisant les miniatures de 384 bannières 4K et logos. Limites retenues : `app` 768 Mo, `worker` 768 Mo (tas Node plafonné à 576 Mo), `postgres` 512 Mo, `nginx` 64 Mo, soit 2,1 Go au plus pour toute la stack ;
+   - le guide (étape 7) ajoute une vérification : pendant la première synchro et pendant un export PNG, Portainer (Containers → Stats) montre chaque conteneur sous sa limite, et une vidéo lue sur Plex ne saccade pas. Il dit aussi comment relever une limite si un conteneur est tué pendant un export ;
+   - un `healthcheck` pour `app` : une requête sur `http://127.0.0.1:3000/login`, faite avec `node` (présent dans l'image, contrairement à `curl`) ; 200 vaut « healthy », la page d'attente (503) ne l'est pas ;
+   - le dossier `media` reste à l'utilisateur 1000 (`deploy/README.md`, étape 2.3) : sans droits système, le conteneur n'écrit que là où il est propriétaire ;
+   - pas de système de fichiers en lecture seule (`read_only`) : Next écrit son cache sur le disque.
+4. **Test dans la CI [choix de Claude]** : la vraie image, construite par le job `image`, est lancée avec ces mêmes réglages devant un vrai PostgreSQL 16 ; le job vérifie que le worker démarre (`[worker] started`) et que `app` devient « healthy ».
+
+### 21.6 Documentation
+- `deploy/README.md` : la colonne « healthy » de `app` dans Portainer (étape 5), une vérification de la mémoire pendant l'export PNG (étape 7), les PR de Dependabot (étape 8).
+- `docs/ETAT-DU-PROJET.md` : le bilan de cette branche, `npm run lint`, Dependabot.
+- `a_reprendre.md` : chaque point traité est marqué fait.
+
+### 21.7 Vérification avec les vraies données
+Sur le build de production local (`npm run build`, puis `npm run e2e:db`, `npm run e2e:worker` et `npm run e2e:prod`), connecté :
+- **S7** : après la migration 0010, la colonne `npsso_enc` n'existe plus, aucun bandeau ne s'affiche et une synchro passe sans recoller le npsso.
+- **P2, P3** : temps de réponse de Stats, Games, Trophy Log et Trophy Advisor avant et après ; après une synchro, et après une liste des non obtenables appliquée, les pages montrent les nouvelles données.
+- **P4** : pendant une synchro, la page d'un jeu ne se redessine qu'une fois, à la fin (requêtes lues dans le navigateur).
+- **P6, R3** : une synchro complète, puis un rafraîchissement quotidien : aucune image manquante, les 4 tuiles gardent leur couleur.
+- **P7** : `sync_runs` ne dépasse jamais 500 lignes.
+- **Q3** : la liste Games, à 1 630 et à 375 px, avec les mêmes contrôles que lors de sa construction (défilement, « Show all », filtres, tris, recherche, « Hide 0% games », retour depuis une page de jeu).
+- **Q6, Q7** : la comparaison des styles calculés, sans aucune différence.
+- **P5** : trois passages verts de la suite complète, et sa durée avant et après.
+- **S9** : les pics de mémoire mesurés (export PNG, synchro complète avec images), qui fixent les limites ; la durée de l'export PNG (4 s en local avec Art, Rarity et Name ; `cpu_shares` ne la ralentit que si le NAS est occupé) reste sous 60 s.
+- **Non vérifiable ici** : le job de la CI de S9 (sur github.com), les conteneurs durcis et le healthcheck sur le NAS, les premières PR de Dependabot.
+
+### 21.8 Laissé au builder
+- Le découpage exact de `globals.css` en fichiers et la façon de relever les styles calculés (Q7), tant que la comparaison couvre toutes les pages aux deux largeurs.
+- La répartition des tests entre les deux projets Vitest et le choix des fichiers en `isolate: false` (P5).
+- La forme du job de la CI de S9, et sa place (job `image` ou job à part).
+- La valeur exacte du marqueur des non obtenables (21.3.3), tant qu'il change à chaque liste appliquée.

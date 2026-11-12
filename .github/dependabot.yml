@@ -1,0 +1,37 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      npm-minor-patch:
+        update-types: [minor, patch]
+    ignore:
+      # sharp is bumped by hand, together with ARG SHARP_VERSION in the Dockerfile (the worker image installs that version).
+      - dependency-name: sharp
+  - package-ecosystem: npm
+    directory: /tools/eslint
+    schedule:
+      interval: weekly
+    groups:
+      eslint-tools-minor-patch:
+        update-types: [minor, patch]
+    ignore:
+      # The lint toolchain stays on TypeScript 6.
+      - dependency-name: typescript
+        update-types: [version-update:semver-major]
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      docker-minor-patch:
+        update-types: [minor, patch]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions-minor-patch:
+        update-types: [minor, patch]

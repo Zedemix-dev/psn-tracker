@@ -19,12 +19,14 @@ export function useSideScroll<T extends HTMLElement>() {
   const size = useRef({ sw: -1, cw: -1 });
   const start = useRef<{ x: number; left: number; id: number; moving: boolean } | null>(null);
 
+  // eslint-disable-next-line react-hooks/immutability -- node is the DOM element held in state: scrollLeft is a DOM write, not a state change
   const measure = useCallback(() => {
     const el = node;
     if (!el) return;
     // Back to the newest end only when the size changed: never in answer to a scroll or a re-render.
     const sw = el.scrollWidth;
     const cw = el.clientWidth;
+    // eslint-disable-next-line react-hooks/immutability -- node is the DOM element held in state: scrollLeft is a DOM write, not a state change
     if (pinned.current && (size.current.sw !== sw || size.current.cw !== cw)) el.scrollLeft = sw;
     size.current = { sw, cw };
     const can = sw > cw + 1;
@@ -34,6 +36,7 @@ export function useSideScroll<T extends HTMLElement>() {
   }, [node]);
 
   // After every render, and whenever the container is resized.
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- measures the DOM after every render, as a layout effect must
   useLayoutEffect(measure);
   useEffect(() => {
     if (!node || typeof ResizeObserver === "undefined") return;
@@ -42,6 +45,7 @@ export function useSideScroll<T extends HTMLElement>() {
     return () => ro.disconnect();
   }, [node, measure]);
 
+  // eslint-disable-next-line react-hooks/immutability -- node is the DOM element held in state: it calls measure, which writes scrollLeft
   const onScroll = useCallback(() => {
     if (!node) return;
     pinned.current = node.scrollLeft >= node.scrollWidth - node.clientWidth - 1;
@@ -64,6 +68,7 @@ export function useSideScroll<T extends HTMLElement>() {
   }, [node]);
 
   const onPointerMove = useCallback(
+    // eslint-disable-next-line react-hooks/immutability -- node is the DOM element held in state: scrollLeft is a DOM write, not a state change
     (e: ReactPointerEvent<T>) => {
       const el = node;
       const s = start.current;
@@ -78,6 +83,7 @@ export function useSideScroll<T extends HTMLElement>() {
         tip.hide();
         setState((p) => (p.drag ? p : { ...p, drag: true }));
       }
+      // eslint-disable-next-line react-hooks/immutability -- node is the DOM element held in state: scrollLeft is a DOM write, not a state change
       el.scrollLeft = s.left - dx;
     },
     [node, tip, end],

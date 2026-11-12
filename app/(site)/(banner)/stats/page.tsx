@@ -1,3 +1,4 @@
+import "../../../styles/stats.css";
 import { ProfileBand } from "@/components/ProfileBand";
 import { StatTiles } from "@/components/StatTiles";
 import { StatsPanels } from "@/components/stats/StatsPanels";
@@ -14,12 +15,13 @@ export default async function StatsPage() {
   await requireSession();
   const db = await getDb();
   const { hideZero } = await getSettings(db);
-  const imageMap = await loadImageMap(db); // read once, then handed to getStatsData
-  const [[row], stats, sync, data] = await Promise.all([
+  // The band needs the image map; getStatsData reads it itself, after its own cache marker.
+  const [[row], stats, imageMap, sync, data] = await Promise.all([
     db.select().from(profile).limit(1),
     getProfileStats(db, { hideZero }),
+    loadImageMap(db),
     getSyncStatus(db),
-    getStatsData(db, { hideZero, imageMap }),
+    getStatsData(db, { hideZero }),
   ]);
   return (
     <main className="wrap">

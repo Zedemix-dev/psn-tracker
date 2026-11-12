@@ -178,7 +178,6 @@ export const settings = pgTable("settings", {
   advisorDlc: text("advisor_dlc").$type<AdvisorDlc>().notNull().default("all"),
   bannerPath: text("banner_path"),
   bannerPosY: integer("banner_pos_y").notNull().default(50),
-  npssoEnc: text("npsso_enc"),
   npssoSetAt: ts("npsso_set_at"),
   refreshTokenEnc: text("refresh_token_enc"),
   refreshExpiresAt: ts("refresh_expires_at"),
@@ -203,6 +202,7 @@ export const unobtainableList = pgTable("unobtainable_list", {
   downloadedAt: ts("downloaded_at"),
   attemptedAt: ts("attempted_at"),
   error: text("error"),
+  appliedAt: ts("applied_at"),
 });
 
 export const cabinet = pgTable(

@@ -110,6 +110,7 @@ export function ColumnChart({ labels, values, height, ariaLabel, unit, titleOf, 
             <g key={k}>{axisLabel(k)}</g>
           ))}
         </svg>
+        {/* eslint-disable-next-line react-hooks/refs -- side.ref is a callback ref (it stores the node in state), not a ref object read during render */}
         <div ref={side.ref} className={side.className} {...side.handlers}>
           {plotSvg}
         </div>

@@ -61,4 +61,14 @@ describe("GET /api/games paging", () => {
     await get("offset=50");
     expect(m.queryGames.mock.calls[0][1].offset).toBe(50);
   });
+
+  it("passes limit through", async () => {
+    await get("offset=0&limit=120");
+    expect(m.queryGames.mock.calls[0][1].offset).toBe(0);
+    expect(m.queryGames.mock.calls[0][2]).toMatchObject({ hideZero: false, all: false, limit: 120 });
+    await get("offset=50");
+    expect(m.queryGames.mock.calls[1][2].limit).toBeUndefined();
+    await get("limit=");
+    expect(m.queryGames.mock.calls[2][2].limit).toBeUndefined();
+  });
 });

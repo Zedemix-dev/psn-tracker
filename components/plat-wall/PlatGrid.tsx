@@ -59,7 +59,7 @@ export function PlatGrid({ tiles, show }: { tiles: PlatTile[]; show: PlatShow[] 
           className={`plat-tile${art ? "" : " textonly"}`}
           aria-label={`${t.game}, earned ${t.when}${t.ratePct ? `, ${t.ratePct} of players` : ""}`}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
+          {/* eslint-disable-next-line @next/next/no-img-element -- images are already cached and sized by the app, no next/image optimizer wanted */}
           {art && <img className="art" src={t.src} alt="" loading="lazy" />}
           {show.includes("rarity") && t.ratePct && <div className="pct">{t.ratePct}</div>}
           {show.includes("name") && <div className="nm">{t.game}</div>}

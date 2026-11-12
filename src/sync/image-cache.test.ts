@@ -21,7 +21,7 @@ let dir: string;
 beforeEach(async () => {
   db = await createTestDb();
   dir = await fs.mkdtemp(path.join(os.tmpdir(), "media-"));
-  await upsertTitleRow(db, makeRemoteTitle({ npCommunicationId: "NPWR00001_00" }), now);
+  await upsertTitleRow(db, makeRemoteTitle({ npCommunicationId: "NPWR00001_00" }));
   await db
     .update(titles)
     .set({ iconUrl: ICON, coverUrl: COVER })
@@ -164,7 +164,7 @@ describe("cacheImages", () => {
   it("never runs more than 4 downloads at once", async () => {
     for (let i = 0; i < 12; i++) {
       const id = `NPWR1${i}_00`;
-      await upsertTitleRow(db, makeRemoteTitle({ npCommunicationId: id }), now);
+      await upsertTitleRow(db, makeRemoteTitle({ npCommunicationId: id }));
       await db
         .update(titles)
         .set({ iconUrl: `https://x/t${i}.png` })
@@ -251,7 +251,7 @@ describe("cacheImages tile colours", () => {
   it("stores the tile colour and check date of a downloaded image, once", async () => {
     const f = await wideFetch();
     const first = await cacheImages(db, dir, f);
-    expect(first.tiles).toBe(first.downloaded);
+    expect(first.tiles).toBe(1); // the icon only, not the cover
     const [row] = await db.select().from(images).where(eq(images.url, ICON));
     expect(row.tileBg).toBe("#102030");
     expect(row.tileCheckedAt).not.toBeNull();
@@ -268,6 +268,23 @@ describe("cacheImages tile colours", () => {
     const [row] = await db.select().from(images).where(eq(images.url, ICON));
     expect(row.tileBg).toBeNull();
     expect(row.tileCheckedAt).not.toBeNull();
+  });
+
+  it("computes tile colours only for list and group icons", async () => {
+    const BANNER = "https://image.api.playstation.com/banner1.jpg";
+    const TROPHY = "https://image.api.playstation.com/trophy1.png";
+    const GROUP = "https://image.api.playstation.com/group1.png";
+    await db.update(titles).set({ bannerUrl: BANNER }).where(eq(titles.npCommunicationId, "NPWR00001_00"));
+    await db.insert(trophyGroups).values({ titleId: "NPWR00001_00", groupId: "default", name: "Base", iconUrl: GROUP });
+    await db.insert(trophies).values({ titleId: "NPWR00001_00", trophyId: 0, groupId: "default", type: "bronze", name: "T", detail: "d", iconUrl: TROPHY });
+    const r = await cacheImages(db, dir, await wideFetch());
+    const checked = async (url: string) => (await db.select().from(images).where(eq(images.url, url)))[0].tileCheckedAt;
+    expect(await checked(ICON)).not.toBeNull();
+    expect(await checked(GROUP)).not.toBeNull();
+    expect(await checked(COVER)).toBeNull();
+    expect(await checked(BANNER)).toBeNull();
+    expect(await checked(TROPHY)).toBeNull();
+    expect(r.tiles).toBe(2);
   });
 
   it("leaves a corrupt image unchecked so the next sync retries it", async () => {

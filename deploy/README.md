@@ -65,8 +65,9 @@ Préparez trois valeurs :
 ## 5. Stacks Portainer
 
 1. **Stacks → Add stack**, nom `psn-infra`. Coller le contenu de `deploy/stack-infra.yml` (Web editor), ou utiliser l'option *Repository* (dépôt privé : il faut alors un token avec accès au code). Variable d'environnement : `POSTGRES_PASSWORD`. **Deploy the stack.** Vérifier que `postgres` est « healthy » et `nginx` démarré.
-2. **Stacks → Add stack**, nom `psn-site`. Coller `deploy/stack-site.yml`. Variables d'environnement : `POSTGRES_PASSWORD` (même valeur), `ADMIN_USERNAME`, `ADMIN_PASSWORD_HASH`, `APP_SECRET`. **Deploy the stack.**
-3. Le worker applique les migrations au démarrage. Vérifier les logs du conteneur `worker` (`[worker] started`).
+2. **Stacks → Add stack**, nom `psn-site`. Coller `deploy/stack-site.yml`. Variables d'environnement : `POSTGRES_PASSWORD` (même valeur), `ADMIN_USERNAME`, `ADMIN_PASSWORD_HASH`, `APP_SECRET`. **Deploy the stack.** En moins d'une minute, `app` doit passer à « healthy » dans Portainer (Containers, colonne *Status*) : « starting » au début, puis « healthy ». Ce voyant demande `/login` à l'app toutes les 30 s ; la page d'attente « Updating… » (étape 7, point 4) compte comme pas bonne, donc `app` reste « unhealthy » tant que le worker n'a pas fini de migrer. Si `app` reste « unhealthy », voir l'étape 9.
+3. Les conteneurs `app` et `worker` tournent sans aucun privilège Linux (`cap_drop: ALL`, `no-new-privileges`) : le dossier `media` doit donc bien appartenir à l'uid 1000 (étape 2, point 3). Chaque conteneur a aussi une limite de mémoire et une priorité processeur déjà écrites dans les fichiers des stacks : rien à régler, mais voir le point 12 de l'étape 7 pour les vérifier.
+4. Le worker applique les migrations au démarrage. Vérifier les logs du conteneur `worker` (`[worker] started`).
 
 ## 6. Reverse proxy DSM
 
@@ -121,17 +122,36 @@ Ces points ne se vérifient que sur le NAS. Chaque point dit à quel moment le f
 11. **Vraie adresse du client.** *Quand : dès la première connexion.* Ouvrez le site depuis le téléphone en données mobiles (pas en Wi-Fi), puis dans Portainer : **Containers → `nginx` → Logs**.
     - Ce qu'on doit voir : la ligne de votre visite montre l'adresse publique du téléphone.
     - Pas bon : `172.x.x.1` (l'adresse du pont Docker). nginx ne reconnaît alors pas le proxy DSM : revoyez l'étape 3 (sous-réseau de `psn-net`).
+12. **Partage du NAS.** *Quand : pendant la première synchro, puis pendant un export PNG du Plat Wall (point 9).* Le NAS fait aussi tourner Plex, qBittorrent, Radarr, Sonarr et Homebridge : le PSN Tracker ne doit pas les ralentir. Ouvrez Portainer → **Containers**, cliquez sur un conteneur → **Stats** (mémoire et processeur en direct).
+    - Limites de mémoire, écrites dans les fichiers des stacks (c'est un plafond, pas de la mémoire réservée) :
+
+      | Conteneur | Limite |
+      | --- | --- |
+      | `app` | 768 Mo (tas de Node plafonné à 576 Mo) |
+      | `worker` | 768 Mo (tas de Node plafonné à 576 Mo) |
+      | `postgres` | 512 Mo |
+      | `nginx` | 64 Mo |
+
+      Au total, le PSN Tracker ne peut pas dépasser environ 2,1 Go. En mesure locale, le pic le plus lourd (export PNG Art, Rarity, Name sur 230 platines, ou miniatures de bannières 4K par le worker) est d'environ 440 Mo.
+    - Priorité processeur : `app` et `worker` ont `cpu_shares: 512`. Quand Plex et le PSN Tracker veulent le processeur en même temps, Plex en reçoit deux fois plus. Il n'y a volontairement pas de plafond dur : beaucoup de noyaux Synology ne le gèrent pas et le conteneur refuserait de démarrer.
+    - Ce qu'on doit voir : chaque conteneur du PSN Tracker reste sous sa limite dans **Stats**, et une vidéo lue sur Plex pendant la synchro et pendant l'export ne saccade pas.
+    - Pas bon : un conteneur redémarre en plein export ou en pleine synchro (pour repérer un redémarrage : dans **Containers**, la colonne *Status* affiche quelques minutes au lieu de plusieurs heures ; le chiffre de mémoire se lit dans **Stats**, graphique *Memory usage*, à comparer avec la limite du tableau ci-dessus ; tué faute de mémoire : code de sortie 137 ou « OOMKilled » dans Portainer, **Containers** → le conteneur → **Inspect**). Relevez alors ensemble `mem_limit` et `--max-old-space-size` du conteneur concerné, comme décrit à l'étape 8, point 7. Si c'est Plex qui saccade, notez-le : il faudra baisser `cpu_shares` (par exemple 256).
 
 ## 8. Mises à jour
 
 1. Pousser (ou fusionner) sur `main`.
-2. Attendre que l'exécution GitHub Actions soit verte (onglet Actions) : l'image `latest` est alors republiée.
+2. Attendre que l'exécution GitHub Actions soit verte (onglet Actions) : l'image `latest` est alors republiée. Le travail `image` lance d'abord les conteneurs durcis contre une vraie base PostgreSQL, puis publie. Un travail `image` rouge veut dire que l'image n'a **pas** été publiée : ne mettez pas la stack à jour, lisez le journal du run.
 3. Dans Portainer : **Stacks → `psn-site` → Update the stack → Re-pull image and redeploy**.
 4. Si `deploy/nginx/default.conf` a changé, remplacez le fichier sur le NAS (`/volume1/docker/psn-tracker/nginx/default.conf`) puis redémarrez le conteneur `nginx` (Portainer → Containers → `nginx` → Restart). Il n'est pas dans l'image : il ne se met pas à jour tout seul. **La version qui apporte la compression gzip et les plages de confiance `127.0.0.0/8` et `172.16.0.0/12` le change : à faire à cette mise à jour**, puis refaire les points 5, 8 et 11 de l'étape 7.
+5. **Cette version change aussi les deux fichiers de stacks**, `deploy/stack-site.yml` et `deploy/stack-infra.yml` (conteneurs durcis, limites de mémoire, priorité processeur, voyant de santé de `app`). Il faut mettre à jour **les deux stacks** dans Portainer, `psn-infra` d'abord, puis `psn-site` (comme au premier déploiement) : **Stacks → `psn-infra` → Editor**, remplacer le contenu par celui de `deploy/stack-infra.yml`, puis **Update the stack** ; même chose ensuite pour `psn-site` avec `deploy/stack-site.yml` (cochez **Re-pull image and redeploy**). Mettre à jour `psn-infra` redémarre `postgres` et `nginx` : le site est indisponible quelques secondes. Les variables d'environnement restent celles de l'étape 5. Ensuite, vérifiez que `app` passe à « healthy » (étape 5) et faites le point 12 de l'étape 7.
+6. **Dependabot.** Une fois par semaine, Dependabot ouvre des Pull Requests sur GitHub, qui regroupent les mises à jour mineures et correctives (dépendances npm, image de base Docker, GitHub Actions, et outils de lint de `tools/eslint`) ; une mise à jour majeure arrive dans une Pull Request à part. Pour chacune : attendre que la CI soit verte (point 2), puis la fusionner vous-même sur GitHub. Pas besoin de branche `docs/…` pour elles. Une fois fusionnée, la mise à jour de la stack se fait comme ci-dessus (points 1 à 3).
+7. **Relever les limites de mémoire.** Seulement si un conteneur redémarre pendant un export ou une synchro (code de sortie 137 / « OOMKilled », étape 7, point 12). Dans l'éditeur de la stack concernée (`psn-site` pour `app` et `worker`, `psn-infra` pour `postgres` et `nginx`), changez **les deux valeurs ensemble** : `mem_limit` (par exemple `768m` devient `1024m`) et, pour `app` et `worker`, `--max-old-space-size` à environ 75 % de la nouvelle limite (`576` devient `768`). Gardez toujours le tas plus petit que la limite, sinon Node n'a plus de marge et se fait tuer. Puis **Update the stack**. Ce sont des plafonds, pas de la mémoire réservée : les relever ne coûte rien tant que le conteneur n'en a pas besoin.
 
 ## 9. Dépannage
 
 - **Erreur « Invalid Server Actions request » / origine refusée** : l'en-tête `Host` n'est pas transmis jusqu'à l'app. Vérifier que le proxy DSM conserve le nom d'hôte et que `default.conf` contient `proxy_set_header Host $host;` et `X-Forwarded-Host $host;`.
 - **Erreur 413 (Request Entity Too Large)** sur l'envoi d'une bannière : limite `client_max_body_size 12m` dans `default.conf` (mise à jour du fichier sur le NAS + redémarrage de `nginx`). Le reverse proxy DSM n'impose pas de limite par défaut.
+- **Le conteneur `app` reste « unhealthy »** (Portainer → Containers) : le voyant échoue si `/login` ne répond pas 200. Deux causes habituelles. (1) La page d'attente « Updating… » ne part pas : le worker n'a pas fini d'appliquer les migrations ou n'a pas démarré ; lisez les logs du conteneur `worker` (étape 7, point 4). (2) La base est injoignable : vérifier que `postgres` est « healthy » dans la stack `psn-infra`, que `POSTGRES_PASSWORD` est identique dans les deux stacks et que les deux conteneurs sont bien sur `psn-net` ; lisez aussi les logs de `app`. Si le dossier `media` n'appartient pas à l'uid 1000 (étape 2, point 3), `app` et `worker` n'arrivent pas à écrire les images, car ils n'ont aucun privilège.
+- **Un conteneur redémarre en boucle ou s'arrête avec le code 137** : il dépasse sa limite de mémoire. Voir l'étape 7, point 12, et l'étape 8, point 7.
 - **« Syncing… » bloqué** : regarder les logs du conteneur `worker` (Portainer → Containers → `worker` → Logs). Un `npsso` expiré (Settings) ou une erreur réseau PSN sont les causes habituelles.
 - **`http://<ip-du-nas>:8080` ne répond pas** : voulu. Le port 8080 n'est publié que sur `127.0.0.1` du NAS (le proxy DSM y accède en local), afin qu'un appareil du réseau local ne puisse pas contourner le proxy et falsifier `X-Forwarded-For`. Utilisez l'adresse HTTPS. nginx ne fait confiance qu'au proxy DSM (adresses `127.0.0.0/8` et `172.16.0.0/12`) pour `X-Forwarded-For`. Une connexion qui échoue sur l'adresse HTTPS signale plutôt un `ADMIN_PASSWORD_HASH` mal échappé (voir étape 4).

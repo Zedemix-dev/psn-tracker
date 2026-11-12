@@ -73,7 +73,7 @@ describe("getLatestTrophies", () => {
     const latest = await getLatestTrophies(db);
     expect(latest.map((r) => r.trophyId)).toEqual([8, 7, 9]);
     // numbering: 9 is first, then 7, then 8
-    const first = computeMilestones([...latest].reverse(), new Date()).find((m) => m.label === "First trophy")!;
+    const first = computeMilestones([...latest].reverse()).find((m) => m.label === "First trophy")!;
     expect(first.trophy.trophyId).toBe(9);
   });
 });

@@ -51,6 +51,7 @@ export function StatsCalendar({ data }: { data: CalendarData }) {
           <span></span>More
         </div>
       </div>
+      {/* eslint-disable-next-line react-hooks/refs -- side.ref is a callback ref (it stores the node in state), not a ref object read during render */}
       <div className={`st-cal-scroll ${side.className}`} ref={side.ref} {...side.handlers}>
         <div className="st-cal">
           <div className="st-cal-months">

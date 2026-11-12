@@ -5,10 +5,10 @@ import { describe, expect, it } from "vitest";
 // A trophy icon with a transparent background is shown as is: no square behind it.
 export const ICON_RULES: [file: string, selector: string][] = [
   ["app/globals.css", ".tlist img"],
-  ["app/globals.css", ".ce-list img:first-child"],
-  ["app/globals.css", ".game-page .trophy img.ic"],
-  ["app/globals.css", ".log-row .ic"],
-  ["app/globals.css", ".st-lrow .ic"],
+  ["app/styles/games.css", ".ce-list img:first-child"],
+  ["app/styles/game.css", ".game-page .trophy img.ic"],
+  ["app/styles/trophy-log.css", ".log-row .ic"],
+  ["app/styles/stats.css", ".st-lrow .ic"],
   ["components/TrophyCarousel.module.css", ".item img"],
 ];
 
@@ -34,7 +34,7 @@ describe("trophy icons", () => {
 
 describe("Trophy Log rows", () => {
   it("lift content-visibility on the row whose unobtainable tooltip is open", () => {
-    const css = readFileSync(join(process.cwd(), "app/globals.css"), "utf8");
+    const css = readFileSync(join(process.cwd(), "app/styles/trophy-log.css"), "utf8");
     expect(css).toMatch(/\.log-row:has\(\.unob:hover,\s*\.unob:focus\)\s*\{[^}]*content-visibility:\s*visible/);
   });
 });

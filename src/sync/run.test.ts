@@ -9,7 +9,8 @@ import type { AppConfig } from "@/src/lib/config";
 import { savePsnTokens, getSettings } from "@/src/settings/repo";
 import { PsnRefusedError } from "@/src/psn/gateway";
 import { isRetryable, withPacing } from "@/src/sync/retry";
-import { runSync } from "@/src/sync/run";
+import { cachedUntilNextRun } from "@/src/lib/per-sync-cache";
+import { KEEP_SYNC_RUNS, runSync } from "@/src/sync/run";
 import { createFakePsn } from "@/tests/fakes/psn";
 import { makePlayedGame } from "@/tests/fixtures/played";
 import { makeGroup, makeRemoteTitle, makeTrophies } from "@/tests/fixtures/titles";
@@ -428,5 +429,63 @@ describe("isRetryable", () => {
     expect(isRetryable(Object.assign(new Error("x"), { status: 503 }))).toBe(true);
     expect(isRetryable(Object.assign(new Error("x"), { status: 401 }))).toBe(false);
     expect(isRetryable(new Error("Resource Not Found"))).toBe(false);
+  });
+});
+
+describe("sync run history", () => {
+  const seedRuns = async (n: number) => {
+    const finishedAt = new Date("2025-12-01T00:00:00Z");
+    await db.insert(syncRuns).values(
+      Array.from({ length: n }, () => ({ kind: "scheduled" as const, status: "success" as const, startedAt: finishedAt, finishedAt })),
+    );
+  };
+
+  it("keeps the 500 newest runs and never the one that just ended", async () => {
+    expect(KEEP_SYNC_RUNS).toBe(500);
+    await seedRuns(505);
+    const res = await runSync(db, fixture(), cfg, "manual", now, deps);
+    expect(res.status).toBe("success");
+    const rows = await db.select({ id: syncRuns.id }).from(syncRuns);
+    expect(rows).toHaveLength(500);
+    expect(rows.map((r) => r.id)).toContain(res.runId);
+    expect(Math.min(...rows.map((r) => r.id))).toBe(res.runId! - 499);
+  });
+
+  it("also prunes after a failed run", async () => {
+    const empty = await createTestDb();
+    await empty.insert(syncRuns).values(
+      Array.from({ length: 505 }, () => ({ kind: "scheduled" as const, status: "success" as const, finishedAt: new Date("2025-12-01T00:00:00Z") })),
+    );
+    const res = await runSync(empty, fixture(), cfg, "manual", now, deps);
+    expect(res.status).toBe("error");
+    expect(await empty.select({ id: syncRuns.id }).from(syncRuns)).toHaveLength(500);
+  });
+
+  it("a failed prune leaves the run result unchanged", async () => {
+    await seedRuns(505);
+    const spy = vi.spyOn(db, "delete").mockImplementation(() => {
+      throw new Error("prune down");
+    });
+    try {
+      const res = await runSync(db, fixture(), cfg, "manual", now, deps);
+      expect(res.status).toBe("success");
+      const [run] = await db.select().from(syncRuns).where(eq(syncRuns.id, res.runId!));
+      expect(run).toMatchObject({ status: "success", error: null });
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it("the cache marker still changes when the table stays at 500 rows", async () => {
+    await seedRuns(500);
+    let loads = 0;
+    const load = () => cachedUntilNextRun(db, "k", async () => ++loads);
+    await load();
+    await load();
+    expect(loads).toBe(1);
+    await runSync(db, fixture(), cfg, "manual", now, { ...deps, clock: () => new Date("2026-01-01T12:05:00Z") });
+    expect(await db.select({ id: syncRuns.id }).from(syncRuns)).toHaveLength(500);
+    await load();
+    expect(loads).toBe(2);
   });
 });

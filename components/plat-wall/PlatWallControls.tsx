@@ -67,7 +67,7 @@ export function PlatWallControls({
   const intendedShow = useRef<PlatShow[]>(query.show);
   useEffect(() => {
     intendedShow.current = query.show;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- showKey stands for the content of query.show: its array identity changes on every render
   }, [showKey]);
 
   function toggle(item: PlatShow) {

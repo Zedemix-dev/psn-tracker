@@ -50,5 +50,6 @@ export async function applyUnobtainable(db: Db): Promise<void> {
         .set({ unobtainableCount: w.trophyIds.length, unobtainableNote: w.note })
         .where(eq(titles.npCommunicationId, w.titleId));
     }
+    await tx.update(unobtainableList).set({ appliedAt: new Date() }).where(eq(unobtainableList.id, 1));
   });
 }

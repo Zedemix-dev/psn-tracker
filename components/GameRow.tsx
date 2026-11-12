@@ -7,7 +7,7 @@ import type { GameRowData } from "@/src/games/row";
 export function GameRow({ row }: { row: GameRowData }) {
   const played = row.lastPlayedLine ? row.lastPlayedLine.split(" | ") : [];
   return (
-    <Link href={`/games/${encodeURIComponent(row.id)}`} className="game">
+    <Link href={`/games/${encodeURIComponent(row.id)}`} className="game" data-key={row.id}>
       <TileImage
         tile={row.coverIsIcon}
         bg={row.coverTileBg}

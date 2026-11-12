@@ -19,7 +19,27 @@ services:
   app:
     image: ghcr.io/zedemix-dev/psn-tracker:latest
     restart: unless-stopped
-    environment: *env
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    # Memory limit measured locally (peak 436 MB), Node heap capped at 75 % of it.
+    # cpu_shares is a priority, not a cap (a cap is unsupported by many Synology kernels):
+    # Plex and co. (1024 by default) get twice the CPU when everything is busy.
+    mem_limit: 768m
+    cpu_shares: 512
+    environment:
+      <<: *env
+      NODE_OPTIONS: --max-old-space-size=576
+    # 200 on /login = healthy; the waiting page (503) is not.
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "require('http').get('http://127.0.0.1:3000/login', (r) => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
     volumes:
       - /volume1/docker/psn-tracker/media:/data/media
     networks:
@@ -34,7 +54,16 @@ services:
     command: ["node", "dist/worker.js"]
     # SIGTERM lets the current tick finish before the container is killed.
     stop_grace_period: 30s
-    environment: *env
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    # Memory limit measured locally (peak 436 MB), Node heap capped at 75 % of it.
+    # cpu_shares is a priority, not a cap (a cap is unsupported by many Synology kernels):
+    # Plex and co. (1024 by default) get twice the CPU when everything is busy.
+    mem_limit: 768m
+    cpu_shares: 512
+    environment:
+      <<: *env
+      NODE_OPTIONS: --max-old-space-size=576
     volumes:
       - /volume1/docker/psn-tracker/media:/data/media
     networks:

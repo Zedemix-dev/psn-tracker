@@ -2,9 +2,10 @@ import type { Db } from "@/src/db/client";
 import type { TrophyType } from "@/src/db/schema";
 import { gameImages } from "@/src/games/game-image";
 import { loadSiblingIndex } from "@/src/games/siblings";
-import { formatDateAndTime, formatPercent } from "@/src/lib/format";
+import { formatDateAndTime, formatPercent, parisDateParts } from "@/src/lib/format";
+import { cachedUntilNextRun } from "@/src/lib/per-sync-cache";
 import { rarityTier, type RarityTier } from "@/src/lib/rarity";
-import { type ImageMap, loadImageMap, mediaSrc } from "@/src/sync/images";
+import { loadImageMap, mediaSrc } from "@/src/sync/images";
 import { buildGameCharts, type GameCharts } from "./game-charts";
 import { levelCrossings } from "./level-history";
 import { buildTrophyCharts, type TrophyCharts } from "./trophy-charts";
@@ -33,11 +34,23 @@ export type LevelRow = {
 
 export type StatsData = TrophyCharts & GameCharts & { levels: LevelRow[] }; // levels newest first
 
-export async function getStatsData(db: Db, opts: { hideZero: boolean; now?: Date; imageMap?: ImageMap }): Promise<StatsData> {
+/** `YYYY-MM-DD` in Paris: the charts are relative to today, so the cached data lasts one Paris day at most. */
+function parisDay(d: Date): string {
+  const { year, month, day } = parisDateParts(d);
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
+/** Kept until the next run and until midnight in Paris; the result is shared, so callers must not modify it. */
+export function getStatsData(db: Db, opts: { hideZero: boolean; now?: Date }): Promise<StatsData> {
+  const now = opts.now ?? new Date();
+  return cachedUntilNextRun(db, `stats:${opts.hideZero}`, () => computeStatsData(db, { ...opts, now }), parisDay(now));
+}
+
+async function computeStatsData(db: Db, opts: { hideZero: boolean; now: Date }): Promise<StatsData> {
   const [earned, siblings, imageMap] = await Promise.all([
     getAllEarned(db),
     loadSiblingIndex(db),
-    opts.imageMap ?? loadImageMap(db),
+    loadImageMap(db),
   ]);
 
   const games = [...siblings.values()].flat().filter((t) => !(opts.hideZero && t.progress === 0));
@@ -67,7 +80,7 @@ export async function getStatsData(db: Db, opts: { hideZero: boolean; now?: Date
     .reverse();
 
   return {
-    ...buildTrophyCharts(earned, opts.now ?? new Date()),
+    ...buildTrophyCharts(earned, opts.now),
     ...buildGameCharts(games, siblings),
     levels,
   };

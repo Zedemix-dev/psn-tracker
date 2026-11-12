@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { beforeEach, describe, expect, it } from "vitest";
 import type { Db } from "@/src/db/client";
-import { titles, trophies, trophyGroups } from "@/src/db/schema";
+import { syncRuns, titles, trophies, trophyGroups } from "@/src/db/schema";
 import { getGameDetail } from "@/src/games/detail";
 import type { ImageMap } from "@/src/sync/images";
 import { createTestDb } from "@/tests/helpers/db";
@@ -51,6 +51,7 @@ describe("getGameDetail borrowing", () => {
     const d = await getGameDetail(db, "P4", map, NOW);
     expect(d!.bannerPath).toBe("psn/b.png");
     expect(d!.publisher).toBe("Studio");
+    await db.insert(syncRuns).values({ kind: "daily", status: "success", finishedAt: new Date() }); // a run ends: the sibling index is read again
     await db.update(titles).set({ bannerUrl: null }).where(eq(titles.npCommunicationId, "P5"));
     expect((await getGameDetail(db, "P4", map, NOW))!.bannerPath).toBeNull();
   });

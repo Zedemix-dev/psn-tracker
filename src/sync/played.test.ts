@@ -16,7 +16,7 @@ const ID = "NPWR00001_00";
 let db: Db;
 beforeEach(async () => {
   db = await createTestDb();
-  await upsertTitleRow(db, makeRemoteTitle({ npCommunicationId: ID }), now);
+  await upsertTitleRow(db, makeRemoteTitle({ npCommunicationId: ID }));
 });
 
 const getTitle = async (id = ID) =>
@@ -86,7 +86,7 @@ describe("syncPlayedGames", () => {
 
   it("leaves a title without a played game with a null cover and its previous play columns", async () => {
     const other = "NPWR00002_00";
-    await upsertTitleRow(db, makeRemoteTitle({ npCommunicationId: other }), now);
+    await upsertTitleRow(db, makeRemoteTitle({ npCommunicationId: other }));
     await db.update(titles).set({ playSeconds: 77 }).where(eq(titles.npCommunicationId, other));
     const gw = createFakePsn({
       playedGames: [makePlayedGame({ npTitleId: "A" }), makePlayedGame({ npTitleId: "Z" })],

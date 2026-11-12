@@ -3,6 +3,7 @@ import type { Db } from "@/src/db/client";
 import { titles } from "@/src/db/schema";
 import { bannerOverrideFor } from "@/src/games/banner-overrides";
 import type { GameTitle } from "@/src/games/row";
+import { cachedUntilNextRun } from "@/src/lib/per-sync-cache";
 
 export type SiblingTitle = GameTitle;
 
@@ -23,7 +24,12 @@ export function gameKey(name: string): string {
   return name.toLowerCase().replace(/[™®©]/g, "").replace(/\s+/g, " ").trim();
 }
 
-export async function loadSiblingIndex(db: Db): Promise<SiblingIndex> {
+/** Kept until the next run: callers must treat the Map, its arrays and its rows as read-only. */
+export function loadSiblingIndex(db: Db): Promise<SiblingIndex> {
+  return cachedUntilNextRun(db, "sibling-index", () => computeSiblingIndex(db));
+}
+
+async function computeSiblingIndex(db: Db): Promise<SiblingIndex> {
   const rows = await db.select().from(titles).where(eq(titles.hidden, false));
   const index: SiblingIndex = new Map();
   for (const row of rows) {

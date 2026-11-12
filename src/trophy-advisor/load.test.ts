@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { beforeEach, describe, expect, it } from "vitest";
 import type { Db } from "@/src/db/client";
-import { titles, trophies } from "@/src/db/schema";
+import { syncRuns, titles, trophies } from "@/src/db/schema";
 import {
   advisorScope,
   countAdvisorTrophies,
@@ -263,6 +263,7 @@ describe("getIncompleteGames", () => {
       db,
       ["B2", "A2", "C2"].flatMap((titleId) => [1, 2, 3].map((trophyId): TrophySeed => ({ titleId, trophyId }))),
     );
+    await db.insert(syncRuns).values({ kind: "daily", status: "success", finishedAt: new Date() }); // a run ends: the sibling index is read again
     expect((await left()).slice(2)).toEqual([
       ["A2", 3],
       ["B2", 3],

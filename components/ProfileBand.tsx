@@ -29,7 +29,7 @@ export function ProfileBand({
   const progress = profile.levelProgress ?? 0;
   return (
     <section className="profile glass" aria-label="Profile">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
+      {/* eslint-disable-next-line @next/next/no-img-element -- images are already cached and sized by the app, no next/image optimizer wanted */}
       <img className="avatar" src={mediaSrc(profile.avatarUrl, imageMap)} alt={`${name} avatar`} />
       <div className="identity">
         <h1>{name}</h1>

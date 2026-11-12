@@ -1,11 +1,12 @@
+import "../../../styles/game.css";
 import type { CSSProperties } from "react";
 import { notFound } from "next/navigation";
-import { AutoRefresh } from "@/components/AutoRefresh";
 import { Banner, PageBackground, bannerVars } from "@/components/Banner";
 import { GameBand } from "@/components/game/GameBand";
 import { GameInfoPanel } from "@/components/game/GameInfoPanel";
 import { TimelinePanel } from "@/components/game/TimelinePanel";
 import { TrophyList } from "@/components/game/TrophyList";
+import { RefreshOnRunEnd } from "@/components/RefreshOnRunEnd";
 import { TileImage } from "@/components/TileImage";
 import { requireSession } from "@/src/auth/require-session";
 import { getDb } from "@/src/db/client";
@@ -48,7 +49,10 @@ export default async function GamePage({
         logo={hasImage && detail.logoSrc ? { src: detail.logoSrc, alt: `${detail.name} logo` } : null}
       />
       <main className="wrap">
-        <AutoRefresh active={sync.status === "queued" || sync.status === "running"} />
+        <RefreshOnRunEnd
+          active={sync.status === "queued" || sync.status === "running"}
+          lastFinishedAt={sync.lastFinishedAt}
+        />
         <GameBand detail={detail} />
         <div className="layout">
           <TrophyList

@@ -8,6 +8,8 @@ export type SyncState = "idle" | "queued" | "running" | "error";
 export type SyncStatus = {
   status: SyncState;
   lastSuccessAt: string | null;
+  /** End of the latest finished run, whatever its status: it changes exactly when a run ends. */
+  lastFinishedAt: string | null;
   error: string | null;
   titlesDone: number;
   titlesTotal: number;
@@ -26,19 +28,26 @@ export async function getSyncStatus(db: Db): Promise<SyncStatus> {
     .orderBy(desc(syncRuns.finishedAt))
     .limit(1);
   const lastSuccessAt = success?.at?.toISOString() ?? null;
-
-  if (running) {
-    return { status: "running", lastSuccessAt, error: null, titlesDone: running.done, titlesTotal: running.total };
-  }
-  const idle = { lastSuccessAt, error: null, titlesDone: 0, titlesTotal: 0 };
-  if ((await getSettings(db)).syncRequestedAt) return { status: "queued", ...idle };
-
   const [latest] = await db
-    .select({ status: syncRuns.status, error: syncRuns.error })
+    .select({ status: syncRuns.status, error: syncRuns.error, at: syncRuns.finishedAt })
     .from(syncRuns)
     .where(and(ne(syncRuns.status, "running"), isNotNull(syncRuns.finishedAt)))
     .orderBy(desc(syncRuns.finishedAt), desc(syncRuns.id))
     .limit(1);
+  const lastFinishedAt = latest?.at?.toISOString() ?? null;
+
+  if (running) {
+    return {
+      status: "running",
+      lastSuccessAt,
+      lastFinishedAt,
+      error: null,
+      titlesDone: running.done,
+      titlesTotal: running.total,
+    };
+  }
+  const idle = { lastSuccessAt, lastFinishedAt, error: null, titlesDone: 0, titlesTotal: 0 };
+  if ((await getSettings(db)).syncRequestedAt) return { status: "queued", ...idle };
   if (latest?.status === "error") return { status: "error", ...idle, error: latest.error ?? "Unknown error" };
   return { status: "idle", ...idle };
 }

@@ -1,7 +1,8 @@
+import { sql } from "drizzle-orm";
 import { beforeEach, describe, expect, it } from "vitest";
 import type { Db } from "@/src/db/client";
 import { titles } from "@/src/db/schema";
-import { parseGameQuery, queryGames, type GameQuery } from "@/src/games/query";
+import { ALL_LIMIT, parseGameQuery, queryGames, type GameQuery } from "@/src/games/query";
 import { insertTrophies } from "@/tests/fixtures/profile";
 import { createTestDb } from "@/tests/helpers/db";
 
@@ -251,5 +252,29 @@ describe("pagination", () => {
     expect(page.total).toBe(120);
     expect((await queryGames(db, base, { hideZero: false })).items).toHaveLength(50);
     expect((await queryGames(db, { ...base, offset: -10 }, { hideZero: false })).items[0].id).toBe("T000");
+  });
+});
+
+describe("limit", () => {
+  it("honours limit up to ALL_LIMIT", async () => {
+    // One statement for ALL_LIMIT + 1 titles, T00001 to T10001 in alphabetical order.
+    await db.execute(sql`
+      insert into titles (np_communication_id, np_service_name, name, icon_url, platforms, trophy_set_version)
+      select 'T' || lpad(i::text, 5, '0'), 'trophy', 'Game ' || lpad(i::text, 5, '0'),
+        'https://img.example/icon.png', array['PS5'], '1.00'
+      from generate_series(1, ${ALL_LIMIT + 1}::int) as i`);
+    const page = async (offset: number, limit?: number) =>
+      queryGames(db, { ...base, offset }, { hideZero: false, limit });
+    const idsOf = (p: Awaited<ReturnType<typeof page>>) => p.items.map((i) => i.id);
+
+    expect((await page(0)).items).toHaveLength(50);
+    const back = await page(0, 120);
+    expect(back.items).toHaveLength(120);
+    expect(idsOf(back).slice(0, 2)).toEqual(["T00001", "T00002"]);
+    expect(idsOf(back).at(-1)).toBe("T00120");
+    expect(idsOf(await page(100, 3))).toEqual(["T00101", "T00102", "T00103"]);
+    const capped = await page(0, ALL_LIMIT + 500);
+    expect(capped.items).toHaveLength(ALL_LIMIT);
+    expect(capped.total).toBe(ALL_LIMIT + 1);
   });
 });

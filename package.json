@@ -10,6 +10,7 @@
     "build": "next build",
     "start": "next start",
     "test": "vitest run",
+    "lint": "node tools/eslint/node_modules/eslint/bin/eslint.js --config tools/eslint/eslint.config.mjs --max-warnings 0 .",
     "worker:dev": "tsx src/worker/index.ts",
     "hash-password": "tsx scripts/hash-password.ts",
     "db:generate": "drizzle-kit generate",
@@ -22,12 +23,12 @@
     "e2e:sql": "node scripts/e2e/sql.mjs"
   },
   "dependencies": {
-    "@electric-sql/pglite": "^0.5.15",
+    "@electric-sql/pglite": "^0.5.16",
     "bcryptjs": "^3.0.3",
     "drizzle-orm": "^0.45.4",
     "fontkit": "^2.0.4",
-    "next": "^16.4.5",
-    "postgres": "^4.1.0",
+    "next": "^16.4.6",
+    "postgres": "^4.1.1",
     "psn-api": "^2.18.1",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
@@ -35,7 +36,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@electric-sql/pglite-socket": "^0.2.18",
+    "@electric-sql/pglite-socket": "^0.2.19",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
     "@types/fontkit": "^2.0.9",
