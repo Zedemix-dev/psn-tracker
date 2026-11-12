@@ -4,7 +4,7 @@
   "private": true,
   "description": "Lint toolchain, kept apart from the app: typescript-eslint needs TypeScript 6, the app compiles with TypeScript 7.",
   "devDependencies": {
-    "eslint": "^9.39.5",
+    "eslint": "^10.14.0",
     "eslint-config-next": "^16.4.6",
     "typescript": "^6.0.2"
   }
