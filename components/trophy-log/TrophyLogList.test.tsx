@@ -29,6 +29,7 @@ const trophy = (n: number): LogRow => ({
   gameName: "The Game",
   gameSrc: "/media/game.png",
   gameIsIcon: false,
+  gameTileBg: null,
   dlc: null,
   platforms: ["PS5"],
   date: "9 Nov 2026",

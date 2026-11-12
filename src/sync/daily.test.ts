@@ -4,7 +4,7 @@ import path from "node:path";
 import { eq } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Db } from "@/src/db/client";
-import { syncRuns, titles, trophies, trophyGroups } from "@/src/db/schema";
+import { playedGames, syncRuns, titles, trophies, trophyGroups } from "@/src/db/schema";
 import type { AppConfig } from "@/src/lib/config";
 import { savePsnTokens } from "@/src/settings/repo";
 import { runDailyRefresh } from "@/src/sync/daily";
@@ -109,5 +109,42 @@ describe("runDailyRefresh", () => {
     const gw = gwWith(1.28);
     await runDailyRefresh(db, gw, cfg, later, deps);
     expect(gw.calls.filter((c) => c.startsWith("getUserTrophies"))).toHaveLength(0);
+  });
+
+  it("resets the empty played-game mappings to null and keeps the others", async () => {
+    await db.insert(playedGames).values([
+      { npTitleId: "A", name: "A", npCommunicationIds: [] },
+      { npTitleId: "B", name: "B", npCommunicationIds: [ID] },
+      { npTitleId: "C", name: "C", npCommunicationIds: null },
+    ]);
+    await runDailyRefresh(db, gwWith(1.3), cfg, later, deps);
+    const rows = await db.select().from(playedGames).orderBy(playedGames.npTitleId);
+    expect(rows.map((r) => r.npCommunicationIds)).toEqual([null, [ID], null]);
+  });
+
+  it("keeps a known rare category when PSN sends none", async () => {
+    const { defs, userTrophies } = makeTrophies(2);
+    userTrophies.forEach((u) => (u.rareCategory = null));
+    const gw = createFakePsn({
+      titles: [makeRemoteTitle({ defined: { platinum: 0, gold: 0, silver: 0, bronze: 2 } })],
+      titleData: { [ID]: { groups: [makeGroup("default")], defs, userTrophies } },
+    });
+    await runDailyRefresh(db, gw, cfg, later, deps);
+    const rows = await db.select().from(trophies).where(eq(trophies.titleId, ID));
+    expect(rows.map((r) => r.rareCategory)).toEqual([2, 2]);
+  });
+
+  it("keeps a known earned rate when PSN sends none, and replaces it by a real value", async () => {
+    const { defs, userTrophies } = makeTrophies(2);
+    userTrophies.forEach((u) => (u.earnedRate = null));
+    const gw = createFakePsn({
+      titles: [makeRemoteTitle({ defined: { platinum: 0, gold: 0, silver: 0, bronze: 2 } })],
+      titleData: { [ID]: { groups: [makeGroup("default")], defs, userTrophies } },
+    });
+    await runDailyRefresh(db, gw, cfg, later, deps);
+    const rates = async () => (await db.select().from(trophies).where(eq(trophies.titleId, ID))).map((r) => r.earnedRate);
+    expect(await rates()).toEqual(["1.30", "1.30"]);
+    await runDailyRefresh(db, gwWith(0.5), cfg, later, deps);
+    expect(await rates()).toEqual(["0.50", "0.50"]);
   });
 });

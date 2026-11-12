@@ -20,6 +20,7 @@ const game = (over: Partial<IncompleteGame> = {}): IncompleteGame => ({
   platforms: ["PS5"],
   coverSrc: "/media/cover.png",
   coverIsIcon: false,
+  coverTileBg: null,
   progress: 27,
   rank: "D",
   left: 1234,

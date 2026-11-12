@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup suivis v1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0F1631; --surface:rgba(255,255,255,.07); --surface-2:rgba(255,255,255,.12); --line:rgba(255,255,255,.13);
+  --text:#F3F5FB; --muted:#A9B3CB; --accent:#5AA9FF;
+  --plat:#D3E2FF; --gold:#F2C462; --silver:#C9D0DA; --bronze:#DE9563;
+  --font:"Sora",sans-serif; --r-panel:14px;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.4;-webkit-font-smoothing:antialiased}
+img{display:block}
+.glass{background:var(--surface);border:1px solid var(--line)}
+.note{padding:8px 24px;font-size:12px;color:#2B1B00;background:var(--gold)}
+.note b{font-weight:700}
+.wrap{padding:18px 24px 64px}
+h3{margin:28px 0 6px;font-size:15px}
+.cap{font-size:12px;line-height:1.45;color:#2B1B00;background:var(--gold);border-radius:8px;padding:6px 10px;margin-bottom:8px}
+.cap b{font-weight:700}
+.row{display:flex;flex-wrap:wrap;gap:24px 18px;align-items:flex-start}
+
+/* Phone frame: 375 px screen, 16 px page gutter */
+.phone{width:375px;padding:0 16px;border:1px dashed rgba(255,255,255,.25);border-radius:12px;padding-top:12px;padding-bottom:12px}
+.profile{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:14px;padding:12px;border-radius:var(--r-panel)}
+.avatar{width:68px;height:68px;border-radius:50%;background:var(--surface-2);border:3px solid rgba(255,255,255,.9)}
+.identity h1{margin:0;font-size:22px;font-weight:700;line-height:1.15}
+.identity .sync{font-size:12px;color:var(--muted);margin-top:6px}
+
+/* Site today */
+.counts{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:stretch;gap:6px}
+.count{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:64px;padding:6px 8px;border-radius:10px;background:var(--surface-2)}
+.count b{font-size:17px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.count span{display:flex;align-items:center;gap:3px;font-size:11px;margin-top:4px;color:var(--muted)}
+.count span img{width:11px;height:11px}
+.count.plat b{color:var(--plat)} .count.gold b{color:var(--gold)} .count.silver b{color:var(--silver)} .count.bronze b{color:var(--bronze)}
+
+/* A: one line of 5 */
+.counts.a{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}
+.counts.a .count{min-width:0;padding:6px 2px}
+.counts.a .count b{font-size:14.5px}
+.counts.a .count span{font-size:10px;gap:2px}
+.counts.a .count span img{width:10px;height:10px}
+
+/* B: total on top, the four types below */
+.counts.b{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.counts.b .count{min-width:0}
+.counts.b .count.total{grid-column:1/-1;flex-direction:row;gap:8px;padding:7px 8px}
+.counts.b .count.total span{margin-top:0}
+
+/* Tiles */
+.tiles{display:grid;grid-template-columns:auto 96px 96px;gap:10px 16px;align-items:center}
+.tiles .h{font-size:12px;color:var(--muted)}
+.tile{width:96px;height:96px;border-radius:10px;object-fit:contain;background:#0B1022}
+.name{font-size:13px}
+</style>
+</head>
+<body>
+<div class="note"><b>Maquette v1, points de suivi</b> (pas le vrai site). Tes vraies données. Deux choses visibles : le compteur Bronze sur téléphone, et la tuile des 3 images à coins arrondis.</div>
+<div class="wrap">
+
+<h3>1. Les compteurs du bandeau sur un téléphone de 375 px</h3>
+<div class="row">
+  <div>
+    <div class="cap"><b>Aujourd'hui</b> : Bronze passe seul à la ligne.</div>
+    <div class="phone"><section class="profile glass">
+      <div class="avatar"></div><div class="identity"><h1>Zmx969</h1><div class="sync">Last synced 10 Nov 2026, 02:59</div></div>
+      <div class="counts">
+        <div class="count"><b>11,636</b><span>Trophies</span></div>
+        <div class="count plat"><b>230</b><span><img src="icons/40-platinum.png" alt="">Platinum</span></div>
+        <div class="count gold"><b>990</b><span><img src="icons/40-gold.png" alt="">Gold</span></div>
+        <div class="count silver"><b>2,434</b><span><img src="icons/40-silver.png" alt="">Silver</span></div>
+        <div class="count bronze"><b>7,982</b><span><img src="icons/40-bronze.png" alt="">Bronze</span></div>
+      </div>
+    </section></div>
+  </div>
+  <div>
+    <div class="cap"><b>A</b> : les 5 sur une ligne, en plus petit.</div>
+    <div class="phone"><section class="profile glass">
+      <div class="avatar"></div><div class="identity"><h1>Zmx969</h1><div class="sync">Last synced 10 Nov 2026, 02:59</div></div>
+      <div class="counts a">
+        <div class="count"><b>11,636</b><span>Trophies</span></div>
+        <div class="count plat"><b>230</b><span><img src="icons/40-platinum.png" alt="">Platinum</span></div>
+        <div class="count gold"><b>990</b><span><img src="icons/40-gold.png" alt="">Gold</span></div>
+        <div class="count silver"><b>2,434</b><span><img src="icons/40-silver.png" alt="">Silver</span></div>
+        <div class="count bronze"><b>7,982</b><span><img src="icons/40-bronze.png" alt="">Bronze</span></div>
+      </div>
+    </section></div>
+  </div>
+  <div>
+    <div class="cap"><b>B</b> : le total sur toute la largeur, puis les 4 types en 4 colonnes égales.</div>
+    <div class="phone"><section class="profile glass">
+      <div class="avatar"></div><div class="identity"><h1>Zmx969</h1><div class="sync">Last synced 10 Nov 2026, 02:59</div></div>
+      <div class="counts b">
+        <div class="count total"><b>11,636</b><span>Trophies</span></div>
+        <div class="count plat"><b>230</b><span><img src="icons/40-platinum.png" alt="">Platinum</span></div>
+        <div class="count gold"><b>990</b><span><img src="icons/40-gold.png" alt="">Gold</span></div>
+        <div class="count silver"><b>2,434</b><span><img src="icons/40-silver.png" alt="">Silver</span></div>
+        <div class="count bronze"><b>7,982</b><span><img src="icons/40-bronze.png" alt="">Bronze</span></div>
+      </div>
+    </section></div>
+  </div>
+</div>
+
+<h3>2. La tuile carrée des images à coins arrondis</h3>
+<div class="cap" style="max-width:620px"><b>Sur tes 667 images non carrées</b>, seules ces 3 changent. Leur cadre a des coins arrondis et transparents, donc la tuile reste bleu nuit aujourd'hui. En ignorant les 2 pixels des coins, la tuile prend la couleur de leur bord, en haut et en bas.</div>
+<div class="tiles">
+  <span></span><span class="h">Aujourd'hui</span><span class="h">Proposé</span>
+  <span class="name">Dark Souls II: Scholar of the First Sin</span>
+  <img class="tile" src="suivis-img/ds2.png" alt="">
+  <img class="tile" src="suivis-img/ds2.png" alt="" style="background:linear-gradient(#252525 50%,#5d5d5d 50%)">
+  <span class="name">Dragon Quest XI (cadre rouge)</span>
+  <img class="tile" src="suivis-img/dq11.png" alt="">
+  <img class="tile" src="suivis-img/dq11.png" alt="" style="background:linear-gradient(#211808 50%,#281602 50%)">
+  <span class="name">Dragon Quest XI: Echoes of an Elusive Age</span>
+  <img class="tile" src="suivis-img/dq11s.png" alt="">
+  <img class="tile" src="suivis-img/dq11s.png" alt="" style="background:linear-gradient(#1e1a09 50%,#261701 50%)">
+</div>
+
+</div>
+</body>
+</html>

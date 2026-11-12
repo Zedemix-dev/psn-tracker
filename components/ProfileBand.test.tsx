@@ -23,8 +23,15 @@ describe("ProfileBand", () => {
     const html = renderToStaticMarkup(
       <ProfileBand profile={row} imageMap={new Map()} sync={{} as SyncStatus} />,
     );
-    expect(html).toContain('<div class="count"><b>11,630</b><span>Trophies</span></div>');
+    expect(html).toContain('<div class="count total"><b>11,630</b><span>Trophies</span></div>');
     expect(html).toMatch(/<div class="count plat"><b>230<\/b><span><.*?>Platinum<\/span><\/div>/);
     expect(html).toMatch(/<div class="count bronze"><b>7,976<\/b><span><.*?>Bronze<\/span><\/div>/);
+  });
+
+  it("marks the total counter so phones can give it a full row", () => {
+    const html = renderToStaticMarkup(
+      <ProfileBand profile={row} imageMap={new Map()} sync={{} as SyncStatus} />,
+    );
+    expect(html.match(/class="count total"/g)).toHaveLength(1);
   });
 });

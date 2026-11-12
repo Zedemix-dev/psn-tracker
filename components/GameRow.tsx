@@ -10,6 +10,7 @@ export function GameRow({ row }: { row: GameRowData }) {
     <Link href={`/games/${encodeURIComponent(row.id)}`} className="game">
       <TileImage
         tile={row.coverIsIcon}
+        bg={row.coverTileBg}
         className={`game-cover${row.coverIsIcon ? " icon" : ""}`}
         src={row.coverSrc}
         alt=""

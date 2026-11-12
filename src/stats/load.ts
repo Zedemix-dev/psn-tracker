@@ -4,7 +4,7 @@ import { gameImages } from "@/src/games/game-image";
 import { loadSiblingIndex } from "@/src/games/siblings";
 import { formatDateAndTime, formatPercent } from "@/src/lib/format";
 import { rarityTier, type RarityTier } from "@/src/lib/rarity";
-import { loadImageMap, mediaSrc } from "@/src/sync/images";
+import { type ImageMap, loadImageMap, mediaSrc } from "@/src/sync/images";
 import { buildGameCharts, type GameCharts } from "./game-charts";
 import { levelCrossings } from "./level-history";
 import { buildTrophyCharts, type TrophyCharts } from "./trophy-charts";
@@ -24,6 +24,7 @@ export type LevelRow = {
   gameName: string;
   gameSrc: string; // the image of the game's row in Games
   gameIsIcon: boolean;
+  gameTileBg: string | null;
   date: string; // "9 Nov 2026"
   time: string; // "15:46:30"
   ratePct: string | null; // "18.30%"
@@ -32,8 +33,12 @@ export type LevelRow = {
 
 export type StatsData = TrophyCharts & GameCharts & { levels: LevelRow[] }; // levels newest first
 
-export async function getStatsData(db: Db, opts: { hideZero: boolean; now?: Date }): Promise<StatsData> {
-  const [earned, siblings, imageMap] = await Promise.all([getAllEarned(db), loadSiblingIndex(db), loadImageMap(db)]);
+export async function getStatsData(db: Db, opts: { hideZero: boolean; now?: Date; imageMap?: ImageMap }): Promise<StatsData> {
+  const [earned, siblings, imageMap] = await Promise.all([
+    getAllEarned(db),
+    loadSiblingIndex(db),
+    opts.imageMap ?? loadImageMap(db),
+  ]);
 
   const games = [...siblings.values()].flat().filter((t) => !(opts.hideZero && t.progress === 0));
   const imageOf = gameImages(siblings, imageMap);

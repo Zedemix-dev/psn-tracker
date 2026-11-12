@@ -1,6 +1,8 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
+import { edgeBackground } from "@/src/lib/tile-bg";
+
 export const THUMB_SIZE = 192;
 const THUMB_QUALITY = 80;
 
@@ -22,4 +24,22 @@ export async function makeThumb(source: string, target: string): Promise<void> {
     await fs.rm(tmp, { force: true });
     throw error;
   }
+}
+
+/**
+ * Tile colour of a cached image (spec 8.9): the `edgeBackground` of its raw RGBA pixels.
+ * Null for an SVG (not read) or an image without bands to fill; rejects on an unreadable file.
+ */
+export async function computeTileBg(file: string): Promise<string | null> {
+  if (path.extname(file).toLowerCase() === ".svg") return null;
+  const { default: sharp } = await import("sharp");
+  const input = await fs.readFile(file);
+  // Same rule as edgeBackground, without decoding: ~13,000 trophy icons are square.
+  const meta = await sharp(input).metadata();
+  if (meta.width === meta.height) return null;
+  const { data, info } = await sharp(input)
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  return edgeBackground(data, info.width, info.height);
 }

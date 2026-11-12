@@ -4,7 +4,7 @@ import path from "node:path";
 import { eq } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Db } from "@/src/db/client";
-import { profile, syncRuns, titles, trophies } from "@/src/db/schema";
+import { images, profile, settings, syncRuns, titles, trophies } from "@/src/db/schema";
 import type { AppConfig } from "@/src/lib/config";
 import { savePsnTokens, getSettings } from "@/src/settings/repo";
 import { isRetryable, withPacing } from "@/src/sync/retry";
@@ -65,6 +65,65 @@ beforeEach(async () => {
 });
 afterEach(async () => {
   await fs.rm(mediaDir, { recursive: true, force: true });
+});
+
+describe("runSync language", () => {
+  const storedLanguage = async () => (await db.select({ l: settings.psnLanguage }).from(settings))[0].l;
+  const defsCalls = (gw: { calls: string[] }) => gw.calls.filter((c) => c.startsWith("getTrophyDefs")).length;
+
+  it("stores the language on the first run and forces no reload when none was stored", async () => {
+    await runSync(db, fixture(), cfg, "manual", now, deps);
+    expect(await storedLanguage()).toBe("en-GB");
+    await db.update(settings).set({ psnLanguage: null });
+    const gw = fixture();
+    await runSync(db, gw, { ...cfg, psnLanguage: "fr-FR" }, "scheduled", now, deps);
+    expect(defsCalls(gw)).toBe(0);
+    expect(await storedLanguage()).toBe("fr-FR");
+  });
+
+  it("reloads nothing when the stored language is the same", async () => {
+    await runSync(db, fixture(), cfg, "manual", now, deps);
+    const gw = fixture();
+    await runSync(db, gw, cfg, "scheduled", now, deps);
+    expect(defsCalls(gw)).toBe(0);
+    expect(await storedLanguage()).toBe("en-GB");
+  });
+
+  it("reloads every title, definitions included, on a language change, then stores it", async () => {
+    await runSync(db, fixture(), cfg, "manual", now, deps);
+    const gw = fixture();
+    const res = await runSync(db, gw, { ...cfg, psnLanguage: "fr-FR" }, "scheduled", now, deps);
+    expect(res.status).toBe("success");
+    expect(defsCalls(gw)).toBe(3);
+    expect(await storedLanguage()).toBe("fr-FR");
+    const again = fixture();
+    await runSync(db, again, { ...cfg, psnLanguage: "fr-FR" }, "scheduled", now, deps);
+    expect(defsCalls(again)).toBe(0);
+  });
+
+  it("reloads again, and only, a title that failed during the language change", async () => {
+    await runSync(db, fixture(), cfg, "manual", now, deps);
+    const fr = { ...cfg, psnLanguage: "fr-FR" };
+    const failing = fixture(ids[1]);
+    const res = await runSync(db, failing, fr, "scheduled", now, deps);
+    expect(res.status).toBe("success");
+    expect(await storedLanguage()).toBe("fr-FR");
+    const gw = fixture();
+    await runSync(db, gw, fr, "scheduled", now, deps);
+    expect(gw.calls.filter((c) => c.startsWith("getTrophyDefs")).map((c) => c.split(":")[1])).toEqual([ids[1]]);
+  });
+
+  it("keeps the old language when the run fails early, so the next run retries", async () => {
+    await runSync(db, fixture(), cfg, "manual", now, deps);
+    const bad = createFakePsn({ failures: [{ method: "getProfile" }] });
+    const res = await runSync(db, bad, { ...cfg, psnLanguage: "fr-FR" }, "scheduled", now, deps);
+    expect(res.status).toBe("error");
+    expect(await storedLanguage()).toBe("en-GB");
+    const gw = fixture();
+    await runSync(db, gw, { ...cfg, psnLanguage: "fr-FR" }, "scheduled", now, deps);
+    expect(defsCalls(gw)).toBe(3);
+    expect(await storedLanguage()).toBe("fr-FR");
+  });
 });
 
 describe("runSync", () => {
@@ -234,6 +293,43 @@ describe("runSync", () => {
     expect(res.status).toBe("success");
     expect(gw.calls.filter((c) => c === `getUserTrophies:${ids[0]}`)).toHaveLength(1);
     expect(gw.calls.filter((c) => c === `getUserTrophies:${ps4}`)).toHaveLength(0);
+  });
+});
+
+describe("runSync unused images", () => {
+  const ORPHAN = "https://image.api.playstation.com/orphan.png";
+  async function seedOrphan() {
+    await fs.mkdir(path.join(mediaDir, "psn"), { recursive: true });
+    await fs.writeFile(path.join(mediaDir, "psn", "orphan.png"), "x");
+    await db.insert(images).values({ url: ORPHAN, localPath: "psn/orphan.png" });
+  }
+  const orphanFile = () =>
+    fs.access(path.join(mediaDir, "psn", "orphan.png")).then(
+      () => true,
+      () => false,
+    );
+
+  it("removes images nothing uses after a clean run and logs the count", async () => {
+    await seedOrphan();
+    const log = vi.spyOn(console, "log").mockImplementation(() => {});
+    await runSync(db, fixture(), cfg, "manual", now, deps);
+    expect(log).toHaveBeenCalledWith("[worker] images: 1 removed");
+    log.mockRestore();
+    expect(await db.select().from(images).where(eq(images.url, ORPHAN))).toHaveLength(0);
+    expect(await orphanFile()).toBe(false);
+  });
+
+  it("removes nothing when a title was skipped, and says so", async () => {
+    await seedOrphan();
+    const log = vi.spyOn(console, "log").mockImplementation(() => {});
+    try {
+      await runSync(db, fixture(ids[1]), cfg, "manual", now, deps);
+      expect(log).toHaveBeenCalledWith("[worker] images: cleanup skipped (1 failures)");
+    } finally {
+      log.mockRestore();
+    }
+    expect(await db.select().from(images).where(eq(images.url, ORPHAN))).toHaveLength(1);
+    expect(await orphanFile()).toBe(true);
   });
 });
 

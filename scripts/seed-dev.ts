@@ -2,8 +2,9 @@ import fs from "node:fs";
 import path from "node:path";
 import { createDb } from "@/src/db/client";
 import { runMigrations } from "@/src/db/migrate";
-import { cabinet, profile, titles, trophies, trophyGroups, type TrophyType } from "@/src/db/schema";
+import { cabinet, playedGames, profile, titles, trophies, trophyGroups, type TrophyType } from "@/src/db/schema";
 import { isSafeSeedTarget } from "./seed-guard";
+import { playedGameRows } from "./seed-played";
 import { CABINET, GAMES, RAREST, RECENT } from "./seed-data";
 
 // Fills the dev database with the data of mockup v12 so the UI has something to show.
@@ -183,6 +184,7 @@ async function main(): Promise<void> {
   });
 
   await db.delete(cabinet);
+  await db.delete(playedGames);
   await db.delete(trophies);
   await db.delete(trophyGroups);
   await db.delete(titles);
@@ -191,6 +193,8 @@ async function main(): Promise<void> {
     await db.insert(trophies).values(trophyRows.slice(i, i + 500));
   }
   await db.insert(cabinet).values(cabinetRows);
+  const playedRows = playedGameRows(titleRows);
+  await db.insert(playedGames).values(playedRows);
   await db.update(profile).set({
     accountId: "seed-account",
     onlineId: "Zmx969",
@@ -206,7 +210,7 @@ async function main(): Promise<void> {
   });
 
   console.log(
-    `Seeded ${titleRows.length} games, ${trophyRows.length} trophies, ${cabinetRows.length} cabinet entries.`,
+    `Seeded ${titleRows.length} games, ${trophyRows.length} trophies, ${cabinetRows.length} cabinet entries, ${playedRows.length} played games.`,
   );
 }
 

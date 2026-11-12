@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState, useTransition } from "react";
+import { startTransition, useActionState, useState, useTransition } from "react";
 import { resetBanner, saveBannerPosition, saveNpsso, saveUnobtainableListUrl, uploadBanner } from "@/app/(site)/(banner)/settings/actions";
 import type { FormResult } from "@/src/settings/npsso";
 
@@ -116,9 +116,22 @@ export function BannerForm({
 }
 
 export function NpssoForm() {
-  const [result, save, pending] = useActionState(saveNpsso, null);
+  // Submitted by hand: React 19 resets the fields of a form whose action ran, and a failed attempt must keep what was pasted.
+  const [value, setValue] = useState("");
+  const [result, save, pending] = useActionState(async (prev: FormResult | null, form: FormData) => {
+    const res = await saveNpsso(prev, form);
+    if (res.ok) setValue("");
+    return res;
+  }, null);
   return (
-    <form action={save} className="set-row">
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        const form = new FormData(e.currentTarget);
+        startTransition(() => save(form));
+      }}
+      className="set-row"
+    >
       <label className="set-label" htmlFor="npsso">
         npsso
       </label>
@@ -129,6 +142,8 @@ export function NpssoForm() {
         autoComplete="off"
         spellCheck={false}
         maxLength={256}
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
         className="set-input"
         required
       />

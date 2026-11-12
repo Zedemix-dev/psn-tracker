@@ -52,6 +52,19 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx tsx scripts/pg-smoke.ts
+      # The worker bundle, built exactly as in the Dockerfile, must reach "[worker] started"
+      # (migrations applied, interrupted runs marked). Throwaway values: nothing here is a secret.
+      - name: Bundle the worker
+        run: >-
+          npx esbuild src/worker/index.ts --bundle --platform=node --target=node22
+          --external:@electric-sql/pglite --external:sharp --outfile=dist/worker.js
+      - name: Check that the worker starts
+        env:
+          ADMIN_USERNAME: ci
+          ADMIN_PASSWORD_HASH: ci-not-a-real-hash
+          APP_SECRET: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+          MEDIA_DIR: ${{ runner.temp }}/media
+        run: node scripts/worker-smoke.mjs
 
   image:
     runs-on: ubuntu-latest

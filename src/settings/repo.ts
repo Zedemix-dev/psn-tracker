@@ -1,4 +1,4 @@
-import { and, eq, isNotNull } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import type { Db } from "@/src/db/client";
 import { settings, type AdvisorDlc, type PsnAuthStatus } from "@/src/db/schema";
 import { decrypt, encrypt } from "@/src/lib/crypto";
@@ -18,6 +18,7 @@ export type Settings = {
 };
 
 const ROW = eq(settings.id, 1);
+const MAX_SYNC_REQUEST_FAILURES = 3;
 
 export async function getSettings(db: Db): Promise<Settings> {
   const [row] = await db
@@ -55,7 +56,7 @@ export async function setBanner(db: Db, path: string | null, posY: number): Prom
 }
 
 export async function requestSync(db: Db, now: Date): Promise<void> {
-  await db.update(settings).set({ syncRequestedAt: now }).where(ROW);
+  await db.update(settings).set({ syncRequestedAt: now, syncRequestFailures: 0 }).where(ROW);
 }
 
 export async function saveUnobtainableUrl(db: Db, url: string, now: Date): Promise<void> {
@@ -70,13 +71,30 @@ export async function clearUnobtainableRequest(db: Db, seen: Date): Promise<void
     .where(and(ROW, eq(settings.unobtainableRequestedAt, seen)));
 }
 
-export async function takeSyncRequest(db: Db): Promise<boolean> {
-  const rows = await db
+/** The pending manual request, left in place: it lives until its run ends. */
+export async function peekSyncRequest(db: Db): Promise<Date | null> {
+  const [row] = await db.select({ at: settings.syncRequestedAt }).from(settings).where(ROW);
+  return row?.at ?? null;
+}
+
+/** Ends the request and resets the failure count, only if it still holds the value read before the run. */
+export async function clearSyncRequest(db: Db, seen: Date): Promise<void> {
+  await db
     .update(settings)
-    .set({ syncRequestedAt: null })
-    .where(and(ROW, isNotNull(settings.syncRequestedAt)))
-    .returning({ id: settings.id });
-  return rows.length > 0;
+    .set({ syncRequestedAt: null, syncRequestFailures: 0 })
+    .where(and(ROW, eq(settings.syncRequestedAt, seen)));
+}
+
+/** Counts one failed run for the request; at 3 the request is given up. Returns the new total. */
+export async function failSyncRequest(db: Db, seen: Date): Promise<number> {
+  const [row] = await db
+    .update(settings)
+    .set({ syncRequestFailures: sql`${settings.syncRequestFailures} + 1` })
+    .where(and(ROW, eq(settings.syncRequestedAt, seen)))
+    .returning({ n: settings.syncRequestFailures });
+  if (!row) return 0;
+  if (row.n >= MAX_SYNC_REQUEST_FAILURES) await clearSyncRequest(db, seen);
+  return row.n;
 }
 
 export async function setPsnAuthStatus(db: Db, status: PsnAuthStatus): Promise<void> {

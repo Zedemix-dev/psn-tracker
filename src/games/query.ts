@@ -41,6 +41,20 @@ function pick<T extends string>(allowed: readonly T[], value: string | null, fal
   return allowed.includes(value as T) ? (value as T) : fallback;
 }
 
+export const MAX_OFFSET = 1_000_000;
+
+/** True when `offset` / `limit`, if present and not empty, are plain non-negative integers in range. */
+export function hasValidPaging(params: URLSearchParams): boolean {
+  for (const [key, max] of [["offset", MAX_OFFSET], ["limit", Number.MAX_SAFE_INTEGER]] as const) {
+    const raw = params.get(key);
+    if (raw === null || raw === "") continue;
+    if (!/^\d+$/.test(raw)) return false;
+    const n = Number(raw);
+    if (!Number.isSafeInteger(n) || n > max) return false;
+  }
+  return true;
+}
+
 export function parseGameQuery(params: URLSearchParams): GameQuery {
   const offset = Number.parseInt(params.get("offset") ?? "", 10);
   return {

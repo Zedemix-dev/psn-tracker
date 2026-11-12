@@ -1,12 +1,12 @@
 import { and, eq, gt, inArray, lte, notInArray } from "drizzle-orm";
 import type { Db } from "@/src/db/client";
-import { profile, syncRuns, titles, type SyncKind } from "@/src/db/schema";
+import { profile, settings, syncRuns, titles, type SyncKind } from "@/src/db/schema";
 import type { AppConfig } from "@/src/lib/config";
 import type { PsnAuth, PsnGateway } from "@/src/psn/gateway";
 import { getValidAuth } from "@/src/psn/tokens";
 import { loadTitleState, titleNeedsReload } from "@/src/sync/diff";
 import { syncCatalog } from "@/src/sync/catalog";
-import { cacheImages } from "@/src/sync/images";
+import { cacheImages, pruneImages } from "@/src/sync/image-cache";
 import { syncPlayedGames } from "@/src/sync/played";
 import { defaultSleep, withPacing, type Sleep } from "@/src/sync/retry";
 import { refreshUserState } from "@/src/sync/user-state";
@@ -148,12 +148,18 @@ export async function runSync(
     const remoteTitles = await paced.getTitles(auth);
     await progress.setTotal(remoteTitles.length);
 
+    // A new PSN language means every list must be reloaded to get its definitions in that language.
+    // First start with this version: no language stored yet, so just note it and reload nothing.
+    const [stored0] = await db.select({ language: settings.psnLanguage }).from(settings).where(eq(settings.id, 1));
+    const languageChanged = !!stored0?.language && stored0.language !== cfg.psnLanguage;
+
     const reloaded = new Set<string>();
+    const failedInLanguageRun: string[] = [];
     for (const remote of remoteTitles) {
       let updated = 0;
       try {
         const stored = await loadTitleState(db, remote.npCommunicationId);
-        if (titleNeedsReload(stored, remote)) {
+        if (languageChanged || titleNeedsReload(stored, remote)) {
           updated = (await syncTitle(db, paced, auth, remote, now)).trophiesUpdated;
           reloaded.add(remote.npCommunicationId);
         } else {
@@ -161,8 +167,19 @@ export async function runSync(
         }
       } catch (err) {
         failures.push(describeFailure(remote.npCommunicationId, err));
+        if (languageChanged) failedInLanguageRun.push(remote.npCommunicationId);
       }
       await progress.titleDone(updated);
+    }
+
+    // A title that failed while the language changed still has old-language definitions: a null
+    // syncedAt makes titleNeedsReload reload that title (and only it) on the next run.
+    if (failedInLanguageRun.length > 0) {
+      await db.update(titles).set({ syncedAt: null }).where(inArray(titles.npCommunicationId, failedInLanguageRun));
+    }
+    // Stored only once the titles have been gone through: a run that throws earlier retries the reload.
+    if (stored0 && stored0.language !== cfg.psnLanguage) {
+      await db.update(settings).set({ psnLanguage: cfg.psnLanguage }).where(eq(settings.id, 1));
     }
 
     // A list PSN no longer returns (PS4 lets you delete 0% lists) leaves the site. Each remote
@@ -192,6 +209,15 @@ export async function runSync(
       }
     }
     await syncCatalog(db, paced, auth, "missing", now);
-    await cacheImages(db, cfg.mediaDir, deps?.fetchImpl);
+    const img = await cacheImages(db, cfg.mediaDir, deps?.fetchImpl);
+    console.log(
+      `[worker] images: ${img.downloaded} downloaded, ${img.failed} failed, ${img.thumbs} thumbnails, ${img.tiles} tile colours`,
+    );
+    // Only after a clean run: a skipped title may still need images its rows do not list yet.
+    if (failures.length === 0) {
+      console.log(`[worker] images: ${await pruneImages(db, cfg.mediaDir)} removed`);
+    } else {
+      console.log(`[worker] images: cleanup skipped (${failures.length} failures)`);
+    }
   });
 }

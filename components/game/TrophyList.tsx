@@ -149,6 +149,7 @@ export function TrophyList({
               <div className="group-head">
                 <TileImage
                   tile={!g.iconIsCover}
+                  bg={g.iconTileBg}
                   className={g.iconIsCover ? "sq" : undefined}
                   src={g.iconSrc}
                   alt=""

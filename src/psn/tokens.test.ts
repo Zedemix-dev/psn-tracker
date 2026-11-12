@@ -1,5 +1,5 @@
 import { randomBytes } from "node:crypto";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Db } from "@/src/db/client";
 import { getSettings, loadPsnTokens, savePsnTokens } from "@/src/settings/repo";
 import { connectWithNpsso, getValidAuth, NPSSO_PATTERN } from "@/src/psn/tokens";
@@ -114,5 +114,33 @@ describe("connectWithNpsso", () => {
     const gw = createFakePsn({ failures: [{ method: "exchangeNpsso" }] });
     expect(await connectWithNpsso(db, gw, key, npsso, now)).toBe("invalid");
     expect(await loadPsnTokens(db, key)).toBeNull();
+  });
+
+  it("returns unreachable on a network error, a timeout, or a connection-level cause", async () => {
+    const failing = (e: unknown) => ({
+      ...createFakePsn(),
+      exchangeNpsso: async () => {
+        throw e;
+      },
+    });
+    expect(await connectWithNpsso(db, failing(new TypeError("fetch failed")), key, npsso, now)).toBe("unreachable");
+    expect(await connectWithNpsso(db, failing(new DOMException("slow", "TimeoutError")), key, npsso, now)).toBe("unreachable");
+    expect(await connectWithNpsso(db, failing(new DOMException("stop", "AbortError")), key, npsso, now)).toBe("unreachable");
+    expect(
+      await connectWithNpsso(db, failing(Object.assign(new Error("x"), { cause: { code: "ENOTFOUND" } })), key, npsso, now),
+    ).toBe("unreachable");
+    expect(await loadPsnTokens(db, key)).toBeNull();
+  });
+
+  it("returns unreachable when PSN never answers", async () => {
+    vi.useFakeTimers();
+    try {
+      const hang = { ...createFakePsn(), exchangeNpsso: () => new Promise<never>(() => {}) };
+      const p = connectWithNpsso(db, hang, key, npsso, now);
+      await vi.advanceTimersByTimeAsync(21_000);
+      expect(await p).toBe("unreachable");
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

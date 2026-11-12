@@ -139,7 +139,7 @@ export async function syncTitle(
             earned: sql`${trophies.earned} or ${sqlExcluded("earned")}`,
             earnedAt: sql`coalesce(${sqlExcluded("earned_at")}, ${trophies.earnedAt})`,
             earnedRate: sql`coalesce(${sqlExcluded("earned_rate")}, ${trophies.earnedRate})`,
-            rareCategory: sqlExcluded("rare_category"),
+            rareCategory: sql`coalesce(${sqlExcluded("rare_category")}, ${trophies.rareCategory})`,
             progressTarget: sqlExcluded("progress_target"),
             progress: sqlExcluded("progress"),
             progressedAt: sqlExcluded("progressed_at"),

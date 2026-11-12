@@ -23,6 +23,7 @@ export type LogRow = {
   gameName: string;
   gameSrc: string; // the image of the game's row in Games
   gameIsIcon: boolean; // true: the trophy-list icon, shown whole on its tile
+  gameTileBg: string | null; // the stored colour of that tile
   dlc: string | null; // group name, only when groupId ≠ "default"
   platforms: ("PS4" | "PS5")[];
   date: string; // "9 Nov 2026"

@@ -62,6 +62,22 @@ describe("SyncButton", () => {
     expect(fetchMock).toHaveBeenCalledTimes(3);
   });
 
+  it("stays on Syncing… through queued and running, and only comes back at idle or error", async () => {
+    fetchMock
+      .mockResolvedValueOnce(reply(status({ status: "queued" })))
+      .mockResolvedValueOnce(reply(status({ status: "running" })))
+      .mockResolvedValueOnce(reply(status({ status: "queued" })))
+      .mockResolvedValueOnce(reply(status({ status: "error", error: "boom" })));
+    render(<SyncButton initial={status({ status: "queued" })} />);
+    for (let i = 0; i < 4; i++) {
+      expect(button()).toHaveTextContent("Syncing…");
+      expect(button()).toBeDisabled();
+      await act(() => vi.advanceTimersByTimeAsync(2000));
+    }
+    expect(button()).toHaveTextContent("Retry sync");
+    expect(button()).toBeEnabled();
+  });
+
   it("polls from the start when the server says a sync is already running", async () => {
     fetchMock.mockResolvedValue(reply(status({ status: "idle" })));
     render(<SyncButton initial={status({ status: "running" })} />);

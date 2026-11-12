@@ -150,6 +150,8 @@ export const images = pgTable("images", {
   thumbPath: text("thumb_path"),
   attempts: integer("attempts").notNull().default(0),
   fetchedAt: ts("fetched_at"),
+  tileBg: text("tile_bg"),
+  tileCheckedAt: ts("tile_checked_at"),
 });
 
 export const syncRuns = pgTable("sync_runs", {
@@ -191,6 +193,8 @@ export const settings = pgTable("settings", {
     .notNull()
     .default(DEFAULT_UNOBTAINABLE_LIST_URL),
   unobtainableRequestedAt: ts("unobtainable_requested_at"),
+  psnLanguage: text("psn_language"),
+  syncRequestFailures: integer("sync_request_failures").notNull().default(0),
 });
 
 export const unobtainableList = pgTable("unobtainable_list", {

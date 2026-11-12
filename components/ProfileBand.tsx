@@ -37,7 +37,7 @@ export function ProfileBand({
       </div>
       <div className="counts">
         {counters.map((c) => (
-          <div key={c.label} className={c.type ? `count ${COUNT_CLASS[c.type]}` : "count"}>
+          <div key={c.label} className={c.type ? `count ${COUNT_CLASS[c.type]}` : "count total"}>
             <b>{c.value}</b>
             <span>
               {c.type && <TrophyTypeIcon type={c.type} size={11} />}

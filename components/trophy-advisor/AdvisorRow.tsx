@@ -10,7 +10,7 @@ export function AdvisorRow({ row }: { row: AdvisorRowData }) {
     <div className={`log-row adv-row${row.unobtainable ? " lost" : ""}`} data-key={row.key}>
       <Link href={href} prefetch={false} className="gl">
         {row.gameIsIcon ? (
-          <TileImage tile className="gc icon" src={row.gameSrc} alt={row.gameName} loading="lazy" />
+          <TileImage tile bg={row.gameTileBg} className="gc icon" src={row.gameSrc} alt={row.gameName} loading="lazy" />
         ) : (
           // eslint-disable-next-line @next/next/no-img-element
           <img className="gc" src={row.gameSrc} alt={row.gameName} loading="lazy" />

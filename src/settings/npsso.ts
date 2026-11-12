@@ -5,6 +5,7 @@ import { requestSync } from "@/src/settings/repo";
 
 export const NPSSO_INVALID = "That doesn't look like a 64-character npsso.";
 export const NPSSO_REJECTED = "PSN didn't accept this npsso. Sign in again and copy a fresh one.";
+export const NPSSO_UNREACHABLE = "Couldn't reach PSN. Try again.";
 export const NPSSO_SAVED = "Token saved. A sync has started.";
 
 export type FormResult = { ok: boolean; message: string };
@@ -19,9 +20,9 @@ export async function saveNpssoToken(
 ): Promise<FormResult> {
   const npsso = raw.trim();
   if (!NPSSO_PATTERN.test(npsso)) return { ok: false, message: NPSSO_INVALID };
-  if ((await connectWithNpsso(db, gw, key, npsso, now)) === "invalid") {
-    return { ok: false, message: NPSSO_REJECTED };
-  }
+  const outcome = await connectWithNpsso(db, gw, key, npsso, now);
+  if (outcome === "unreachable") return { ok: false, message: NPSSO_UNREACHABLE };
+  if (outcome === "invalid") return { ok: false, message: NPSSO_REJECTED };
   await requestSync(db, now);
   return { ok: true, message: NPSSO_SAVED };
 }

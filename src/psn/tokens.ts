@@ -29,19 +29,40 @@ export async function getValidAuth(
   return { accessToken: fresh.accessToken };
 }
 
+const EXCHANGE_TIMEOUT_MS = 20_000;
+const NETWORK_CODES = new Set(["ECONNRESET", "ECONNREFUSED", "ENOTFOUND", "EAI_AGAIN", "ETIMEDOUT", "UND_ERR_CONNECT_TIMEOUT"]);
+
+/** True when the call never got an answer from PSN (network down, DNS, timeout), as opposed to PSN refusing. */
+export function isUnreachable(e: unknown): boolean {
+  if (!(e instanceof Error)) return false;
+  if (e.name === "AbortError" || e.name === "TimeoutError") return true;
+  // fetch() rejects with a TypeError ("fetch failed") when it cannot reach the server.
+  if (e instanceof TypeError) return true;
+  const code = (e.cause as { code?: unknown } | undefined)?.code;
+  return typeof code === "string" && NETWORK_CODES.has(code);
+}
+
+function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
+  let timer: ReturnType<typeof setTimeout>;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new DOMException("PSN did not answer in time", "TimeoutError")), ms);
+  });
+  return Promise.race([p, timeout]).finally(() => clearTimeout(timer));
+}
+
 export async function connectWithNpsso(
   db: Db,
   gw: PsnGateway,
   key: Buffer,
   npsso: string,
   now: Date,
-): Promise<"ok" | "invalid"> {
+): Promise<"ok" | "invalid" | "unreachable"> {
   if (!NPSSO_PATTERN.test(npsso)) return "invalid";
   let tokens;
   try {
-    tokens = await gw.exchangeNpsso(npsso);
-  } catch {
-    return "invalid";
+    tokens = await withTimeout(gw.exchangeNpsso(npsso), EXCHANGE_TIMEOUT_MS);
+  } catch (e) {
+    return isUnreachable(e) ? "unreachable" : "invalid";
   }
   await savePsnTokens(db, key, tokens, npsso, now);
   return "ok";

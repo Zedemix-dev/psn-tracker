@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Db } from "@/src/db/client";
-import { jobState, syncRuns } from "@/src/db/schema";
+import { jobState, settings, syncRuns } from "@/src/db/schema";
 import type { AppConfig } from "@/src/lib/config";
 import type { PsnGateway } from "@/src/psn/gateway";
 import { getSettings, requestSync } from "@/src/settings/repo";
@@ -84,8 +84,14 @@ describe("tick", () => {
     expect(runDailyRefresh).toHaveBeenCalledTimes(1);
   });
 
-  it("runs a manual request first, consumes it and counts it as the scheduled run", async () => {
+  const failuresOf = async () => (await db.select().from(settings))[0].syncRequestFailures;
+
+  it("runs a manual request first, clears it once the run ends and counts it as the scheduled run", async () => {
     await requestSync(db, now);
+    runSync.mockImplementationOnce(async () => {
+      expect((await getSettings(db)).syncRequestedAt).toEqual(now); // still pending during the run
+      return ok;
+    });
     await tick(deps, now);
     expect(runSync.mock.calls[0][3]).toBe("manual");
     expect((await getSettings(db)).syncRequestedAt).toBeNull();
@@ -93,17 +99,60 @@ describe("tick", () => {
     expect(await stateOf("daily")).toBeNull();
   });
 
-  it("re-queues a manual request whose run was skipped", async () => {
+  it("keeps the request, failures unchanged, when the manual run was skipped", async () => {
     runSync.mockResolvedValueOnce({ status: "skipped" });
     await requestSync(db, now);
     await tick(deps, now);
     expect((await getSettings(db)).syncRequestedAt).toEqual(now);
+    expect(await failuresOf()).toBe(0);
   });
 
-  it("does not re-queue when the manual run failed", async () => {
+  it("keeps the request and counts a failure when the manual run errors", async () => {
     runSync.mockResolvedValueOnce({ status: "error", error: "boom" });
     await requestSync(db, now);
     await tick(deps, now);
+    expect((await getSettings(db)).syncRequestedAt).toEqual(now);
+    expect(await failuresOf()).toBe(1);
+  });
+
+  it("keeps the request and counts a failure when runSync throws", async () => {
+    runSync.mockRejectedValueOnce(new Error("kaboom"));
+    await requestSync(db, now);
+    await expect(tick(deps, now)).resolves.toBeUndefined();
+    expect((await getSettings(db)).syncRequestedAt).toEqual(now);
+    expect(await failuresOf()).toBe(1);
+  });
+
+  it("gives the request up at the third failure", async () => {
+    runSync.mockResolvedValue({ status: "error", error: "boom" });
+    await requestSync(db, now);
+    await tick(deps, now);
+    await tick(deps, now);
+    expect((await getSettings(db)).syncRequestedAt).toEqual(now);
+    await tick(deps, now);
+    expect((await getSettings(db)).syncRequestedAt).toBeNull();
+    expect(await failuresOf()).toBe(0);
+    expect(runSync).toHaveBeenCalledTimes(3);
+  });
+
+  it("does not clear a request posted while the run was going", async () => {
+    const later = new Date("2026-01-01T08:00:05Z");
+    await requestSync(db, now);
+    runSync.mockImplementationOnce(async () => {
+      await requestSync(db, later);
+      return ok;
+    });
+    await tick(deps, now);
+    expect((await getSettings(db)).syncRequestedAt).toEqual(later);
+  });
+
+  it("never touches the failure count on a scheduled or daily job", async () => {
+    runSync.mockResolvedValueOnce({ status: "error", error: "x" });
+    runDailyRefresh.mockResolvedValueOnce({ status: "error", error: "y" });
+    await tick(deps, now); // scheduled
+    await tick(deps, now); // daily
+    expect(runDailyRefresh).toHaveBeenCalledTimes(1);
+    expect(await failuresOf()).toBe(0);
     expect((await getSettings(db)).syncRequestedAt).toBeNull();
   });
 

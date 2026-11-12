@@ -62,6 +62,7 @@ export default async function GamePage({
             <section className="panel glass" aria-label="Cover">
               <TileImage
                 tile={detail.coverIsIcon}
+                bg={detail.coverTileBg}
                 className={`cover${detail.coverIsIcon ? " icon" : ""}`}
                 src={detail.coverSrc}
                 alt={`${detail.name} cover`}

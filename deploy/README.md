@@ -79,6 +79,38 @@ Préparez trois valeurs :
 2. Aller dans **Settings**, coller le `npsso` PSN (cookie obtenu en étant connecté sur playstation.com), enregistrer.
 3. Suivre **Sync history** : la première synchronisation importe tous les jeux et peut durer un moment.
 
+### Vérifications au premier déploiement
+
+Ces points ne se vérifient que sur le NAS. Chaque point dit à quel moment le faire : certains tout de suite après la première synchro, d'autres pendant la synchro suivante ou à la prochaine mise à jour de la stack. Il n'y a pas d'ordre à suivre.
+
+4. **Page d'attente au démarrage.** *Quand : à la prochaine mise à jour de la stack `psn-site` qui apporte une migration (étape 8). Au tout premier déploiement, le worker migre une base vide : la page peut ne jamais apparaître, c'est normal.* L'app peut démarrer avant que le worker ait appliqué les nouvelles migrations.
+   - Ce qu'on doit voir : tant que le worker migre, le site affiche une page « Updating… » avec le texte « This page reloads by itself. ». Elle se recharge toutes les 5 s (code 503), puis le site normal revient seul.
+   - Pas bon : une erreur 500, ou une page d'attente qui ne part jamais. Dans ce cas, lisez les logs du conteneur `worker`.
+5. **En-têtes de protection.** *Quand : dès la première connexion.* Ouvrez le site dans le navigateur, puis les outils de développement (F12) → onglet **Réseau** → rechargez → cliquez sur la requête de la page → **En-têtes de réponse**.
+   - Sur une page : `X-Frame-Options: DENY` et `Content-Security-Policy: frame-ancestors 'none'`.
+   - Sur une image sous `/media/…` : `Content-Security-Policy` avec `sandbox`, et `X-Content-Type-Options: nosniff`. L'image s'affiche toujours normalement dans les pages.
+   - Ces en-têtes sont posés par l'app : il n'y a rien à régler dans nginx ni dans DSM.
+6. **Première synchro de cette version.** *Quand : une fois la première synchro terminée.*
+   - Ce qu'on doit voir : toutes les listes de trophées PS5 sont rechargées une fois (migration 0005), donc la synchro est plus longue que d'habitude.
+   - Dans **Settings**, la carte « Unobtainable trophies » montre « Up to date » et « 5 of yours » (migration 0006).
+   - Dans les logs du conteneur `worker` (Portainer → Containers → `worker` → Logs), une synchro se termine par une ou deux lignes sur les images :
+     - `[worker] images: N downloaded, N failed, N thumbnails, N tile colours` (téléchargées, en échec, miniatures créées, couleurs de tuile calculées). Les couleurs de tuile des images déjà téléchargées sont remplies à cette première synchro (migration 0008) ;
+     - `[worker] images: N removed` (images inutilisées supprimées). Cette ligne n'apparaît qu'après une synchro sans aucun échec : après une synchro partielle ou en échec, le nettoyage ne tourne pas, c'est voulu, et c'est alors la ligne `[worker] images: cleanup skipped (N failures)` qui la remplace.
+   - Aucune image ne doit manquer ensuite sur Games, une page de jeu, Plat Wall, Trophy Log, Trophy Advisor et Stats.
+7. **Arrêt propre du worker.** *Quand : pendant la synchro suivante, ou en en déclenchant une avec « Sync now ».* Dès que **Sync history** montre un run en cours, arrêtez le conteneur `worker` dans Portainer (`docker stop`), puis relancez-le.
+   - Ce qu'on doit voir : soit le log montre la fin de la synchro en cours, soit le run apparaît comme « Interrupted » dans **Sync history** au redémarrage.
+8. **Trophy Log, « Show all ».** *Quand : après la première synchro.* Ouvrez Trophy Log et cliquez sur **Show all**.
+   - Objectifs : premières lignes en moins de 1 s, page jamais figée plus de 250 ms, liste complète en moins de 5 s (la réponse fait environ 5 Mo de JSON).
+   - Si les premières lignes tardent, notez-le : il faudra demander d'abord les 300 premières lignes à part.
+   - Ouvrez une page de jeu depuis la liste, puis revenez en arrière : vous devez retrouver la même ligne.
+9. **Export PNG du Plat Wall.** *Quand : après la première synchro.* Ouvrez Plat Wall, cochez Art, Rarity et Name sur les 230 platines.
+   - Le texte de l'image est en police Sora.
+   - L'image est prête en moins de 60 s (limite de nginx : au-delà, erreur 504).
+   - Sur un vrai iPhone, **Download PNG** enregistre le fichier. Le bouton ne devient actif qu'une fois l'image d'aperçu chargée (environ 20 millions de pixels avec les 230 platines).
+10. **Page Stats sur écran tactile.** *Quand : après la première synchro.* Ouvrez Stats sur un téléphone et sur un Mac avec pavé tactile.
+    - Au doigt : poser le doigt sur une colonne, une part d'anneau ou un jour affiche l'infobulle tant que le doigt reste posé. Un glissement vertical fait défiler la page.
+    - « Games by release year » défile de côté (téléphone : glissement du doigt ; Mac : deux doigts), s'ouvre sur les années les plus récentes, et le glissement à deux doigts ne fait pas revenir à la page précédente du navigateur.
+
 ## 8. Mises à jour
 
 1. Pousser (ou fusionner) sur `main`.

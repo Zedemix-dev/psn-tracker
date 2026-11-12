@@ -83,11 +83,17 @@ svg.ico{width:14px;height:14px;flex:none}
 @media (max-width:640px){
   .wrap{padding:0 16px}
   .profile{gap:14px;padding:12px;margin-top:-48px}
+  .counts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+  .counts .count{min-width:0}
+  .counts .count.total{grid-column:1/-1;flex-direction:row;gap:8px;padding:7px 8px}
+  .counts .count.total span{margin-top:0}
   .avatar{width:68px;height:68px}
   .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
   /* Bold digits are wide: keep "20,927 h" inside a half-width tile down to 320 px phones */
   .stat .value{font-size:24px}
 }
+/* 320 px phones: the "Platinum" label (icon + text) is 1 px wider than its tile */
+@media (max-width:360px){.counts{gap:4px} .counts .count span{gap:2px}}
 @media (prefers-reduced-motion:reduce){.btn-sync.busy svg{animation:none}}
 
 /* Games list */

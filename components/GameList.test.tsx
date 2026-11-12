@@ -16,6 +16,7 @@ const game = (n: number): GameRowData => ({
   platforms: ["PS5"],
   coverSrc: "/c.png",
   coverIsIcon: false,
+  coverTileBg: null,
   earnedTotal: 1,
   definedTotal: 2,
   counts: { platinum: [0, 0], gold: [0, 0], silver: [0, 0], bronze: [1, 2] },
@@ -159,6 +160,27 @@ describe("GameList", () => {
     render(<GameList snapshotKey="k" initial={{ items: games(1, 50), total: 52 }} query={query} />);
     await intersect();
     expect(rows()).toBe(52);
+  });
+
+  it("keeps loading after a page made only of games already shown", async () => {
+    fetchMock.mockResolvedValueOnce(reply(games(1, 50), 120));
+    render(<GameList snapshotKey="k" initial={{ items: games(1, 50), total: 120 }} query={query} />);
+    await intersect();
+    expect(rows()).toBe(50);
+    expect(screen.getByText(FOOTER)).toBeInTheDocument();
+
+    fetchMock.mockResolvedValueOnce(reply(games(51, 50), 120));
+    await intersect();
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(new URL(String(fetchMock.mock.calls[1][0]), "http://x").searchParams.get("offset")).toBe("100");
+    expect(rows()).toBe(100);
+  });
+
+  it("stops when the server has nothing more to give", async () => {
+    fetchMock.mockResolvedValueOnce(reply([], 120));
+    render(<GameList snapshotKey="k" initial={{ items: games(1, 50), total: 120 }} query={query} />);
+    await intersect();
+    expect(screen.queryByText(FOOTER)).toBeNull();
   });
 
   describe("coming back from a game page", () => {
