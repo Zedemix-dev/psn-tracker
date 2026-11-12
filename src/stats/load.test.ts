@@ -42,7 +42,8 @@ describe("getStatsData", () => {
     await getStatsData(db, { hideZero: false, now: NOW });
     expect(spy).toHaveBeenCalledTimes(1);
     spy.mockClear();
-    await getStatsData(db, { hideZero: false, now: NOW, imageMap: new Map() });
+    // hideZero differs, so this is another cache key: the data is computed again, and must not read the image map.
+    await getStatsData(db, { hideZero: true, now: NOW, imageMap: new Map() });
     expect(spy).not.toHaveBeenCalled();
     spy.mockRestore();
   });
