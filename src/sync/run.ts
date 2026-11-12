@@ -1,4 +1,4 @@
-import { and, eq, gt, inArray, lte, notInArray } from "drizzle-orm";
+import { and, eq, gt, inArray, lte, notInArray, sql } from "drizzle-orm";
 import type { Db } from "@/src/db/client";
 import { profile, settings, syncRuns, titles, type SyncKind } from "@/src/db/schema";
 import type { AppConfig } from "@/src/lib/config";
@@ -22,6 +22,8 @@ export type RunProgress = {
 /** What a run body receives: a paced gateway, valid auth, and a list to record per-title failures in. */
 export type RunContext = { gw: PsnGateway; auth: PsnAuth; progress: RunProgress; failures: string[] };
 
+// Sync runs kept in the history (spec 21.3.6); older ones are deleted when a run ends.
+export const KEEP_SYNC_RUNS = 500;
 const STALE_RUN_MS = 3 * 60 * 60 * 1000;
 
 let active: Promise<SyncRunResult> | null = null;
@@ -88,12 +90,23 @@ export async function executeRun(
     const writeFinal = async (status: "success" | "error", error: string | null) => {
       await db.update(syncRuns).set({ status, finishedAt: clock(), error }).where(eq(syncRuns.id, runId));
     };
+    // Best-effort like writeFinal: a failed prune never changes the run's result.
+    const pruneRuns = async () => {
+      try {
+        await db
+          .delete(syncRuns)
+          .where(sql`${syncRuns.id} not in (select ${syncRuns.id} from ${syncRuns} order by ${syncRuns.id} desc limit ${KEEP_SYNC_RUNS})`);
+      } catch {
+        // Old rows are harmless; the next run tries again.
+      }
+    };
     try {
       const auth = await getValidAuth(db, paced, cfg.appSecret, now);
       if (auth === "expired") throw new Error("PSN token expired");
       if (auth === "missing") throw new Error("PSN token missing");
       await body({ gw: paced, auth, progress, failures });
       await writeFinal("success", failureSummary(failures));
+      await pruneRuns();
       return { status: "success", runId };
     } catch (err) {
       const message = errorMessage(err);
@@ -102,6 +115,7 @@ export async function executeRun(
       } catch {
         // Best-effort: the DB itself may be the problem; never reject nor hold the guard.
       }
+      await pruneRuns();
       return { status: "error", runId, error: message };
     }
   })();

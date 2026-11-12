@@ -4,7 +4,7 @@ import path from "node:path";
 import { eq } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Db } from "@/src/db/client";
-import { playedGames, syncRuns, titles, trophies, trophyGroups } from "@/src/db/schema";
+import { images, playedGames, syncRuns, titles, trophies, trophyGroups } from "@/src/db/schema";
 import type { AppConfig } from "@/src/lib/config";
 import { savePsnTokens } from "@/src/settings/repo";
 import { runDailyRefresh } from "@/src/sync/daily";
@@ -146,5 +146,23 @@ describe("runDailyRefresh", () => {
     expect(await rates()).toEqual(["1.30", "1.30"]);
     await runDailyRefresh(db, gwWith(0.5), cfg, later, deps);
     expect(await rates()).toEqual(["0.50", "0.50"]);
+  });
+
+  it("the daily refresh downloads the images of a reloaded title", async () => {
+    const DLC_ICON = "https://img.example/dlc-group.png";
+    const fetchSpy = vi.fn(async (_url: string | URL | Request) => new Response(new Uint8Array([1]), { status: 200 }));
+    const gw = gwWith(1.3, [makeGroup("default"), makeGroup("001", { iconUrl: DLC_ICON })], 2);
+    const res = await runDailyRefresh(db, gw, cfg, later, { ...deps, fetchImpl: fetchSpy as unknown as typeof fetch });
+    expect(res.status).toBe("success");
+    expect(fetchSpy.mock.calls.map((c) => String(c[0]))).toContain(DLC_ICON);
+    const [row] = await db.select().from(images).where(eq(images.url, DLC_ICON));
+    expect(row.localPath).not.toBeNull();
+  });
+
+  it("the daily refresh never prunes images", async () => {
+    const ORPHAN = "https://img.example/orphan.png";
+    await db.insert(images).values({ url: ORPHAN, localPath: "psn/orphan.png" });
+    await runDailyRefresh(db, gwWith(1.3), cfg, later, deps);
+    expect(await db.select().from(images).where(eq(images.url, ORPHAN))).toHaveLength(1);
   });
 });

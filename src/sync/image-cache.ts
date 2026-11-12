@@ -1,6 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import { and, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, isNull, or, sql } from "drizzle-orm";
 import type { Db } from "@/src/db/client";
 import { BANNER_OVERRIDES } from "@/src/games/banner-overrides";
 import { gameKey } from "@/src/games/siblings";
@@ -179,7 +179,8 @@ export async function pruneImages(db: Db, mediaDir: string): Promise<number> {
 /**
  * Downloads every known PSN image that is not cached yet (4 at a time), then gives a
  * thumbnail to every cached image that lacks one, then a tile colour (spec 8.9) to every
- * cached image never checked (new downloads and earlier syncs alike).
+ * cached image never checked (new downloads and earlier syncs alike), but only for the images
+ * whose colour is read: list icons and group icons (spec 21.3.5).
  * Failures only bump `attempts` (download) or leave `thumb_path` / `tile_checked_at` null
  * (thumbnail, tile colour): the next sync retries all three.
  */
@@ -221,7 +222,16 @@ export async function cacheImages(
   const unchecked = await db
     .select({ url: images.url, localPath: images.localPath })
     .from(images)
-    .where(and(isNotNull(images.localPath), isNull(images.tileCheckedAt)));
+    .where(
+      and(
+        isNotNull(images.localPath),
+        isNull(images.tileCheckedAt),
+        or(
+          inArray(images.url, db.select({ u: titles.iconUrl }).from(titles).where(isNotNull(titles.iconUrl))),
+          inArray(images.url, db.select({ u: trophyGroups.iconUrl }).from(trophyGroups).where(isNotNull(trophyGroups.iconUrl))),
+        ),
+      ),
+    );
   let tiles = 0;
   await inPool(unchecked, async ({ url, localPath }) => {
     if (await tileOne(db, mediaDir, url, localPath!)) tiles++;
