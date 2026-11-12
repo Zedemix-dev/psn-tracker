@@ -1,6 +1,6 @@
 # PSN Tracker : état du projet et feuille de route
 
-*Mis à jour le 12 novembre 2026 : les lots 1 et 2 de l'audit `a_reprendre.md` sont faits et vérifiés sur la branche `fix/audit` (PR à créer). Ensuite : la fusionner, puis déployer sur le NAS. Le reste de l'audit est noté comme non traité.*
+*Mis à jour le 12 novembre 2026 : les lots 1 et 2 de l'audit `a_reprendre.md` sont fusionnés dans `main` (PR #21), CI verte. Reste le déploiement sur le NAS. Le reste de l'audit est noté comme non traité.*
 
 Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un autre PC, commence par le lire. Le fichier `CLAUDE.md` à la racine le demande automatiquement.
 
@@ -32,8 +32,8 @@ Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un aut
 | `docs/superpowers/plans/2026-11-11-stats-touch.md` | Le plan des infobulles au doigt et du défilement de côté (3 tâches). Terminé. |
 | `docs/superpowers/specs/2026-11-11-psn-tracker-maquette-suivis.html` | Maquette validée des compteurs du bandeau sur téléphone (v2, version B). |
 | `docs/superpowers/plans/2026-11-11-followups.md` | Le plan des points de suivi de la phase 1 (14 tâches). Terminé. |
-| `a_reprendre.md` | Audit complet du 11 novembre 2026, écrit par une autre session : points à vérifier ou corriger un jour, par priorité. S1 est corrigé (PR #19) ; P1, S2, R1, S3, S4, S5, S6 et R2 sont faits sur `fix/audit` (spec 20) ; chaque autre point est marqué « Non traité ». |
-| `docs/superpowers/plans/2026-11-12-audit.md` | Le plan des lots 1 et 2 de l'audit (10 tâches). Terminé sur `fix/audit`. |
+| `a_reprendre.md` | Audit complet du 11 novembre 2026, écrit par une autre session : points à vérifier ou corriger un jour, par priorité. S1 est corrigé (PR #19) ; P1, S2, R1, S3, S4, S5, S6 et R2 sont fusionnés (PR #21, spec 20) ; chaque autre point est marqué « Non traité ». |
+| `docs/superpowers/plans/2026-11-12-audit.md` | Le plan des lots 1 et 2 de l'audit (10 tâches). Terminé, fusionné (PR #21). |
 | `deploy/README.md` | Guide pas à pas du déploiement sur le NAS. |
 | `.superpowers/brainstorm/maquettes/` | Toutes les maquettes intermédiaires : `accueil-v1` à `v12`, `jeu-v1` à `v6` (la v6 compare les images de groupe : carrées ou absentes), `platwall-v1` à `v3`, `trophylog-v1` et `v2`, `advisor-v1` à `v4`, `stats-v1` à `v6` (les v5 et v6 : le graphique des années qui défile), `suivis-v1` et `v2` (compteurs du bandeau sur téléphone, tuile des images à coins arrondis). |
 
@@ -193,7 +193,7 @@ Tous les points mis de côté pendant la phase 1 sont réglés, à la demande de
 - **CI verte** sur github.com après la fusion. Reste à vérifier sur le NAS ce que décrit le guide, étape 7.
 - 122 fichiers de tests, 1 121 tests. Migration 0008.
 
-### Suites de l'audit, lots 1 et 2 (branche `fix/audit`, spec section 20, PR à créer)
+### Suites de l'audit, lots 1 et 2 (PR #21, fusionnée le 12 novembre 2026, spec section 20)
 L'utilisateur a choisi le 12 novembre 2026 de traiter, avant le déploiement, les lots 1 et 2 de l'audit `a_reprendre.md` :
 - **P1, compression** : nginx compresse les réponses JSON (Next ne le fait pas pour `/api` : 6,4 Mo pour « Show all » du Trophy Log), aussi pour les requêtes HTTP/1.0 du proxy DSM.
 - **S2, serveurs de test** : `e2e:web` et le nouveau `e2e:prod` n'écoutent que sur `127.0.0.1`.
@@ -213,16 +213,16 @@ L'utilisateur a choisi le 12 novembre 2026 de traiter, avant le déploiement, le
   - PSN bloqué pour le seul worker : « Couldn't reach PSN » dans l'historique, sans bandeau, statut inchangé ; puis un vrai renouvellement et une synchro complète ;
   - en-têtes lus sur une page, une réponse `/api` et une image `/media` ;
   - un mot de passe trop long ; l'écoute sur `127.0.0.1` seulement.
-- **Non vérifiable ici** : le job `nginx-smoke` et la vérification des sessions dans `pg-smoke`, à regarder sur github.com ; la compression, HSTS et la vraie adresse, sur le NAS (guide, étape 7).
+- **CI verte** sur github.com, dont les jobs `nginx-smoke` (vrai nginx, vrai `default.conf`) et `pg-smoke` (empreinte des sessions sur un vrai PostgreSQL 16). Reste à vérifier sur le NAS : la compression, HSTS et la vraie adresse du client (guide, étape 7).
 - 123 fichiers de tests, 1 145 tests. Migration 0009.
 
 ## 3. Ce qui reste à faire, dans l'ordre
-1. **Déployer sur le NAS** en suivant `deploy/README.md` (décidé le 9 novembre 2026). Les points de suivi sont fusionnés (PR #19). Fusionner d'abord `fix/audit` (lots 1 et 2 de l'audit), puis copier son `deploy/nginx/default.conf` sur le NAS.
+1. **Déployer sur le NAS** en suivant `deploy/README.md` (décidé le 9 novembre 2026). Les points de suivi sont fusionnés (PR #19). Les lots 1 et 2 de l'audit sont fusionnés (PR #21) : copier le nouveau `deploy/nginx/default.conf` sur le NAS (guide, étape 2).
    - Avant tout, vérifier sur github.com (onglet Actions, le dépôt est privé) que la CI de `main` est verte après la dernière fusion, et que l'image a été publiée.
    - Juste après la première publication, donner une seule fois le rôle **Admin** au dépôt dans « Manage Actions access » du package GHCR (étape 1.5).
    - Faire les vérifications du premier déploiement de l'étape 7 du guide. Chacune dit quand la faire et ce qu'on doit voir.
 2. **Points de l'audit** (`a_reprendre.md`) :
-   - les lots 1 et 2 sont faits sur la branche `fix/audit` (PR à créer et fusionner, puis vérifier la CI) ;
+   - les lots 1 et 2 sont fusionnés dans `main` (PR #21, CI verte) ;
    - restent, non traités par décision du 12 novembre 2026 : le lot 3 (P2, P3, P4, R3, Q1, Q2, Q4, Q5, Q6), S7 (garder ou non le npsso, choix de l'utilisateur), les retouches de design D1 à D7 (à valider sur maquette avant toute construction), et les points laissés pour après le NAS (Q3, P5, P6, P7, S8, S9, Q7). Chaque point porte sa mention dans le fichier.
 3. **Points laissés tels quels** : `docs/superpowers/plans/2026-11-08-phase1-suivis.md` marque chaque point réglé ; ce qui reste est un choix assumé (coins transparents de la tuile, spec 19.6).
 

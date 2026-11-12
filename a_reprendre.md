@@ -6,7 +6,7 @@ Ce fichier est destiné à l'agent (ou à la personne) qui reprend le projet. Il
 > - **Fait** : S1, corrigé dans la PR #19 (voir sa section) ; la mise à jour de `docs/ETAT-DU-PROJET.md` demandée en section 8 ; la valeur exacte de la CSP de `/media` dans `deploy/README.md`, étape 7, point 5.
 > - **À faire** : tout le reste, sur une branche `fix/audit`, en suivant l'ordre de la section 9. Rien n'est commencé.
 >
-> **Suivi au 12 novembre 2026, branche `fix/audit`** (spec section 20, plan `docs/superpowers/plans/2026-11-12-audit.md`) : l'utilisateur a choisi les lots 1 et 2.
+> **Suivi au 12 novembre 2026, branche `fix/audit`, fusionnée dans `main` (PR #21, CI verte)** (spec section 20, plan `docs/superpowers/plans/2026-11-12-audit.md`) : l'utilisateur a choisi les lots 1 et 2.
 > - **Fait** : P1, S2, R1 (lot 1) et S3, S4, S5, S6, R2 (lot 2), vérifiés avec les vraies données sur le build de production local. P1 et S4 sont aussi testés par le job `nginx-smoke` de la CI. Chaque point porte la mention « Fait » ci-dessous.
 > - **Non traité** (décision du 12 novembre 2026) : le lot 3 (P2, P3, P4, R3, Q1, Q2, Q4, Q5, Q6), S7 (choix de l'utilisateur), les retouches de design D1 à D7 (à valider sur maquette), et les points laissés pour après le NAS (Q3, P5, P6, P7, S8, S9, Q7). S10 reste un risque accepté. Chaque point porte la mention « Non traité » ci-dessous.
 
@@ -42,7 +42,7 @@ Ce fichier est destiné à l'agent (ou à la personne) qui reprend le projet. Il
 | Performances | **Bonnes** | Pages en ~200 ms. Un gain net et facile : compresser les réponses JSON (P1). |
 | Conformité à la spec | **Conforme, 3 écarts** | S1 (19.3.1), le bandeau « token expired » sur panne réseau (R1), les nombres de l'historique des synchros (D5). |
 
-Rien de bloquant pour le déploiement, mais **S1, P1, S2 et R1 sont à faire avant** : ils sont courts et le premier contredit la spec. *(12 novembre : S1 est corrigé ; restent P1, S2 et R1.)* *(12 novembre, branche `fix/audit` : P1, S2 et R1 sont faits.)*
+Rien de bloquant pour le déploiement, mais **S1, P1, S2 et R1 sont à faire avant** : ils sont courts et le premier contredit la spec. *(12 novembre : S1 est corrigé ; restent P1, S2 et R1.)* *(12 novembre, PR #21 : P1, S2 et R1 sont faits.)*
 
 ## 3. Priorité 1 : à corriger avant le déploiement sur le NAS
 
@@ -61,7 +61,7 @@ Rien de bloquant pour le déploiement, mais **S1, P1, S2 et R1 sont à faire ava
 - `deploy/README.md`, étape 7, point 5, demande déjà de voir `sandbox` sur une image de `/media` : sans cette correction, cette vérification échouera sur le NAS. Y mettre la valeur exacte attendue une fois S1 corrigé.
 
 ### P1. Les réponses JSON ne sont pas compressées (performance, moyenne)
-> **Fait** (branche `fix/audit`, spec 20.2). `deploy/nginx/default.conf` compresse `application/json` (niveau 5, au-delà de 1 Ko, aussi pour les requêtes HTTP/1.0 du proxy). Mesuré à nouveau le 12 novembre 2026 : Next ne compresse toujours pas `/api/trophy-log?all=1` (6,4 Mo). Testé par le job `nginx-smoke` de la CI (vrai nginx, vrai fichier) ; à revérifier sur le NAS (`deploy/README.md`, étape 7, point 8).
+> **Fait** (PR #21, spec 20.2). `deploy/nginx/default.conf` compresse `application/json` (niveau 5, au-delà de 1 Ko, aussi pour les requêtes HTTP/1.0 du proxy). Mesuré à nouveau le 12 novembre 2026 : Next ne compresse toujours pas `/api/trophy-log?all=1` (6,4 Mo). Testé par le job `nginx-smoke` de la CI (vrai nginx, vrai fichier) ; à revérifier sur le NAS (`deploy/README.md`, étape 7, point 8).
 
 - **Constat** : les pages et les réponses RSC sortent en gzip, mais pas les routes `app/api`. Mesuré : `/api/trophy-log?all=1` = **6,4 Mo** sans compression, `/api/trophy-advisor?all=1` = 450 Ko, `/api/games?all=1` = 120 Ko.
 - **Conséquence** : « Show all » du Trophy Log envoie 6,4 Mo depuis le NAS, sur son débit montant. L'objectif de la spec 16.8 (premières lignes en moins de 1 s) risque de ne pas tenir hors de la maison.
@@ -69,13 +69,13 @@ Rien de bloquant pour le déploiement, mais **S1, P1, S2 et R1 sont à faire ava
 - À mesurer sur le NAS avec la vérification déjà prévue (`deploy/README.md`, étape 7, point 8).
 
 ### S2. Les serveurs de test écoutent sur tout le réseau (sécurité, moyenne sur un PC de travail)
-> **Fait** (branche `fix/audit`, spec 20.3). `npm run e2e:web` et le nouveau `npm run e2e:prod` (`scripts/e2e/prod.mjs`, qui remplace `.data/e2e-prod.mjs`) écoutent sur `127.0.0.1:3000` seulement, vérifié avec `netstat`.
+> **Fait** (PR #21, spec 20.3). `npm run e2e:web` et le nouveau `npm run e2e:prod` (`scripts/e2e/prod.mjs`, qui remplace `.data/e2e-prod.mjs`) écoutent sur `127.0.0.1:3000` seulement, vérifié avec `netstat`.
 
 - **Constat** : `scripts/e2e/web.mjs` lance `next dev -p 3000` sans `-H`. Le port 3000 écoute sur `0.0.0.0` : le site de test, avec les vraies données du profil, est joignable depuis le réseau local du PC (seul le pare-feu de Windows le protège). Le script local `.data/e2e-prod.mjs` fait pareil avec `next start`.
 - **Correction proposée** : ajouter `-H 127.0.0.1` aux deux. `scripts/e2e/db.mjs` écoute déjà sur `127.0.0.1`.
 
 ### R1. Une panne réseau affiche « PSN token expired » (robustesse, moyenne)
-> **Fait** (branche `fix/audit`, spec 20.4). Trouvé en plus : `psn-api` ne lève aucune erreur quand le PSN refuse un token, donc un vrai refus n'affichait jamais « PSN token expired ». Le gateway lève maintenant `PsnRefusedError`. `getValidAuth` distingue le refus (statut `expired`), le PSN injoignable (« Couldn't reach PSN », statut inchangé) et toute autre erreur (« PSN token refresh failed (…) »), avec un délai de 20 s ; un renouvellement qui répond après ce délai est quand même enregistré. Vérifié avec les vraies données : PSN bloqué pour le worker, puis vrai renouvellement.
+> **Fait** (PR #21, spec 20.4). Trouvé en plus : `psn-api` ne lève aucune erreur quand le PSN refuse un token, donc un vrai refus n'affichait jamais « PSN token expired ». Le gateway lève maintenant `PsnRefusedError`. `getValidAuth` distingue le refus (statut `expired`), le PSN injoignable (« Couldn't reach PSN », statut inchangé) et toute autre erreur (« PSN token refresh failed (…) »), avec un délai de 20 s ; un renouvellement qui répond après ce délai est quand même enregistré. Vérifié avec les vraies données : PSN bloqué pour le worker, puis vrai renouvellement.
 
 - **Constat** : dans `src/psn/tokens.ts:21-26`, toute erreur de `gw.refresh()` met `psnAuthStatus` à `expired`, y compris un PSN injoignable. Le site affiche alors « PSN token expired — update it in Settings », à tort, jusqu'à la synchro suivante (6 h).
 - La spec 19.3.3 a réglé ce même défaut pour l'enregistrement du npsso (`isUnreachable`), mais pas pour le renouvellement. C'est contraire à l'anti-objectif de la spec 2 : ne pas afficher une information fausse.
@@ -85,10 +85,10 @@ Rien de bloquant pour le déploiement, mais **S1, P1, S2 et R1 sont à faire ava
 
 | N° | Constat | Où | Proposition |
 |---|---|---|---|
-| S3, **Fait** (`fix/audit`) | En-têtes manquants : pas de `Referrer-Policy` (les liens PowerPyx et PSNProfiles transmettent l'adresse privée du site, `rel="noopener"` sans `noreferrer`), pas de `nosniff` sur les pages, `X-Powered-By: Next.js` présent, pas de HSTS. | `src/lib/security-headers.ts`, `next.config.ts`, `components/game/GameInfoPanel.tsx:99,103` | Ajouter `Referrer-Policy: same-origin` et `X-Content-Type-Options: nosniff` à `SITE_HEADERS`, `poweredByHeader: false`. HSTS : case à cocher dans la règle du reverse proxy DSM, à ajouter au guide. |
-| S4, **Fait** (`fix/audit`) | nginx fait confiance à `10/8` et `192.168/16` avec `real_ip_recursive on` : un appareil du réseau local peut envoyer un `X-Forwarded-For` inventé et contourner la limite de tentatives de connexion. Un client venu d'internet ne le peut pas. | `deploy/nginx/default.conf:12-17` | Ne garder que `127.0.0.0/8` et `172.16.0.0/12`. Le commentaire du fichier dit le contraire de ce qui se passe : le corriger. |
-| S5, **Fait** (`fix/audit`) | Une session ne finit jamais côté serveur : `validateSession` n'a aucune limite d'âge, les lignes ne sont jamais supprimées, et l'identifiant est stocké en clair. | `src/auth/sessions.ts:14-21` | Refuser et supprimer une session non vue depuis 400 jours (la durée du cookie, donc sans effet sur la « session sans fin » de la spec 5). Stocker le SHA-256 de l'identifiant plutôt que l'identifiant. |
-| S6, **Fait** (`fix/audit`) | Connexion : aucune limite de longueur sur l'identifiant et le mot de passe (l'action accepte 11 Mo, compromis déjà noté dans `next.config.ts`), et la table du limiteur n'est jamais nettoyée pour une IP qui ne revient pas. | `app/login/actions.ts:17-19`, `src/auth/rate-limit.ts:10` | Refuser au-delà de 256 caractères avant `bcrypt`. Balayer les entrées périmées à chaque tentative. |
+| S3, **Fait** (PR #21) | En-têtes manquants : pas de `Referrer-Policy` (les liens PowerPyx et PSNProfiles transmettent l'adresse privée du site, `rel="noopener"` sans `noreferrer`), pas de `nosniff` sur les pages, `X-Powered-By: Next.js` présent, pas de HSTS. | `src/lib/security-headers.ts`, `next.config.ts`, `components/game/GameInfoPanel.tsx:99,103` | Ajouter `Referrer-Policy: same-origin` et `X-Content-Type-Options: nosniff` à `SITE_HEADERS`, `poweredByHeader: false`. HSTS : case à cocher dans la règle du reverse proxy DSM, à ajouter au guide. |
+| S4, **Fait** (PR #21) | nginx fait confiance à `10/8` et `192.168/16` avec `real_ip_recursive on` : un appareil du réseau local peut envoyer un `X-Forwarded-For` inventé et contourner la limite de tentatives de connexion. Un client venu d'internet ne le peut pas. | `deploy/nginx/default.conf:12-17` | Ne garder que `127.0.0.0/8` et `172.16.0.0/12`. Le commentaire du fichier dit le contraire de ce qui se passe : le corriger. |
+| S5, **Fait** (PR #21) | Une session ne finit jamais côté serveur : `validateSession` n'a aucune limite d'âge, les lignes ne sont jamais supprimées, et l'identifiant est stocké en clair. | `src/auth/sessions.ts:14-21` | Refuser et supprimer une session non vue depuis 400 jours (la durée du cookie, donc sans effet sur la « session sans fin » de la spec 5). Stocker le SHA-256 de l'identifiant plutôt que l'identifiant. |
+| S6, **Fait** (PR #21) | Connexion : aucune limite de longueur sur l'identifiant et le mot de passe (l'action accepte 11 Mo, compromis déjà noté dans `next.config.ts`), et la table du limiteur n'est jamais nettoyée pour une IP qui ne revient pas. | `app/login/actions.ts:17-19`, `src/auth/rate-limit.ts:10` | Refuser au-delà de 256 caractères avant `bcrypt`. Balayer les entrées périmées à chaque tentative. |
 | S7, *Non traité* (choix de l'utilisateur à faire) | Le npsso est stocké chiffré (`npsso_enc`) mais jamais relu : seul le refresh token sert. C'est un secret gardé sans usage. | `src/settings/repo.ts:119`, `src/db/schema.ts:181` | **Décision de l'utilisateur** (la spec 5 dit qu'il est stocké) : soit ne plus le garder, soit s'en servir pour redemander des tokens quand le refresh token est refusé. |
 | S8, *Non traité* (après le NAS) | Chaîne de build : images de base et actions GitHub épinglées par étiquette et non par empreinte, stack sur `:latest`. `npm audit` : 4 failles modérées dans `esbuild`, tirées par `drizzle-kit` (outil de développement, jamais dans l'image). | `Dockerfile`, `.github/workflows/docker.yml`, `deploy/stack-site.yml` | Facultatif pour un dépôt privé. Mettre à jour `drizzle-kit` quand une version corrigée sort. Mises à jour mineures disponibles : `next` 16.4.6, `postgres` 4.1.1, `@electric-sql/pglite` 0.5.16. |
 | S9, *Non traité* (après le NAS) | Conteneurs sans durcissement : pas de `no-new-privileges`, pas de `cap_drop`, pas de `read_only`, pas de limite mémoire, pas de healthcheck pour `app`. | `deploy/stack-site.yml`, `deploy/stack-infra.yml` | Ajouter `security_opt: ["no-new-privileges:true"]` et `cap_drop: [ALL]` à `app` et `worker`, une limite mémoire (l'export PNG monte haut), un healthcheck. À tester sur le NAS. |
@@ -113,7 +113,7 @@ Rien de bloquant pour le déploiement, mais **S1, P1, S2 et R1 sont à faire ava
 | P5, *Non traité* (après le NAS) | La suite de tests dure 322 s. Vitest indique qu'environ 64 s partent dans un processus par fichier. Les minutes de CI sont comptées. | `vitest.config.mts` | Séparer deux projets (node et jsdom) et essayer `isolate: false` sur les tests purs. |
 | P6, *Non traité* (après le NAS) | La couleur de tuile est calculée pour toutes les images, bannières 4K comprises (environ 33 Mo décodés par image, 4 à la fois), alors qu'elle ne sert qu'aux icônes de listes. | `src/sync/image-cache.ts:219-226` | Limiter aux icônes de `titles` et de `trophy_groups`. Gain seulement à la première synchro. |
 | P7, *Non traité* (après le NAS) | `sync_runs` grossit sans fin (environ 1 800 lignes par an) et le marqueur du cache la parcourt à chaque appel. | `src/lib/per-sync-cache.ts:14` | Sans urgence. Garder par exemple les 500 derniers runs. |
-| R2, **Fait** (`fix/audit`) | Le téléchargement d'une image n'a pas de délai explicite (5 min par défaut dans Node). Un run bloqué garde le verrou en mémoire et aucune synchro ne repart avant sa fin. | `src/sync/image-cache.ts:64` | `AbortSignal.timeout(30_000)`, comme pour la liste des non obtenables. |
+| R2, **Fait** (PR #21) | Le téléchargement d'une image n'a pas de délai explicite (5 min par défaut dans Node). Un run bloqué garde le verrou en mémoire et aucune synchro ne repart avant sa fin. | `src/sync/image-cache.ts:64` | `AbortSignal.timeout(30_000)`, comme pour la liste des non obtenables. |
 | R3, *Non traité* (lot 3) | Le rafraîchissement quotidien recharge un jeu qui a reçu un DLC mais ne télécharge pas ses images : vignette neutre jusqu'à la synchro suivante (6 h au plus). | `src/sync/daily.ts` | Appeler `cacheImages` à la fin du run quotidien. |
 
 ## 6. Priorité 4 : design (à faire valider par l'utilisateur avant de construire)
@@ -175,10 +175,10 @@ Points forts à garder : pas un seul `any` ni `@ts-ignore` hors tests, aucun `TO
 1. ~~**Attendre la fin de `fix/followups`**~~ : fusionnée (PR #19). Partir de `git switch main` puis `git pull`.
 2. **Écrire la décision dans la spec** : une section 20 « Suites du check-up du 11 novembre 2026 », qui reprend les points retenus par l'utilisateur. Lui demander ce qu'il garde : S7 et toute la section 6 sont ses choix.
 3. **Plan** dans `docs/superpowers/plans/` et branche `fix/audit` :
-   - lot 1, avant le déploiement : P1, S2, R1 (S1 est fait) ; **fait** sur `fix/audit` ;
-   - lot 2, durcissement : S3, S4, S5, S6, R2 ; **fait** sur `fix/audit` ;
+   - lot 1, avant le déploiement : P1, S2, R1 (S1 est fait) ; **fait** (PR #21) ;
+   - lot 2, durcissement : S3, S4, S5, S6, R2 ; **fait** (PR #21) ;
    - lot 3, confort : P2, P3, P4, R3, Q1, Q2, Q4, Q5, Q6 ; *non traité* (décision du 12 novembre 2026) ;
    - lot 4, design, après validation : D1 à D7 ; *non traité*, à valider sur maquette.
 4. **Vérifier avec les vraies données** (`docs/ETAT-DU-PROJET.md`, section 5), sur le build de production. Pour S1 et P1, lire les en-têtes d'une réponse réelle, connecté.
-5. **Mettre à jour** `deploy/README.md` (gzip, HSTS, plages de confiance de nginx) et `docs/ETAT-DU-PROJET.md`. *(Fait sur `fix/audit`.)*
+5. **Mettre à jour** `deploy/README.md` (gzip, HSTS, plages de confiance de nginx) et `docs/ETAT-DU-PROJET.md`. *(Fait, PR #21.)*
 6. Q3, P5, P6, P7, S8, S9 et Q7 peuvent attendre que le site tourne sur le NAS.
