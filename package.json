@@ -10,7 +10,7 @@
     "build": "next build",
     "start": "next start",
     "test": "vitest run",
-    "lint": "eslint .",
+    "lint": "node tools/eslint/node_modules/eslint/bin/eslint.js --config tools/eslint/eslint.config.mjs --max-warnings 0 .",
     "worker:dev": "tsx src/worker/index.ts",
     "hash-password": "tsx scripts/hash-password.ts",
     "db:generate": "drizzle-kit generate",
@@ -46,12 +46,9 @@
     "@vitejs/plugin-react": "^6.2.1",
     "drizzle-kit": "^0.31.11",
     "esbuild": "^0.28.2",
-    "eslint": "^9.39.5",
-    "eslint-config-next": "^16.4.6",
     "jsdom": "^31.0.0",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2",
-    "typescript-6": "npm:typescript@^6.0.2",
     "vitest": "^5.1.0"
   }
 }

@@ -12,6 +12,6 @@ export default defineConfig({
     testTimeout: 20000,
     hookTimeout: 20000,
     include: ["**/*.test.{ts,tsx}"],
-    exclude: ["node_modules", ".next", "dist", ".data"],
+    exclude: ["**/node_modules/**", ".next", "dist", ".data"],
   },
 });
