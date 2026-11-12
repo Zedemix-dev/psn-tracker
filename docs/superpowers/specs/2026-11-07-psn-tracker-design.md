@@ -1549,7 +1549,7 @@ Sur le build de production local (`npm run build`, puis `npm run e2e:db`, `npm r
 - **Q3** : la liste Games, à 1 630 et à 375 px, avec les mêmes contrôles que lors de sa construction (défilement, « Show all », filtres, tris, recherche, « Hide 0% games », retour depuis une page de jeu).
 - **Q6, Q7** : la comparaison des styles calculés, sans aucune différence.
 - **P5** : trois passages verts de la suite complète, et sa durée avant et après.
-- **S9** : les pics de mémoire mesurés (export PNG, synchro complète avec images), qui fixent les limites ; la durée de l'export PNG avec `app` limité à 2 cœurs reste sous 60 s (mesure approchée en local).
+- **S9** : les pics de mémoire mesurés (export PNG, synchro complète avec images), qui fixent les limites ; la durée de l'export PNG (4 s en local avec Art, Rarity et Name ; `cpu_shares` ne la ralentit que si le NAS est occupé) reste sous 60 s.
 - **Non vérifiable ici** : le job de la CI de S9 (sur github.com), les conteneurs durcis et le healthcheck sur le NAS, les premières PR de Dependabot.
 
 ### 21.8 Laissé au builder

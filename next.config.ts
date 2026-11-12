@@ -12,7 +12,7 @@ const nextConfig: NextConfig = {
   // everything at 12 MB. Accepted for a single-user site.
   // Banner uploads are up to 10 MB; leave room for the multipart envelope. The proxy buffers
   // request bodies too (default 10 MB), so it needs the same limit or the upload is truncated.
-  // Through headers() (not proxy.ts): the proxy never sees _next/static or the favicon (its matcher skips them);
+  // Through headers() (not proxy.ts): the proxy never sees _next/static, _next/image, /media or the favicon (its matcher skips them);
   // the login page does pass through the proxy.
   async headers() {
     // Next applies the rules in order and the last one wins per key: the media rule comes second

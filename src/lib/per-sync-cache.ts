@@ -9,7 +9,7 @@ const caches = new WeakMap<Db, Map<string, Entry>>();
 
 /**
  * The site and the worker share only Postgres, so the "has a run ended since?" marker is read from
- * the database on every call (one cheap query): the latest finished_at over all runs, plus the row count, plus when the unobtainable list was last applied.
+ * the database on every call (two small queries): the latest finished_at over all runs, plus the row count, plus when the unobtainable list was last applied.
  */
 async function readMarker(db: Db): Promise<string> {
   const [row] = await db.select({ last: max(syncRuns.finishedAt), n: count() }).from(syncRuns);

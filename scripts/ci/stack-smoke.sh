@@ -57,7 +57,7 @@ fi
 echo "ok - postgres is healthy"
 
 # The media folder must be writable by uid 1000 without any capability, as on the NAS.
-if ! docker run --rm --cap-drop ALL --security-opt no-new-privileges:true --user node   -v "$media:/data/media" "$image" sh -c 'touch /data/media/.w && rm /data/media/.w'; then
+if ! docker run --rm --cap-drop ALL --security-opt no-new-privileges:true --user node -v "$media:/data/media" "$image" sh -c 'touch /data/media/.w && rm /data/media/.w'; then
   echo "FAIL - /data/media is not writable by the node user" >&2
   exit 1
 fi
