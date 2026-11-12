@@ -7,6 +7,7 @@ import type { Db } from "@/src/db/client";
 import { images, profile, settings, syncRuns, titles, trophies } from "@/src/db/schema";
 import type { AppConfig } from "@/src/lib/config";
 import { savePsnTokens, getSettings } from "@/src/settings/repo";
+import { PsnRefusedError } from "@/src/psn/gateway";
 import { isRetryable, withPacing } from "@/src/sync/retry";
 import { runSync } from "@/src/sync/run";
 import { createFakePsn } from "@/tests/fakes/psn";
@@ -150,10 +151,21 @@ describe("runSync", () => {
     expect(runs[1]).toMatchObject({ kind: "scheduled", titlesDone: 3, trophiesUpdated: 0 });
   });
 
+  it("a run fails with \"Couldn't reach PSN\" when PSN is unreachable during the refresh", async () => {
+    await runSync(db, fixture(), cfg, "manual", now, deps);
+    await seedTokens(new Date("2025-01-01T00:00:00Z"));
+    const gw = createFakePsn({ failures: [{ method: "refresh", error: new TypeError("fetch failed") }] });
+
+    const res = await runSync(db, gw, cfg, "scheduled", now, deps);
+
+    expect(res).toMatchObject({ status: "error", error: "Couldn't reach PSN" });
+    expect((await getSettings(db)).psnAuthStatus).toBe("valid");
+  });
+
   it("marks auth expired and keeps data when refresh fails", async () => {
     await runSync(db, fixture(), cfg, "manual", now, deps);
     await seedTokens(new Date("2025-01-01T00:00:00Z"));
-    const gw = createFakePsn({ failures: [{ method: "refresh" }] });
+    const gw = createFakePsn({ failures: [{ method: "refresh", error: new PsnRefusedError() }] });
 
     const res = await runSync(db, gw, cfg, "scheduled", now, deps);
 
@@ -409,6 +421,7 @@ describe("runSync robustness", () => {
 describe("isRetryable", () => {
   it("classifies errors", () => {
     expect(isRetryable(new Error("Found 500 trophies"))).toBe(false);
+    expect(isRetryable(new PsnRefusedError())).toBe(false);
     expect(isRetryable(new TypeError("fetch failed"))).toBe(true);
     expect(isRetryable(new Error("Service Unavailable"))).toBe(true);
     expect(isRetryable(Object.assign(new Error("x"), { cause: { code: "UND_ERR_SOCKET" } }))).toBe(true);

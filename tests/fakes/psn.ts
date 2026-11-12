@@ -19,7 +19,12 @@ export type FakeTitleData = {
 };
 
 /** Makes a call throw. Matches `method` and, when given, the title's npCommunicationId. */
-export type FakeFailure = { method: keyof PsnGateway; npCommunicationId?: string };
+export type FakeFailure = {
+  method: keyof PsnGateway;
+  npCommunicationId?: string;
+  /** Thrown instead of the generic fake error. */
+  error?: unknown;
+};
 
 export type FakePsnFixture = {
   /** Returned by exchangeNpsso and refresh. */
@@ -61,7 +66,9 @@ export function createFakePsn(fixture: FakePsnFixture = {}): FakePsn {
 
   function record(method: keyof PsnGateway, id = ""): void {
     calls.push(`${method}:${id}`);
-    if (fixture.failures?.some((f) => f.method === method && (f.npCommunicationId ?? id) === id)) {
+    const failure = fixture.failures?.find((f) => f.method === method && (f.npCommunicationId ?? id) === id);
+    if (failure) {
+      if (failure.error !== undefined) throw failure.error;
       throw new Error(`fake PSN failure: ${method}${id ? ` ${id}` : ""}`);
     }
   }
