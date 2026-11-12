@@ -47,7 +47,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Sea
     getCabinet(db),
     getRarest(db, 5),
     getRarityBreakdown(db),
-    getMilestones(db, now),
+    getMilestones(db),
   ]);
   // JSON-safe for the client component: no Date crosses the boundary.
   const carousel: CarouselTrophy[] = latest.map((t) => ({

@@ -34,7 +34,7 @@ function titleColumns(remote: RemoteTitle) {
  * Upserts the title-level columns coming from PSN. Never touches coverUrl,
  * play-time columns, syncedAt or groupsCheckedAt.
  */
-export async function upsertTitleRow(db: Writer, remote: RemoteTitle, _now: Date): Promise<void> {
+export async function upsertTitleRow(db: Writer, remote: RemoteTitle): Promise<void> {
   const cols = titleColumns(remote);
   await db
     .insert(titles)
@@ -102,7 +102,7 @@ export async function syncTitle(
   const lastTrophyAt = earnedTimes.length ? new Date(Math.max(...earnedTimes)) : null;
 
   await db.transaction(async (tx) => {
-    await upsertTitleRow(tx, remote, now);
+    await upsertTitleRow(tx, remote);
 
     for (const row of groupRows) {
       const { titleId: _t, groupId: _g, ...set } = row;

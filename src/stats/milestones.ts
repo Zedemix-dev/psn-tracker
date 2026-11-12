@@ -35,8 +35,7 @@ const byEarnedOrder = (a: EarnedTrophy, b: EarnedTrophy) =>
     { earnedAtMs: b.earnedAt.getTime(), type: b.type, trophyId: b.trophyId, titleId: b.titleId },
   );
 
-/** `_now` is part of the interface but unused: relative times are rendered by the UI. */
-export function computeMilestones(earned: EarnedTrophy[], _now: Date): Milestone[] {
+export function computeMilestones(earned: EarnedTrophy[]): Milestone[] {
   const ordered = [...earned].sort(byEarnedOrder);
   if (ordered.length === 0) return [];
 
@@ -84,7 +83,7 @@ export function computeMilestones(earned: EarnedTrophy[], _now: Date): Milestone
   return found.sort((a, b) => b.pos - a.pos).map(({ pos, label }) => ({ label, trophy: ordered[pos] }));
 }
 
-/** Computed from the earned trophies only (`now` plays no part), so it is kept until the next run starts or ends. */
-export function getMilestones(db: Db, now: Date): Promise<Milestone[]> {
-  return cachedUntilNextRun(db, "milestones", async () => computeMilestones(await getAllEarned(db), now));
+/** Computed from the earned trophies only (the clock plays no part), so it is kept until the next run starts or ends. */
+export function getMilestones(db: Db): Promise<Milestone[]> {
+  return cachedUntilNextRun(db, "milestones", async () => computeMilestones(await getAllEarned(db)));
 }

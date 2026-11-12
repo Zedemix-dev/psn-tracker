@@ -177,7 +177,7 @@ export async function runSync(
           updated = (await syncTitle(db, paced, auth, remote, now)).trophiesUpdated;
           reloaded.add(remote.npCommunicationId);
         } else {
-          await upsertTitleRow(db, remote, now);
+          await upsertTitleRow(db, remote);
         }
       } catch (err) {
         failures.push(describeFailure(remote.npCommunicationId, err));

@@ -21,7 +21,7 @@ let dir: string;
 beforeEach(async () => {
   db = await createTestDb();
   dir = await fs.mkdtemp(path.join(os.tmpdir(), "media-"));
-  await upsertTitleRow(db, makeRemoteTitle({ npCommunicationId: "NPWR00001_00" }), now);
+  await upsertTitleRow(db, makeRemoteTitle({ npCommunicationId: "NPWR00001_00" }));
   await db
     .update(titles)
     .set({ iconUrl: ICON, coverUrl: COVER })
@@ -164,7 +164,7 @@ describe("cacheImages", () => {
   it("never runs more than 4 downloads at once", async () => {
     for (let i = 0; i < 12; i++) {
       const id = `NPWR1${i}_00`;
-      await upsertTitleRow(db, makeRemoteTitle({ npCommunicationId: id }), now);
+      await upsertTitleRow(db, makeRemoteTitle({ npCommunicationId: id }));
       await db
         .update(titles)
         .set({ iconUrl: `https://x/t${i}.png` })

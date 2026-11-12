@@ -1,4 +1,5 @@
 import { formatInt } from "@/src/lib/format";
+import { pick } from "@/src/lib/pick";
 import type { RarityTier } from "@/src/lib/rarity";
 
 export const LOG_SORTS = ["date", "alphabetical", "rarity"] as const;
@@ -34,10 +35,6 @@ const TIERS: Record<Exclude<LogRarity, "all">, RarityTier> = {
   uncommon: "Uncommon",
   common: "Common",
 };
-
-function pick<T extends string>(allowed: readonly T[], value: string | null, fallback: T): T {
-  return allowed.includes(value as T) ? (value as T) : fallback;
-}
 
 export function naturalOrder(sort: LogSort): LogOrder {
   return NATURAL_ORDER[sort];

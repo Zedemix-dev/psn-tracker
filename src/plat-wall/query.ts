@@ -1,4 +1,5 @@
 import { parisYear } from "@/src/lib/format";
+import { pick } from "@/src/lib/pick";
 
 export const PLAT_PLATFORMS = ["all", "PS4", "PS5"] as const;
 export const PLAT_SORTS = ["newest", "rarity", "alphabetical"] as const;
@@ -18,10 +19,6 @@ export type Platinum = {
 };
 
 const DEFAULT_SHOW: PlatShow[] = ["art"];
-
-function pick<T extends string>(allowed: readonly T[], value: string | null, fallback: T): T {
-  return allowed.includes(value as T) ? (value as T) : fallback;
-}
 
 function parseYear(value: string | null): number | null {
   return value !== null && /^\d{4}$/.test(value) ? Number(value) : null;

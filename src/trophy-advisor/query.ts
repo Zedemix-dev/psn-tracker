@@ -1,4 +1,5 @@
 import type { AdvisorDlc } from "@/src/db/schema";
+import { pick } from "@/src/lib/pick";
 import {
   LOG_ORDERS,
   LOG_PLATFORMS,
@@ -35,10 +36,6 @@ const ORDER_LABELS: Record<AdvisorSort, Record<LogOrder, string>> = {
   rarity: { desc: "Most common first", asc: "Rarest first" },
   alphabetical: { asc: "A to Z", desc: "Z to A" },
 };
-
-function pick<T extends string>(allowed: readonly T[], value: string | null, fallback: T): T {
-  return allowed.includes(value as T) ? (value as T) : fallback;
-}
 
 export function naturalOrder(sort: AdvisorSort): LogOrder {
   return NATURAL_ORDER[sort];

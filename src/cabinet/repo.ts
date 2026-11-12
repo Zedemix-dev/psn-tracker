@@ -1,7 +1,8 @@
-import { and, asc, eq, inArray, isNotNull, or, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, or, sql } from "drizzle-orm";
 import type { Db } from "@/src/db/client";
 import { cabinet, titles, trophies } from "@/src/db/schema";
-import { toEarned, trophySelection, type EarnedTrophy } from "@/src/stats/trophies";
+import { earnedVisible, toEarned, trophySelection, type EarnedTrophy } from "@/src/stats/trophies";
+import { escapeLike } from "@/src/lib/escape-like";
 
 export const CABINET_SIZE = 10;
 export class CabinetValidationError extends Error {
@@ -13,7 +14,6 @@ export class CabinetValidationError extends Error {
 
 export type CabinetEntry = { titleId: string; trophyId: number };
 
-const earnedVisible = and(eq(trophies.earned, true), isNotNull(trophies.earnedAt), eq(titles.hidden, false));
 const keyOf = (e: CabinetEntry) => `${e.titleId}\u0000${e.trophyId}`;
 
 export async function getCabinet(db: Db): Promise<EarnedTrophy[]> {
@@ -58,8 +58,6 @@ export async function saveCabinet(db: Db, entries: CabinetEntry[]): Promise<void
     }
   });
 }
-
-const escapeLike = (s: string) => s.replace(/[\\%_]/g, "\\$&");
 
 /** Earned trophies of visible titles whose name or game name contains `q`; rarest first. */
 export async function searchEarnedTrophies(db: Db, q: string, limit = 20): Promise<EarnedTrophy[]> {

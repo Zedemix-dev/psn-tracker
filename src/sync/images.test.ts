@@ -17,7 +17,6 @@ import {
 import { makeRemoteTitle } from "@/tests/fixtures/titles";
 import { createTestDb } from "@/tests/helpers/db";
 
-const now = new Date("2026-01-01T00:00:00Z");
 const ICON = "https://image.api.playstation.com/icon1.png";
 const COVER = "https://image.api.playstation.com/cover1.jpg?x=1";
 
@@ -26,7 +25,7 @@ let dir: string;
 beforeEach(async () => {
   db = await createTestDb();
   dir = await fs.mkdtemp(path.join(os.tmpdir(), "media-"));
-  await upsertTitleRow(db, makeRemoteTitle({ npCommunicationId: "NPWR00001_00" }), now);
+  await upsertTitleRow(db, makeRemoteTitle({ npCommunicationId: "NPWR00001_00" }));
   await db
     .update(titles)
     .set({ iconUrl: ICON, coverUrl: COVER })
