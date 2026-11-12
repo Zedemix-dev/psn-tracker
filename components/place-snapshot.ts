@@ -1,6 +1,9 @@
-// Same history-entry rule as components/list-snapshot.ts, but no rows are stored: "Show all" can
-// hold 11,636 of them, far past what sessionStorage keeps. Only how many were loaded and where the
-// page was scrolled; the rows are fetched again on the way back.
+// Where a list was left when a game was opened, for Back. The place is tied to the history entry it
+// was taken on: saving tags that entry (merged into Next's own history.state), and restoring requires
+// the tag on the entry being shown. Browser back/forward to that entry restores; a fresh visit pushes
+// a new, untagged entry and starts at the top.
+// No rows are stored: "Show all" can hold 11,636 of them, far past what sessionStorage keeps. Only
+// how many were loaded and where the page was scrolled; the rows are fetched again on the way back.
 // The place is the row at the top of the viewport (anchorKey) and how far it sits from the viewport
 // top (anchorOffset, may be negative): a pixel y does not survive the rows being re-rendered with
 // their real heights. scrollY is the fallback.

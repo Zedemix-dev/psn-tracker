@@ -36,8 +36,8 @@ export type GameQuery = {
 };
 
 export const PAGE_SIZE = 50;
-/** Safety cap for the "Show all" request. */
-const ALL_LIMIT = 10_000;
+/** Safety cap for the "Show all" request, and for `limit`. */
+export const ALL_LIMIT = 10_000;
 
 export const MAX_OFFSET = 1_000_000;
 
@@ -128,7 +128,16 @@ function filtersFor(query: GameQuery, hideZero: boolean): SQL | undefined {
 export async function queryGames(
   db: Db,
   query: GameQuery,
-  { hideZero, all = false }: { hideZero: boolean; all?: boolean },
+  {
+    hideZero,
+    all = false,
+    limit,
+  }: {
+    hideZero: boolean;
+    all?: boolean;
+    /** Rows to return instead of PAGE_SIZE, at most ALL_LIMIT: Back reloads as many as were shown. */
+    limit?: number;
+  },
 ): Promise<{ items: GameRowData[]; total: number }> {
   const where = filtersFor(query, hideZero);
   const [rows, [count], imageMap, siblings] = await Promise.all([
@@ -137,7 +146,7 @@ export async function queryGames(
       .from(titles)
       .where(where)
       .orderBy(orderFor(query.sort), asc(sql`lower(${titles.name})`), asc(titles.npCommunicationId))
-      .limit(all ? ALL_LIMIT : PAGE_SIZE)
+      .limit(all ? ALL_LIMIT : Math.min(limit ?? PAGE_SIZE, ALL_LIMIT))
       .offset(Math.max(0, query.offset)),
     db.select({ n: sql<number>`count(*)::int` }).from(titles).where(where),
     loadImageMap(db),

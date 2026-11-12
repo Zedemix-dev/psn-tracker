@@ -7,8 +7,11 @@ import type { PlaceSnapshot, PlaceStore } from "@/components/place-snapshot";
 /** Rows added to the page per animation frame when a big result arrives (about 80 ms each). */
 export const RENDER_CHUNK = 300;
 
-const findRow = (key: string) =>
-  document.querySelector<HTMLElement>(`.log-row[data-key="${key.replace(/["\\]/g, "\\$&")}"]`);
+/** The row whose `data-key` is `key`, among those `selector` matches (a compound selector). */
+const findRow = (selector: string, key: string) =>
+  document.querySelector<HTMLElement>(`${selector}[data-key="${key.replace(/["\\]/g, "\\$&")}"]`);
+
+const keyOfRow = (row: { key: string }) => row.key;
 
 const SETTLE_INPUTS = ["wheel", "touchstart", "keydown", "pointerdown"] as const;
 
@@ -19,6 +22,7 @@ const SETTLE_INPUTS = ["wheel", "touchstart", "keydown", "pointerdown"] as const
  * until the user takes over. Returns the stop function.
  */
 function settleOnRow(
+  selector: string,
   key: string,
   offset: number,
   frame: { current: number | null },
@@ -36,7 +40,7 @@ function settleOnRow(
   const tick = () => {
     frame.current = null;
     frames++;
-    const el = findRow(key);
+    const el = findRow(selector, key);
     if (el) {
       const top = el.getBoundingClientRect().top;
       if (Math.abs(top - offset) > 1) {
@@ -52,8 +56,8 @@ function settleOnRow(
 }
 
 /** The first row whose bottom is below the viewport top, and its offset from that top. */
-function topRow(): { key: string; offset: number } | null {
-  const rows = document.querySelectorAll<HTMLElement>(".log-row[data-key]");
+function topRow(selector: string): { key: string; offset: number } | null {
+  const rows = document.querySelectorAll<HTMLElement>(selector);
   for (const el of rows) {
     const rect = el.getBoundingClientRect();
     if (rect.bottom > 0) return { key: el.dataset.key!, offset: rect.top };
@@ -61,7 +65,18 @@ function topRow(): { key: string; offset: number } | null {
   return null;
 }
 
-export function ProgressiveList<T extends { key: string }>({
+/** Rows with a string `key` may leave out `rowKey`; other rows must say what their key is. */
+type RowKeyProp<T> = T extends { key: string }
+  ? {
+      /** A row's unique key (rows already shown are not added twice). Defaults to `row.key`. */
+      rowKey?: (row: T) => string;
+    }
+  : {
+      /** A row's unique key (rows already shown are not added twice). */
+      rowKey: (row: T) => string;
+    };
+
+export function ProgressiveList<T>({
   initial,
   apiPath,
   queryString,
@@ -69,6 +84,10 @@ export function ProgressiveList<T extends { key: string }>({
   places,
   slotId,
   renderRow,
+  rowKey = keyOfRow as (row: T) => string,
+  rowSelector = ".log-row[data-key]",
+  noun = "trophies",
+  className,
   empty,
 }: {
   initial: { items: T[]; total: number };
@@ -82,28 +101,48 @@ export function ProgressiveList<T extends { key: string }>({
   /** The id of the element "Show all" is portaled into. */
   slotId: string;
   /** Module-level, with a memoised row: only the new rows render from one chunk to the next.
-   *  The row must render a `.log-row[data-key]` element (`findRow` and `topRow` rely on it). */
+   *  The row must render one element matching `rowSelector`, with `data-key` set to its key. */
   renderRow: (row: T) => ReactNode;
+  /** A compound CSS selector (no comma) for the rendered rows, `[data-key]` included: the place
+   *  saved for Back is the first of them at the viewport top. */
+  rowSelector?: string;
+  /** What the rows are, in the footer texts: "The next 50 … load as you scroll down". */
+  noun?: string;
+  /** The class of the element holding the rows. */
+  className?: string;
   /** Shown instead of the list when there is no row. */
   empty: string;
-}) {
+} & RowKeyProp<T>) {
   const [items, setItems] = useState(initial.items);
   const [total, setTotal] = useState(initial.total);
+  // How many rows the server has handed out so far. It runs ahead of items.length when a page held
+  // rows already shown (dropped), so the next request starts from here, not from items.length.
+  const [offset, setOffset] = useState(initial.items.length);
+  // An empty page means no more data, whatever the total says.
+  const [exhausted, setExhausted] = useState(false);
   const [failed, setFailed] = useState(false);
   const [loadingAll, setLoadingAll] = useState(false);
   const [slot, setSlot] = useState<HTMLElement | null>(null);
   const busy = useRef(false);
   const sentinel = useRef<HTMLDivElement>(null);
   const pendingScroll = useRef<Pick<PlaceSnapshot, "scrollY" | "anchorKey" | "anchorOffset"> | null>(null);
-  // Rows received but not rendered yet, one chunk per animation frame (see RENDER_CHUNK).
+  // Rows received but not rendered yet, one chunk per animation frame (see RENDER_CHUNK), and the
+  // server offset just past the rows taken from it so far.
   const queue = useRef<T[]>([]);
+  const queueOffset = useRef(0);
   const chunkFrame = useRef<number | null>(null);
   const scrollFrame = useRef<number | null>(null);
   const stopSettle = useRef<(() => void) | null>(null);
   const alive = useRef(true);
+  // The chunk loop reads the key through a ref: a new rowKey function never restarts the loaders.
+  const keyOf = useRef(rowKey);
   const loaded = items.length;
   const loadedRows = useRef(loaded);
-  const more = loaded < total;
+  const more = !exhausted && offset < total;
+
+  useLayoutEffect(() => {
+    keyOf.current = rowKey;
+  }, [rowKey]);
 
   useEffect(() => {
     alive.current = true;
@@ -129,28 +168,37 @@ export function ProgressiveList<T extends { key: string }>({
     setLoadingAll(false);
   };
 
-  // One chunk now, then one per frame until the queue is empty. busy stays true meanwhile.
+  // One chunk now, then one per frame until the queue is empty. busy stays true meanwhile. The
+  // offset moves with each chunk, so "Show all" and the footer stay until the last one is in.
   const pump = useCallback(() => {
     chunkFrame.current = null;
     const chunk = queue.current.splice(0, RENDER_CHUNK);
+    const key = keyOf.current;
     setItems((prev) => {
-      const seen = new Set(prev.map((r) => r.key));
-      return [...prev, ...chunk.filter((r) => !seen.has(r.key))];
+      const seen = new Set(prev.map(key));
+      return [...prev, ...chunk.filter((r) => !seen.has(key(r)))];
     });
+    queueOffset.current += chunk.length;
+    setOffset(queueOffset.current);
     // eslint-disable-next-line react-hooks/immutability -- pump schedules itself on the next frame; the callback is only called after it is defined
     if (queue.current.length > 0) chunkFrame.current = requestAnimationFrame(pump);
     else finishQueue();
   }, []);
 
+  /** `from` is the server offset of incoming[0]; `replace` swaps the rows shown for these. */
   const enqueue = useCallback(
-    (incoming: T[], replace: boolean) => {
+    (incoming: T[], from: number, replace: boolean) => {
       if (replace) {
-        setItems(incoming.slice(0, RENDER_CHUNK));
+        const first = incoming.slice(0, RENDER_CHUNK);
+        setItems(first);
+        queueOffset.current = from + first.length;
+        setOffset(queueOffset.current);
         queue.current = incoming.slice(RENDER_CHUNK);
         if (queue.current.length > 0) chunkFrame.current = requestAnimationFrame(pump);
         else finishQueue();
         return;
       }
+      queueOffset.current = from;
       queue.current = incoming;
       pump();
     },
@@ -184,7 +232,7 @@ export function ProgressiveList<T extends { key: string }>({
         if (cancelled) return;
         pendingScroll.current = snap;
         setTotal(page.total);
-        enqueue(page.items, true);
+        enqueue(page.items, 0, true);
       } catch {
         // The first page stays, from the top.
         if (!cancelled) {
@@ -213,7 +261,7 @@ export function ProgressiveList<T extends { key: string }>({
     if (target === null) return;
     const done = queue.current.length === 0;
     const place = () => {
-      const el = target.anchorKey !== undefined ? findRow(target.anchorKey) : null;
+      const el = target.anchorKey !== undefined ? findRow(rowSelector, target.anchorKey) : null;
       if (el && target.anchorOffset !== undefined) {
         return el.getBoundingClientRect().top + window.scrollY - target.anchorOffset;
       }
@@ -232,23 +280,23 @@ export function ProgressiveList<T extends { key: string }>({
     window.scrollTo(0, y);
     const anchorKey = target.anchorKey;
     const anchorOffset = target.anchorOffset;
-    if (anchorKey !== undefined && anchorOffset !== undefined && findRow(anchorKey)) {
+    if (anchorKey !== undefined && anchorOffset !== undefined && findRow(rowSelector, anchorKey)) {
       stopSettle.current?.();
-      stopSettle.current = settleOnRow(anchorKey, anchorOffset, scrollFrame, stopSettle);
+      stopSettle.current = settleOnRow(rowSelector, anchorKey, anchorOffset, scrollFrame, stopSettle);
       return;
     }
     scrollFrame.current = requestAnimationFrame(() => {
       scrollFrame.current = null;
       window.scrollTo(0, y);
     });
-  }, [items]);
+  }, [items, rowSelector]);
 
   // On the document, not the list: game links next to the list leave the page too.
   useEffect(() => {
     const rememberPlace = (e: MouseEvent) => {
       if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
       if (e.target instanceof Element && e.target.closest('a[href^="/games/"]')) {
-        const top = topRow();
+        const top = topRow(rowSelector);
         places.save({
           key: snapshotKey,
           loaded: loadedRows.current,
@@ -259,7 +307,7 @@ export function ProgressiveList<T extends { key: string }>({
     };
     document.addEventListener("click", rememberPlace, true);
     return () => document.removeEventListener("click", rememberPlace, true);
-  }, [snapshotKey, places]);
+  }, [snapshotKey, places, rowSelector]);
 
   // One loader for the next page (scrolling, Retry) and for the whole rest (Show all).
   const load = useCallback(
@@ -270,14 +318,15 @@ export function ProgressiveList<T extends { key: string }>({
       if (all) setLoadingAll(true);
       try {
         const params = new URLSearchParams(queryString);
-        params.set("offset", String(loaded));
+        params.set("offset", String(offset));
         if (all) params.set("all", "1");
         const res = await fetch(`${apiPath}?${params}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const page: { items: T[]; total: number } = await res.json();
         if (!alive.current) return;
         setTotal(page.total);
-        enqueue(page.items, false);
+        if (page.items.length === 0) setExhausted(true);
+        enqueue(page.items, offset, false);
       } catch {
         if (!alive.current) return;
         setFailed(true);
@@ -285,7 +334,7 @@ export function ProgressiveList<T extends { key: string }>({
         setLoadingAll(false);
       }
     },
-    [apiPath, queryString, loaded, enqueue],
+    [apiPath, queryString, offset, enqueue],
   );
   const loadMore = useCallback(() => load(false), [load]);
 
@@ -316,22 +365,22 @@ export function ProgressiveList<T extends { key: string }>({
           slot,
         )}
       {items.length === 0 && !more && <p className="empty">{empty}</p>}
-      <div>
+      <div className={className}>
         {items.map((row) => (
-          <Fragment key={row.key}>{renderRow(row)}</Fragment>
+          <Fragment key={rowKey(row)}>{renderRow(row)}</Fragment>
         ))}
       </div>
       {more && (
         <div className="load-more" ref={sentinel}>
           {failed ? (
             <>
-              Couldn&apos;t load more trophies.{" "}
+              {`Couldn't load more ${noun}.`}{" "}
               <button type="button" className="retry" onClick={() => void loadMore()}>
                 Retry
               </button>
             </>
           ) : (
-            "The next 50 trophies load as you scroll down"
+            `The next 50 ${noun} load as you scroll down`
           )}
         </div>
       )}

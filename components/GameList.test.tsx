@@ -2,9 +2,8 @@
 import "@testing-library/jest-dom/vitest";
 import { act, cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { GameList } from "@/components/GameList";
+import { GameList, gamePlaces } from "@/components/GameList";
 import { SHOW_ALL_SLOT_ID } from "@/components/game-query-string";
-import { saveListSnapshot } from "@/components/list-snapshot";
 import type { GameQuery } from "@/src/games/query";
 import type { GameRowData } from "@/src/games/row";
 
@@ -66,6 +65,25 @@ afterEach(() => {
   fetchMock.mockReset();
   sessionStorage.clear();
 });
+
+// A controllable requestAnimationFrame: callbacks wait until a test runs them.
+let frames = new Map<number, FrameRequestCallback>();
+let nextFrame = 1;
+const fakeFrames = () => {
+  frames = new Map();
+  nextFrame = 1;
+  vi.stubGlobal("requestAnimationFrame", (cb: FrameRequestCallback) => {
+    frames.set(nextFrame, cb);
+    return nextFrame++;
+  });
+  vi.stubGlobal("cancelAnimationFrame", (id: number) => frames.delete(id));
+};
+const runFrame = () =>
+  act(async () => {
+    const [id, cb] = [...frames][0];
+    frames.delete(id);
+    cb(0);
+  });
 
 const rows = () => document.querySelectorAll(".game").length;
 const FOOTER = "The next 50 games load as you scroll down";
@@ -190,71 +208,124 @@ describe("GameList", () => {
       scrollTo.mockReset();
       window.scrollTo = scrollTo as never;
       history.replaceState(null, "");
-      saveListSnapshot({ key: "k", items: games(1, 120), total: 200, scrollY: 4200 });
     });
     afterEach(() => {
       window.scrollTo = realScrollTo;
       delete (window as { scrollY?: number }).scrollY;
       vi.restoreAllMocks();
     });
-    const mount = (key = "k") =>
-      render(<GameList snapshotKey={key} initial={{ items: games(1, 50), total: 200 }} query={query} />);
+    const mount = (key = "k", total = 200) =>
+      render(<GameList snapshotKey={key} initial={{ items: games(1, 50), total }} query={query} />);
 
-    it("restores the loaded games and the scroll position after a back navigation", async () => {
-      // Back to the tagged entry: it is still the current one.
-      await act(async () => {
-        mount();
-      });
-      expect(rows()).toBe(120);
-      expect(scrollTo).toHaveBeenCalledWith(0, 4200);
-    });
+    describe("with a saved place", () => {
+      beforeEach(() => gamePlaces.save({ key: "k", loaded: 120, scrollY: 4200 }));
 
-    it("restores again after leaving and coming back a second time", async () => {
-      await act(async () => {
-        mount();
+      it("restores the loaded games and the scroll position after a back navigation", async () => {
+        // Back to the tagged entry: it is still the current one. The rows are fetched again.
+        fetchMock.mockResolvedValueOnce(reply(games(1, 120), 200));
+        await act(async () => {
+          mount();
+        });
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+        expect(fetchMock).toHaveBeenCalledWith("/api/games?offset=0&limit=120");
+        expect(rows()).toBe(120);
+        expect(scrollTo).toHaveBeenCalledWith(0, 4200);
       });
-      cleanup();
-      await act(async () => {
-        mount();
-      });
-      expect(rows()).toBe(120);
-    });
 
-    it("starts from the top on a fresh visit", async () => {
-      history.pushState(null, ""); // a new entry, as a menu link would push
-      await act(async () => {
-        mount();
+      it("restores with the filters of the list", async () => {
+        fetchMock.mockResolvedValueOnce(reply(games(1, 120), 200));
+        await act(async () => {
+          render(
+            <GameList
+              snapshotKey="k"
+              initial={{ items: games(1, 50), total: 200 }}
+              query={{ ...query, state: "platinum", platform: "PS4", q: "souls" }}
+            />,
+          );
+        });
+        expect(fetchMock).toHaveBeenCalledWith("/api/games?state=platinum&platform=PS4&q=souls&offset=0&limit=120");
       });
-      expect(rows()).toBe(50);
-      expect(scrollTo).not.toHaveBeenCalled();
-    });
 
-    it("starts from the top on a fresh visit after a back that mounted no list", async () => {
-      window.dispatchEvent(new PopStateEvent("popstate")); // back to a game page: no GameList
-      history.pushState(null, ""); // then the Games menu entry
-      await act(async () => {
-        mount();
+      it("restores again after leaving and coming back a second time", async () => {
+        fetchMock.mockResolvedValueOnce(reply(games(1, 120), 200)).mockResolvedValueOnce(reply(games(1, 120), 200));
+        await act(async () => {
+          mount();
+        });
+        cleanup();
+        await act(async () => {
+          mount();
+        });
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+        expect(rows()).toBe(120);
       });
-      expect(rows()).toBe(50);
-      expect(scrollTo).not.toHaveBeenCalled();
-    });
 
-    it("ignores a snapshot taken with other filters or before a sync", async () => {
-      await act(async () => {
-        mount("other");
+      it("starts from the top on a fresh visit", async () => {
+        history.pushState(null, ""); // a new entry, as a menu link would push
+        await act(async () => {
+          mount();
+        });
+        expect(fetchMock).not.toHaveBeenCalled();
+        expect(rows()).toBe(50);
+        expect(scrollTo).not.toHaveBeenCalled();
       });
-      expect(rows()).toBe(50);
-      expect(scrollTo).not.toHaveBeenCalled();
+
+      it("starts from the top on a fresh visit after a back that mounted no list", async () => {
+        window.dispatchEvent(new PopStateEvent("popstate")); // back to a game page: no GameList
+        history.pushState(null, ""); // then the Games menu entry
+        await act(async () => {
+          mount();
+        });
+        expect(fetchMock).not.toHaveBeenCalled();
+        expect(rows()).toBe(50);
+        expect(scrollTo).not.toHaveBeenCalled();
+      });
+
+      it("ignores a snapshot taken with other filters or before a sync", async () => {
+        await act(async () => {
+          mount("other");
+        });
+        expect(fetchMock).not.toHaveBeenCalled();
+        expect(rows()).toBe(50);
+        expect(scrollTo).not.toHaveBeenCalled();
+      });
+
+      it("keeps the first page when the restore fails", async () => {
+        fetchMock.mockRejectedValueOnce(new Error("offline"));
+        await act(async () => {
+          mount();
+        });
+        expect(rows()).toBe(50);
+        expect(scrollTo).not.toHaveBeenCalled();
+        expect(screen.getByText(FOOTER)).toBeInTheDocument();
+      });
+
+      it("does not crash when sessionStorage throws", async () => {
+        vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
+          throw new Error("denied");
+        });
+        vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+          throw new Error("quota");
+        });
+        await act(async () => {
+          mount();
+        });
+        expect(fetchMock).not.toHaveBeenCalled();
+        expect(rows()).toBe(50);
+        const link = document.querySelector<HTMLAnchorElement>("a.game")!;
+        link.addEventListener("click", (e) => e.preventDefault());
+        await act(async () => link.click());
+        expect(rows()).toBe(50);
+      });
     });
 
     it("keeps Next's own history state when tagging the entry", () => {
       history.replaceState({ __NA: true }, "");
-      saveListSnapshot({ key: "k", items: games(1, 2), total: 2, scrollY: 1 });
+      gamePlaces.save({ key: "k", loaded: 2, scrollY: 1 });
       expect(history.state.__NA).toBe(true);
       expect(history.state.gamesSnapshot).toBeTruthy();
     });
 
-    it("saves the loaded games and scroll position when a game is opened", async () => {
+    it("saves the number of loaded games and the scroll position, without rows, when a game is opened", async () => {
       history.pushState(null, "");
       mount();
       sessionStorage.clear();
@@ -263,8 +334,8 @@ describe("GameList", () => {
       link.addEventListener("click", (e) => e.preventDefault());
       await act(async () => link.click());
       const saved = JSON.parse(sessionStorage.getItem("games-list")!);
-      expect(saved).toMatchObject({ key: "k", total: 200, scrollY: 900 });
-      expect(saved.items).toHaveLength(50);
+      expect(saved).toMatchObject({ key: "k", loaded: 50, scrollY: 900 });
+      expect(saved.items).toBeUndefined();
     });
 
     it("does not save on modified or non-primary clicks", async () => {
@@ -281,21 +352,102 @@ describe("GameList", () => {
       expect(sessionStorage.getItem("games-list")).toBeNull();
     });
 
-    it("does not crash when sessionStorage throws", async () => {
-      vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
-        throw new Error("denied");
+    describe("back to the same rows and the same row at the top", () => {
+      // A tiny layout: game n sits at document y `above + (n - 1) * 80`; its rect follows the scroll.
+      let y = 0;
+      let above = 0;
+      beforeEach(() => {
+        fakeFrames();
+        y = 0;
+        above = 0;
+        scrollTo.mockImplementation(((_x: number, to: number) => {
+          y = to;
+        }) as never);
+        Object.defineProperty(window, "scrollY", { get: () => y, configurable: true });
+        vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (this: HTMLElement) {
+          const top = above + (Number(this.dataset.key?.slice("NPWR".length) ?? 0) - 1) * 80 - y;
+          return { top, bottom: top + 80 } as DOMRect;
+        });
+        history.pushState(null, ""); // a fresh visit: nothing to restore on the first mount
       });
-      vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
-        throw new Error("quota");
-      });
-      await act(async () => {
+      const hrefs = () => [...document.querySelectorAll("a.game")].map((a) => a.getAttribute("href"));
+      const rowTop = (n: number) =>
+        document.querySelector<HTMLElement>(`a.game[data-key="NPWR${n}"]`)!.getBoundingClientRect().top;
+      /** Scrolls so the viewport top is 20 px into game n, then opens it. */
+      const openGame = async (n: number) => {
+        y = (n - 1) * 80 + 20;
+        const link = document.querySelector<HTMLAnchorElement>(`a.game[data-key="NPWR${n}"]`)!;
+        link.addEventListener("click", (e) => e.preventDefault());
+        await act(async () => link.click());
+      };
+      /** Back on the same history entry, at the top, with 300 px more above the list than before. */
+      const comeBack = async (reloaded: GameRowData[], total: number) => {
+        cleanup();
+        y = 0;
+        above = 300;
+        fetchMock.mockResolvedValueOnce(reply(reloaded, total));
+        await act(async () => {
+          mount("k", total);
+        });
+        while (frames.size > 0) await runFrame();
+      };
+
+      it("restores the same rows and position after Show all", async ({ onTestFinished }) => {
+        const slot = document.createElement("span");
+        slot.id = SHOW_ALL_SLOT_ID;
+        document.body.append(slot);
+        onTestFinished(() => slot.remove());
+        fetchMock.mockResolvedValueOnce(reply(games(51, 150), 200));
         mount();
+        await act(async () => screen.getByRole("button", { name: "Show all" }).click());
+        expect(rows()).toBe(200);
+        const before = hrefs();
+
+        await openGame(130);
+        expect(JSON.parse(sessionStorage.getItem("games-list")!)).toMatchObject({
+          key: "k",
+          loaded: 200,
+          anchorKey: "NPWR130",
+          anchorOffset: -20,
+        });
+
+        await comeBack(games(1, 200), 200);
+        expect(fetchMock).toHaveBeenLastCalledWith("/api/games?offset=0&limit=200");
+        expect(hrefs()).toEqual(before);
+        expect(scrollTo).toHaveBeenCalledWith(0, 300 + 129 * 80 + 20);
+        expect(rowTop(130)).toBe(-20);
+        expect(screen.queryByRole("button", { name: /Show all|Loading…/ })).toBeNull();
+        expect(screen.queryByText(FOOTER)).toBeNull();
       });
-      expect(rows()).toBe(50);
-      const link = document.querySelector<HTMLAnchorElement>("a.game")!;
-      link.addEventListener("click", (e) => e.preventDefault());
-      await act(async () => link.click());
-      expect(rows()).toBe(50);
+
+      it("restores after three loaded pages", async () => {
+        fetchMock.mockResolvedValueOnce(reply(games(51, 50), 300)).mockResolvedValueOnce(reply(games(101, 50), 300));
+        mount("k", 300);
+        await intersect();
+        await intersect();
+        expect(rows()).toBe(150);
+        const before = hrefs();
+
+        await openGame(120);
+        expect(JSON.parse(sessionStorage.getItem("games-list")!)).toMatchObject({
+          loaded: 150,
+          anchorKey: "NPWR120",
+          anchorOffset: -20,
+        });
+
+        await comeBack(games(1, 150), 300);
+        expect(fetchMock).toHaveBeenLastCalledWith("/api/games?offset=0&limit=150");
+        expect(hrefs()).toEqual(before);
+        expect(scrollTo).toHaveBeenCalledWith(0, 300 + 119 * 80 + 20);
+        expect(rowTop(120)).toBe(-20);
+
+        // Scrolling on carries on after the restored rows.
+        expect(screen.getByText(FOOTER)).toBeInTheDocument();
+        fetchMock.mockResolvedValueOnce(reply(games(151, 50), 300));
+        await intersect();
+        expect(fetchMock).toHaveBeenLastCalledWith("/api/games?offset=150");
+        expect(rows()).toBe(200);
+      });
     });
   });
 
@@ -348,6 +500,26 @@ describe("GameList", () => {
       expect(button).toBeEnabled();
       expect(screen.getByText(/Couldn't load more games\./)).toBeInTheDocument();
       expect(rows()).toBe(50);
+    });
+
+    it("keeps loading past a page made only of duplicates", async () => {
+      fetchMock.mockResolvedValueOnce(reply(games(1, 50), 120)); // only games already shown
+      render(<GameList snapshotKey="k" initial={{ items: games(1, 50), total: 120 }} query={query} />);
+      await intersect();
+      expect(rows()).toBe(50);
+      expect(screen.getByText(FOOTER)).toBeInTheDocument();
+      expect(showAll()).toBeEnabled();
+
+      // The rest starts after the 100 rows handed out so far, not after the 50 shown.
+      fetchMock.mockResolvedValueOnce(reply(games(51, 20), 120));
+      await act(async () => showAll().click());
+      const url = new URL(String(fetchMock.mock.calls[1][0]), "http://x");
+      expect(url.searchParams.get("offset")).toBe("100");
+      expect(url.searchParams.get("all")).toBe("1");
+      expect(rows()).toBe(70);
+      // All 120 handed out: the list ends, though it shows 70.
+      expect(screen.queryByText(FOOTER)).toBeNull();
+      expect(screen.queryByRole("button", { name: /Show all|Loading…/ })).toBeNull();
     });
 
     it("makes one request when Show all races with scrolling", async () => {
