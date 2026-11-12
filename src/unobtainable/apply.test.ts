@@ -51,6 +51,20 @@ async function title() {
 }
 
 describe("applyUnobtainable", () => {
+  it("applyUnobtainable stamps applied_at with its writes", async () => {
+    await setList([entry()]);
+    const before = Date.now();
+    await applyUnobtainable(db);
+    const [list] = await db.select().from(unobtainableList);
+    expect(list.appliedAt).not.toBeNull();
+    expect(list.appliedAt!.getTime()).toBeGreaterThanOrEqual(before);
+  });
+
+  it("does not stamp when there is nothing to apply", async () => {
+    await applyUnobtainable(db);
+    expect(await db.select().from(unobtainableList)).toEqual([]);
+  });
+
   it("marks number minus one and summarises the title", async () => {
     await setList([entry()]);
     await applyUnobtainable(db);

@@ -105,8 +105,7 @@ export async function savePsnTokens(
   db: Db,
   key: Buffer,
   t: PsnTokens,
-  npsso?: string,
-  now: Date = new Date(),
+  npssoSetAt?: Date,
 ): Promise<void> {
   await db
     .update(settings)
@@ -116,7 +115,7 @@ export async function savePsnTokens(
       refreshTokenEnc: encrypt(t.refreshToken, key),
       refreshExpiresAt: t.refreshExpiresAt,
       psnAuthStatus: "valid",
-      ...(npsso === undefined ? {} : { npssoEnc: encrypt(npsso, key), npssoSetAt: now }),
+      ...(npssoSetAt === undefined ? {} : { npssoSetAt }),
     })
     .where(ROW);
 }

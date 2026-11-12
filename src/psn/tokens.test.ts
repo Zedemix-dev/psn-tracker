@@ -1,4 +1,5 @@
 import { randomBytes } from "node:crypto";
+import { sql } from "drizzle-orm";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Db } from "@/src/db/client";
 import { getSettings, loadPsnTokens, savePsnTokens } from "@/src/settings/repo";
@@ -36,14 +37,14 @@ describe("getValidAuth", () => {
   });
 
   it("returns the stored access token when valid for more than 30 minutes", async () => {
-    await savePsnTokens(db, key, stored(31), "n", now);
+    await savePsnTokens(db, key, stored(31), now);
     const gw = createFakePsn({ tokens: renewed });
     expect(await getValidAuth(db, gw, key, now)).toEqual({ accessToken: "stored-access" });
     expect(gw.calls).toEqual([]);
   });
 
   it("refreshes and saves new tokens when the access token expires within 30 minutes", async () => {
-    await savePsnTokens(db, key, stored(30), "n", now);
+    await savePsnTokens(db, key, stored(30), now);
     const gw = createFakePsn({ tokens: renewed });
     expect(await getValidAuth(db, gw, key, now)).toEqual({ accessToken: "new-access" });
     expect(gw.calls).toEqual(["refresh:"]);
@@ -54,7 +55,7 @@ describe("getValidAuth", () => {
   });
 
   it("returns expired and flags the auth status when PSN refuses the refresh", async () => {
-    await savePsnTokens(db, key, stored(-1), "n", now);
+    await savePsnTokens(db, key, stored(-1), now);
     const gw = createFakePsn({ failures: [{ method: "refresh", error: new PsnRefusedError() }] });
     expect(await getValidAuth(db, gw, key, now)).toBe("expired");
     expect((await getSettings(db)).psnAuthStatus).toBe("expired");
@@ -62,7 +63,7 @@ describe("getValidAuth", () => {
 
   it("throws \"Couldn't reach PSN\" and keeps the auth status when PSN is unreachable", async () => {
     for (const error of [new TypeError("fetch failed"), Object.assign(new Error("x"), { cause: { code: "ENOTFOUND" } })]) {
-      await savePsnTokens(db, key, stored(-1), "n", now);
+      await savePsnTokens(db, key, stored(-1), now);
       const gw = createFakePsn({ failures: [{ method: "refresh", error }] });
       await expect(getValidAuth(db, gw, key, now)).rejects.toThrow("Couldn't reach PSN");
       expect((await getSettings(db)).psnAuthStatus).toBe("valid");
@@ -70,7 +71,7 @@ describe("getValidAuth", () => {
   });
 
   it("throws \"PSN token refresh failed (...)\" and keeps the auth status on another error", async () => {
-    await savePsnTokens(db, key, stored(-1), "n", now);
+    await savePsnTokens(db, key, stored(-1), now);
     const gw = createFakePsn({ failures: [{ method: "refresh", error: new SyntaxError("Unexpected token <") }] });
     await expect(getValidAuth(db, gw, key, now)).rejects.toThrow(
       new Error("PSN token refresh failed (Unexpected token <)"),
@@ -79,7 +80,7 @@ describe("getValidAuth", () => {
   });
 
   it("gives up after 20 s when the refresh never answers", async () => {
-    await savePsnTokens(db, key, stored(-1), "n", now);
+    await savePsnTokens(db, key, stored(-1), now);
     vi.useFakeTimers();
     try {
       const hang = { ...createFakePsn(), refresh: () => new Promise<never>(() => {}) };
@@ -93,7 +94,7 @@ describe("getValidAuth", () => {
   });
 
   it("saves tokens from a refresh that answers after the 20 s limit", async () => {
-    await savePsnTokens(db, key, stored(-1), "n", now);
+    await savePsnTokens(db, key, stored(-1), now);
     vi.useFakeTimers();
     try {
       const late = { ...createFakePsn(), refresh: () => new Promise<PsnTokens>((resolve) => setTimeout(() => resolve(renewed), 25_000)) };
@@ -110,7 +111,7 @@ describe("getValidAuth", () => {
   });
 
   it("a refresh that fails after the 20 s limit changes nothing", async () => {
-    await savePsnTokens(db, key, stored(-1), "n", now);
+    await savePsnTokens(db, key, stored(-1), now);
     vi.useFakeTimers();
     try {
       const late = {
@@ -129,7 +130,7 @@ describe("getValidAuth", () => {
   });
 
   it("propagates a failed save of the refreshed tokens without flagging the auth as expired", async () => {
-    await savePsnTokens(db, key, stored(-1), "n", now);
+    await savePsnTokens(db, key, stored(-1), now);
     const gw = createFakePsn({ tokens: renewed });
     // Only the save of the rotated tokens touches the encrypted token columns.
     const failingSave = new Proxy(db, {
@@ -167,6 +168,16 @@ describe("connectWithNpsso", () => {
     const gw = createFakePsn({ tokens: renewed });
     expect(await connectWithNpsso(db, gw, key, "a".repeat(63), now)).toBe("invalid");
     expect(gw.calls).toEqual([]);
+  });
+
+  it("saves the npsso date but never the npsso", async () => {
+    const gw = createFakePsn({ tokens: renewed });
+    expect(await connectWithNpsso(db, gw, key, npsso, now)).toBe("ok");
+    expect((await getSettings(db)).npssoSetAt).toEqual(now);
+    const res = await db.execute(sql`select * from settings`);
+    const row = (res as unknown as { rows: Record<string, unknown>[] }).rows[0];
+    expect(Object.keys(row)).not.toContain("npsso_enc");
+    expect(JSON.stringify(row)).not.toContain(npsso);
   });
 
   it("exchanges the npsso and stores the tokens", async () => {

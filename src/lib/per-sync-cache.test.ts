@@ -1,7 +1,8 @@
 import { eq } from "drizzle-orm";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Db } from "@/src/db/client";
-import { syncRuns } from "@/src/db/schema";
+import { syncRuns, unobtainableList } from "@/src/db/schema";
+import { applyUnobtainable } from "@/src/unobtainable/apply";
 import { createTestDb } from "@/tests/helpers/db";
 import { cachedUntilNextRun } from "./per-sync-cache";
 
@@ -17,6 +18,17 @@ describe("cachedUntilNextRun", () => {
     const b = await cachedUntilNextRun(db, "k", load);
     expect(load).toHaveBeenCalledTimes(1);
     expect(b).toBe(a);
+  });
+
+  it("the cache marker changes when the unobtainable list is applied", async () => {
+    await db.insert(unobtainableList).values({ id: 1, entries: [] });
+    const load = vi.fn(async () => 1);
+    await cachedUntilNextRun(db, "k", load);
+    await cachedUntilNextRun(db, "k", load);
+    expect(load).toHaveBeenCalledTimes(1);
+    await applyUnobtainable(db);
+    await cachedUntilNextRun(db, "k", load);
+    expect(load).toHaveBeenCalledTimes(2);
   });
 
   it("keeps one entry per key", async () => {

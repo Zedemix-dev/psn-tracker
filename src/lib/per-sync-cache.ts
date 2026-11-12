@@ -1,6 +1,6 @@
-import { count, max } from "drizzle-orm";
+import { count, eq, max } from "drizzle-orm";
 import type { Db } from "@/src/db/client";
-import { syncRuns } from "@/src/db/schema";
+import { syncRuns, unobtainableList } from "@/src/db/schema";
 
 type Entry = { marker: string; value: Promise<unknown> };
 
@@ -9,11 +9,12 @@ const caches = new WeakMap<Db, Map<string, Entry>>();
 
 /**
  * The site and the worker share only Postgres, so the "has a run ended since?" marker is read from
- * the database on every call (one cheap query): the latest finished_at over all runs, plus the row count.
+ * the database on every call (one cheap query): the latest finished_at over all runs, plus the row count, plus when the unobtainable list was last applied.
  */
 async function readMarker(db: Db): Promise<string> {
   const [row] = await db.select({ last: max(syncRuns.finishedAt), n: count() }).from(syncRuns);
-  return `${row?.last ? new Date(row.last).getTime() : "none"}:${row?.n ?? 0}`;
+  const [list] = await db.select({ at: unobtainableList.appliedAt }).from(unobtainableList).where(eq(unobtainableList.id, 1));
+  return `${row?.last ? new Date(row.last).getTime() : "none"}:${row?.n ?? 0}:${list?.at ? new Date(list.at).getTime() : "none"}`;
 }
 
 /** Keeps `load`'s value per Db and key until a sync run starts or ends. A failed load is not kept. */
