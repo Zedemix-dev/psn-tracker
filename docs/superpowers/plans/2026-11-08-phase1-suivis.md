@@ -2,7 +2,7 @@
 
 Relevés pendant la phase 1 (relectures par tâche, relecture finale de la branche, vérification avec les vraies données). Aucun n'est bloquant.
 
-**État au 11 novembre 2026** : tous les points ci-dessous sont traités par la spec 19, sur la branche `fix/followups` (en attente de fusion). Chacun est marqué « Réglé » ci-dessous. Restent seulement les vérifications qui ne se font que sur le NAS : elles sont décrites dans `deploy/README.md`, étape 7.
+**État au 12 novembre 2026** : tous les points ci-dessous sont traités par la spec 19, sur la branche `fix/followups`, fusionnée dans `main` le 12 novembre 2026 (PR #19). Chacun est marqué « Réglé » ci-dessous. Restent seulement les vérifications qui ne se font que sur le NAS : elles sont décrites dans `deploy/README.md`, étape 7.
 
 ## À vérifier au premier déploiement sur le NAS
 Toutes ces vérifications sont maintenant décrites, avec ce qu'on doit voir, dans `deploy/README.md`, étape 7 « Premier démarrage » (spec 19.2). Le texte d'origine est gardé ci-dessous.

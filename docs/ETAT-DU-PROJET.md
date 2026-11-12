@@ -1,6 +1,6 @@
 # PSN Tracker : état du projet et feuille de route
 
-*Mis à jour le 12 novembre 2026 : tous les points de suivi de la phase 1 sont réglés sur la branche `fix/followups`. Une fois la Pull Request fusionnée, reste le déploiement sur le NAS.*
+*Mis à jour le 12 novembre 2026 : tous les points de suivi de la phase 1 sont réglés et fusionnés dans `main` (PR #19), CI verte. Reste le déploiement sur le NAS. L'audit `a_reprendre.md` liste d'autres points à reprendre un jour.*
 
 Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un autre PC, commence par le lire. Le fichier `CLAUDE.md` à la racine le demande automatiquement.
 
@@ -32,6 +32,7 @@ Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un aut
 | `docs/superpowers/plans/2026-11-11-stats-touch.md` | Le plan des infobulles au doigt et du défilement de côté (3 tâches). Terminé. |
 | `docs/superpowers/specs/2026-11-11-psn-tracker-maquette-suivis.html` | Maquette validée des compteurs du bandeau sur téléphone (v2, version B). |
 | `docs/superpowers/plans/2026-11-11-followups.md` | Le plan des points de suivi de la phase 1 (14 tâches). Terminé. |
+| `a_reprendre.md` | Audit complet du 11 novembre 2026, écrit par une autre session : points à vérifier ou corriger un jour, par priorité. S1 est corrigé (PR #19), le reste n'est pas commencé. |
 | `deploy/README.md` | Guide pas à pas du déploiement sur le NAS. |
 | `.superpowers/brainstorm/maquettes/` | Toutes les maquettes intermédiaires : `accueil-v1` à `v12`, `jeu-v1` à `v6` (la v6 compare les images de groupe : carrées ou absentes), `platwall-v1` à `v3`, `trophylog-v1` et `v2`, `advisor-v1` à `v4`, `stats-v1` à `v6` (les v5 et v6 : le graphique des années qui défile), `suivis-v1` et `v2` (compteurs du bandeau sur téléphone, tuile des images à coins arrondis). |
 
@@ -164,7 +165,7 @@ Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un aut
 - **À essayer sur un vrai appareil** : l'écran tactile du téléphone et le pavé tactile du Mac, qu'on ne peut pas tester ici.
 - 112 fichiers de tests, 1 009 tests. Aucune migration.
 
-### Points de suivi de la phase 1 (branche `fix/followups`, spec section 19)
+### Points de suivi de la phase 1 (PR #19, fusionnée le 12 novembre 2026, spec section 19)
 Tous les points mis de côté pendant la phase 1 sont réglés, à la demande de l'utilisateur, avant le déploiement :
 - **Robustesse et sécurité** :
   - le site refuse d'être affiché dans une autre page, et les images de `/media` ne peuvent exécuter aucun script ;
@@ -188,15 +189,16 @@ Tous les points mis de côté pendant la phase 1 sont réglés, à la demande de
   - compteurs à 375 et 320 px, « Sync now », le bouton « Hide 0% games » au clavier, le champ npsso ;
   - temps de réponse : 90 à 150 ms pour Games, environ 200 ms pour Stats ;
   - les en-têtes de protection, lus sur le serveur réel : `sandbox` sur les images de `/media` (un défaut trouvé ici, puis corrigé), anti-cadre partout.
-- **Non vérifiable ici** : la CI (sur github.com), et tout ce qui se vérifie sur le NAS (guide, étape 7).
+- **CI verte** sur github.com après la fusion. Reste à vérifier sur le NAS ce que décrit le guide, étape 7.
 - 122 fichiers de tests, 1 121 tests. Migration 0008.
 
 ## 3. Ce qui reste à faire, dans l'ordre
-1. **Déployer sur le NAS** en suivant `deploy/README.md`, une fois la Pull Request des points de suivi fusionnée (décidé le 9 novembre 2026).
+1. **Déployer sur le NAS** en suivant `deploy/README.md` (décidé le 9 novembre 2026). Les points de suivi sont fusionnés (PR #19).
    - Avant tout, vérifier sur github.com (onglet Actions, le dépôt est privé) que la CI de `main` est verte après la dernière fusion, et que l'image a été publiée.
    - Juste après la première publication, donner une seule fois le rôle **Admin** au dépôt dans « Manage Actions access » du package GHCR (étape 1.5).
    - Faire les vérifications du premier déploiement de l'étape 7 du guide. Chacune dit quand la faire et ce qu'on doit voir.
-2. **Points laissés tels quels** : `docs/superpowers/plans/2026-11-08-phase1-suivis.md` marque chaque point réglé ; ce qui reste est un choix assumé (coins transparents de la tuile, spec 19.6).
+2. **Points de l'audit** (`a_reprendre.md`) : gardés pour plus tard, à la demande de l'utilisateur (12 novembre 2026). Rien n'est décidé ni commencé. Le fichier propose un ordre (sa section 9) et une branche `fix/audit`. Il conseille de faire P1 (compresser les réponses JSON), S2 (serveurs de test limités au PC) et R1 (pas de « token expired » sur une panne réseau) avant le déploiement : c'est à l'utilisateur de choisir. Les retouches de design D1 à D7 demandent sa validation avant toute construction.
+3. **Points laissés tels quels** : `docs/superpowers/plans/2026-11-08-phase1-suivis.md` marque chaque point réglé ; ce qui reste est un choix assumé (coins transparents de la tuile, spec 19.6).
 
 ## 4. Comment reprendre dans une nouvelle conversation
 Pour démarrer une page, il suffit de le dire, par exemple « On attaque Trophy Log ». Avec le plugin superpowers installé (voir 6), Claude lance de lui-même le bon processus. Pour être sûr, on peut aussi le demander explicitement : « utilise le skill brainstorming ».

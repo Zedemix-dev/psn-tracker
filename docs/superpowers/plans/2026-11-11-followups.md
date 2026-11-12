@@ -1,6 +1,6 @@
 # PSN Tracker : points de suivi de la phase 1, Implementation Plan
 
-> **Statut :** terminé le 12 novembre 2026, tâches 1 à 14 et une vague de corrections après la relecture finale, sur la branche `fix/followups`. Les cases ne sont pas cochées : la progression se lit dans `git log` et dans `docs/ETAT-DU-PROJET.md`.
+> **Statut :** terminé le 12 novembre 2026, tâches 1 à 14 et une vague de corrections après la relecture finale, sur la branche `fix/followups`, fusionnée dans `main` le 12 novembre 2026 (PR #19). Les cases ne sont pas cochées : la progression se lit dans `git log` et dans `docs/ETAT-DU-PROJET.md`.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 

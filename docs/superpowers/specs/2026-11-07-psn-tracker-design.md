@@ -585,7 +585,8 @@ Il doit aussi vérifier en pratique la détection des nouveaux DLC (6.4).
 - **Page Trophy Advisor :** cadrée, maquette validée, construite et vérifiée avec les vraies données le 11 novembre 2026, décrite en 17. Fusionnée dans `main` le 11 novembre 2026 (PR #13).
 - **Page Stats :** cadrée, maquette validée, construite et vérifiée avec les vraies données le 11 novembre 2026, décrite en 18. Fusionnée dans `main` le 11 novembre 2026 (PR #15).
 - **Stats au doigt et défilement des années :** demandé le 11 novembre 2026 après la fusion, maquette validée le même jour, décrit en 18.14. Construit et vérifié avec les vraies données le 11 novembre 2026. Fusionné dans `main` le 11 novembre 2026 (PR #17).
-- **Points de suivi de la phase 1 :** tous traités avant le déploiement sur le NAS, à la demande de l'utilisateur, cadrés le 11 novembre 2026, décrits en 19.
+- **Points de suivi de la phase 1 :** tous traités avant le déploiement sur le NAS, à la demande de l'utilisateur, cadrés le 11 novembre 2026, décrits en 19. Construits et vérifiés avec les vraies données, fusionnés dans `main` le 12 novembre 2026 (PR #19).
+- **[décidé, 12 novembre 2026] Audit du 11 novembre 2026 :** le bilan `a_reprendre.md`, écrit par une autre session, reste dans le dépôt : ses points devront être vérifiés ou corrigés un jour. Son point S1 (`sandbox` de `/media`) est corrigé dans la PR #19. Le reste n'est ni décidé ni commencé : chaque point retenu passera par le processus habituel, et les retouches de design par une validation de l'utilisateur.
 
 ## 14. Jeux aux trophées non obtenables
 **[décidé, cadrage du 9 novembre 2026]** Fonctionnalité construite à part, sur la branche `feat/unobtainable`. Maquette validée le 9 novembre 2026 : `docs/superpowers/specs/2026-11-09-psn-tracker-maquette-nonobt.html`, référence pour l'aspect et le CSS. Les choix que l'utilisateur n'a pas faits lui-même sont marqués **[choix de Claude]**.
@@ -1300,7 +1301,7 @@ Si une synchro a changé des trophées depuis 18.3, recalculer les chiffres en S
 - **Non vérifiable ici** : un vrai écran tactile et le pavé tactile d'un Mac. L'utilisateur les essaie sur ses appareils.
 
 ## 19. Points de suivi de la phase 1
-**[décidé, cadrage du 11 novembre 2026]** L'utilisateur a demandé de traiter tous les points mis de côté dans `docs/superpowers/plans/2026-11-08-phase1-suivis.md`, avant le déploiement sur le NAS : robustesse et sécurité, performance, interface, tuile carrée, et la section « Divers ». Construit sur la branche `fix/followups`. Maquette validée le 11 novembre 2026 (v2), pour les compteurs du bandeau : `docs/superpowers/specs/2026-11-11-psn-tracker-maquette-suivis.html`. Les choix que l'utilisateur n'a pas faits lui-même sont marqués **[choix de Claude]** ; il a validé chaque partie sur description.
+**[décidé, cadrage du 11 novembre 2026]** L'utilisateur a demandé de traiter tous les points mis de côté dans `docs/superpowers/plans/2026-11-08-phase1-suivis.md`, avant le déploiement sur le NAS : robustesse et sécurité, performance, interface, tuile carrée, et la section « Divers ». Construit sur la branche `fix/followups`, fusionné dans `main` le 12 novembre 2026 (PR #19). Maquette validée le 11 novembre 2026 (v2), pour les compteurs du bandeau : `docs/superpowers/specs/2026-11-11-psn-tracker-maquette-suivis.html`. Les choix que l'utilisateur n'a pas faits lui-même sont marqués **[choix de Claude]** ; il a validé chaque partie sur description.
 
 ### 19.1 Intention
 Le site va passer sur le NAS. Ces points ne bloquaient rien, mais certains se verraient au premier déploiement (démarrage, en-têtes, images qui s'accumulent), et les autres sont de petits défauts relevés pendant la construction. L'utilisateur veut partir d'une base propre.
