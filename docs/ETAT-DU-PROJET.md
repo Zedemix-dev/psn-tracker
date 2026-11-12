@@ -1,6 +1,6 @@
 # PSN Tracker : état du projet et feuille de route
 
-*Mis à jour le 11 novembre 2026 : les retouches de la page Stats (infobulles au doigt, défilement de côté) sont fusionnées dans `main` (PR #17). Reste le déploiement sur le NAS.*
+*Mis à jour le 12 novembre 2026 : tous les points de suivi de la phase 1 sont réglés sur la branche `fix/followups`. Une fois la Pull Request fusionnée, reste le déploiement sur le NAS.*
 
 Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un autre PC, commence par le lire. Le fichier `CLAUDE.md` à la racine le demande automatiquement.
 
@@ -30,8 +30,10 @@ Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un aut
 | `docs/superpowers/plans/2026-11-11-stats.md` | Le plan de la page Stats (tâches 1 à 7, dont la 7 ajoutée après la vérification). Terminé. |
 | `docs/superpowers/specs/2026-11-11-psn-tracker-maquette-stats-defilement.html` | Maquette validée du graphique des années qui défile (v6). |
 | `docs/superpowers/plans/2026-11-11-stats-touch.md` | Le plan des infobulles au doigt et du défilement de côté (3 tâches). Terminé. |
+| `docs/superpowers/specs/2026-11-11-psn-tracker-maquette-suivis.html` | Maquette validée des compteurs du bandeau sur téléphone (v2, version B). |
+| `docs/superpowers/plans/2026-11-11-followups.md` | Le plan des points de suivi de la phase 1 (14 tâches). Terminé. |
 | `deploy/README.md` | Guide pas à pas du déploiement sur le NAS. |
-| `.superpowers/brainstorm/maquettes/` | Toutes les maquettes intermédiaires : `accueil-v1` à `v12`, `jeu-v1` à `v6` (la v6 compare les images de groupe : carrées ou absentes), `platwall-v1` à `v3`, `trophylog-v1` et `v2`, `advisor-v1` à `v4`, `stats-v1` à `v6` (les v5 et v6 : le graphique des années qui défile). |
+| `.superpowers/brainstorm/maquettes/` | Toutes les maquettes intermédiaires : `accueil-v1` à `v12`, `jeu-v1` à `v6` (la v6 compare les images de groupe : carrées ou absentes), `platwall-v1` à `v3`, `trophylog-v1` et `v2`, `advisor-v1` à `v4`, `stats-v1` à `v6` (les v5 et v6 : le graphique des années qui défile), `suivis-v1` et `v2` (compteurs du bandeau sur téléphone, tuile des images à coins arrondis). |
 
 ## 2. Ce qui est fait (dans `main`)
 
@@ -162,14 +164,39 @@ Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un aut
 - **À essayer sur un vrai appareil** : l'écran tactile du téléphone et le pavé tactile du Mac, qu'on ne peut pas tester ici.
 - 112 fichiers de tests, 1 009 tests. Aucune migration.
 
+### Points de suivi de la phase 1 (branche `fix/followups`, spec section 19)
+Tous les points mis de côté pendant la phase 1 sont réglés, à la demande de l'utilisateur, avant le déploiement :
+- **Robustesse et sécurité** :
+  - le site refuse d'être affiché dans une autre page, et les images de `/media` ne peuvent exécuter aucun script ;
+  - une page d'attente « Updating… » s'affiche tant que le worker n'a pas mis la base à jour, au lieu d'une erreur ;
+  - « Couldn't reach PSN. Try again. » quand le PSN est injoignable, et le champ npsso garde le texte collé après une erreur ;
+  - une demande « Sync now » vit jusqu'à la fin de la synchro, abandonnée après 3 échecs ;
+  - les définitions sont rechargées si la langue PSN change, les jeux sans liste sont revérifiés chaque jour, une rareté vide du PSN n'efface plus une valeur connue ;
+  - la CI vérifie que le worker démarre depuis son paquet final.
+- **Performance** : la table des images et les milestones restent en mémoire jusqu'à la fin de la synchro suivante ; après une synchro sans échec, le worker supprime les images que plus rien n'utilise.
+- **Interface** :
+  - « Sync now » ne réapparaît plus avant la fin de la synchro ;
+  - le carrousel n'est en pause que tant que le doigt est posé ;
+  - la liste des jeux ne s'arrête plus sur une page de doublons, et « Hide 0% games » garde le focus du clavier ;
+  - sur téléphone, le total des trophées prend toute la largeur et les 4 types sont en dessous (maquette v2, version B).
+- **Tuile** : la couleur est calculée par le worker et affichée dès le premier rendu. La règle ne change pas : les 3 images à coins arrondis ne sont affichées nulle part sur une tuile.
+- **Guide de déploiement** : les vérifications du premier déploiement sont à l'étape 7 de `deploy/README.md`, chacune avec le moment où la faire.
+- **Migration 0008** : quatre colonnes, appliquées par le worker à son démarrage.
+- **Vérifié avec les vraies données** le 11 novembre 2026, sur le build de production :
+  - la page d'attente avant la migration, puis le site normal une fois le worker démarré ;
+  - une vraie synchro : couleur de tuile de 13 357 images calculée, aucune image supprimée à tort, aucune image manquante sur les pages ;
+  - compteurs à 375 et 320 px, « Sync now », le bouton « Hide 0% games » au clavier, le champ npsso ;
+  - temps de réponse : 90 à 150 ms pour Games, environ 200 ms pour Stats ;
+  - les en-têtes de protection, lus sur le serveur réel : `sandbox` sur les images de `/media` (un défaut trouvé ici, puis corrigé), anti-cadre partout.
+- **Non vérifiable ici** : la CI (sur github.com), et tout ce qui se vérifie sur le NAS (guide, étape 7).
+- 122 fichiers de tests, 1 121 tests. Migration 0008.
+
 ## 3. Ce qui reste à faire, dans l'ordre
-1. **Déployer sur le NAS** en suivant `deploy/README.md` : toutes les pages prévues sont fusionnées (décidé le 9 novembre 2026). Une fois le site déployé, essayer la page Stats sur le téléphone et sur le pavé tactile du Mac (spec 18.14).
+1. **Déployer sur le NAS** en suivant `deploy/README.md`, une fois la Pull Request des points de suivi fusionnée (décidé le 9 novembre 2026).
    - Avant tout, vérifier sur github.com (onglet Actions, le dépôt est privé) que la CI de `main` est verte après la dernière fusion, et que l'image a été publiée.
    - Juste après la première publication, donner une seule fois le rôle **Admin** au dépôt dans « Manage Actions access » du package GHCR (étape 1.5).
-   - Faire les vérifications du premier déploiement listées dans `docs/superpowers/plans/2026-11-08-phase1-suivis.md`.
-   - À la première synchro de cette version, toutes les listes PS5 sont rechargées une fois (migration 0005), ce qui la rallonge de quelques minutes.
-   - Au premier démarrage du worker, la migration 0006 s'applique et la liste des trophées non obtenables se télécharge. Vérifier dans Settings que le bloc « Unobtainable trophies » indique « Up to date » et « 5 of yours ».
-2. **Points de suivi** : à piocher dans `docs/superpowers/plans/2026-11-08-phase1-suivis.md` quand une page touche le même code.
+   - Faire les vérifications du premier déploiement de l'étape 7 du guide. Chacune dit quand la faire et ce qu'on doit voir.
+2. **Points laissés tels quels** : `docs/superpowers/plans/2026-11-08-phase1-suivis.md` marque chaque point réglé ; ce qui reste est un choix assumé (coins transparents de la tuile, spec 19.6).
 
 ## 4. Comment reprendre dans une nouvelle conversation
 Pour démarrer une page, il suffit de le dire, par exemple « On attaque Trophy Log ». Avec le plugin superpowers installé (voir 6), Claude lance de lui-même le bon processus. Pour être sûr, on peut aussi le demander explicitement : « utilise le skill brainstorming ».
