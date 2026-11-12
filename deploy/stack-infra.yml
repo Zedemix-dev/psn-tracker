@@ -4,6 +4,7 @@ services:
   postgres:
     image: postgres:16-alpine
     restart: unless-stopped
+    mem_limit: 512m
     environment:
       POSTGRES_USER: psn
       POSTGRES_DB: psn
@@ -21,6 +22,7 @@ services:
   nginx:
     image: nginx:1.27-alpine
     restart: unless-stopped
+    mem_limit: 64m
     ports:
       # Localhost only: the DSM reverse proxy reaches nginx locally; LAN clients cannot forge X-Forwarded-For.
       - "127.0.0.1:8080:80"
