@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
-import { beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Db } from "@/src/db/client";
 import { sessions } from "@/src/db/schema";
 import { createTestDb } from "@/tests/helpers/db";
@@ -102,6 +102,16 @@ describe("login limiter", () => {
     limiter.reset("1.1.1.1");
     expect(limiter.check("1.1.1.1", t)).toBe(true);
   });
+
+  it("the limiter forgets addresses whose attempts are all older than the window", () => {
+    const windowMs = 15 * 60_000;
+    const limiter = createLoginLimiter({ max: 5, windowMs });
+    limiter.attempt("a", 0);
+    limiter.attempt("b", windowMs + 1);
+    expect(limiter.size()).toBe(1);
+    limiter.attempt("c", windowMs + 1);
+    expect(limiter.size()).toBe(2);
+  });
 });
 
 describe("verifyLogin", () => {
@@ -118,5 +128,19 @@ describe("verifyLogin", () => {
   });
   it("refuses a wrong password", async () => {
     expect(await verifyLogin("admin", "nope", cfg)).toBe(false);
+  });
+
+  describe("credential length cap", () => {
+    afterEach(() => vi.restoreAllMocks());
+
+    it("verifyLogin skips bcrypt beyond 256 characters", async () => {
+      const compare = vi.spyOn(bcrypt, "compare");
+      expect(await verifyLogin("admin", "x".repeat(257), cfg)).toBe(false);
+      expect(compare).not.toHaveBeenCalled();
+      expect(await verifyLogin("a".repeat(257), "secret", cfg)).toBe(false);
+      expect(compare).not.toHaveBeenCalled();
+      expect(await verifyLogin("admin", "x".repeat(256), cfg)).toBe(false);
+      expect(compare).toHaveBeenCalledTimes(1);
+    });
   });
 });
