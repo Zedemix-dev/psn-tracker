@@ -4,7 +4,7 @@ ARG SHARP_VERSION=0.35.5
 
 # ---- build: install, build the app, bundle the worker (tests run in the CI test job) ----
 # node:22-alpine
-FROM node:22-alpine@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a AS build
+FROM node:25-alpine@sha256:bdf2cca6fe3dabd014ea60163eca3f0f7015fbd5c7ee1b0e9ccb4ced6eb02ef4 AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
@@ -17,14 +17,14 @@ RUN npx esbuild src/worker/index.ts --bundle --platform=node --target=node22 \
 
 # ---- worker-deps: sharp with its musl native binary, for the worker bundle ----
 # node:22-alpine
-FROM node:22-alpine@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a AS worker-deps
+FROM node:25-alpine@sha256:bdf2cca6fe3dabd014ea60163eca3f0f7015fbd5c7ee1b0e9ccb4ced6eb02ef4 AS worker-deps
 ARG SHARP_VERSION
 WORKDIR /deps
 RUN npm install --omit=dev --no-audit --no-fund sharp@${SHARP_VERSION}
 
 # ---- runtime: one image, two commands (app: default; worker: node dist/worker.js) ----
 # node:22-alpine
-FROM node:22-alpine@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a AS runtime
+FROM node:25-alpine@sha256:bdf2cca6fe3dabd014ea60163eca3f0f7015fbd5c7ee1b0e9ccb4ced6eb02ef4 AS runtime
 WORKDIR /app
 ENV NODE_ENV=production \
     PORT=3000 \
