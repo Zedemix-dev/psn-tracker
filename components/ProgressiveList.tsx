@@ -137,6 +137,7 @@ export function ProgressiveList<T extends { key: string }>({
       const seen = new Set(prev.map((r) => r.key));
       return [...prev, ...chunk.filter((r) => !seen.has(r.key))];
     });
+    // eslint-disable-next-line react-hooks/immutability -- pump schedules itself on the next frame; the callback is only called after it is defined
     if (queue.current.length > 0) chunkFrame.current = requestAnimationFrame(pump);
     else finishQueue();
   }, []);
@@ -158,6 +159,7 @@ export function ProgressiveList<T extends { key: string }>({
 
   // The "Show all" slot lives in the server-rendered header; look it up once mounted.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- the slot is in the server-rendered header: it can only be read after mount, to keep hydration clean
     setSlot(document.getElementById(slotId));
   }, [slotId]);
 
@@ -169,6 +171,7 @@ export function ProgressiveList<T extends { key: string }>({
     if (!snap) return;
     let cancelled = false;
     busy.current = true;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- restored after mount on purpose, so the server-rendered first page still hydrates cleanly
     setLoadingAll(true); // "Show all" reads Loading… (disabled) until the rows are back
     (async () => {
       try {

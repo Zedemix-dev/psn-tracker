@@ -14,7 +14,7 @@ export function MilestonesPanel({ rows, now }: { rows: MilestoneRow[]; now: Date
       <ul className="tlist">
         {rows.map(({ milestone: { label, trophy }, iconSrc }) => (
           <li key={`${label}|${trophy.titleId}|${trophy.trophyId}`} title={trophy.name}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
+            {/* eslint-disable-next-line @next/next/no-img-element -- images are already cached and sized by the app, no next/image optimizer wanted */}
             <img src={iconSrc} alt="" loading="lazy" />
             <div>
               <div className="n">{trophy.name}</div>

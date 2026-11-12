@@ -7,7 +7,7 @@ export function TrophyRows({ items }: { items: TrophyItem[] }) {
     <ul className="tlist typed">
       {items.map((t) => (
         <li key={t.key} title={t.name}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
+          {/* eslint-disable-next-line @next/next/no-img-element -- images are already cached and sized by the app, no next/image optimizer wanted */}
           <img src={t.iconSrc} alt="" loading="lazy" />
           <div>
             <div className="n">{t.name}</div>

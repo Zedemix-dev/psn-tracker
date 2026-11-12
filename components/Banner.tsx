@@ -39,7 +39,7 @@ export function Banner({
         </div>
       )}
       {logo && (
-        // eslint-disable-next-line @next/next/no-img-element
+        // eslint-disable-next-line @next/next/no-img-element -- images are already cached and sized by the app, no next/image optimizer wanted
         <img className="hero-logo" src={logo.src} alt={logo.alt} />
       )}
     </div>

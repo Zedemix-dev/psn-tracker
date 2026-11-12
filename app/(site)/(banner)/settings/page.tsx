@@ -24,6 +24,7 @@ export default async function SettingsPage() {
     getPageBanner(db),
     getUnobtainableStatus(db),
   ]);
+  // eslint-disable-next-line react-hooks/purity -- async Server Component, rendered once per request: the age is read at request time on purpose
   const age = s.npssoSetAt ? Math.floor((Date.now() - s.npssoSetAt.getTime()) / DAY_MS) : null;
 
   return (

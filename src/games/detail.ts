@@ -13,7 +13,7 @@ import {
 import { gameStatus, progressRank, type GameRank, type GameStatus } from "@/src/games/row";
 import { loadSiblingIndex, withSiblings } from "@/src/games/siblings";
 import { guideSearchName, powerPyxRoadmapUrl, psnProfilesGuidesUrl } from "@/src/lib/guide-links";
-import { formatCounter, formatDate, formatInt, formatPercent, formatPlayTime, formatTime } from "@/src/lib/format";
+import { formatCounter, formatDate, formatPercent, formatPlayTime, formatTime } from "@/src/lib/format";
 import { rarityTier, type RarityTier } from "@/src/lib/rarity";
 import { type ImageMap, mediaSrc, tileBgOf } from "@/src/sync/images";
 import { unobtainableLabel, unobtainableSituation } from "@/src/unobtainable/labels";

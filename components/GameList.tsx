@@ -40,6 +40,7 @@ export function GameList({
 
   // The "Show all" slot lives in the server-rendered header; look it up once mounted.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- the slot is in the server-rendered header: it can only be read after mount, to keep hydration clean
     setSlot(document.getElementById(SHOW_ALL_SLOT_ID));
   }, []);
 
@@ -49,6 +50,7 @@ export function GameList({
     const snap = takeListSnapshot(snapshotKey);
     if (!snap) return;
     pendingScroll.current = snap.scrollY;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- restored after mount on purpose, so the server-rendered first page still hydrates cleanly
     setItems(snap.items);
     setTotal(snap.total);
     setOffset(snap.items.length);

@@ -140,7 +140,7 @@ export function TrophyCarousel({ trophies }: { trophies: CarouselTrophy[] }) {
               setCycle((c) => c + 1);
             }}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
+            {/* eslint-disable-next-line @next/next/no-img-element -- images are already cached and sized by the app, no next/image optimizer wanted */}
             <img src={t.iconSrc} alt={t.name} />
             {on && (
               <>

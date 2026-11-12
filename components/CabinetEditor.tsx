@@ -12,7 +12,7 @@ const DEBOUNCE = 300;
 function Row({ t, children }: { t: TrophyItem; children: React.ReactNode }) {
   return (
     <li>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
+      {/* eslint-disable-next-line @next/next/no-img-element -- images are already cached and sized by the app, no next/image optimizer wanted */}
       <img src={t.iconSrc} alt="" />
       <div className="ce-text">
         <div className="n">{t.name}</div>

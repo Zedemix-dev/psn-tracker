@@ -17,7 +17,7 @@ export function TrophyTypeIcon({
   className?: string;
 }) {
   return (
-    // eslint-disable-next-line @next/next/no-img-element
+    // eslint-disable-next-line @next/next/no-img-element -- images are already cached and sized by the app, no next/image optimizer wanted
     <img
       src={`/icons/40-${type}.png`}
       alt={LABEL[type]}

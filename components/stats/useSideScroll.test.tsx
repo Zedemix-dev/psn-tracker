@@ -44,6 +44,7 @@ function Probe() {
   return (
     <>
       <button onClick={(e) => tip.show(e as never, { title: "T", rows: [] })}>open</button>
+      {/* eslint-disable-next-line react-hooks/refs -- side.ref is a callback ref (it stores the node in state), not a ref object read during render */}
       <div data-testid="s" ref={side.ref} className={side.className} {...side.handlers} />
     </>
   );
@@ -196,6 +197,7 @@ describe("useSideScroll", () => {
       return (
         <>
           <button onClick={() => setOn(true)}>show</button>
+          {/* eslint-disable-next-line react-hooks/refs -- side.ref is a callback ref (it stores the node in state), not a ref object read during render */}
           {on && <div data-testid="late" ref={side.ref} className={side.className} {...side.handlers} />}
         </>
       );
