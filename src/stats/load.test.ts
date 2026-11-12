@@ -36,15 +36,17 @@ describe("getStatsData", () => {
     spy.mockRestore();
   });
 
-  it("reads the image map once, or not at all when the page hands it over", async () => {
+  it("always computes with the current cached image map, never one handed over", async () => {
     const spy = vi.spyOn(images, "loadImageMap");
     await insertTitle(db, { id: "A", progress: 100 });
     await getStatsData(db, { hideZero: false, now: NOW });
     expect(spy).toHaveBeenCalledTimes(1);
-    spy.mockClear();
-    // hideZero differs, so this is another cache key: the data is computed again, and must not read the image map.
-    await getStatsData(db, { hideZero: true, now: NOW, imageMap: new Map() });
-    expect(spy).not.toHaveBeenCalled();
+    // Same key: served from the cache, nothing read.
+    await getStatsData(db, { hideZero: false, now: NOW });
+    expect(spy).toHaveBeenCalledTimes(1);
+    // hideZero differs, so this is another cache key: computed again, with the image map read by the loader itself.
+    await getStatsData(db, { hideZero: true, now: NOW });
+    expect(spy).toHaveBeenCalledTimes(2);
     spy.mockRestore();
   });
 

@@ -5,7 +5,7 @@ import { loadSiblingIndex } from "@/src/games/siblings";
 import { formatDateAndTime, formatPercent, parisDateParts } from "@/src/lib/format";
 import { cachedUntilNextRun } from "@/src/lib/per-sync-cache";
 import { rarityTier, type RarityTier } from "@/src/lib/rarity";
-import { type ImageMap, loadImageMap, mediaSrc } from "@/src/sync/images";
+import { loadImageMap, mediaSrc } from "@/src/sync/images";
 import { buildGameCharts, type GameCharts } from "./game-charts";
 import { levelCrossings } from "./level-history";
 import { buildTrophyCharts, type TrophyCharts } from "./trophy-charts";
@@ -41,16 +41,16 @@ function parisDay(d: Date): string {
 }
 
 /** Kept until the next run and until midnight in Paris; the result is shared, so callers must not modify it. */
-export function getStatsData(db: Db, opts: { hideZero: boolean; now?: Date; imageMap?: ImageMap }): Promise<StatsData> {
+export function getStatsData(db: Db, opts: { hideZero: boolean; now?: Date }): Promise<StatsData> {
   const now = opts.now ?? new Date();
   return cachedUntilNextRun(db, `stats:${opts.hideZero}`, () => computeStatsData(db, { ...opts, now }), parisDay(now));
 }
 
-async function computeStatsData(db: Db, opts: { hideZero: boolean; now: Date; imageMap?: ImageMap }): Promise<StatsData> {
+async function computeStatsData(db: Db, opts: { hideZero: boolean; now: Date }): Promise<StatsData> {
   const [earned, siblings, imageMap] = await Promise.all([
     getAllEarned(db),
     loadSiblingIndex(db),
-    opts.imageMap ?? loadImageMap(db),
+    loadImageMap(db),
   ]);
 
   const games = [...siblings.values()].flat().filter((t) => !(opts.hideZero && t.progress === 0));
