@@ -93,9 +93,9 @@ Ces points ne se vérifient que sur le NAS. Chaque point dit à quel moment le f
 6. **Première synchro de cette version.** *Quand : une fois la première synchro terminée.*
    - Ce qu'on doit voir : toutes les listes de trophées PS5 sont rechargées une fois (migration 0005), donc la synchro est plus longue que d'habitude.
    - Dans **Settings**, la carte « Unobtainable trophies » montre « Up to date » et « 5 of yours » (migration 0006).
-   - Dans les logs du conteneur `worker` (Portainer → Containers → `worker` → Logs), une synchro se termine par deux lignes sur les images :
+   - Dans les logs du conteneur `worker` (Portainer → Containers → `worker` → Logs), une synchro se termine par une ou deux lignes sur les images :
      - `[worker] images: N downloaded, N failed, N thumbnails, N tile colours` (téléchargées, en échec, miniatures créées, couleurs de tuile calculées). Les couleurs de tuile des images déjà téléchargées sont remplies à cette première synchro (migration 0008) ;
-     - `[worker] images: N removed` (images inutilisées supprimées). Cette ligne n'apparaît qu'après une synchro sans aucun échec : après une synchro partielle ou en échec, le nettoyage ne tourne pas, c'est voulu.
+     - `[worker] images: N removed` (images inutilisées supprimées). Cette ligne n'apparaît qu'après une synchro sans aucun échec : après une synchro partielle ou en échec, le nettoyage ne tourne pas, c'est voulu, et c'est alors la ligne `[worker] images: cleanup skipped (N failures)` qui la remplace.
    - Aucune image ne doit manquer ensuite sur Games, une page de jeu, Plat Wall, Trophy Log, Trophy Advisor et Stats.
 7. **Arrêt propre du worker.** *Quand : pendant la synchro suivante, ou en en déclenchant une avec « Sync now ».* Dès que **Sync history** montre un run en cours, arrêtez le conteneur `worker` dans Portainer (`docker stop`), puis relancez-le.
    - Ce qu'on doit voir : soit le log montre la fin de la synchro en cours, soit le run apparaît comme « Interrupted » dans **Sync history** au redémarrage.

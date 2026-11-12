@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import sharp from "sharp";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { computeTileBg, makeThumb } from "@/src/sync/thumbs";
 
 let dir: string;
@@ -83,6 +83,17 @@ describe("computeTileBg", () => {
 
   it("returns null for a square image", async () => {
     expect(await computeTileBg(await write("sq.png", await rect(20, 20, "#102030").png().toBuffer()))).toBeNull();
+  });
+
+  it("does not decode a square image", async () => {
+    const file = await write("sq2.png", await rect(20, 20, "#102030").png().toBuffer());
+    const raw = vi.spyOn(sharp.prototype, "raw");
+    try {
+      expect(await computeTileBg(file)).toBeNull();
+      expect(raw).not.toHaveBeenCalled();
+    } finally {
+      raw.mockRestore();
+    }
   });
 
   it("returns null for an SVG without loading it", async () => {

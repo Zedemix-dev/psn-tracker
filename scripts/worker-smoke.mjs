@@ -12,6 +12,7 @@ const MARKER = "[worker] started";
 const child = spawn(process.execPath, [file], { stdio: ["ignore", "pipe", "pipe"] });
 let output = "";
 let settled = false;
+let stopping = false;
 
 function finish(code, message) {
   if (settled) return;
@@ -27,9 +28,10 @@ function finish(code, message) {
 
 const onData = (chunk) => {
   output += chunk.toString();
-  if (output.includes(MARKER)) {
+  if (!stopping && output.includes(MARKER)) {
+    stopping = true;
     // Ask politely first so the worker logs its stop, then make sure it is gone.
-    child.once("exit", () => finish(0, "ok - worker started and was stopped"));
+    child.once("close", () => finish(0, "ok - worker started and was stopped"));
     child.kill("SIGTERM");
     setTimeout(() => finish(0, "ok - worker started (killed after grace period)"), 5000).unref();
   }
@@ -40,7 +42,8 @@ child.on("error", (err) => {
   output += String(err);
   finish(1, "not ok - could not start the worker");
 });
-child.on("exit", (code, signal) => {
+// "close" (not "exit"): it fires after stdout/stderr are drained, so the printed output is complete.
+child.on("close", (code, signal) => {
   if (!output.includes(MARKER)) finish(1, `not ok - worker exited early (code ${code}, signal ${signal})`);
 });
 const timer = setTimeout(

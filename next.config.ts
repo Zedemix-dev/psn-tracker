@@ -1,5 +1,5 @@
 import type { NextConfig } from "next";
-import { SITE_HEADERS } from "./src/lib/security-headers";
+import { MEDIA_CSP, SITE_HEADERS } from "./src/lib/security-headers";
 
 const nextConfig: NextConfig = {
   output: "standalone",
@@ -13,7 +13,12 @@ const nextConfig: NextConfig = {
   // request bodies too (default 10 MB), so it needs the same limit or the upload is truncated.
   // Through headers() (not proxy.ts): the proxy matcher skips the login page, _next/static and the favicon.
   async headers() {
-    return [{ source: "/:path*", headers: SITE_HEADERS }];
+    // Next applies the rules in order and the last one wins per key: the media rule comes second
+    // so /media keeps its sandbox CSP instead of the site-wide frame-ancestors one.
+    return [
+      { source: "/:path*", headers: SITE_HEADERS },
+      { source: "/media/:path*", headers: [{ key: "Content-Security-Policy", value: MEDIA_CSP }] },
+    ];
   },
   experimental: { serverActions: { bodySizeLimit: "11mb" }, proxyClientMaxBodySize: "11mb" },
 };

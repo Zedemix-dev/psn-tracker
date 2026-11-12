@@ -124,6 +124,15 @@ describe("settings repo", () => {
       expect(await peekSyncRequest(db)).toEqual(T);
     });
 
+    it("a new request resets the failure count", async () => {
+      await requestSync(db, T);
+      await failSyncRequest(db, T);
+      await failSyncRequest(db, T);
+      expect(await failures()).toBe(2);
+      await requestSync(db, new Date("2026-11-07T12:00:00Z"));
+      expect(await failures()).toBe(0);
+    });
+
     it("clears only a request that still holds the seen value, and resets the failures", async () => {
       await requestSync(db, T);
       await failSyncRequest(db, T);

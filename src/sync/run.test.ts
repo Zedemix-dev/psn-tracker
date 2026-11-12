@@ -319,9 +319,15 @@ describe("runSync unused images", () => {
     expect(await orphanFile()).toBe(false);
   });
 
-  it("removes nothing when a title was skipped", async () => {
+  it("removes nothing when a title was skipped, and says so", async () => {
     await seedOrphan();
-    await runSync(db, fixture(ids[1]), cfg, "manual", now, deps);
+    const log = vi.spyOn(console, "log").mockImplementation(() => {});
+    try {
+      await runSync(db, fixture(ids[1]), cfg, "manual", now, deps);
+      expect(log).toHaveBeenCalledWith("[worker] images: cleanup skipped (1 failures)");
+    } finally {
+      log.mockRestore();
+    }
     expect(await db.select().from(images).where(eq(images.url, ORPHAN))).toHaveLength(1);
     expect(await orphanFile()).toBe(true);
   });

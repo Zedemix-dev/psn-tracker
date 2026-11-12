@@ -40,6 +40,23 @@ describe("isDbReady", () => {
     expect(await isDbReady(db)).toBe(false);
   });
 
+  it("logs each distinct error once, not on every call", async () => {
+    const db = await createTestDb();
+    const err = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      vi.spyOn(db, "execute").mockRejectedValue(new Error("password authentication failed for user x"));
+      expect(await isDbReady(db)).toBe(false);
+      expect(await isDbReady(db)).toBe(false);
+      expect(err).toHaveBeenCalledTimes(1);
+      expect(String(err.mock.calls[0].join(" "))).toContain("password authentication failed for user x");
+      vi.spyOn(db, "execute").mockRejectedValue(new Error("connection refused"));
+      expect(await isDbReady(db)).toBe(false);
+      expect(err).toHaveBeenCalledTimes(2);
+    } finally {
+      err.mockRestore();
+    }
+  });
+
   it("stops querying once ready", async () => {
     const db = await createTestDb();
     expect(await isDbReady(db)).toBe(true);

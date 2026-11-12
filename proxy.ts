@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { SESSION_COOKIE, sessionCookieOptions } from "@/src/auth/cookie";
 import { getDb } from "@/src/db/client";
-import { isDbReady } from "@/src/db/readiness";
+import { isDbReady, logOnce } from "@/src/db/readiness";
 
 const WAIT_PAGE = `<!doctype html>
 <html lang="en">
@@ -21,7 +21,8 @@ const WAIT_PAGE = `<!doctype html>
 async function dbReady(): Promise<boolean> {
   try {
     return await isDbReady(await getDb());
-  } catch {
+  } catch (error) {
+    logOnce(error);
     return false;
   }
 }

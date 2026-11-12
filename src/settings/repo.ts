@@ -56,7 +56,7 @@ export async function setBanner(db: Db, path: string | null, posY: number): Prom
 }
 
 export async function requestSync(db: Db, now: Date): Promise<void> {
-  await db.update(settings).set({ syncRequestedAt: now }).where(ROW);
+  await db.update(settings).set({ syncRequestedAt: now, syncRequestFailures: 0 }).where(ROW);
 }
 
 export async function saveUnobtainableUrl(db: Db, url: string, now: Date): Promise<void> {

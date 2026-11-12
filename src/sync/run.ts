@@ -216,6 +216,8 @@ export async function runSync(
     // Only after a clean run: a skipped title may still need images its rows do not list yet.
     if (failures.length === 0) {
       console.log(`[worker] images: ${await pruneImages(db, cfg.mediaDir)} removed`);
+    } else {
+      console.log(`[worker] images: cleanup skipped (${failures.length} failures)`);
     }
   });
 }

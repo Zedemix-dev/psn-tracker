@@ -92,6 +92,8 @@ svg.ico{width:14px;height:14px;flex:none}
   /* Bold digits are wide: keep "20,927 h" inside a half-width tile down to 320 px phones */
   .stat .value{font-size:24px}
 }
+/* 320 px phones: the "Platinum" label (icon + text) is 1 px wider than its tile */
+@media (max-width:360px){.counts{gap:4px} .counts .count span{gap:2px}}
 @media (prefers-reduced-motion:reduce){.btn-sync.busy svg{animation:none}}
 
 /* Games list */

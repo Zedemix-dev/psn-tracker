@@ -5,6 +5,15 @@ import journal from "@/src/db/migrations/meta/_journal.json";
 // Frozen at build time: how many migrations this build of the app knows.
 export const EXPECTED_MIGRATIONS: number = journal.entries.length;
 
+// Distinct error messages already logged: a bad DATABASE_URL must show up once in the app log, not per request.
+const logged = new Set<string>();
+export function logOnce(error: unknown): void {
+  const message = error instanceof Error ? error.message : String(error);
+  if (logged.has(message)) return;
+  logged.add(message);
+  console.error(`[db] not ready: ${message}`);
+}
+
 // Once true, a Db stays ready: no more queries. Keyed by Db (PGlite tests).
 const ready = new WeakMap<Db, true>();
 
@@ -20,8 +29,9 @@ export async function isDbReady(db: Db): Promise<boolean> {
       ready.set(db, true);
       return true;
     }
-  } catch {
-    // Missing table or unreachable database: not ready yet.
+  } catch (error) {
+    // Missing table or unreachable database: not ready yet (logged once per distinct message).
+    logOnce(error);
   }
   return false;
 }

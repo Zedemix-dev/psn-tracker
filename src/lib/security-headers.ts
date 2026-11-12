@@ -5,4 +5,4 @@ export const SITE_HEADERS: { key: string; value: string }[] = [
 ];
 
 /** Files under /media may be user-influenced (SVG): they cannot run any script. Images in <img> still display. */
-export const MEDIA_CSP = "default-src 'none'; style-src 'unsafe-inline'; sandbox";
+export const MEDIA_CSP = "default-src 'none'; style-src 'unsafe-inline'; sandbox; frame-ancestors 'none'";

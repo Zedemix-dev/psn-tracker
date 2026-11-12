@@ -33,7 +33,11 @@ export async function makeThumb(source: string, target: string): Promise<void> {
 export async function computeTileBg(file: string): Promise<string | null> {
   if (path.extname(file).toLowerCase() === ".svg") return null;
   const { default: sharp } = await import("sharp");
-  const { data, info } = await sharp(await fs.readFile(file))
+  const input = await fs.readFile(file);
+  // Same rule as edgeBackground, without decoding: ~13,000 trophy icons are square.
+  const meta = await sharp(input).metadata();
+  if (meta.width === meta.height) return null;
+  const { data, info } = await sharp(input)
     .ensureAlpha()
     .raw()
     .toBuffer({ resolveWithObject: true });

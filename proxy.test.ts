@@ -1,9 +1,17 @@
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const dbReady = vi.hoisted(() => ({ value: true }));
-vi.mock("@/src/db/client", () => ({ getDb: async () => ({}) }));
-vi.mock("@/src/db/readiness", () => ({ isDbReady: async () => dbReady.value }));
+const dbReady = vi.hoisted(() => ({ value: true, getDbError: null as Error | null }));
+vi.mock("@/src/db/client", () => ({
+  getDb: async () => {
+    if (dbReady.getDbError) throw dbReady.getDbError;
+    return {};
+  },
+}));
+vi.mock("@/src/db/readiness", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/src/db/readiness")>()),
+  isDbReady: async () => dbReady.value,
+}));
 
 import { config, proxy } from "@/proxy";
 
@@ -11,9 +19,23 @@ const matches = (path: string) => new RegExp(`^${config.matcher[0]}$`).test(path
 
 beforeEach(() => {
   dbReady.value = true;
+  dbReady.getDbError = null;
 });
 
 describe("proxy", () => {
+  it("answers 503 and logs a failing connection once", async () => {
+    const err = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      dbReady.getDbError = new Error("getaddrinfo ENOTFOUND bad-host");
+      expect((await proxy(new NextRequest("http://localhost/"))).status).toBe(503);
+      expect((await proxy(new NextRequest("http://localhost/"))).status).toBe(503);
+      expect(err).toHaveBeenCalledTimes(1);
+      expect(String(err.mock.calls[0].join(" "))).toContain("ENOTFOUND bad-host");
+    } finally {
+      err.mockRestore();
+    }
+  });
+
   it("redirects to /login without a cookie", async () => {
     const res = await proxy(new NextRequest("http://localhost/"));
     expect(res.status).toBe(307);
