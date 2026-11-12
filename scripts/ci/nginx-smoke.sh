@@ -39,12 +39,13 @@ fi
 fetch() { docker run --rm --network "$net" "$curl_image" -sS "$@"; }
 
 # Runs a check's curl call; if curl itself fails (transport error), prints a FAIL line with what
-# was received instead of letting set -e abort silently.
+# was received instead of letting set -e abort silently. Callers capture stdout with $(...), so
+# the FAIL line goes to stderr to reach the CI log; the subshell's exit 1 then stops the script.
 fetch_or_fail() {
   local label="$1"; shift
   local out
   if ! out="$(fetch "$@" 2>&1)"; then
-    echo "FAIL - $label: the request itself failed, received: $out"
+    echo "FAIL - $label: the request itself failed, received: $out" >&2
     exit 1
   fi
   printf '%s' "$out"
