@@ -128,7 +128,10 @@ jobs:
           TAGS: ${{ steps.meta.outputs.tags }}
         run: |
           set -euo pipefail
-          for tag in $TAGS; do
+          # The sha tag(s) first and latest last: a failed push never leaves latest moved while the job is red.
+          for tag in $(printf '%s
+' $TAGS | grep -v ':latest$') $(printf '%s
+' $TAGS | grep ':latest$'); do
             docker push "$tag"
           done
       # Keep the 3 newest images (the current one + 2 to roll back to); older ones are deleted.
