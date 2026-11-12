@@ -1,5 +1,6 @@
 import type { Db } from "@/src/db/client";
 import { loadPsnTokens, savePsnTokens, setPsnAuthStatus } from "@/src/settings/repo";
+import type { PsnTokens } from "@/src/psn/types";
 import { PsnRefusedError, type PsnGateway } from "@/src/psn/gateway";
 
 export const NPSSO_PATTERN = /^[A-Za-z0-9]{64}$/;
@@ -19,20 +20,32 @@ export async function getValidAuth(
     return { accessToken: stored.accessToken };
   }
   let fresh;
+  const refreshing = gw.refresh(stored.refreshToken);
   try {
-    fresh = await withTimeout(gw.refresh(stored.refreshToken), PSN_TIMEOUT_MS);
+    fresh = await withTimeout(refreshing, PSN_TIMEOUT_MS);
   } catch (e) {
     if (e instanceof PsnRefusedError) {
       await setPsnAuthStatus(db, "expired");
       return "expired";
     }
     // Neither a refusal nor proof the token is bad: leave the status alone.
-    if (isUnreachable(e)) throw new Error("Couldn't reach PSN");
+    if (isUnreachable(e)) {
+      if (e instanceof DOMException && e.name === "TimeoutError") keepLateRefresh(db, key, refreshing);
+      throw new Error("Couldn't reach PSN");
+    }
     throw new Error(`PSN token refresh failed (${e instanceof Error ? e.message : String(e)})`);
   }
   // A DB error here is not an auth problem: it propagates as is.
   await savePsnTokens(db, key, fresh);
   return { accessToken: fresh.accessToken };
+}
+
+/** The run already failed, but a refresh that answers later still returns usable tokens: keep them. */
+function keepLateRefresh(db: Db, key: Buffer, refreshing: Promise<PsnTokens>): void {
+  refreshing.then(
+    (tokens) => savePsnTokens(db, key, tokens).catch(() => {}),
+    () => {},
+  );
 }
 
 const NETWORK_CODES = new Set(["ECONNRESET", "ECONNREFUSED", "ENOTFOUND", "EAI_AGAIN", "ETIMEDOUT", "UND_ERR_CONNECT_TIMEOUT"]);

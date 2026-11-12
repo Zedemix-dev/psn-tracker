@@ -92,6 +92,42 @@ describe("getValidAuth", () => {
     expect((await getSettings(db)).psnAuthStatus).toBe("valid");
   });
 
+  it("saves tokens from a refresh that answers after the 20 s limit", async () => {
+    await savePsnTokens(db, key, stored(-1), "n", now);
+    vi.useFakeTimers();
+    try {
+      const late = { ...createFakePsn(), refresh: () => new Promise<PsnTokens>((resolve) => setTimeout(() => resolve(renewed), 25_000)) };
+      const p = expect(getValidAuth(db, late, key, now)).rejects.toThrow("Couldn't reach PSN");
+      await vi.advanceTimersByTimeAsync(21_000);
+      await p;
+      expect((await loadPsnTokens(db, key))?.accessToken).toBe("stored-access");
+      await vi.advanceTimersByTimeAsync(5_000);
+    } finally {
+      vi.useRealTimers();
+    }
+    await vi.waitFor(async () => expect((await loadPsnTokens(db, key))?.accessToken).toBe("new-access"));
+    expect((await getSettings(db)).psnAuthStatus).toBe("valid");
+  });
+
+  it("a refresh that fails after the 20 s limit changes nothing", async () => {
+    await savePsnTokens(db, key, stored(-1), "n", now);
+    vi.useFakeTimers();
+    try {
+      const late = {
+        ...createFakePsn(),
+        refresh: () => new Promise<PsnTokens>((_, reject) => setTimeout(() => reject(new PsnRefusedError()), 25_000)),
+      };
+      const p = expect(getValidAuth(db, late, key, now)).rejects.toThrow("Couldn't reach PSN");
+      await vi.advanceTimersByTimeAsync(21_000);
+      await p;
+      await vi.advanceTimersByTimeAsync(5_000);
+    } finally {
+      vi.useRealTimers();
+    }
+    expect((await loadPsnTokens(db, key))?.accessToken).toBe("stored-access");
+    expect((await getSettings(db)).psnAuthStatus).toBe("valid");
+  });
+
   it("propagates a failed save of the refreshed tokens without flagging the auth as expired", async () => {
     await savePsnTokens(db, key, stored(-1), "n", now);
     const gw = createFakePsn({ tokens: renewed });

@@ -67,6 +67,16 @@ describe("createPsnGateway", () => {
       await expect(gw.refresh("old")).rejects.toBeInstanceOf(PsnRefusedError);
     });
 
+    it("exchangeNpsso accepts a real token answer", async () => {
+      on(/oauth\/authorize$/, () => new Response(null, { status: 302, headers: { location: "com.scee.psxandroid.scecompcall://redirect/?code=v3.abc" } }));
+      on(/oauth\/token$/, () => good);
+      const t = await gw.exchangeNpsso("n".repeat(64));
+      expect(t.accessToken).toBe("a");
+      expect(t.refreshToken).toBe("r");
+      expect(Number.isNaN(t.accessExpiresAt.getTime())).toBe(false);
+      expect(Number.isNaN(t.refreshExpiresAt.getTime())).toBe(false);
+    });
+
     it("exchangeNpsso throws PsnRefusedError when the token answer has no token", async () => {
       on(/oauth\/authorize$/, () => new Response(null, { status: 302, headers: { location: "com.scee.psxandroid.scecompcall://redirect/?code=v3.abc" } }));
       on(/oauth\/token$/, () => ({ error: "invalid_grant" }));

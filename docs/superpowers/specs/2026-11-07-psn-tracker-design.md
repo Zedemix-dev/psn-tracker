@@ -1411,6 +1411,7 @@ Constat en plus de l'audit : quand le PSN refuse un token, la bibliothèque `psn
    - PSN injoignable (`isUnreachable` : réseau, DNS, délai dépassé) : le statut ne change pas, le run échoue avec « Couldn't reach PSN », aucun bandeau ;
    - toute autre erreur pendant le renouvellement (par exemple une page d'erreur HTML de Sony) : le statut ne change pas, le run échoue avec « PSN token refresh failed (<message d'origine>) ».
    - Le renouvellement a le même délai maximal que l'échange du npsso : 20 s. **[choix de Claude]** Ce délai couvre tout le renouvellement, reprises comprises. Les reprises existantes sur erreur réseau (1, 2 puis 4 s) restent.
+   - **[choix de Claude]** Un renouvellement qui répond après ces 20 s est quand même enregistré : le run a déjà échoué avec « Couldn't reach PSN », mais le token reçu n'est pas perdu.
    - **[choix de Claude]** Le contrôle du refus se fait dans le gateway, avant tout autre traitement de la réponse : `isUnreachable` prend toute `TypeError` pour une panne réseau, et une réponse mal formée ne doit pas être prise pour une panne.
    - La synchro suivante réessaie normalement. Une demande « Sync now » reste abandonnée après 3 échecs (19.3.4).
 3. **Enregistrement d'un npsso** : une réponse sans token donne « PSN didn't accept this npsso » au lieu d'une erreur.
