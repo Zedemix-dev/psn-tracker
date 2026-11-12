@@ -1,3 +1,4 @@
+import "../../../styles/stats.css";
 import { ProfileBand } from "@/components/ProfileBand";
 import { StatTiles } from "@/components/StatTiles";
 import { StatsPanels } from "@/components/stats/StatsPanels";

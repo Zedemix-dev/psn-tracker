@@ -1,3 +1,5 @@
+import "../../../styles/trophy-log.css";
+import "../../../styles/trophy-advisor.css";
 import { ProfileBand } from "@/components/ProfileBand";
 import { StatTiles } from "@/components/StatTiles";
 import { AdvisorControls } from "@/components/trophy-advisor/AdvisorControls";

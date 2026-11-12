@@ -1,3 +1,4 @@
+import "../../../styles/trophy-log.css";
 import { ProfileBand } from "@/components/ProfileBand";
 import { StatTiles } from "@/components/StatTiles";
 import { TrophyLogControls } from "@/components/trophy-log/TrophyLogControls";

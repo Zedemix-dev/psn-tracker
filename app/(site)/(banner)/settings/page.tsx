@@ -1,3 +1,4 @@
+import "../../../styles/settings.css";
 import { desc } from "drizzle-orm";
 import { AutoRefresh } from "@/components/AutoRefresh";
 import { BannerForm, NpssoForm, UnobtainableForm } from "@/components/SettingsForms";

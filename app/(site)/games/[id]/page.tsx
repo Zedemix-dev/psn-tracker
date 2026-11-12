@@ -1,3 +1,4 @@
+import "../../../styles/game.css";
 import type { CSSProperties } from "react";
 import { notFound } from "next/navigation";
 import { Banner, PageBackground, bannerVars } from "@/components/Banner";

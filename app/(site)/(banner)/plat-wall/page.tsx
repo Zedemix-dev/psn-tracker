@@ -1,3 +1,4 @@
+import "../../../styles/plat-wall.css";
 import { PlatWallControls } from "@/components/plat-wall/PlatWallControls";
 import { PlatGrid, type PlatTile } from "@/components/plat-wall/PlatGrid";
 import { ProfileBand } from "@/components/ProfileBand";

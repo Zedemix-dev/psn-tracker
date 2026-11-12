@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-const css = readFileSync(join(process.cwd(), "app/globals.css"), "utf8");
+const css = readFileSync(join(process.cwd(), "app/styles/stats.css"), "utf8");
 
 /** The css without its `@media (hover:hover){…}` blocks (balanced braces). */
 function withoutHoverMedia(src: string): string {

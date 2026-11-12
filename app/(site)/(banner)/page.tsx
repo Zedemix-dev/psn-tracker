@@ -1,3 +1,4 @@
+import "../../styles/games.css";
 import { GameFilters } from "@/components/GameFilters";
 import { GameList } from "@/components/GameList";
 import { SHOW_ALL_SLOT_ID } from "@/components/game-query-string";
