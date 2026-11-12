@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
 import { act, cleanup, render, screen } from "@testing-library/react";
+import type { ReactElement } from "react";
+import { createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { GameList, gamePlaces } from "@/components/GameList";
 import { SHOW_ALL_SLOT_ID } from "@/components/game-query-string";
@@ -87,6 +89,42 @@ const runFrame = () =>
 
 const rows = () => document.querySelectorAll(".game").length;
 const FOOTER = "The next 50 games load as you scroll down";
+
+/**
+ * Mounts the way a Back navigation does in the browser: outside act, React doing its work in its
+ * own tasks. `paints` is the page as the browser could paint it after each task (a MutationObserver
+ * callback runs once per task, before any paint): rows shown, top of `paintedRow`, Loading…, footer.
+ */
+async function mountOutsideAct(ui: ReactElement, paintedRow: string) {
+  const env = globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean };
+  const actEnvironment = env.IS_REACT_ACT_ENVIRONMENT;
+  const host = document.body.appendChild(document.createElement("div"));
+  const paints: { rows: number; top: number | null; loading: boolean; footer: boolean }[] = [];
+  const observer = new MutationObserver(() => {
+    const text = document.body.textContent ?? "";
+    const row = document.querySelector<HTMLElement>(`a.game[data-key="${paintedRow}"]`);
+    paints.push({
+      rows: rows(),
+      top: row ? row.getBoundingClientRect().top : null,
+      loading: text.includes("Loading…"),
+      footer: text.includes(FOOTER),
+    });
+  });
+  env.IS_REACT_ACT_ENVIRONMENT = false;
+  const root = createRoot(host);
+  observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+  root.render(ui);
+  await new Promise((resolve) => setTimeout(resolve, 50));
+  observer.disconnect();
+  return {
+    paints,
+    unmount() {
+      root.unmount();
+      host.remove();
+      env.IS_REACT_ACT_ENVIRONMENT = actEnvironment;
+    },
+  };
+}
 
 describe("GameList", () => {
   it("loads the next page on intersection, appends it, then stops at total", async () => {
@@ -217,8 +255,19 @@ describe("GameList", () => {
     const mount = (key = "k", total = 200) =>
       render(<GameList snapshotKey={key} initial={{ items: games(1, 50), total }} query={query} />);
 
-    describe("with a saved place", () => {
+    // The fallback: the rows were not kept (an older snapshot, or they did not fit) and are fetched.
+    describe("with a saved place but no kept rows", () => {
       beforeEach(() => gamePlaces.save({ key: "k", loaded: 120, scrollY: 4200 }));
+
+      it("falls back to the limit fetch when the kept rows do not read back", async () => {
+        sessionStorage.setItem("games-list:rows", "{not json");
+        fetchMock.mockResolvedValueOnce(reply(games(1, 120), 200));
+        await act(async () => {
+          mount();
+        });
+        expect(fetchMock).toHaveBeenCalledWith("/api/games?offset=0&limit=120");
+        expect(rows()).toBe(120);
+      });
 
       it("restores the loaded games and the scroll position after a back navigation", async () => {
         // Back to the tagged entry: it is still the current one. The rows are fetched again.
@@ -325,7 +374,7 @@ describe("GameList", () => {
       expect(history.state.gamesSnapshot).toBeTruthy();
     });
 
-    it("saves the number of loaded games and the scroll position, without rows, when a game is opened", async () => {
+    it("saves the loaded games, the offset and the scroll position when a game is opened", async () => {
       history.pushState(null, "");
       mount();
       sessionStorage.clear();
@@ -333,9 +382,37 @@ describe("GameList", () => {
       const link = document.querySelector<HTMLAnchorElement>("a.game")!;
       link.addEventListener("click", (e) => e.preventDefault());
       await act(async () => link.click());
-      const saved = JSON.parse(sessionStorage.getItem("games-list")!);
-      expect(saved).toMatchObject({ key: "k", loaded: 50, scrollY: 900 });
-      expect(saved.items).toBeUndefined();
+      const place = JSON.parse(sessionStorage.getItem("games-list")!);
+      expect(place).toMatchObject({ key: "k", loaded: 50, scrollY: 900 });
+      expect(place.items).toBeUndefined();
+      // The rows in their own entry, tied to the place.
+      const kept = JSON.parse(sessionStorage.getItem("games-list:rows")!);
+      expect(kept).toMatchObject({ id: place.id, total: 200, offset: 50, exhausted: false });
+      expect(kept.items).toEqual(games(1, 50));
+    });
+
+    it("keeps the place without the rows when they do not fit, and Back fetches them", async () => {
+      history.pushState(null, "");
+      Object.defineProperty(window, "scrollY", { value: 0, configurable: true });
+      const setItem = Storage.prototype.setItem;
+      vi.spyOn(Storage.prototype, "setItem").mockImplementation(function (this: Storage, key: string, value: string) {
+        if (key.endsWith(":rows")) throw new DOMException("Full", "QuotaExceededError");
+        setItem.call(this, key, value);
+      });
+      mount();
+      const link = document.querySelector<HTMLAnchorElement>("a.game")!;
+      link.addEventListener("click", (e) => e.preventDefault());
+      await act(async () => link.click());
+      expect(JSON.parse(sessionStorage.getItem("games-list")!)).toMatchObject({ key: "k", loaded: 50 });
+      expect(sessionStorage.getItem("games-list:rows")).toBeNull();
+
+      cleanup();
+      fetchMock.mockResolvedValueOnce(reply(games(1, 50), 200));
+      await act(async () => {
+        mount();
+      });
+      expect(fetchMock).toHaveBeenCalledWith("/api/games?offset=0&limit=50");
+      expect(rows()).toBe(50);
     });
 
     it("does not save on modified or non-primary clicks", async () => {
@@ -350,6 +427,7 @@ describe("GameList", () => {
         link.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, button: 1 }));
       });
       expect(sessionStorage.getItem("games-list")).toBeNull();
+      expect(sessionStorage.getItem("games-list:rows")).toBeNull();
     });
 
     describe("back to the same rows and the same row at the top", () => {
@@ -380,16 +458,12 @@ describe("GameList", () => {
         link.addEventListener("click", (e) => e.preventDefault());
         await act(async () => link.click());
       };
-      /** Back on the same history entry, at the top, with 300 px more above the list than before. */
-      const comeBack = async (reloaded: GameRowData[], total: number) => {
+      /** Leaves for the game page; Back comes to the same history entry, at the top, with 300 px more
+       *  above the list than before. */
+      const leave = () => {
         cleanup();
         y = 0;
         above = 300;
-        fetchMock.mockResolvedValueOnce(reply(reloaded, total));
-        await act(async () => {
-          mount("k", total);
-        });
-        while (frames.size > 0) await runFrame();
       };
 
       it("restores the same rows and position after Show all", async ({ onTestFinished }) => {
@@ -411,20 +485,34 @@ describe("GameList", () => {
           anchorOffset: -20,
         });
 
-        await comeBack(games(1, 200), 200);
-        expect(fetchMock).toHaveBeenLastCalledWith("/api/games?offset=0&limit=200");
-        expect(hrefs()).toEqual(before);
-        expect(scrollTo).toHaveBeenCalledWith(0, 300 + 129 * 80 + 20);
-        expect(rowTop(130)).toBe(-20);
-        expect(screen.queryByRole("button", { name: /Show all|Loading…/ })).toBeNull();
-        expect(screen.queryByText(FOOTER)).toBeNull();
+        leave();
+        const back = await mountOutsideAct(
+          <GameList snapshotKey="k" initial={{ items: games(1, 50), total: 200 }} query={query} />,
+          "NPWR130",
+        );
+        try {
+          expect(fetchMock).toHaveBeenCalledTimes(1); // Show all only: no request on the way back
+          // From the first paint on: every row, game 130 back 20 px above the top, no Loading…, no footer.
+          expect(back.paints[0]).toEqual({ rows: 200, top: -20, loading: false, footer: false });
+          expect(back.paints.filter((p) => p.loading || p.footer)).toEqual([]);
+          expect(hrefs()).toEqual(before);
+          expect(scrollTo).toHaveBeenCalledWith(0, 300 + 129 * 80 + 20);
+          expect(screen.queryByRole("button", { name: /Show all|Loading…/ })).toBeNull();
+        } finally {
+          back.unmount();
+        }
       });
 
       it("restores after three loaded pages", async () => {
-        fetchMock.mockResolvedValueOnce(reply(games(51, 50), 300)).mockResolvedValueOnce(reply(games(101, 50), 300));
+        // Three pages of games, with a page made only of games already shown in between.
+        fetchMock
+          .mockResolvedValueOnce(reply(games(1, 50), 300))
+          .mockResolvedValueOnce(reply(games(51, 50), 300))
+          .mockResolvedValueOnce(reply(games(101, 50), 300));
         mount("k", 300);
-        await intersect();
-        await intersect();
+        await intersect(); // offset 50: only duplicates
+        await intersect(); // offset 100
+        await intersect(); // offset 150
         expect(rows()).toBe(150);
         const before = hrefs();
 
@@ -435,17 +523,22 @@ describe("GameList", () => {
           anchorOffset: -20,
         });
 
-        await comeBack(games(1, 150), 300);
-        expect(fetchMock).toHaveBeenLastCalledWith("/api/games?offset=0&limit=150");
+        leave();
+        await act(async () => {
+          mount("k", 300);
+        });
+        expect(fetchMock).toHaveBeenCalledTimes(3); // no request on the way back
+        expect(screen.queryByText("Loading…")).toBeNull();
+        while (frames.size > 0) await runFrame();
         expect(hrefs()).toEqual(before);
         expect(scrollTo).toHaveBeenCalledWith(0, 300 + 119 * 80 + 20);
         expect(rowTop(120)).toBe(-20);
 
-        // Scrolling on carries on after the restored rows.
+        // Scrolling on resumes after the 200 rows handed out, not after the 150 shown.
         expect(screen.getByText(FOOTER)).toBeInTheDocument();
         fetchMock.mockResolvedValueOnce(reply(games(151, 50), 300));
         await intersect();
-        expect(fetchMock).toHaveBeenLastCalledWith("/api/games?offset=150");
+        expect(fetchMock).toHaveBeenLastCalledWith("/api/games?offset=200");
         expect(rows()).toBe(200);
       });
     });

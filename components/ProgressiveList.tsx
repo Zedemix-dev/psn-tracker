@@ -88,6 +88,7 @@ export function ProgressiveList<T>({
   rowSelector = ".log-row[data-key]",
   noun = "trophies",
   className,
+  keepRows = false,
   empty,
 }: {
   initial: { items: T[]; total: number };
@@ -110,6 +111,9 @@ export function ProgressiveList<T>({
   noun?: string;
   /** The class of the element holding the rows. */
   className?: string;
+  /** Keep the rows shown in the tab's history: Back puts them back before the first paint, with no
+   *  request (Games). Off, Back fetches as many rows again (lists too long to keep). */
+  keepRows?: boolean;
   /** Shown instead of the list when there is no row. */
   empty: string;
 } & RowKeyProp<T>) {
@@ -136,8 +140,10 @@ export function ProgressiveList<T>({
   const alive = useRef(true);
   // The chunk loop reads the key through a ref: a new rowKey function never restarts the loaders.
   const keyOf = useRef(rowKey);
-  const loaded = items.length;
-  const loadedRows = useRef(loaded);
+  // What the list shows, for the place saved on a click (see the layout effect below).
+  const shown = useRef({ items, total, offset, exhausted });
+  // Set when Back put kept rows back: nothing to fetch then.
+  const restoredRows = useRef(false);
   const more = !exhausted && offset < total;
 
   useLayoutEffect(() => {
@@ -211,10 +217,12 @@ export function ProgressiveList<T>({
     setSlot(document.getElementById(slotId));
   }, [slotId]);
 
-  // Back from a game page: the browser kept no rows (there can be thousands), only how many were
-  // loaded and where the page was. Fetch that many again, then scroll. If it fails, the first page
-  // stays where it is. Done after mount, so the server-rendered first page still hydrates cleanly.
+  // Back from a game page, rows not kept (there can be thousands, or they did not fit): only how
+  // many were loaded and where the page was. Fetch that many again, then scroll. If it fails, the
+  // first page stays where it is. Done after mount, so the server-rendered first page still
+  // hydrates cleanly.
   useEffect(() => {
+    if (restoredRows.current) return;
     const snap = places.take(snapshotKey);
     if (!snap) return;
     let cancelled = false;
@@ -250,8 +258,8 @@ export function ProgressiveList<T>({
 
   // A layout effect: the click listener below runs before React would flush a passive one.
   useLayoutEffect(() => {
-    loadedRows.current = loaded;
-  }, [loaded]);
+    shown.current = { items, total, offset, exhausted };
+  }, [items, total, offset, exhausted]);
 
   // Back: scroll to the saved row (not the saved pixel: rows above it take their real height once
   // rendered). Only once the chunk holding that row is in the DOM; if it never comes, scrollY after
@@ -291,23 +299,42 @@ export function ProgressiveList<T>({
     });
   }, [items, rowSelector]);
 
+  // Back from a game page, rows kept: they come back exactly as they were (rows, offset, end of the
+  // list), with no request. A layout effect, so the re-render with them and the scroll above happen
+  // before the first paint; after mount, so the server-rendered first page still hydrates cleanly.
+  // Declared after the scroll effect, which therefore sees the saved place only with these rows.
+  useLayoutEffect(() => {
+    if (!keepRows) return;
+    const snap = places.take(snapshotKey, true);
+    if (!snap?.rows) return; // missing or unreadable: the effect above fetches them
+    restoredRows.current = true;
+    pendingScroll.current = snap;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- the kept rows replace the server-rendered first page after hydration, before the first paint
+    setItems(snap.rows.items as T[]);
+    setTotal(snap.rows.total);
+    setOffset(snap.rows.offset);
+    setExhausted(snap.rows.exhausted);
+  }, [keepRows, places, snapshotKey]);
+
   // On the document, not the list: game links next to the list leave the page too.
   useEffect(() => {
     const rememberPlace = (e: MouseEvent) => {
       if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
       if (e.target instanceof Element && e.target.closest('a[href^="/games/"]')) {
         const top = topRow(rowSelector);
+        const { items: rows, total: all, offset: next, exhausted: ended } = shown.current;
         places.save({
           key: snapshotKey,
-          loaded: loadedRows.current,
+          loaded: rows.length,
           scrollY: window.scrollY,
           ...(top ? { anchorKey: top.key, anchorOffset: top.offset } : {}),
+          ...(keepRows ? { rows: { items: rows, total: all, offset: next, exhausted: ended } } : {}),
         });
       }
     };
     document.addEventListener("click", rememberPlace, true);
     return () => document.removeEventListener("click", rememberPlace, true);
-  }, [snapshotKey, places, rowSelector]);
+  }, [snapshotKey, places, rowSelector, keepRows]);
 
   // One loader for the next page (scrolling, Retry) and for the whole rest (Show all).
   const load = useCallback(

@@ -8,7 +8,7 @@ import { ProgressiveList } from "@/components/ProgressiveList";
 import type { GameQuery } from "@/src/games/query";
 import type { GameRowData } from "@/src/games/row";
 
-/** Where the list was left when a game was opened, for Back. */
+/** Where the list was left when a game was opened, and its rows (keepRows), for Back. */
 export const gamePlaces = createPlaceStore("games-list", "gamesSnapshot");
 
 // Rows keep their identity from one chunk to the next, so only the new ones render.
@@ -42,6 +42,7 @@ export function GameList({
       rowSelector="a.game[data-key]"
       noun="games"
       className="stacked"
+      keepRows
       empty={empty}
     />
   );

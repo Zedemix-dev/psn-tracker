@@ -322,6 +322,24 @@ describe("TrophyLogList", () => {
       expect(sessionStorage.getItem("trophy-log-list")).not.toContain("Trophy 1");
     });
 
+    it("keeps no rows for Back: only the place is stored, and Back fetches the rows", async () => {
+      history.pushState(null, "");
+      Object.defineProperty(window, "scrollY", { value: 0, configurable: true });
+      render(list(trophies(1, 50), 200));
+      const link = document.querySelector<HTMLAnchorElement>('a[href^="/games/"]')!;
+      link.addEventListener("click", (e) => e.preventDefault());
+      await act(async () => link.click());
+      expect(sessionStorage.length).toBe(1);
+      expect(sessionStorage.getItem("trophy-log-list:rows")).toBeNull();
+
+      cleanup();
+      fetchMock.mockResolvedValueOnce(reply(trophies(1, 50), 200));
+      await act(async () => {
+        render(list(trophies(1, 50), 200));
+      });
+      expect(fetchMock).toHaveBeenCalledWith("/api/trophy-log?offset=0&limit=50");
+    });
+
     it("does not save on modified clicks", async () => {
       render(list(trophies(1, 50), 200));
       const link = document.querySelector<HTMLAnchorElement>('a[href^="/games/"]')!;

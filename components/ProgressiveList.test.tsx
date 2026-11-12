@@ -108,6 +108,7 @@ describe("ProgressiveList", () => {
       anchorKey: "R:3",
       anchorOffset: -40,
     });
+    expect(sessionStorage.length).toBe(1); // the place only: no rows kept
 
     // Back, with 1000 px more above the list: the same rows again, and the saved row put back at
     // its offset (not the saved pixel).
