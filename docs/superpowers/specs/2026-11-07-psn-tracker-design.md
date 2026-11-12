@@ -1486,6 +1486,7 @@ Partir sur le NAS avec un dépôt sans dette connue : moins de secrets gardés, 
 - Un changement visible sur une page : une couleur, une marge ou une police qui bouge (Q6, Q7), ou une liste Games qui défile, filtre ou revient en arrière autrement qu'avant (Q3).
 - Un test qui échoue au hasard après l'accélération de la suite (P5).
 - Un conteneur qui ne démarre plus sur le NAS, ou qui est tué faute de mémoire pendant un export PNG ou une synchro (S9).
+- Un des autres conteneurs du NAS (Plex, qBittorrent, Radarr, Sonarr, Homebridge) gêné par le PSN Tracker, en mémoire ou en processeur (S9).
 - Être déconnecté, ou devoir recoller le npsso, à cause de cette version.
 
 ### 21.2 S7 : le npsso n'est plus gardé [décidé]
@@ -1522,7 +1523,11 @@ Partir sur le NAS avec un dépôt sans dette connue : moins de secrets gardés, 
 2. **Dependabot [décidé]** : `.github/dependabot.yml` propose chaque semaine les mises à jour de `npm`, des images `docker` du `Dockerfile` et des actions GitHub. **[choix de Claude]** Les mises à jour mineures et correctives sont groupées en une PR par écosystème ; une mise à jour majeure arrive seule. L'utilisateur fusionne ces PR une fois la CI verte, comme les autres ; elles ne demandent pas de branche `docs/…`.
 3. **S9, conteneurs durcis [choix de Claude, validé sur description]** dans `deploy/stack-site.yml`, pour `app` et `worker` :
    - `cap_drop: [ALL]` et `security_opt: ["no-new-privileges:true"]` ;
-   - une limite de mémoire (`mem_limit`) d'environ deux fois le pic mesuré en local : l'export PNG du Plat Wall avec Art, Rarity et Name pour `app`, une synchro complète pour `worker`. **[choix de Claude]** Chaque limite reste entre 512 Mo et 2 Go : le DS1522+ a 8 Go de mémoire d'origine. Le guide dit comment l'augmenter si un conteneur est tué pendant un export ;
+   - **[décidé, 12 novembre 2026] Partage du NAS** : le DS1522+ a 8 Go et fait déjà tourner Plex, qBittorrent, Radarr, Sonarr et Homebridge. Le PSN Tracker ne doit jamais les empêcher de bien fonctionner. Ses limites servent donc d'abord à protéger ces conteneurs ;
+   - une limite de mémoire (`mem_limit`) pour chaque conteneur du PSN Tracker, fixée sur les pics mesurés en local avec une marge d'environ 50 % **[choix de Claude]** : l'export PNG du Plat Wall avec Art, Rarity et Name pour `app`, une synchro complète (images comprises) pour `worker`. `postgres` et `nginx` (`stack-infra.yml`) reçoivent aussi une limite. Le total de la stack est écrit dans le guide ;
+   - **[choix de Claude]** la mémoire de Node est plafonnée sous la limite du conteneur (`--max-old-space-size`, environ 75 % de la limite), pour que Node libère sa mémoire avant d'être tué ;
+   - **[choix de Claude]** une limite de processeur : `worker` au plus 1 cœur (la première synchro télécharge et traite environ 13 000 images), `app` au plus 2 cœurs (l'export PNG). Le NAS en a 4 : il en reste toujours pour Plex. La première synchro sera plus longue, c'est accepté ;
+   - le guide (étape 7) ajoute une vérification : pendant la première synchro et pendant un export PNG, Portainer (Containers → Stats) montre chaque conteneur sous sa limite, et une vidéo lue sur Plex ne saccade pas. Il dit aussi comment relever une limite si un conteneur est tué pendant un export ;
    - un `healthcheck` pour `app` : une requête sur `http://127.0.0.1:3000/login`, faite avec `node` (présent dans l'image, contrairement à `curl`) ; 200 vaut « healthy », la page d'attente (503) ne l'est pas ;
    - le dossier `media` reste à l'utilisateur 1000 (`deploy/README.md`, étape 2.3) : sans droits système, le conteneur n'écrit que là où il est propriétaire ;
    - pas de système de fichiers en lecture seule (`read_only`) : Next écrit son cache sur le disque.
@@ -1543,7 +1548,7 @@ Sur le build de production local (`npm run build`, puis `npm run e2e:db`, `npm r
 - **Q3** : la liste Games, à 1 630 et à 375 px, avec les mêmes contrôles que lors de sa construction (défilement, « Show all », filtres, tris, recherche, « Hide 0% games », retour depuis une page de jeu).
 - **Q6, Q7** : la comparaison des styles calculés, sans aucune différence.
 - **P5** : trois passages verts de la suite complète, et sa durée avant et après.
-- **S9** : les pics de mémoire mesurés, qui fixent les limites.
+- **S9** : les pics de mémoire mesurés (export PNG, synchro complète avec images), qui fixent les limites ; la durée de l'export PNG avec `app` limité à 2 cœurs reste sous 60 s (mesure approchée en local).
 - **Non vérifiable ici** : le job de la CI de S9 (sur github.com), les conteneurs durcis et le healthcheck sur le NAS, les premières PR de Dependabot.
 
 ### 21.8 Laissé au builder
