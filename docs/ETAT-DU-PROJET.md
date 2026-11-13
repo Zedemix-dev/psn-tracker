@@ -1,6 +1,6 @@
 # PSN Tracker : état du projet et feuille de route
 
-*Mis à jour le 12 novembre 2026 : tous les points de l'audit `a_reprendre.md` sauf le design sont faits et vérifiés sur la branche `fix/audit-suite` (PR à créer). Ensuite : les retouches de design D1 à D7 sur maquettes, puis le déploiement sur le NAS.*
+*Mis à jour le 13 novembre 2026 : tout l'audit `a_reprendre.md` sauf le design est fusionné (PR #23), mais sans CI faute de minutes GitHub ; la branche `fix/ci-triggers` limite la CI aux PR et à `main`. Ensuite : publier l'image de `main`, les retouches de design D1 à D7, puis le déploiement sur le NAS.*
 
 Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un autre PC, commence par le lire. Le fichier `CLAUDE.md` à la racine le demande automatiquement.
 
@@ -32,9 +32,9 @@ Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un aut
 | `docs/superpowers/plans/2026-11-11-stats-touch.md` | Le plan des infobulles au doigt et du défilement de côté (3 tâches). Terminé. |
 | `docs/superpowers/specs/2026-11-11-psn-tracker-maquette-suivis.html` | Maquette validée des compteurs du bandeau sur téléphone (v2, version B). |
 | `docs/superpowers/plans/2026-11-11-followups.md` | Le plan des points de suivi de la phase 1 (14 tâches). Terminé. |
-| `a_reprendre.md` | Audit complet du 11 novembre 2026, écrit par une autre session. S1 est corrigé (PR #19) ; P1, S2, R1, S3 à S6 et R2 sont fusionnés (PR #21, spec 20) ; tous les autres points sauf le design sont faits sur `fix/audit-suite` (spec 21) ; restent les retouches de design D1 à D7. |
+| `a_reprendre.md` | Audit complet du 11 novembre 2026, écrit par une autre session. S1 est corrigé (PR #19) ; P1, S2, R1, S3 à S6 et R2 sont fusionnés (PR #21, spec 20) ; tous les autres points sauf le design sont fusionnés (PR #23, spec 21) ; restent les retouches de design D1 à D7. |
 | `docs/superpowers/plans/2026-11-12-audit.md` | Le plan des lots 1 et 2 de l'audit (10 tâches). Terminé, fusionné (PR #21). |
-| `docs/superpowers/plans/2026-11-12-audit-suite.md` | Le plan de la fin de l'audit hors design (13 tâches pour les agents, plus les relevés et la vérification). Terminé sur `fix/audit-suite`. |
+| `docs/superpowers/plans/2026-11-12-audit-suite.md` | Le plan de la fin de l'audit hors design (13 tâches pour les agents, plus les relevés et la vérification). Terminé, fusionné (PR #23). |
 | `deploy/README.md` | Guide pas à pas du déploiement sur le NAS. |
 | `.superpowers/brainstorm/maquettes/` | Toutes les maquettes intermédiaires : `accueil-v1` à `v12`, `jeu-v1` à `v6` (la v6 compare les images de groupe : carrées ou absentes), `platwall-v1` à `v3`, `trophylog-v1` et `v2`, `advisor-v1` à `v4`, `stats-v1` à `v6` (les v5 et v6 : le graphique des années qui défile), `suivis-v1` et `v2` (compteurs du bandeau sur téléphone, tuile des images à coins arrondis). |
 
@@ -217,7 +217,7 @@ L'utilisateur a choisi le 12 novembre 2026 de traiter, avant le déploiement, le
 - **CI verte** sur github.com, dont les jobs `nginx-smoke` (vrai nginx, vrai `default.conf`) et `pg-smoke` (empreinte des sessions sur un vrai PostgreSQL 16). Reste à vérifier sur le NAS : la compression, HSTS et la vraie adresse du client (guide, étape 7).
 - 123 fichiers de tests, 1 145 tests. Migration 0009.
 
-### Fin de l'audit, hors design (branche `fix/audit-suite`, spec section 21, PR à créer)
+### Fin de l'audit, hors design (PR #23, fusionnée le 13 novembre 2026 sans CI, spec section 21)
 L'utilisateur a décidé le 12 novembre 2026 de finir **tous** les points restants de `a_reprendre.md` avant le déploiement. Cette branche les traite tous, sauf le design (D1 à D7, branche suivante) :
 - **S7, npsso** : il n'est plus gardé ; la migration 0010 supprime la colonne. Personne ne doit le recoller.
 - **P2, P3, caches** : Stats et l'index des jeux restent en mémoire jusqu'à la synchro suivante. Le cache se vide aussi quand la liste des non obtenables est appliquée (date `applied_at`, migration 0010). Stats répond en environ 35 ms au lieu de 200.
@@ -242,11 +242,16 @@ L'utilisateur a décidé le 12 novembre 2026 de finir **tous** les points restan
   - CSS découpé : style calculé de chaque élément identique sur 9 pages à 1 630 et 375 px ; police locale : rendu identique ;
   - liste Games : styles identiques, retour arrière immédiat (après une page et après « Show all »), filtres, tri, recherche ;
   - pics de mémoire : 436 Mo pour l'export PNG le plus lourd, 436 Mo pour le worker sur les miniatures des bannières 4K.
-- **Non vérifiable ici** : la CI sur github.com (jobs `test` avec le linter, `pg-smoke`, `nginx-smoke`, `image` avec les conteneurs durcis) et le NAS (guide, étape 7, dont le point 12).
+- **Fusionnée le 13 novembre 2026 (PR #23) sans CI** : les minutes gratuites de GitHub Actions étaient épuisées. L'image de `main` n'est donc pas publiée, et la CI de cette version n'a jamais tourné (jobs `test` avec le linter, `pg-smoke`, `nginx-smoke`, `image` avec les conteneurs durcis). Reste aussi le NAS (guide, étape 7, dont le point 12).
 - 127 fichiers de tests, 1 181 tests. Migration 0010.
 
+### CI seulement quand elle sert (branche `fix/ci-triggers`, spec 21.9, PR à créer)
+- La CI tournait à chaque push de chaque branche ; avec un push après chaque commit, elle a épuisé les 2 000 minutes du mois. Elle ne tourne plus que sur une pull request vers `main`, sur `main` après une fusion, et à la demande (onglet **Actions** → **CI** → **Run workflow** ; sur `main`, ce bouton publie l'image). Un changement de documentation seule ne la lance pas.
+- Corrigé au passage : le fichier de CI fusionné dans la PR #23 était invalide (YAML cassé dans l'étape qui publie l'image). Il est maintenant analysé avant chaque commit.
+- Aucun contrôle obligatoire sur les PR : on regarde la CI avant de fusionner. La protection de `main` conseillée se limite à interdire sa suppression et les « force push ».
+
 ## 3. Ce qui reste à faire, dans l'ordre
-1. **Fusionner `fix/audit-suite`** (PR à créer), après avoir vérifié sur github.com que les quatre jobs de la CI sont verts.
+1. **Fusionner `fix/ci-triggers`**, puis **publier l'image de `main`** dès que des minutes sont disponibles (début du cycle suivant, ou dépôt passé en public) : onglet **Actions** → **CI** → **Run workflow** sur `main`. Vérifier que les quatre jobs sont verts.
 2. **Retouches de design D1 à D7** (`a_reprendre.md`, section 6), sur une branche `feat/design-retouches` : maquettes dans le navigateur de l'app, validées par l'utilisateur avant toute construction (décidé le 12 novembre 2026 : avant le déploiement).
 3. **Déployer sur le NAS** en suivant `deploy/README.md` (décidé le 9 novembre 2026, après la fin de l'audit). Copier le nouveau `deploy/nginx/default.conf` (étape 2) et les deux stacks à jour.
    - Avant tout, vérifier sur github.com (onglet Actions, le dépôt est privé) que la CI de `main` est verte après la dernière fusion, et que l'image a été publiée.
