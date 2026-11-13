@@ -228,7 +228,7 @@ button.select{font-family:inherit;cursor:pointer;padding-right:26px;background-i
 
 /* Phones: Games head on two lines (title + count + Show all, then the toggle), 32 px touch zones */
 @media (max-width:640px){
-  .games-head{flex-wrap:wrap;column-gap:10px;row-gap:8px}
+  .games-head{flex-wrap:wrap;justify-content:flex-start;column-gap:10px;row-gap:8px}
   .games-head .ph-left,.games-head .head-right{display:contents}
   .games-head h2{order:1}
   .games-head .head-right>.aside{order:2}

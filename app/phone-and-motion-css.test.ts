@@ -34,7 +34,7 @@ describe("D7: Games header on two lines below 640 px", () => {
   });
   it("wraps, and flattens the two groups so the toggle drops to its own line", () => {
     const css = phone("app/globals.css");
-    expect(css).toContain(".games-head{flex-wrap:wrap;column-gap:10px;row-gap:8px}");
+    expect(css).toContain(".games-head{flex-wrap:wrap;justify-content:flex-start;column-gap:10px;row-gap:8px}");
     expect(css).toContain(".games-head.ph-left,.games-head.head-right{display:contents}");
     expect(css).toMatch(/\.games-head\.toggle\{[^}]*order:4/);
     expect(css).toMatch(/\.games-head\.toggle\{[^}]*flex-basis:100%/);
