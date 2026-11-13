@@ -1,6 +1,6 @@
 # PSN Tracker : état du projet et feuille de route
 
-*Mis à jour le 13 novembre 2026 : tout l'audit `a_reprendre.md` sauf le design est fusionné (PR #23), la CI ne tourne plus que sur les PR et `main` (PR #27), et le dépôt est public. La première CI de `main` a échoué dans `pg-smoke` (le script de test, pas le site) : corrigé sur la branche `fix/main-ci`. Ensuite : publier l'image de `main`, les retouches de design D1 à D7, puis le déploiement sur le NAS.*
+*Mis à jour le 13 novembre 2026 : tout l'audit `a_reprendre.md` sauf le design est fusionné (PR #23), la CI ne tourne plus que sur les PR et `main` (PR #27), et le dépôt est public. La première CI de `main` a échoué dans `pg-smoke` (le script de test, pas le site), corrigé par la PR #28 : la CI de `main` est verte et l'image est publiée. Ensuite : les retouches de design D1 à D7, puis le déploiement sur le NAS.*
 
 Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un autre PC, commence par le lire. Le fichier `CLAUDE.md` à la racine le demande automatiquement.
 
@@ -242,7 +242,7 @@ L'utilisateur a décidé le 12 novembre 2026 de finir **tous** les points restan
   - CSS découpé : style calculé de chaque élément identique sur 9 pages à 1 630 et 375 px ; police locale : rendu identique ;
   - liste Games : styles identiques, retour arrière immédiat (après une page et après « Show all »), filtres, tri, recherche ;
   - pics de mémoire : 436 Mo pour l'export PNG le plus lourd, 436 Mo pour le worker sur les miniatures des bannières 4K.
-- **Fusionnée le 13 novembre 2026 (PR #23) sans CI** : les minutes gratuites de GitHub Actions étaient épuisées. L'image de `main` n'est donc pas publiée, et la CI de cette version n'a jamais tourné (jobs `test` avec le linter, `pg-smoke`, `nginx-smoke`, `image` avec les conteneurs durcis). Reste aussi le NAS (guide, étape 7, dont le point 12).
+- **Fusionnée le 13 novembre 2026 (PR #23) sans CI** : les minutes gratuites de GitHub Actions étaient épuisées. Sa CI a tourné plus tard, après la PR #28 (voir plus bas) : tous les jobs sont verts, dont `image` avec les conteneurs durcis. Reste le NAS (guide, étape 7, dont le point 12).
 - 127 fichiers de tests, 1 181 tests. Migration 0010.
 
 ### CI seulement quand elle sert (spec 21.9, fusionnée le 13 novembre 2026, PR #27)
@@ -251,17 +251,18 @@ L'utilisateur a décidé le 12 novembre 2026 de finir **tous** les points restan
 - Aucun contrôle obligatoire sur les PR : on regarde la CI avant de fusionner. La protection de `main` conseillée se limite à interdire sa suppression et les « force push ».
 - Le dépôt est ensuite passé en public : les minutes de GitHub Actions ne sont plus comptées.
 
-### CI de `main` et Dependabot (branche `fix/main-ci`, spec 21.10, PR à créer)
+### CI de `main` et Dependabot (spec 21.10, fusionnée le 13 novembre 2026, PR #28)
+- **CI de `main` verte après la fusion** : `test` (127 fichiers, 1 181 tests), `pg-smoke`, `nginx-smoke` et `image`. Le test des conteneurs durcis passe, l'image est publiée sur GHCR (`latest` et `sha-ad0d510`) et le nettoyage des anciennes images aussi : le rôle **Admin** du dépôt dans « Manage Actions access » est en place.
 - La CI de `main` après la PR #27 a échoué dans `pg-smoke`, donc l'image n'est toujours pas publiée. La cause est le script `scripts/pg-smoke.ts` : il insère des jeux sans synchro entre deux contrôles, et l'index des jeux gardé jusqu'à la prochaine synchro ne les voyait pas. Le site n'est pas touché : dans l'application, les jeux ne changent que pendant une synchro ou un « Save » des non obtenables, qui vident ce cache. Chaque contrôle a maintenant sa propre connexion.
 - Vérifié en local sur une base PGlite jetable : l'échec reproduit à l'identique, puis le script entier passe, et le worker compilé comme en CI démarre.
 - Dependabot : PR #26 (mises à jour mineures npm) fusionnée, PR #24 (Node 25) et #25 (ESLint 10) fermées. Les versions majeures de Node et d'ESLint ne sont plus proposées.
 
 ## 3. Ce qui reste à faire, dans l'ordre
-1. **Fusionner `fix/main-ci`** une fois la CI de sa PR verte : la fusion relance la CI de `main`, qui publie l'image. Vérifier que les quatre jobs sont verts, dont `image` (conteneurs durcis), qui n'a encore jamais tourné sur cette version. Sinon : onglet **Actions** → **CI** → **Run workflow** sur `main`.
+1. **PR de Dependabot #29 et #30** (`actions/setup-node` 7.1.0, `actions/checkout` 7.0.1, versions majeures sans effet sur notre CI) : les fusionner une par une, chacune une fois sa CI verte. La seconde se met à jour toute seule après la première (sinon, commenter `@dependabot rebase`).
 2. **Retouches de design D1 à D7** (`a_reprendre.md`, section 6), sur une branche `feat/design-retouches` : maquettes dans le navigateur de l'app, validées par l'utilisateur avant toute construction (décidé le 12 novembre 2026 : avant le déploiement).
 3. **Déployer sur le NAS** en suivant `deploy/README.md` (décidé le 9 novembre 2026, après la fin de l'audit). Copier le nouveau `deploy/nginx/default.conf` (étape 2) et les deux stacks à jour.
    - Avant tout, vérifier sur github.com (onglet Actions) que la CI de `main` est verte après la dernière fusion, et que l'image a été publiée.
-   - Juste après la première publication, donner une seule fois le rôle **Admin** au dépôt dans « Manage Actions access » du package GHCR (étape 1.5). Vérifier aussi qu'une publication n'ajoute qu'une version au package et que l'étiquette `sha-…` précédente se télécharge toujours.
+   - Le rôle **Admin** du dépôt dans « Manage Actions access » du package GHCR (étape 1.5) est déjà donné. Vérifier qu'une publication n'ajoute qu'une version au package et que l'étiquette `sha-…` précédente se télécharge toujours.
    - Faire les vérifications du premier déploiement de l'étape 7 du guide, dont le partage du NAS avec Plex (point 12).
 4. **Points laissés tels quels** : `docs/superpowers/plans/2026-11-08-phase1-suivis.md` marque chaque point réglé ; ce qui reste est un choix assumé (coins transparents de la tuile, spec 19.6). Dans `a_reprendre.md`, après cette branche, il ne reste que D1 à D7.
 
