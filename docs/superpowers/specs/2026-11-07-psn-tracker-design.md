@@ -1632,4 +1632,12 @@ Sur le build de production local, avec les vraies données :
   - Sur Games et la page d'un jeu, les textes et les traits des lignes d'informations sont au même pixel.
   - Seul le formulaire de bannière de Settings change (+37 px), comme prévu.
 - **D6** : le navigateur de l'app demandait déjà moins d'animations, et toutes les transitions y étaient coupées.
-- **À voir sur un vrai téléphone** : le fond flouté des onglets peut disparaître sous le fondu, comme sur la maquette validée ; le bouton Settings, hors de la bande, le garde. Si ça gêne, un fond un peu plus sombre des onglets sous 640 px compenserait.
+- **Correctifs de la relecture finale**, vérifiés sur le build final :
+  - l'interrupteur « Hide 0% games » ne réagit plus qu'à sa propre largeur (132 px) ;
+  - l'en-tête a la même mise en page qu'avant ;
+  - un onglet atteint au clavier s'arrête hors du fondu ;
+  - sur ordinateur, l'en-tête n'a pas changé.
+- **Au passage en portrait**, le menu revient bien sur l'onglet en cours. Mais le navigateur de l'app, qui simule ce changement de taille, remet ensuite le défilement à 0, même quand le site ne fait rien : c'est un artefact de la simulation.
+- **À voir sur un vrai téléphone** :
+  - En tournant le téléphone sur la page Stats, l'onglet Stats doit rester visible.
+  - Le fond flouté des onglets peut disparaître sous le fondu, comme sur la maquette validée ; le bouton Settings, hors de la bande, le garde. Si ça gêne, un fond un peu plus sombre des onglets sous 640 px compenserait.

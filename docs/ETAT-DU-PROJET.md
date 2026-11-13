@@ -271,7 +271,7 @@ L'utilisateur a décidé le 12 novembre 2026 de finir **tous** les points restan
   - à 1 630 px, comparaison du style calculé de chaque élément entre `main` et la branche, sur 7 pages et la même base ;
   - trouvés à la vérification et à la relecture finale, puis corrigés : le nombre poussé à droite sans « Show all », et l'interrupteur qui réagissait sur toute la largeur de sa ligne.
 - 133 fichiers de tests, 1 208 tests. Aucune migration.
-- **À regarder sur un vrai téléphone** : le flou derrière les onglets sous le fondu (spec 22.8).
+- **À regarder sur un vrai téléphone** (spec 22.8) : le flou derrière les onglets sous le fondu, et l'onglet Stats qui doit rester visible quand on tourne le téléphone sur Stats. La simulation du navigateur de l'app remet le défilement à 0 à chaque changement de taille.
 
 ## 3. Ce qui reste à faire, dans l'ordre
 1. **Créer la PR de `feat/design-retouches`**, la fusionner une fois la CI verte (sa fusion publie une nouvelle image).
