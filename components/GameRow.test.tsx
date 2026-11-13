@@ -43,11 +43,13 @@ describe("GameRow", () => {
     expect(screen.getByText("47 / 47 trophies")).toBeInTheDocument();
   });
 
-  it("renders the last played line with a separator element", () => {
+  it("renders the last played line as sibling parts", () => {
     const { container } = render(<GameRow row={game()} />);
     const meta = container.querySelectorAll(".game-meta")[1];
-    expect(meta.textContent).toBe("Last played 5 Nov 202633h 27m played");
-    expect(meta.querySelector(".sep")).not.toBeNull();
+    const spans = [...meta.children];
+    expect(spans.map((e) => e.tagName)).toEqual(["SPAN", "SPAN"]);
+    expect(spans.map((e) => e.textContent)).toEqual(["Last played 5 Nov 2026", "33h 27m played"]);
+    expect(meta.querySelector(".sep")).toBeNull();
     expect(container.textContent).not.toContain("|");
   });
 
@@ -56,9 +58,11 @@ describe("GameRow", () => {
     expect(container.querySelectorAll(".game-meta")).toHaveLength(1);
   });
 
-  it("keeps a single part without separator when no play time is known", () => {
+  it("keeps a single part alone when no play time is known", () => {
     const { container } = render(<GameRow row={game({ lastPlayedLine: "Last played 5 Nov 2026" })} />);
-    expect(container.querySelectorAll(".game-meta")[1].textContent).toBe("Last played 5 Nov 2026");
+    const meta = container.querySelectorAll(".game-meta")[1];
+    expect(meta.children).toHaveLength(1);
+    expect(meta.textContent).toBe("Last played 5 Nov 2026");
     expect(container.querySelector(".sep")).toBeNull();
   });
 
@@ -159,5 +163,15 @@ describe("game row CSS", () => {
       expect(rule(sel), sel).not.toMatch(/text-overflow|white-space:\s*nowrap/);
     }
     expect(rule(".game-meta")).toMatch(/flex-wrap:wrap/);
+  });
+
+  it("draws the separator as a clipped ::before of every part after the first", () => {
+    const css = readFileSync(path.resolve(import.meta.dirname, "../app/globals.css"), "utf8");
+    const rule = (sel: string) => css.split("\n").find((l) => l.startsWith(`${sel}{`)) ?? "";
+    expect(rule(".game-meta")).toMatch(/overflow:hidden/);
+    expect(rule(".game-meta")).toMatch(/gap:8px 17px/);
+    expect(rule(".game-meta>span+span")).toMatch(/position:relative/);
+    expect(rule(".game-meta>span+span::before")).toMatch(/left:-9px/);
+    expect(css.split("\n").some((l) => l.startsWith(".game-meta .sep"))).toBe(false);
   });
 });

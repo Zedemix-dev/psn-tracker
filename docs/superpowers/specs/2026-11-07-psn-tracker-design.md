@@ -1573,3 +1573,71 @@ La PR #27 est fusionnée et le dépôt est passé en public (minutes de GitHub A
 - **Correction [choix de Claude]** : chaque contrôle qui insère des jeux utilise sa propre connexion, donc des caches vides, comme après une synchro.
 - **Dependabot** : versions majeures de Node et d'ESLint ignorées (21.5, point 2).
 - **Fusionné le 13 novembre 2026 (PR #28)** : la CI de `main` est verte, dont `image` (test des conteneurs durcis, publication sur GHCR, nettoyage des anciennes images). Restent les vérifications du NAS.
+
+## 22. Retouches de design D1 à D7 (branche `feat/design-retouches`)
+**[décidé, 13 novembre 2026]** Dernier lot de l'audit `a_reprendre.md` (section 6), avant le déploiement sur le NAS. Maquette validée : `.superpowers/brainstorm/maquettes/retouches-v1.html`, avec `retouches-v1-frame.html` qui affiche chaque variante à 375 px avec la vraie feuille de style du site. L'utilisateur a choisi la variante B pour D1, D7 et D2. Les choix qu'il n'a pas faits lui-même sont marqués **[choix de Claude]**. Construit et vérifié avec les vraies données le 13 novembre 2026 (22.8).
+
+### 22.1 Intention
+Sur téléphone, le site doit se lire et s'utiliser sans deviner : toutes les pages se trouvent depuis le menu, les en-têtes ne se cassent pas en morceaux, les contrôles sont au style du site. Sur ordinateur, rien ne change à l'œil, sauf dans Settings (D2 et D5 s'appliquent à toutes les largeurs) et quand le système demande moins d'animations (D6).
+- **Non-objectifs** : aucun nouveau libellé hors du choix de fichier de Settings (D2), aucune page, aucun changement de mise en page au-dessus de 640 px hors de Settings (D4 ne change que les lignes qui passent à la ligne).
+- **À éviter** : un changement visible sur ordinateur, un menu qui cache l'onglet de la page en cours, un texte posé sur une image claire.
+
+### 22.2 D1 : le menu sur téléphone [décidé : variante B]
+Mesuré à 375 px : les cinq onglets prennent 476 px pour 226 px de place, rien ne signale qu'ils défilent, et une page ouverte directement (Stats, Trophy Advisor) a son onglet hors de l'écran.
+- **Approches montrées** : A, un fondu sur le bord ; **B, un fondu et Settings réduit à son icône (choisie)** ; C, les onglets sur deux rangées, sans défilement, mais qui couvrent davantage la bannière. Settings en icône sans fondu ne suffisait pas : il reste 293 px pour 476 px d'onglets.
+- **Sous 640 px**, le bouton Settings devient un rond de 32 × 32 px qui ne montre que son icône (16 px). Son nom accessible reste « Settings », et il garde la surbrillance sur la page Settings. Au-dessus de 640 px, il ne change pas.
+- **Fondu** : quand les onglets débordent, un fondu de 32 px couvre le bord où des onglets sont cachés : à droite tant qu'il en reste à droite, à gauche une fois qu'on a défilé, des deux côtés entre les deux. Même dégradé que les graphiques de Stats (18.14). Sans débordement, aucun fondu.
+- **Onglet de la page en cours** : à l'ouverture d'une page, s'il n'est pas entièrement visible, le menu défile pour le montrer, centré quand c'est possible, sans animation. **[choix de Claude]** Après un changement de page dans le site, le menu ne bouge que si le nouvel onglet n'est pas entièrement visible. **[choix de Claude, relecture finale]** Même chose quand le menu se met à déborder (téléphone tourné en portrait, police chargée en retard), et un onglet atteint au clavier s'arrête hors du fondu (`scroll-padding-inline` de 32 px).
+- **[choix de Claude]** Le défilement se fait au doigt ou au pavé tactile, comme aujourd'hui, sans glisser à la souris : le menu ne déborde que sous 640 px environ.
+
+### 22.3 D7 et D4 : l'en-tête de la liste Games et les lignes coupées [décidé : variante B]
+- **D7, approches montrées** : A, le nombre et « Show all » sous le titre (proposition de l'audit) ; **B, l'interrupteur sous le titre (choisie)**.
+- **Sous 640 px**, l'en-tête de la liste Games tient sur deux lignes : sur la première, « Games », le nombre (« 266 games ») juste après, et « Show all » au bout à droite ; sur la seconde, l'interrupteur « Hide 0% games ». Sans bouton « Show all » (liste déjà entière), la première ligne garde le titre et le nombre, le nombre toujours juste après le titre (défaut trouvé à la vérification et corrigé). **[choix de Claude, relecture finale]** L'interrupteur garde la largeur de son texte : un toucher à côté, sur le reste de la seconde ligne, ne change pas le réglage. Au-dessus de 640 px, l'en-tête ne change pas.
+- **D4** : dans une ligne de la liste Games, le trait qui sépare « Last played … » du temps de jeu ne s'affiche que si les deux textes sont sur la même ligne. Quand le second passe à la ligne, aucun trait ne reste en bout de ligne ni en début de la suivante. **[choix de Claude]** Même règle sur la ligne d'informations du bandeau de la page d'un jeu (nombre de trophées, dernière partie, temps de jeu), qui laissait deux traits seuls à 375 px. **[choix de Claude]** Sur ordinateur, les deux textes restent à 17 px l'un de l'autre et le trait garde son pixel exact (8 px après le premier texte), comme avant.
+
+### 22.4 D2 et D5 : Settings [décidé : variante B]
+- **D2, approches montrées** : A, le texte de l'aperçu sur un fond sombre (proposition de l'audit) ; **B, le texte sous l'aperçu (choisie)**. Le bouton de fichier est le même dans les deux.
+- **Aperçu de la bannière** : aucun texte sur l'image. « Automatic — last played game (<jeu>) » s'affiche sous l'aperçu, en 12 px, couleur atténuée. **[choix de Claude]** « Default banner » reste au centre de l'aperçu vide : aucune image derrière, il se lit bien.
+- **Choix du fichier** : le contrôle du navigateur (« Choisir un fichier », dans la langue du navigateur) est masqué mais reste utilisable au clavier et par un lecteur d'écran. À sa place, un bouton « Choose image » au style des boutons secondaires de Settings, avec une icône d'image, et à côté le nom du fichier choisi, ou « No file chosen ». Choisir un fichier met toujours l'aperçu à jour, comme aujourd'hui.
+- **[choix de Claude]** « Upload banner » reste désactivé tant qu'aucun fichier n'est choisi : la bulle « veuillez choisir un fichier » du navigateur pointerait vers un contrôle masqué.
+- **D5** : dans l'historique des synchros, les nombres prennent le séparateur de milliers (`formatInt`, 8.1) : « 266/266 games, 12,434 trophies ».
+
+### 22.5 D3 et D6 : sans changement visible [choix de Claude, d'après l'audit]
+- **D3** : sous 640 px, « Edit » du Trophy cabinet, chaque « Show all » (toutes les listes) et « Sync now » reçoivent une zone tactile d'au moins 32 px de haut. Elle déborde autour du bouton sans en changer l'aspect, et ne recouvre aucun contrôle voisin.
+- **D6** : quand le système demande de réduire les animations (`prefers-reduced-motion: reduce`), toutes les transitions CSS sont coupées sur toutes les pages : cases du Plat Wall, jaquettes du Trophy Log, parts d'anneau de Stats, interrupteurs. Le cercle de chargement du Plat Wall s'arrête aussi, comme le bouton de synchro aujourd'hui. Le minuteur du carrousel en tient déjà compte.
+
+### 22.6 Vérification
+Avec les vraies données, sur le build de production, à 375 et 1 630 px :
+- D1 : le menu sur chaque page, l'onglet de la page en cours visible en ouvrant directement Stats et Trophy Advisor, les fondus selon le défilement, Settings en icône sous 640 px ;
+- D7 et D4 : l'en-tête de Games sur deux lignes, sans texte coupé, et aucun trait seul dans les lignes de jeux et sur la page d'un jeu ;
+- D2 et D5 : un vrai fichier choisi puis envoyé, « Upload banner » désactivé avant, puis retour à la bannière automatique ; les nombres de l'historique ;
+- D3 : la zone tactile mesurée (au moins 32 px) ;
+- D6 : la règle présente sur chaque page ;
+- **sur ordinateur, à 1 630 px** : le style calculé de chaque élément est identique avant et après sur les pages principales, sauf ce que les points ci-dessus changent.
+
+### 22.7 Laissé au builder
+La technique (CSS seul quand il suffit, sinon un petit composant client), le nom des classes, la structure des tests.
+
+### 22.8 Vérification faite (13 novembre 2026)
+Sur le build de production local, avec les vraies données :
+- **375 px** : chaque point de 22.6 est conforme.
+  - D1 : l'onglet de la page en cours est visible en ouvrant directement chacune des 7 pages ; les fondus suivent le défilement ; un changement de page dans le site garde la position du menu ; en paysage (812 px), il n'y a ni fondu ni icône seule.
+  - D4 : aucun trait seul, ni sur 50 lignes de jeux sur 50, ni sur la page d'un jeu.
+  - D2 : un vrai envoi de bannière (« Banner updated. »), puis retour à la bannière automatique ; le contour de focus au clavier s'affiche sur « Choose image ».
+  - D3 : zones de 32 px mesurées. « Edit », de 17 px, répond à ±15 px de son centre et laisse la main au bloc voisin à ±17 px.
+  - D7 : le défaut sans « Show all » a été trouvé là, puis corrigé.
+- **1 630 px** :
+  - Méthode : `main` et la branche tournaient en même temps sur la même base, et le style calculé et la position de chaque élément ont été comparés sur 7 pages.
+  - Plat Wall, Trophy Log, Trophy Advisor et Stats sont identiques, sauf une propriété invisible du menu.
+  - Sur Games et la page d'un jeu, les textes et les traits des lignes d'informations sont au même pixel.
+  - Seul le formulaire de bannière de Settings change (+37 px), comme prévu.
+- **D6** : le navigateur de l'app demandait déjà moins d'animations, et toutes les transitions y étaient coupées.
+- **Correctifs de la relecture finale**, vérifiés sur le build final :
+  - l'interrupteur « Hide 0% games » ne réagit plus qu'à sa propre largeur (132 px) ;
+  - l'en-tête a la même mise en page qu'avant ;
+  - un onglet atteint au clavier s'arrête hors du fondu ;
+  - sur ordinateur, l'en-tête n'a pas changé.
+- **Au passage en portrait**, le menu revient bien sur l'onglet en cours. Mais le navigateur de l'app, qui simule ce changement de taille, remet ensuite le défilement à 0, même quand le site ne fait rien : c'est un artefact de la simulation.
+- **À voir sur un vrai téléphone** :
+  - En tournant le téléphone sur la page Stats, l'onglet Stats doit rester visible.
+  - Le fond flouté des onglets peut disparaître sous le fondu, comme sur la maquette validée ; le bouton Settings, hors de la bande, le garde. Si ça gêne, un fond un peu plus sombre des onglets sous 640 px compenserait.

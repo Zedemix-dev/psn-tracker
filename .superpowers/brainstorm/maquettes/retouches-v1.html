@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Retouches D1-D7 v1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0B1028;--text:#F3F5FB;--muted:#A9B3CB;--line:rgba(255,255,255,.13);--accent:#5AA9FF}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Sora",sans-serif;font-size:14px;line-height:1.5}
+.page{max-width:1640px;margin:0 auto;padding:24px 20px 64px}
+h1{font-size:22px;margin:0 0 4px}
+.lead{color:var(--muted);margin:0 0 28px;max-width:900px}
+section{margin-bottom:44px}
+h2{font-size:17px;margin:0 0 4px}
+h2 small{font-weight:500;color:var(--muted);font-size:13px}
+.intro{color:var(--muted);margin:0 0 14px;max-width:980px}
+h3{font-size:13px;font-weight:600;color:var(--muted);margin:18px 0 8px;text-transform:uppercase;letter-spacing:.04em}
+.row{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+figure{margin:0;width:377px}
+figure iframe{display:block;width:377px;border:1px solid var(--line);border-radius:12px;background:#0F1631}
+figcaption{margin-top:8px;font-size:12.5px;color:var(--muted)}
+figcaption b{color:var(--text);font-size:13.5px;display:block;margin-bottom:2px}
+.tag{display:inline-block;font-size:11px;font-weight:600;padding:1px 8px;border-radius:999px;background:rgba(90,169,255,.18);color:var(--accent);margin-left:6px;vertical-align:1px}
+.note{border:1px solid var(--line);border-radius:12px;padding:12px 16px;max-width:980px;background:rgba(255,255,255,.04)}
+.note p{margin:0 0 8px}.note p:last-child{margin:0}
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Retouches de design D1 à D7 — maquette v1</h1>
+  <p class="lead">Chaque cadre montre le site à 375 px de large (un téléphone), avec la vraie feuille de style du site. Rien ne change sur un écran d'ordinateur, sauf D6. Les textes du site restent en anglais.</p>
+
+  <section>
+    <h2>D1 — Le menu sur téléphone</h2>
+    <p class="intro">Les onglets tiennent sur 476 px, mais il n'y a que 226 px de place à côté de « Settings ». Rien ne dit qu'on peut les faire défiler. En plus, si on ouvre directement Stats ou Trophy Advisor, l'onglet de la page en cours est hors de l'écran. Dans les cadres, faites glisser les onglets à la souris pour les faire défiler.</p>
+    <h3>Sur la page Games</h3>
+    <div class="row">
+      <figure><iframe src="retouches-v1-frame.html?s=menu&v=now&p=games" height="250" title="Menu aujourd'hui"></iframe><figcaption><b>Aujourd'hui</b>« Troph » est coupé net ; Trophy Advisor et Stats ne se devinent pas.</figcaption></figure>
+      <figure><iframe src="retouches-v1-frame.html?s=menu&v=a&p=games" height="250" title="Menu A"></iframe><figcaption><b>A — Fondu sur le bord</b>Un fondu à droite tant qu'il reste des onglets, à gauche une fois qu'on a défilé, comme les graphiques de Stats. Settings ne change pas.</figcaption></figure>
+      <figure><iframe src="retouches-v1-frame.html?s=menu&v=b&p=games" height="250" title="Menu B"></iframe><figcaption><b>B — Fondu, et Settings en icône <span class="tag">ma préférence</span></b>Comme A, mais Settings devient un rond avec son icône : trois onglets entiers sont visibles au lieu de deux.</figcaption></figure>
+      <figure><iframe src="retouches-v1-frame.html?s=menu&v=c&p=games" height="250" title="Menu C"></iframe><figcaption><b>C — Deux rangées</b>Tous les onglets sont visibles sans rien faire défiler, Settings en icône. Le menu couvre une rangée de plus de la bannière.</figcaption></figure>
+    </div>
+    <h3>En ouvrant directement la page Stats</h3>
+    <div class="row">
+      <figure><iframe src="retouches-v1-frame.html?s=menu&v=now&p=stats" height="250" title="Menu aujourd'hui, page Stats"></iframe><figcaption><b>Aujourd'hui</b>L'onglet Stats, en surbrillance, est hors de l'écran.</figcaption></figure>
+      <figure><iframe src="retouches-v1-frame.html?s=menu&v=a&p=stats" height="250" title="Menu A, page Stats"></iframe><figcaption><b>A</b>Le menu s'ouvre déjà défilé jusqu'à l'onglet de la page.</figcaption></figure>
+      <figure><iframe src="retouches-v1-frame.html?s=menu&v=b&p=stats" height="250" title="Menu B, page Stats"></iframe><figcaption><b>B</b>Pareil, avec plus de place.</figcaption></figure>
+      <figure><iframe src="retouches-v1-frame.html?s=menu&v=c&p=stats" height="250" title="Menu C, page Stats"></iframe><figcaption><b>C</b>Tout est déjà visible.</figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>D7 et D4 — L'en-tête de la liste Games et la ligne d'un jeu</h2>
+    <p class="intro">À 375 px, « Hide 0% games » et « 266 games » passent chacun sur deux lignes (D7). Dans chaque ligne de jeu, « Last played … » et le temps de jeu ne tiennent pas sur une ligne, et le trait qui les sépare reste seul en bout de ligne (D4).</p>
+    <div class="row">
+      <figure><iframe src="retouches-v1-frame.html?s=list&v=now" height="300" title="Liste aujourd'hui"></iframe><figcaption><b>Aujourd'hui</b>Deux textes sur deux lignes chacun ; un trait seul après « 12 Nov 2026 ».</figcaption></figure>
+      <figure><iframe src="retouches-v1-frame.html?s=list&v=a" height="300" title="Liste A"></iframe><figcaption><b>A — Le nombre et Show all dessous <span class="tag">ma préférence</span></b>Le titre et l'interrupteur gardent la première ligne, comme sur ordinateur ; « 266 games » et « Show all » passent dessous (proposition de l'audit).</figcaption></figure>
+      <figure><iframe src="retouches-v1-frame.html?s=list&v=b" height="300" title="Liste B"></iframe><figcaption><b>B — L'interrupteur dessous</b>Le titre, le nombre et « Show all » sur la première ligne ; « Hide 0% games » dessous.</figcaption></figure>
+    </div>
+    <p class="intro" style="margin-top:12px">D4, dans A et B : le trait ne s'affiche que quand les deux textes sont sur la même ligne (sur ordinateur, rien ne change).</p>
+  </section>
+
+  <section>
+    <h2>D2 et D5 — Settings</h2>
+    <p class="intro">Le champ de fichier est celui du navigateur, sans style et dans la langue du navigateur (« Choisir un fichier »). Le texte posé sur l'aperçu de la bannière se lit mal sur une image claire (D2). Dans l'historique des synchros, « 12434 trophies » n'a pas de séparateur de milliers, contrairement au reste du site (D5). Dans A et B, essayez « Choose image » : le nom du fichier choisi s'affiche.</p>
+    <div class="row">
+      <figure><iframe src="retouches-v1-frame.html?s=settings&v=now" height="660" title="Settings aujourd'hui"></iframe><figcaption><b>Aujourd'hui</b>Champ du navigateur ; texte directement sur l'image ; « 12434 ».</figcaption></figure>
+      <figure><iframe src="retouches-v1-frame.html?s=settings&v=a" height="660" title="Settings A"></iframe><figcaption><b>A — Texte sur un fond sombre</b>Un bouton « Choose image » au style du site, suivi du nom du fichier. Le texte de l'aperçu reste sur l'image, sur un fond sombre (proposition de l'audit). « 12,434 ».</figcaption></figure>
+      <figure><iframe src="retouches-v1-frame.html?s=settings&v=b" height="660" title="Settings B"></iframe><figcaption><b>B — Texte sous l'image <span class="tag">ma préférence</span></b>Le même bouton. Le texte passe sous l'aperçu : on voit la bannière entière, telle qu'elle sera affichée. « 12,434 ».</figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>D3 et D6 — Sans changement visible</h2>
+    <div class="note">
+      <p><b>D3, zones tactiles.</b> Sous 640 px, « Edit » du Trophy cabinet (17 px de haut), « Show all » (24 px) et « Sync now » (27 px) reçoivent une zone tactile d'au moins 32 px. Elle déborde autour du bouton sans en changer l'aspect.</p>
+      <p><b>D6, animations réduites.</b> Quand le téléphone ou le PC demande de réduire les animations, les transitions au survol sont coupées aussi : cases du Plat Wall, jaquettes du Trophy Log, parts d'anneau de Stats, interrupteurs. Aujourd'hui, seuls le bouton de synchro et le carrousel en tiennent compte.</p>
+    </div>
+  </section>
+</div>
+</body>
+</html>

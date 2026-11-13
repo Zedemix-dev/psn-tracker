@@ -32,7 +32,10 @@ svg.ico{width:14px;height:14px;flex:none}
 /* Top menu: fully transparent over the banner, every item is a pill */
 .topbar{position:absolute;top:0;left:0;right:0;z-index:20}
 .topbar .wrap{display:flex;align-items:center;gap:12px;height:58px}
-.tabs{display:flex;align-items:center;gap:6px;overflow-x:auto;scrollbar-width:none;flex:1;min-width:0}
+.tabs{position:relative;display:flex;align-items:center;gap:6px;overflow-x:auto;scroll-padding-inline:32px;scrollbar-width:none;flex:1;min-width:0}
+.tabs.fl{-webkit-mask-image:linear-gradient(to right,transparent 0,#000 32px);mask-image:linear-gradient(to right,transparent 0,#000 32px)}
+.tabs.fr{-webkit-mask-image:linear-gradient(to left,transparent 0,#000 32px);mask-image:linear-gradient(to left,transparent 0,#000 32px)}
+.tabs.fl.fr{-webkit-mask-image:linear-gradient(to right,transparent 0,#000 32px,#000 calc(100% - 32px),transparent 100%);mask-image:linear-gradient(to right,transparent 0,#000 32px,#000 calc(100% - 32px),transparent 100%)}
 .pill{display:inline-flex;align-items:center;gap:7px;padding:6px 13px;border-radius:999px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.16);color:#fff;text-decoration:none;font-size:13px;font-weight:500;white-space:nowrap;flex:none;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 .pill:hover{background:rgba(0,0,0,.65)}
 .pill[aria-current]{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.85)}
@@ -82,6 +85,9 @@ svg.ico{width:14px;height:14px;flex:none}
 
 @media (max-width:640px){
   .wrap{padding:0 16px}
+  .set-pill{width:32px;height:32px;padding:0;justify-content:center}
+  .set-pill .set-pill-label{display:none}
+  .set-pill svg.ico{width:16px;height:16px}
   .profile{gap:14px;padding:12px;margin-top:-48px}
   .counts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
   .counts .count{min-width:0}
@@ -94,7 +100,10 @@ svg.ico{width:14px;height:14px;flex:none}
 }
 /* 320 px phones: the "Platinum" label (icon + text) is 1 px wider than its tile */
 @media (max-width:360px){.counts{gap:4px} .counts .count span{gap:2px}}
-@media (prefers-reduced-motion:reduce){.btn-sync.busy svg{animation:none}}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition:none!important}
+  .btn-sync.busy svg{animation:none}
+}
 
 /* Games list */
 .layout{display:grid;grid-template-columns:minmax(0,1fr) 450px;gap:16px;margin-top:14px;padding-bottom:64px;align-items:start}
@@ -140,8 +149,9 @@ select.select.on{border-color:var(--accent)}
 .game-cover{width:60px;height:60px;border-radius:9px;object-fit:cover;background:var(--surface-2)}
 .game-cover.icon{object-fit:contain;background:#0B1022}
 .game h3{margin:0;font-size:15px;font-weight:600;line-height:1.25;overflow-wrap:anywhere}
-.game-meta{display:flex;align-items:center;gap:8px;margin-top:3px;font-size:12px;line-height:1.3;color:var(--muted);flex-wrap:wrap;overflow-wrap:anywhere}
-.game-meta .sep{width:1px;height:11px;background:rgba(255,255,255,.28)}
+.game-meta{display:flex;align-items:center;gap:8px 17px;margin-top:3px;font-size:12px;line-height:1.3;color:var(--muted);flex-wrap:wrap;overflow-wrap:anywhere;overflow:hidden}
+.game-meta>span+span{position:relative}
+.game-meta>span+span::before{content:"";position:absolute;left:-9px;top:50%;width:1px;height:11px;margin-top:-5.5px;background:rgba(255,255,255,.28)}
 .unob{position:relative;flex:none;display:inline-block;font-size:10px;font-weight:800;line-height:1;padding:2px 6px;border-radius:4px;border:1px solid color-mix(in srgb,var(--rank-f) 70%,transparent);background:color-mix(in srgb,var(--rank-f) 28%,transparent);color:#FFC2BC;cursor:help;font-style:normal}
 .unob .tip{display:none;position:absolute;left:0;bottom:calc(100% + 7px);z-index:10;width:min(270px,70vw);padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:#0B1022;box-shadow:0 8px 22px rgba(0,0,0,.5);color:var(--text);font-size:12px;font-weight:400;line-height:1.4;white-space:normal;cursor:default}
 .unob .tip b{display:block;font-weight:600}
@@ -215,3 +225,16 @@ select.select.on{border-color:var(--accent)}
 
 button.select{font-family:inherit;cursor:pointer;padding-right:26px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill='none' stroke='%23F3F5FB' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' d='M3 4.5L6 7.5 9 4.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center;background-size:10px 10px}
 .head-right>span:empty,.log-aside>span:empty{display:none}
+
+/* Phones: Games head on two lines (title + count + Show all, then the toggle), 32 px touch zones */
+@media (max-width:640px){
+  .games-head{flex-wrap:wrap;justify-content:flex-start;column-gap:10px;row-gap:4px}
+  .games-head .ph-left,.games-head .head-right{display:contents}
+  .games-head h2{order:1}
+  .games-head .head-right>.aside{order:2}
+  .games-head .head-right>span:not(.aside){order:3;margin-left:auto}
+  .games-head::after{content:"";order:4;flex-basis:100%}
+  .games-head .toggle{order:5}
+  .btn-sync,.show-all,.edit-btn{position:relative}
+  .btn-sync::after,.show-all::after,.edit-btn::after{content:"";position:absolute;left:0;right:0;top:50%;height:max(100%,32px);transform:translateY(-50%)}
+}

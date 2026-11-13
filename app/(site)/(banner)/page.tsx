@@ -70,7 +70,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Sea
       <TrophyCarousel trophies={carousel} />
       <div className="layout">
         <section className="panel glass" aria-label="Games">
-          <div className="panel-head">
+          <div className="panel-head games-head">
             <div className="ph-left">
               <h2>Games</h2>
               <HideZeroToggle checked={hideZero} />

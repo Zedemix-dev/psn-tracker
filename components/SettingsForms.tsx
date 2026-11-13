@@ -24,6 +24,7 @@ export function BannerForm({
 }) {
   const [pos, setPos] = useState(posY);
   const [local, setLocal] = useState<string | null>(null);
+  const [fileName, setFileName] = useState<string | null>(null);
   const [result, setResult] = useState<FormResult | null>(null);
   const [pending, start] = useTransition();
   const custom = local ?? bannerUrl;
@@ -42,8 +43,8 @@ export function BannerForm({
         style={preview ? { backgroundImage: `url("${preview}")`, backgroundPositionY: `${custom ? pos : 25}%` } : undefined}
       >
         {!preview && <span>Default banner</span>}
-        {!custom && auto && <span>Automatic — last played game ({auto.gameName})</span>}
       </div>
+      {!custom && auto && <p className="set-preview-cap">Automatic — last played game ({auto.gameName})</p>}
       <form
         className="set-row"
         onSubmit={(e) => {
@@ -55,21 +56,36 @@ export function BannerForm({
         <label className="set-label" htmlFor="banner-file">
           Image (JPEG, PNG or WebP, 10 MB max)
         </label>
-        <input
-          id="banner-file"
-          name="banner"
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          required
-          onChange={(e) => {
-            const f = e.target.files?.[0];
-            setLocal((old) => {
-              if (old) URL.revokeObjectURL(old);
-              return f ? URL.createObjectURL(f) : null;
-            });
-          }}
-        />
-        <button type="submit" className="set-btn" disabled={pending}>
+        <div className="set-file">
+          <input
+            id="banner-file"
+            className="set-file-input"
+            name="banner"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            required
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              setFileName(f ? f.name : null);
+              setLocal((old) => {
+                if (old) URL.revokeObjectURL(old);
+                return f ? URL.createObjectURL(f) : null;
+              });
+            }}
+          />
+          <label htmlFor="banner-file" className="set-btn ghost set-file-btn">
+            <svg className="ico" viewBox="0 0 24 24" aria-hidden="true">
+              <g fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="4" width="18" height="16" rx="2" />
+                <circle cx="9" cy="10" r="2" />
+                <path d="M21 16l-5-5-9 9" />
+              </g>
+            </svg>
+            Choose image
+          </label>
+          <span className="set-file-name">{fileName ?? "No file chosen"}</span>
+        </div>
+        <button type="submit" className="set-btn" disabled={pending || !fileName}>
           {pending ? "Working…" : "Upload banner"}
         </button>
       </form>

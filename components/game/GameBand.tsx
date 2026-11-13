@@ -15,10 +15,7 @@ export function GameBand({ detail }: { detail: GameDetail }) {
         </div>
         <div className="gmeta">
           {detail.metaParts.map((part, i) => (
-            <span key={i} style={{ display: "contents" }}>
-              {i > 0 && <span className="sep" aria-hidden="true" />}
-              <span>{part}</span>
-            </span>
+            <span key={i}>{part}</span>
           ))}
         </div>
       </div>
