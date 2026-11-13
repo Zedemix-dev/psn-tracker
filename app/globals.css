@@ -32,7 +32,10 @@ svg.ico{width:14px;height:14px;flex:none}
 /* Top menu: fully transparent over the banner, every item is a pill */
 .topbar{position:absolute;top:0;left:0;right:0;z-index:20}
 .topbar .wrap{display:flex;align-items:center;gap:12px;height:58px}
-.tabs{display:flex;align-items:center;gap:6px;overflow-x:auto;scrollbar-width:none;flex:1;min-width:0}
+.tabs{position:relative;display:flex;align-items:center;gap:6px;overflow-x:auto;scrollbar-width:none;flex:1;min-width:0}
+.tabs.fl{-webkit-mask-image:linear-gradient(to right,transparent 0,#000 32px);mask-image:linear-gradient(to right,transparent 0,#000 32px)}
+.tabs.fr{-webkit-mask-image:linear-gradient(to left,transparent 0,#000 32px);mask-image:linear-gradient(to left,transparent 0,#000 32px)}
+.tabs.fl.fr{-webkit-mask-image:linear-gradient(to right,transparent 0,#000 32px,#000 calc(100% - 32px),transparent 100%);mask-image:linear-gradient(to right,transparent 0,#000 32px,#000 calc(100% - 32px),transparent 100%)}
 .pill{display:inline-flex;align-items:center;gap:7px;padding:6px 13px;border-radius:999px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.16);color:#fff;text-decoration:none;font-size:13px;font-weight:500;white-space:nowrap;flex:none;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 .pill:hover{background:rgba(0,0,0,.65)}
 .pill[aria-current]{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.85)}
@@ -82,6 +85,9 @@ svg.ico{width:14px;height:14px;flex:none}
 
 @media (max-width:640px){
   .wrap{padding:0 16px}
+  .set-pill{width:32px;height:32px;padding:0;justify-content:center}
+  .set-pill .set-pill-label{display:none}
+  .set-pill svg.ico{width:16px;height:16px}
   .profile{gap:14px;padding:12px;margin-top:-48px}
   .counts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
   .counts .count{min-width:0}
