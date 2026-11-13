@@ -12,7 +12,7 @@ Ce fichier est destiné à l'agent (ou à la personne) qui reprend le projet. Il
 >
 > **Suivi au 12 novembre 2026, branche `fix/audit-suite`, fusionnée dans `main` (PR #23, le 13 novembre 2026)** (spec section 21, plan `docs/superpowers/plans/2026-11-12-audit-suite.md`) : l'utilisateur a décidé de finir **tous** les points avant le déploiement sur le NAS.
 > - **Fait** : S7 (npsso plus gardé), le lot 3 (P2, P3, P4, R3, Q1, Q2, Q4, Q5, Q6) et les points d'après le NAS (Q3, P5, P6, P7, S8, S9, Q7), vérifiés avec les vraies données sur le build de production local. S10 est noté comme risque accepté en spec 14.5.
-> - **Fait** : les retouches de design D1 à D7, sur la branche `feat/design-retouches` (spec section 22, plan `docs/superpowers/plans/2026-11-13-design-retouches.md`), d'après la maquette validée (variante B pour D1, D7 et D2), vérifiées avec les vraies données sur le build de production local. Plus aucun point ouvert dans ce fichier.
+> - **Fait** : les retouches de design D1 à D7, sur la branche `feat/design-retouches`, fusionnée dans `main` (PR #32, le 13 novembre 2026) (spec section 22, plan `docs/superpowers/plans/2026-11-13-design-retouches.md`), d'après la maquette validée (variante B pour D1, D7 et D2), vérifiées avec les vraies données sur le build de production local. Plus aucun point ouvert dans ce fichier.
 
 ## 1. Ce qui a été audité, et comment
 
