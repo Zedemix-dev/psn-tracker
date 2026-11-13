@@ -23,6 +23,6 @@
   - Git Bash : `export PATH="/c/Program Files/nodejs:$PATH"` ;
   - PowerShell : recharger `$env:Path` depuis Machine + User.
 - Le chemin du dépôt peut contenir `!` (`...\!Perso\tracker`) : le mettre entre apostrophes en bash.
-- `gh` et Docker ne sont pas installés : la CI se vérifie sur github.com, et le dépôt est privé.
+- `gh` et Docker ne sont pas installés : la CI se vérifie sur github.com (le dépôt est public depuis le 13 novembre 2026).
 - Next.js 16 : lire `AGENTS.md` (généré par `next dev`), et les guides dans `node_modules/next/dist/docs/` avant d'écrire du code Next.
 - Tests : `npx vitest run` (PGlite en mémoire) et `npx tsc --noEmit`. Tests en local avec les vraies données : `npm run e2e:*` (voir `docs/ETAT-DU-PROJET.md`, section 5).
