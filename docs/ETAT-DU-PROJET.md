@@ -1,6 +1,6 @@
 # PSN Tracker : état du projet et feuille de route
 
-*Mis à jour le 13 novembre 2026 : tout l'audit `a_reprendre.md` sauf le design est fusionné (PR #23), la CI ne tourne plus que sur les PR et `main` (PR #27), et le dépôt est public. La première CI de `main` a échoué dans `pg-smoke` (le script de test, pas le site), corrigé par la PR #28 : la CI de `main` est verte et l'image est publiée. Ensuite : les retouches de design D1 à D7, puis le déploiement sur le NAS.*
+*Mis à jour le 13 novembre 2026 : tout l'audit `a_reprendre.md` sauf le design est fusionné (PR #23), la CI ne tourne plus que sur les PR et `main` (PR #27), et le dépôt est public. La première CI de `main` a échoué dans `pg-smoke` (le script de test, pas le site), corrigé par la PR #28 : la CI de `main` est verte et l'image est publiée. Les retouches de design D1 à D7, dernier lot de l'audit, sont construites et vérifiées sur la branche `feat/design-retouches` (spec 22, PR à créer). Ensuite : le déploiement sur le NAS.*
 
 Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un autre PC, commence par le lire. Le fichier `CLAUDE.md` à la racine le demande automatiquement.
 
@@ -32,9 +32,11 @@ Ce fichier sert de point de reprise. Une nouvelle conversation, même sur un aut
 | `docs/superpowers/plans/2026-11-11-stats-touch.md` | Le plan des infobulles au doigt et du défilement de côté (3 tâches). Terminé. |
 | `docs/superpowers/specs/2026-11-11-psn-tracker-maquette-suivis.html` | Maquette validée des compteurs du bandeau sur téléphone (v2, version B). |
 | `docs/superpowers/plans/2026-11-11-followups.md` | Le plan des points de suivi de la phase 1 (14 tâches). Terminé. |
-| `a_reprendre.md` | Audit complet du 11 novembre 2026, écrit par une autre session. S1 est corrigé (PR #19) ; P1, S2, R1, S3 à S6 et R2 sont fusionnés (PR #21, spec 20) ; tous les autres points sauf le design sont fusionnés (PR #23, spec 21) ; restent les retouches de design D1 à D7. |
+| `a_reprendre.md` | Audit complet du 11 novembre 2026, écrit par une autre session. S1 est corrigé (PR #19) ; P1, S2, R1, S3 à S6 et R2 sont fusionnés (PR #21, spec 20) ; tous les autres points sauf le design sont fusionnés (PR #23, spec 21) ; les retouches de design D1 à D7 sont faites sur `feat/design-retouches` (spec 22). Plus aucun point ouvert. |
 | `docs/superpowers/plans/2026-11-12-audit.md` | Le plan des lots 1 et 2 de l'audit (10 tâches). Terminé, fusionné (PR #21). |
 | `docs/superpowers/plans/2026-11-12-audit-suite.md` | Le plan de la fin de l'audit hors design (13 tâches pour les agents, plus les relevés et la vérification). Terminé, fusionné (PR #23). |
+| `.superpowers/brainstorm/maquettes/retouches-v1.html` | Maquette validée des retouches D1 à D7 (variante B pour D1, D7 et D2). Elle affiche chaque variante à 375 px dans `retouches-v1-frame.html`, avec une copie de la feuille de style du site (`retouches-site.css`). |
+| `docs/superpowers/plans/2026-11-13-design-retouches.md` | Le plan des retouches de design (4 tâches, puis la vérification). Terminé ; deux valeurs du plan ont été corrigées en cours de route (spec 22.3). |
 | `deploy/README.md` | Guide pas à pas du déploiement sur le NAS. |
 | `.superpowers/brainstorm/maquettes/` | Toutes les maquettes intermédiaires : `accueil-v1` à `v12`, `jeu-v1` à `v6` (la v6 compare les images de groupe : carrées ou absentes), `platwall-v1` à `v3`, `trophylog-v1` et `v2`, `advisor-v1` à `v4`, `stats-v1` à `v6` (les v5 et v6 : le graphique des années qui défile), `suivis-v1` et `v2` (compteurs du bandeau sur téléphone, tuile des images à coins arrondis). |
 
@@ -255,16 +257,29 @@ L'utilisateur a décidé le 12 novembre 2026 de finir **tous** les points restan
 - **CI de `main` verte après la fusion** : `test` (127 fichiers, 1 181 tests), `pg-smoke`, `nginx-smoke` et `image`. Le test des conteneurs durcis passe, l'image est publiée sur GHCR (`latest` et `sha-ad0d510`) et le nettoyage des anciennes images aussi : le rôle **Admin** du dépôt dans « Manage Actions access » est en place.
 - La CI de `main` après la PR #27 a échoué dans `pg-smoke`, donc l'image n'est toujours pas publiée. La cause est le script `scripts/pg-smoke.ts` : il insère des jeux sans synchro entre deux contrôles, et l'index des jeux gardé jusqu'à la prochaine synchro ne les voyait pas. Le site n'est pas touché : dans l'application, les jeux ne changent que pendant une synchro ou un « Save » des non obtenables, qui vident ce cache. Chaque contrôle a maintenant sa propre connexion.
 - Vérifié en local sur une base PGlite jetable : l'échec reproduit à l'identique, puis le script entier passe, et le worker compilé comme en CI démarre.
-- Dependabot : PR #26 (mises à jour mineures npm) fusionnée, PR #24 (Node 25) et #25 (ESLint 10) fermées. Les versions majeures de Node et d'ESLint ne sont plus proposées.
+- Dependabot : PR #26 (mises à jour mineures npm) fusionnée, PR #24 (Node 25) et #25 (ESLint 10) fermées. Les versions majeures de Node et d'ESLint ne sont plus proposées. Ensuite, PR #30 (`actions/checkout` 7.0.1) fusionnée ; PR #29 (`actions/setup-node` 7.1.0) fermée sans fusion : Dependabot la reproposera.
+
+### Retouches de design D1 à D7 (branche `feat/design-retouches`, spec 22, PR à créer)
+- Maquette validée dans le navigateur de l'app, variante B pour D1, D7 et D2. Exécution « subagent-driven » en 4 tâches, une relecture par tâche, une relecture finale de toute la branche.
+- **D1, le menu sur téléphone** : un fondu sur le bord où des onglets sont cachés. Sous 640 px, Settings devient une icône ronde. L'onglet de la page en cours est ramené à l'écran à l'ouverture, et quand le menu se met à déborder.
+- **D7, l'en-tête de la liste Games sous 640 px** : « Games », le nombre et « Show all » sur une ligne, « Hide 0% games » dessous.
+- **D4, les traits de séparation** : plus de trait seul quand une ligne passe à la ligne (liste Games, page d'un jeu). Sur ordinateur, même écart et même pixel qu'avant.
+- **D2 et D5, Settings** : un bouton « Choose image » avec le nom du fichier, « Upload banner » désactivé sans fichier, le texte sous l'aperçu, « 12,434 trophies ».
+- **D3 et D6** : zones tactiles de 32 px pour « Edit », « Show all » et « Sync now » ; plus aucune transition quand le système demande moins d'animations.
+- **Vérifié avec les vraies données** sur le build de production (spec 22.8) :
+  - à 375 px, tous les points ;
+  - à 1 630 px, comparaison du style calculé de chaque élément entre `main` et la branche, sur 7 pages et la même base ;
+  - trouvés à la vérification et à la relecture finale, puis corrigés : le nombre poussé à droite sans « Show all », et l'interrupteur qui réagissait sur toute la largeur de sa ligne.
+- 133 fichiers de tests, 1 208 tests. Aucune migration.
+- **À regarder sur un vrai téléphone** : le flou derrière les onglets sous le fondu (spec 22.8).
 
 ## 3. Ce qui reste à faire, dans l'ordre
-1. **PR de Dependabot #29 et #30** (`actions/setup-node` 7.1.0, `actions/checkout` 7.0.1, versions majeures sans effet sur notre CI) : les fusionner une par une, chacune une fois sa CI verte. La seconde se met à jour toute seule après la première (sinon, commenter `@dependabot rebase`).
-2. **Retouches de design D1 à D7** (`a_reprendre.md`, section 6), sur une branche `feat/design-retouches` : maquettes dans le navigateur de l'app, validées par l'utilisateur avant toute construction (décidé le 12 novembre 2026 : avant le déploiement).
-3. **Déployer sur le NAS** en suivant `deploy/README.md` (décidé le 9 novembre 2026, après la fin de l'audit). Copier le nouveau `deploy/nginx/default.conf` (étape 2) et les deux stacks à jour.
+1. **Créer la PR de `feat/design-retouches`**, la fusionner une fois la CI verte (sa fusion publie une nouvelle image).
+2. **Déployer sur le NAS** en suivant `deploy/README.md` (décidé le 9 novembre 2026, après la fin de l'audit). Copier le nouveau `deploy/nginx/default.conf` (étape 2) et les deux stacks à jour.
    - Avant tout, vérifier sur github.com (onglet Actions) que la CI de `main` est verte après la dernière fusion, et que l'image a été publiée.
    - Le rôle **Admin** du dépôt dans « Manage Actions access » du package GHCR (étape 1.5) est déjà donné. Vérifier qu'une publication n'ajoute qu'une version au package et que l'étiquette `sha-…` précédente se télécharge toujours.
    - Faire les vérifications du premier déploiement de l'étape 7 du guide, dont le partage du NAS avec Plex (point 12).
-4. **Points laissés tels quels** : `docs/superpowers/plans/2026-11-08-phase1-suivis.md` marque chaque point réglé ; ce qui reste est un choix assumé (coins transparents de la tuile, spec 19.6). Dans `a_reprendre.md`, après cette branche, il ne reste que D1 à D7.
+3. **Points laissés tels quels** : `docs/superpowers/plans/2026-11-08-phase1-suivis.md` marque chaque point réglé ; ce qui reste est un choix assumé (coins transparents de la tuile, spec 19.6). Dans `a_reprendre.md`, plus aucun point n'est ouvert.
 
 ## 4. Comment reprendre dans une nouvelle conversation
 Pour démarrer une page, il suffit de le dire, par exemple « On attaque Trophy Log ». Avec le plugin superpowers installé (voir 6), Claude lance de lui-même le bon processus. Pour être sûr, on peut aussi le demander explicitement : « utilise le skill brainstorming ».

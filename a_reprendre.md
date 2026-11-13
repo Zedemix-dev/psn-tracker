@@ -12,7 +12,7 @@ Ce fichier est destiné à l'agent (ou à la personne) qui reprend le projet. Il
 >
 > **Suivi au 12 novembre 2026, branche `fix/audit-suite`, fusionnée dans `main` (PR #23, le 13 novembre 2026)** (spec section 21, plan `docs/superpowers/plans/2026-11-12-audit-suite.md`) : l'utilisateur a décidé de finir **tous** les points avant le déploiement sur le NAS.
 > - **Fait** : S7 (npsso plus gardé), le lot 3 (P2, P3, P4, R3, Q1, Q2, Q4, Q5, Q6) et les points d'après le NAS (Q3, P5, P6, P7, S8, S9, Q7), vérifiés avec les vraies données sur le build de production local. S10 est noté comme risque accepté en spec 14.5.
-> - **À faire** : les retouches de design D1 à D7, sur une branche `feat/design-retouches`, avec des maquettes validées avant toute construction.
+> - **Fait** : les retouches de design D1 à D7, sur la branche `feat/design-retouches` (spec section 22, plan `docs/superpowers/plans/2026-11-13-design-retouches.md`), d'après la maquette validée (variante B pour D1, D7 et D2), vérifiées avec les vraies données sur le build de production local. Plus aucun point ouvert dans ce fichier.
 
 ## 1. Ce qui a été audité, et comment
 
@@ -128,13 +128,13 @@ Retouches proposées, toutes mineures :
 
 | N° | Constat | Proposition |
 |---|---|---|
-| D1, *À faire* (branche `feat/design-retouches`, sur maquette validée) | **Menu sur téléphone** : les onglets défilent de côté sans aucun signe. À 375 px on voit « Games », « Plat Wall » et « Troph » coupé net par le bouton Settings. Trophy Log, Trophy Advisor et Stats ne se devinent pas. | Un fondu sur le bord droit, comme sur les graphiques de Stats (18.14), ou Settings réduit à son icône sous 640 px. |
-| D2, *À faire* (branche `feat/design-retouches`, sur maquette validée) | **Settings** : le champ de fichier est celui du navigateur, sans style (« Choisir un fichier », en français dans un site en anglais), et le texte « Automatic — last played game » posé sur l'aperçu de la bannière se lit mal sur une image claire. | Un bouton au style du site, et un fond sombre sous le texte de l'aperçu. |
-| D3, *À faire* (branche `feat/design-retouches`, sur maquette validée) | **Cibles tactiles petites** : « Edit » du Trophy cabinet (17 px de haut), « Show all » (24 px), « Sync now » (27 px). | Au moins 32 px de zone tactile sous 640 px, sans changer l'aspect. |
-| D4, *À faire* (branche `feat/design-retouches`, sur maquette validée) | **Ligne de jeu sur téléphone** : « Last played 11 Nov 2026 \| » finit par un séparateur seul quand le temps de jeu passe à la ligne. | Masquer le séparateur quand la ligne se coupe. |
-| D5, *À faire* (branche `feat/design-retouches`, sur maquette validée) | **Historique des synchros** : « 12434 trophies » sans séparateur de milliers, contrairement au format de la spec 8.1. | `formatInt` dans `app/(site)/(banner)/settings/page.tsx:125`. |
-| D6, *À faire* (branche `feat/design-retouches`, sur maquette validée) | **Animations réduites** (spec 10) : seuls le bouton de synchro et le minuteur du carrousel en tiennent compte. Les transitions au survol (cases du Plat Wall, parts d'anneau) restent. | Une règle `@media (prefers-reduced-motion:reduce)` qui coupe les `transition` de `app/globals.css`. |
-| D7, *À faire* (branche `feat/design-retouches`, sur maquette validée) | **En-tête de la liste Games à 375 px** : « Hide 0% games » et « 266 games » passent chacun sur deux lignes. | Passer le nombre et « Show all » sous le titre à cette largeur. |
+| D1, **Fait** (`feat/design-retouches`, spec 22) | **Menu sur téléphone** : les onglets défilent de côté sans aucun signe. À 375 px on voit « Games », « Plat Wall » et « Troph » coupé net par le bouton Settings. Trophy Log, Trophy Advisor et Stats ne se devinent pas. | Un fondu sur le bord droit, comme sur les graphiques de Stats (18.14), ou Settings réduit à son icône sous 640 px. |
+| D2, **Fait** (`feat/design-retouches`, spec 22) | **Settings** : le champ de fichier est celui du navigateur, sans style (« Choisir un fichier », en français dans un site en anglais), et le texte « Automatic — last played game » posé sur l'aperçu de la bannière se lit mal sur une image claire. | Un bouton au style du site, et un fond sombre sous le texte de l'aperçu. |
+| D3, **Fait** (`feat/design-retouches`, spec 22) | **Cibles tactiles petites** : « Edit » du Trophy cabinet (17 px de haut), « Show all » (24 px), « Sync now » (27 px). | Au moins 32 px de zone tactile sous 640 px, sans changer l'aspect. |
+| D4, **Fait** (`feat/design-retouches`, spec 22) | **Ligne de jeu sur téléphone** : « Last played 11 Nov 2026 \| » finit par un séparateur seul quand le temps de jeu passe à la ligne. | Masquer le séparateur quand la ligne se coupe. |
+| D5, **Fait** (`feat/design-retouches`, spec 22) | **Historique des synchros** : « 12434 trophies » sans séparateur de milliers, contrairement au format de la spec 8.1. | `formatInt` dans `app/(site)/(banner)/settings/page.tsx:125`. |
+| D6, **Fait** (`feat/design-retouches`, spec 22) | **Animations réduites** (spec 10) : seuls le bouton de synchro et le minuteur du carrousel en tiennent compte. Les transitions au survol (cases du Plat Wall, parts d'anneau) restent. | Une règle `@media (prefers-reduced-motion:reduce)` qui coupe les `transition` de `app/globals.css`. |
+| D7, **Fait** (`feat/design-retouches`, spec 22) | **En-tête de la liste Games à 375 px** : « Hide 0% games » et « 266 games » passent chacun sur deux lignes. | Passer le nombre et « Show all » sous le titre à cette largeur. |
 
 Non défauts, vérifiés : les textes coupés par « … » dans la carte du carrousel sont ceux de la maquette validée (v12) ; « NieR Replicant ver.1.22474487139... » est le vrai nom du jeu.
 
@@ -182,7 +182,7 @@ Points forts à garder : pas un seul `any` ni `@ts-ignore` hors tests, aucun `TO
    - lot 1, avant le déploiement : P1, S2, R1 (S1 est fait) ; **fait** (PR #21) ;
    - lot 2, durcissement : S3, S4, S5, S6, R2 ; **fait** (PR #21) ;
    - lot 3, confort : P2, P3, P4, R3, Q1, Q2, Q4, Q5, Q6 ; **fait** sur `fix/audit-suite` (spec 21) ;
-   - lot 4, design, après validation : D1 à D7 ; *à faire*, sur la branche `feat/design-retouches`, avant le déploiement.
+   - lot 4, design, après validation : D1 à D7 ; **fait**, sur la branche `feat/design-retouches` (spec 22), avant le déploiement.
 4. **Vérifier avec les vraies données** (`docs/ETAT-DU-PROJET.md`, section 5), sur le build de production. Pour S1 et P1, lire les en-têtes d'une réponse réelle, connecté.
 5. **Mettre à jour** `deploy/README.md` (gzip, HSTS, plages de confiance de nginx) et `docs/ETAT-DU-PROJET.md`. *(Fait, PR #21.)*
 6. Q3, P5, P6, P7, S8, S9 et Q7 : **faits** sur `fix/audit-suite` avant le NAS (décision du 12 novembre 2026).
