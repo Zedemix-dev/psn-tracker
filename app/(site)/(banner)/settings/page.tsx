@@ -8,6 +8,7 @@ import { syncRuns } from "@/src/db/schema";
 import { formatDate, formatDateTime, formatDuration } from "@/src/lib/format";
 import { getPageBanner } from "@/src/settings/page-banner";
 import { getSettings } from "@/src/settings/repo";
+import { formatRunDetails } from "@/src/sync/run-details";
 import { getSyncStatus } from "@/src/sync/requests";
 import { getUnobtainableStatus } from "@/src/unobtainable/status";
 import { logout } from "./actions";
@@ -124,7 +125,7 @@ export default async function SettingsPage() {
                         : "—"}
                     </td>
                     <td>{r.status}</td>
-                    <td>{r.error ?? `${r.titlesDone}/${r.titlesTotal} games, ${r.trophiesUpdated} trophies`}</td>
+                    <td>{formatRunDetails(r)}</td>
                   </tr>
                 ))}
               </tbody>

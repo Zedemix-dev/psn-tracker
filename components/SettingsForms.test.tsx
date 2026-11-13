@@ -13,7 +13,10 @@ vi.mock("@/app/(site)/(banner)/settings/actions", () => ({
   uploadBanner: vi.fn(),
 }));
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+});
 
 describe("BannerForm", () => {
   it("frames the automatic banner at 25% whatever the stored position", () => {
@@ -26,6 +29,42 @@ describe("BannerForm", () => {
     expect(screen.getByText("Automatic — last played game (Cyberpunk 2077)")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Use automatic banner" })).toBeInTheDocument();
     expect(screen.getByLabelText("Visible part")).toBeDisabled();
+  });
+});
+
+describe("BannerForm file and caption", () => {
+  const image = () => screen.getByRole("img", { name: "Banner preview" });
+  const pick = (files: File[]) => fireEvent.change(screen.getByLabelText(/Choose image/), { target: { files } });
+
+  it("shows the automatic caption under the preview", () => {
+    render(<BannerForm bannerUrl={null} posY={50} auto={{ url: "/media/b.jpg", gameName: "Cyberpunk 2077" }} />);
+    const caption = screen.getByText("Automatic — last played game (Cyberpunk 2077)");
+    expect(image()).not.toContainElement(caption);
+    expect(image().nextElementSibling).toBe(caption);
+  });
+
+  it("keeps Default banner inside the empty preview", () => {
+    render(<BannerForm bannerUrl={null} posY={50} auto={null} />);
+    expect(image()).toContainElement(screen.getByText("Default banner"));
+  });
+
+  it("replaces the file field with Choose image", () => {
+    vi.stubGlobal("URL", Object.assign(URL, { createObjectURL: () => "blob:x", revokeObjectURL: () => {} }));
+    render(<BannerForm bannerUrl={null} posY={50} auto={null} />);
+    expect(screen.getByText("No file chosen")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Upload banner" })).toBeDisabled();
+    pick([new File(["x"], "banner.png", { type: "image/png" })]);
+    expect(screen.getByText("banner.png")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Upload banner" })).toBeEnabled();
+  });
+
+  it("goes back to No file chosen when the dialog is cancelled", () => {
+    vi.stubGlobal("URL", Object.assign(URL, { createObjectURL: () => "blob:x", revokeObjectURL: () => {} }));
+    render(<BannerForm bannerUrl={null} posY={50} auto={null} />);
+    pick([new File(["x"], "banner.png", { type: "image/png" })]);
+    pick([]);
+    expect(screen.getByText("No file chosen")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Upload banner" })).toBeDisabled();
   });
 });
 
