@@ -10,7 +10,7 @@ Ce fichier est destiné à l'agent (ou à la personne) qui reprend le projet. Il
 > - **Fait** : P1, S2, R1 (lot 1) et S3, S4, S5, S6, R2 (lot 2), vérifiés avec les vraies données sur le build de production local. P1 et S4 sont aussi testés par le job `nginx-smoke` de la CI. Chaque point porte la mention « Fait » ci-dessous.
 > - ~~**Non traité** (décision du 12 novembre 2026)~~ : voir le suivi suivant.
 >
-> **Suivi au 12 novembre 2026, branche `fix/audit-suite`** (spec section 21, plan `docs/superpowers/plans/2026-11-12-audit-suite.md`) : l'utilisateur a décidé de finir **tous** les points avant le déploiement sur le NAS.
+> **Suivi au 12 novembre 2026, branche `fix/audit-suite`, fusionnée dans `main` (PR #23, le 13 novembre 2026)** (spec section 21, plan `docs/superpowers/plans/2026-11-12-audit-suite.md`) : l'utilisateur a décidé de finir **tous** les points avant le déploiement sur le NAS.
 > - **Fait** : S7 (npsso plus gardé), le lot 3 (P2, P3, P4, R3, Q1, Q2, Q4, Q5, Q6) et les points d'après le NAS (Q3, P5, P6, P7, S8, S9, Q7), vérifiés avec les vraies données sur le build de production local. S10 est noté comme risque accepté en spec 14.5.
 > - **À faire** : les retouches de design D1 à D7, sur une branche `feat/design-retouches`, avec des maquettes validées avant toute construction.
 

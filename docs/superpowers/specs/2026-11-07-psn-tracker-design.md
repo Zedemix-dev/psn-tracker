@@ -589,6 +589,7 @@ Il doit aussi vérifier en pratique la détection des nouveaux DLC (6.4).
 - **Points de suivi de la phase 1 :** tous traités avant le déploiement sur le NAS, à la demande de l'utilisateur, cadrés le 11 novembre 2026, décrits en 19. Construits et vérifiés avec les vraies données, fusionnés dans `main` le 12 novembre 2026 (PR #19).
 - **[décidé, 12 novembre 2026] Audit du 11 novembre 2026 :** le bilan `a_reprendre.md`, écrit par une autre session, reste dans le dépôt : ses points devront être vérifiés ou corrigés un jour. Son point S1 (`sandbox` de `/media`) est corrigé dans la PR #19. Le reste n'est ni décidé ni commencé : chaque point retenu passera par le processus habituel, et les retouches de design par une validation de l'utilisateur.
 - **[décidé, 12 novembre 2026] Ordre :** avant le déploiement sur le NAS, l'utilisateur finit **tous** les points restants de `a_reprendre.md`, y compris ceux que l'audit gardait pour après le NAS. Deux branches : `fix/audit-suite` (tout sauf le design, décrit en 21, construit et vérifié le 12 novembre 2026), puis `feat/design-retouches` (D1 à D7, sur maquettes validées).
+- **[décidé, 13 novembre 2026] CI :** elle ne tourne plus que sur une pull request vers `main`, sur `main` après une fusion et à la demande, jamais pour la documentation seule, après l'épuisement des minutes gratuites de GitHub Actions (21.9).
 - **[décidé, 12 novembre 2026] Suites de l'audit, lots 1 et 2 :** P1, S2, R1, S3, S4, S5, S6 et R2 sont traités avant le déploiement sur le NAS, sur la branche `fix/audit`, décrits en 20. Construits et vérifiés avec les vraies données le 12 novembre 2026, fusionnés dans `main` le 12 novembre 2026 (PR #21), CI verte. Le lot 3, S7 et les retouches de design D1 à D7 restent pour plus tard.
 
 ## 14. Jeux aux trophées non obtenables
@@ -1474,7 +1475,7 @@ Sur le build de production local (`npm run build`, puis `npm run e2e:db`, `npm r
 - La façon de simuler le PSN injoignable pour la vérification (20.11), sans rien ajouter au code de production.
 
 ## 21. Fin de l'audit, hors design (branche `fix/audit-suite`)
-**[décidé, 12 novembre 2026]** Après la PR #22, l'utilisateur finit tous les points restants de `a_reprendre.md` avant le déploiement sur le NAS, y compris ceux que l'audit gardait pour après. Cette section couvre la branche `fix/audit-suite` : S7, le lot 3 (P2, P3, P4, R3, Q1, Q2, Q4, Q5, Q6), les points d'après le NAS (Q3, P5, P6, P7, S8, S9, Q7) et S10 (une note, en 14.5). Les retouches de design D1 à D7 suivront sur leur propre branche, sur maquettes validées. L'utilisateur a validé chaque groupe sur description. Construit et vérifié avec les vraies données le 12 novembre 2026 (21.7) ; restent la CI sur github.com et les vérifications du NAS. Les choix qu'il n'a pas faits lui-même sont marqués **[choix de Claude]**.
+**[décidé, 12 novembre 2026]** Après la PR #22, l'utilisateur finit tous les points restants de `a_reprendre.md` avant le déploiement sur le NAS, y compris ceux que l'audit gardait pour après. Cette section couvre la branche `fix/audit-suite` : S7, le lot 3 (P2, P3, P4, R3, Q1, Q2, Q4, Q5, Q6), les points d'après le NAS (Q3, P5, P6, P7, S8, S9, Q7) et S10 (une note, en 14.5). Les retouches de design D1 à D7 suivront sur leur propre branche, sur maquettes validées. L'utilisateur a validé chaque groupe sur description. Construit et vérifié avec les vraies données le 12 novembre 2026 (21.7), fusionné dans `main` le 13 novembre 2026 (PR #23) sans CI, faute de minutes (21.9) ; restent la CI et les vérifications du NAS. Les choix qu'il n'a pas faits lui-même sont marqués **[choix de Claude]**.
 
 ### 21.1 Intention
 Partir sur le NAS avec un dépôt sans dette connue : moins de secrets gardés, des pages qui relisent moins la base, un code vérifié par un linter, des tests plus rapides, une image et des conteneurs plus sûrs.
@@ -1557,3 +1558,11 @@ Sur le build de production local (`npm run build`, puis `npm run e2e:db`, `npm r
 - La répartition des tests entre les deux projets Vitest et le choix des fichiers en `isolate: false` (P5).
 - La forme du job de la CI de S9, et sa place (job `image` ou job à part).
 - La valeur exacte du marqueur des non obtenables (21.3.3), tant qu'il change à chaque liste appliquée.
+
+### 21.9 CI : seulement quand elle sert [décidé, 13 novembre 2026]
+Après la fusion de la PR #23, l'utilisateur a constaté que les 2 000 minutes mensuelles de GitHub Actions (plan gratuit, dépôt privé) étaient épuisées : la CI tournait à chaque push de chaque branche, et le travail est poussé après chaque commit (une seule branche en a lancé 28). La PR #23 a donc été fusionnée sans CI, et son image n'a pas été publiée.
+- La CI ne tourne plus que sur une pull request vers `main` (à sa création, puis à chaque push sur sa branche), sur `main` après une fusion (publication de l'image), et à la demande (« Run workflow »). Un push sur une branche de travail ne lance rien.
+- **[choix de Claude]** Un changement qui ne touche que la documentation (`docs/`, `.superpowers/`, fichiers `.md`) ne lance pas la CI.
+- **[choix de Claude]** Un lancement à la demande sur `main` publie l'image comme une fusion : c'est le moyen de publier quand une fusion n'a pas pu lancer la CI.
+- Les PR ne sont pas bloquées par l'état de la CI (aucun contrôle obligatoire) : l'utilisateur la regarde avant de fusionner. Un contrôle obligatoire bloquerait toute fusion quand les minutes sont épuisées, et les PR de documentation, que la CI ignore.
+- Correction faite au passage : le fichier de CI fusionné dans la PR #23 était invalide (un retour à la ligne dans l'étape qui publie l'image terminait le bloc YAML). Il est désormais vérifié par un analyseur YAML avant chaque commit.
