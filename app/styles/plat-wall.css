@@ -44,5 +44,6 @@ a.btn-export{text-decoration:none}
 .btn-close:hover{background:rgba(255,255,255,.2)}
 .ov-wait{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;min-height:50vh;color:var(--muted);font-size:13px}
 .spin{width:28px;height:28px;border-radius:50%;border:3px solid var(--surface-2);border-top-color:var(--accent);animation:spin 1s linear infinite}
+@media (prefers-reduced-motion:reduce){.spin{animation:none}}
 .ov-frame{max-width:1160px;margin:0 auto;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,.25)}
 .ov-frame[hidden]{display:none}

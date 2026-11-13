@@ -100,7 +100,10 @@ svg.ico{width:14px;height:14px;flex:none}
 }
 /* 320 px phones: the "Platinum" label (icon + text) is 1 px wider than its tile */
 @media (max-width:360px){.counts{gap:4px} .counts .count span{gap:2px}}
-@media (prefers-reduced-motion:reduce){.btn-sync.busy svg{animation:none}}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition:none!important}
+  .btn-sync.busy svg{animation:none}
+}
 
 /* Games list */
 .layout{display:grid;grid-template-columns:minmax(0,1fr) 450px;gap:16px;margin-top:14px;padding-bottom:64px;align-items:start}
@@ -222,3 +225,15 @@ select.select.on{border-color:var(--accent)}
 
 button.select{font-family:inherit;cursor:pointer;padding-right:26px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill='none' stroke='%23F3F5FB' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' d='M3 4.5L6 7.5 9 4.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center;background-size:10px 10px}
 .head-right>span:empty,.log-aside>span:empty{display:none}
+
+/* Phones: Games head on two lines (title + count + Show all, then the toggle), 32 px touch zones */
+@media (max-width:640px){
+  .games-head{flex-wrap:wrap;column-gap:10px;row-gap:8px}
+  .games-head .ph-left,.games-head .head-right{display:contents}
+  .games-head h2{order:1}
+  .games-head .head-right>.aside{order:2}
+  .games-head .head-right>span:not(.aside){order:3;margin-left:auto}
+  .games-head .toggle{order:4;flex-basis:100%}
+  .btn-sync,.show-all,.edit-btn{position:relative}
+  .btn-sync::after,.show-all::after,.edit-btn::after{content:"";position:absolute;left:0;right:0;top:50%;height:max(100%,32px);transform:translateY(-50%)}
+}
