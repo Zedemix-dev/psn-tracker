@@ -151,8 +151,10 @@ async function main(): Promise<void> {
   )) as unknown as { h: string }[] | { rows: { h: string }[] };
   const hashRows = Array.isArray(hashed) ? hashed : hashed.rows;
   expect("migration 0009 hashes like hashSessionId", hashRows[0].h, hashSessionId("pre-0009-session"));
-  await smokeTrophyLog(db);
-  await smokeAdvisor(db);
+  // The caches kept until the next sync run (src/lib/per-sync-cache.ts) live per connection. These two checks
+  // insert titles directly, with no run in between, so each gets its own connection: empty caches, as after a sync.
+  await smokeTrophyLog(await createDb(url));
+  await smokeAdvisor(await createDb(url));
 }
 
 main().then(
