@@ -39,8 +39,9 @@ describe("game page CSS", () => {
     const css = readFileSync(path.resolve(import.meta.dirname, "../../app/styles/game.css"), "utf8");
     const rule = (sel: string) => css.split("\n").find((l) => l.startsWith(`${sel}{`)) ?? "";
     expect(rule(".game-page .gmeta")).toMatch(/overflow:hidden/);
+    expect(rule(".game-page .gmeta")).toMatch(/gap:8px 17px/);
     expect(rule(".game-page .gmeta>span+span")).toMatch(/position:relative/);
-    expect(rule(".game-page .gmeta>span+span::before")).toMatch(/left:-4\.5px/);
+    expect(rule(".game-page .gmeta>span+span::before")).toMatch(/left:-9px/);
     expect(css.split("\n").some((l) => l.startsWith(".game-page .sep"))).toBe(false);
   });
 });

@@ -2,9 +2,9 @@
 .game-page .gband{position:relative;z-index:2;margin-top:-72px;display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,40%) 32px;align-items:center;gap:22px;padding:16px 20px;border-radius:var(--r-panel)}
 .game-page .gband h1{margin:0;font-size:24px;font-weight:700;line-height:1.15}
 .game-page .gtitle{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.game-page .gmeta{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:7px;font-size:12.5px;color:var(--muted);overflow:hidden}
+.game-page .gmeta{display:flex;align-items:center;flex-wrap:wrap;gap:8px 17px;margin-top:7px;font-size:12.5px;color:var(--muted);overflow:hidden}
 .game-page .gmeta>span+span{position:relative}
-.game-page .gmeta>span+span::before{content:"";position:absolute;left:-4.5px;top:50%;width:1px;height:11px;margin-top:-5.5px;background:rgba(255,255,255,.28)}
+.game-page .gmeta>span+span::before{content:"";position:absolute;left:-9px;top:50%;width:1px;height:11px;margin-top:-5.5px;background:rgba(255,255,255,.28)}
 .game-page .platform{padding:3px 6px}
 /* Guard: the Games list's 980px rules place .chips/.progress/.status by grid line; here they must auto-place */
 .game-page .chips,.game-page .progress,.game-page .status{grid-column:auto;grid-row:auto}

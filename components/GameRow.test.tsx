@@ -169,7 +169,9 @@ describe("game row CSS", () => {
     const css = readFileSync(path.resolve(import.meta.dirname, "../app/globals.css"), "utf8");
     const rule = (sel: string) => css.split("\n").find((l) => l.startsWith(`${sel}{`)) ?? "";
     expect(rule(".game-meta")).toMatch(/overflow:hidden/);
-    expect(rule(".game-meta>span+span::before")).toMatch(/left:-4\.5px/);
+    expect(rule(".game-meta")).toMatch(/gap:8px 17px/);
+    expect(rule(".game-meta>span+span")).toMatch(/position:relative/);
+    expect(rule(".game-meta>span+span::before")).toMatch(/left:-9px/);
     expect(css.split("\n").some((l) => l.startsWith(".game-meta .sep"))).toBe(false);
   });
 });
