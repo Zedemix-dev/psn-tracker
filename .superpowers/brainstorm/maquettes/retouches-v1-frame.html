@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>D1-D7 frame</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!-- The site's real CSS (copy of main ad0d510); this page is shown in a 375 px iframe so the phone rules apply. -->
+<link rel="stylesheet" href="retouches-site.css">
+<style>
+/* --font-sora is set by next/font on the site; here Sora comes from Google Fonts. */
+:root{--font-sora:"Sora";--banner:url("retouches-img/banner-pbz.webp");--banner-y:25%}
+body{overflow-x:hidden}
+.set-pill .lbl{display:contents}
+
+/* ---------- D1: menu ---------- */
+/* Fade on the edge(s) where more tabs are hidden, as on the Stats charts (18.14). */
+.v-fade .tabs.fr{-webkit-mask-image:linear-gradient(to left,transparent 0,#000 32px);mask-image:linear-gradient(to left,transparent 0,#000 32px)}
+.v-fade .tabs.fl{-webkit-mask-image:linear-gradient(to right,transparent 0,#000 32px);mask-image:linear-gradient(to right,transparent 0,#000 32px)}
+.v-fade .tabs.fl.fr{-webkit-mask-image:linear-gradient(to right,transparent 0,#000 32px,#000 calc(100% - 32px),transparent 100%);mask-image:linear-gradient(to right,transparent 0,#000 32px,#000 calc(100% - 32px),transparent 100%)}
+/* Settings reduced to its icon */
+.v-icon .set-pill{width:32px;height:32px;padding:0;justify-content:center}
+.v-icon .set-pill .lbl{display:none}
+.v-icon .set-pill svg.ico{width:16px;height:16px}
+/* Two rows, nothing hidden */
+.v-wrap .topbar .wrap{height:auto;padding-top:13px;align-items:flex-start}
+.v-wrap .tabs{flex-wrap:wrap;overflow:visible;row-gap:6px}
+
+/* ---------- D7 + D4: Games list header and game row ---------- */
+.v-la .panel-head{flex-wrap:wrap;row-gap:6px}
+.v-la .ph-left,.v-la .head-right{flex:1 0 100%}
+.v-la .head-right{justify-content:space-between}
+.v-lb .panel-head{flex-wrap:wrap;row-gap:8px}
+.v-lb .ph-left{gap:10px}
+.v-lb .lb-toggle{flex:1 0 100%;order:3}
+
+/* ---------- D2 + D5: Settings ---------- */
+.set-preview{position:relative}
+.v-sa .set-preview span.cap{position:absolute;left:8px;bottom:8px;max-width:calc(100% - 16px);padding:4px 10px;border-radius:var(--r-chip);background:rgba(0,0,0,.62);border:1px solid rgba(255,255,255,.16);color:#fff;font-size:11.5px;line-height:1.35;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.v-sb .cap-below{margin:-6px 0 0;font-size:12px;color:var(--muted)}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+.file-pick{display:flex;align-items:center;gap:10px;flex-wrap:wrap;max-width:100%}
+.file-pick .set-btn{display:inline-flex;align-items:center;gap:7px}
+.file-pick .file-name{font-size:12px;color:var(--muted);overflow-wrap:anywhere}
+.file-pick input:focus-visible+.set-btn{outline:2px solid var(--accent);outline-offset:2px}
+</style>
+</head>
+<body>
+<div class="page-bg"></div>
+<div id="root"></div>
+
+<template id="menu">
+  <div class="shell-top">
+    <header class="topbar"><div class="wrap">
+      <nav class="tabs" aria-label="Pages">
+        <a class="pill" data-p="games" href="#">Games</a>
+        <a class="pill" data-p="plat" href="#">Plat Wall</a>
+        <a class="pill" data-p="log" href="#">Trophy Log</a>
+        <a class="pill" data-p="advisor" href="#">Trophy Advisor</a>
+        <a class="pill" data-p="stats" href="#">Stats</a>
+      </nav>
+      <a class="pill set-pill" href="#" aria-label="Settings">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></g></svg>
+        <span class="lbl">Settings</span>
+      </a>
+    </div></header>
+    <div class="hero"><div class="hero-img" role="img" aria-label="Banner of Phantom Blade Zero"></div></div>
+  </div>
+</template>
+
+<template id="list">
+  <main class="wrap" style="padding-top:16px;padding-bottom:24px">
+    <section class="panel glass" aria-label="Games">
+      <div class="panel-head head-ab"><div class="ph-left"><h2>Games</h2><label class="toggle"><input type="checkbox" checked><span class="track" aria-hidden="true"></span>Hide 0% games</label></div><div class="head-right"><span class="aside">266 games</span><span><button type="button" class="show-all">Show all</button></span></div></div>
+      <div class="panel-head head-b"><div class="ph-left"><h2>Games</h2><span class="aside">266 games</span></div><div class="head-right"><button type="button" class="show-all">Show all</button></div><label class="toggle lb-toggle"><input type="checkbox" checked><span class="track" aria-hidden="true"></span>Hide 0% games</label></div>
+      <a class="game" href="#"><img src="retouches-img/cover-pbz.webp" alt="" class="game-cover"><div class="gtext"><div class="gtitle"><h3>Phantom Blade Zero</h3><span class="platform">PS5</span></div><div class="game-meta"><span>6 / 36 trophies</span></div><div class="game-meta played-now"><span>Last played 12 Nov 2026</span><span class="sep" aria-hidden="true"></span><span>15h 10m played</span></div><div class="game-meta played-fixed"><span>Last played 12 Nov 2026</span><span>15h 10m played</span></div></div><div class="right"><div class="chips"><span class="chip platinum" title="platinum"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 3h10v5a5 5 0 0 1-4 4.9V17h3v3H8v-3h3v-4.1A5 5 0 0 1 7 8V3zM4 5h2v3.4A3 3 0 0 1 4 5.6V5zm14 0h2v.6a3 3 0 0 1-2 2.8V5z"></path></svg>0/1</span><span class="chip gold" title="gold"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 3h10v5a5 5 0 0 1-4 4.9V17h3v3H8v-3h3v-4.1A5 5 0 0 1 7 8V3zM4 5h2v3.4A3 3 0 0 1 4 5.6V5zm14 0h2v.6a3 3 0 0 1-2 2.8V5z"></path></svg>0/3</span><span class="chip silver" title="silver"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 3h10v5a5 5 0 0 1-4 4.9V17h3v3H8v-3h3v-4.1A5 5 0 0 1 7 8V3zM4 5h2v3.4A3 3 0 0 1 4 5.6V5zm14 0h2v.6a3 3 0 0 1-2 2.8V5z"></path></svg>2/14</span><span class="chip bronze" title="bronze"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 3h10v5a5 5 0 0 1-4 4.9V17h3v3H8v-3h3v-4.1A5 5 0 0 1 7 8V3zM4 5h2v3.4A3 3 0 0 1 4 5.6V5zm14 0h2v.6a3 3 0 0 1-2 2.8V5z"></path></svg>4/18</span></div><div class="progress"><div class="bar"><i style="width:12%;background:var(--rank-e)"></i></div><span class="pct">12%</span></div></div><div class="status"><img src="icons/40-platinum.png" alt="Platinum" title="Platinum" width="28" height="28" class="pi miss"></div></a>
+    </section>
+  </main>
+</template>
+
+<template id="settings">
+  <main class="wrap" style="padding-top:16px">
+    <div class="set-page" style="margin-top:0;padding-bottom:24px">
+      <section class="panel glass" aria-label="Banner">
+        <div class="panel-head"><h2>Banner</h2></div>
+        <div class="set-body">
+          <div class="set-preview" role="img" aria-label="Banner preview" style="background-image:url('retouches-img/banner-pbz.webp');background-position-y:25%"><span class="cap">Automatic — last played game (Phantom Blade Zero)</span></div>
+          <p class="cap-below">Automatic — last played game (Phantom Blade Zero)</p>
+          <form class="set-row file-now" onsubmit="return false"><label class="set-label" for="f1">Image (JPEG, PNG or WebP, 10 MB max)</label><input id="f1" type="file" accept="image/jpeg,image/png,image/webp"><button type="submit" class="set-btn">Upload banner</button></form>
+          <form class="set-row file-new" onsubmit="return false"><span class="set-label">Image (JPEG, PNG or WebP, 10 MB max)</span>
+            <div class="file-pick"><input id="f2" class="sr-only" type="file" accept="image/jpeg,image/png,image/webp"><label for="f2" class="set-btn ghost"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/></g></svg>Choose image</label><span class="file-name">No file chosen</span></div>
+            <button type="submit" class="set-btn">Upload banner</button></form>
+          <div class="set-row"><span class="set-label">Visible part</span><input type="range" min="0" max="100" value="50" disabled><div class="set-actions"><button type="button" class="set-btn" disabled>Save position</button><button type="button" class="set-btn ghost" disabled>Use automatic banner</button></div></div>
+        </div>
+      </section>
+      <section class="panel glass" aria-label="Sync history">
+        <div class="panel-head"><h2>Sync history</h2></div>
+        <div class="set-table-wrap"><table class="set-table"><thead><tr><th>Type</th><th>Started</th><th>Duration</th><th>Status</th><th>Details</th></tr></thead>
+          <tbody><tr><td>daily</td><td>12 Nov 2026, 20:22</td><td>6m</td><td>success</td><td class="d5">266/266 games, 12434 trophies</td></tr></tbody></table></div>
+      </section>
+    </div>
+  </main>
+</template>
+
+<script>
+const q = new URLSearchParams(location.search);
+const s = q.get("s") || "menu", v = q.get("v") || "now", p = q.get("p") || "games";
+document.getElementById("root").append(document.getElementById(s).content.cloneNode(true));
+const html = document.documentElement;
+const hide = (sel) => document.querySelectorAll(sel).forEach((e) => e.remove());
+
+if (s === "menu") {
+  document.querySelector(`.tabs [data-p="${p}"]`).setAttribute("aria-current", "page");
+  if (v === "a") html.classList.add("v-fade");
+  if (v === "b") html.classList.add("v-fade", "v-icon");
+  if (v === "c") html.classList.add("v-icon", "v-wrap");
+  const tabs = document.querySelector(".tabs");
+  if (v === "a" || v === "b") {
+    // The current page's tab is brought into view when the page opens.
+    const cur = tabs.querySelector("[aria-current]");
+    const left = cur.getBoundingClientRect().left - tabs.getBoundingClientRect().left + tabs.scrollLeft;
+    tabs.scrollLeft = Math.max(0, left - (tabs.clientWidth - cur.offsetWidth) / 2);
+  }
+  const edges = () => {
+    tabs.classList.toggle("fl", tabs.scrollLeft > 1);
+    tabs.classList.toggle("fr", tabs.scrollLeft + tabs.clientWidth < tabs.scrollWidth - 1);
+  };
+  tabs.addEventListener("scroll", edges, { passive: true });
+  edges();
+  // Mouse drag stands in for a finger swipe in this mockup.
+  let drag = null;
+  tabs.addEventListener("pointerdown", (e) => { drag = { x: e.clientX, l: tabs.scrollLeft }; });
+  addEventListener("pointermove", (e) => { if (drag) tabs.scrollLeft = drag.l - (e.clientX - drag.x); });
+  addEventListener("pointerup", () => { drag = null; });
+  tabs.addEventListener("click", (e) => e.preventDefault());
+}
+
+if (s === "list") {
+  if (v === "now") { hide(".head-b"); hide(".played-fixed"); }
+  if (v === "a") { html.classList.add("v-la"); hide(".head-b"); hide(".played-now"); }
+  if (v === "b") { html.classList.add("v-lb"); hide(".head-ab"); hide(".played-now"); }
+  document.querySelector(".game").addEventListener("click", (e) => e.preventDefault());
+}
+
+if (s === "settings") {
+  if (v === "now") { hide(".file-new"); hide(".cap-below"); }
+  else {
+    hide(".file-now");
+    document.querySelector(".d5").textContent = "266/266 games, 12,434 trophies";
+    const f = document.getElementById("f2");
+    f.addEventListener("change", () => { document.querySelector(".file-name").textContent = f.files[0]?.name || "No file chosen"; });
+  }
+  if (v === "a") { html.classList.add("v-sa"); hide(".cap-below"); }
+  if (v === "b") { html.classList.add("v-sb"); hide(".set-preview .cap"); }
+}
+</script>
+</body>
+</html>
