@@ -25,34 +25,48 @@ export function TopMenu() {
   const nav = useRef<HTMLElement>(null);
   const [fades, setFades] = useState({ fl: false, fr: false });
 
+  const wasOverflowing = useRef(false);
+
+  const reveal = useCallback(() => {
+    const el = nav.current;
+    if (!el) return;
+    const tab = el.querySelector<HTMLElement>("[aria-current]");
+    const to = tab ? scrollToShow(el, { left: tab.offsetLeft, width: tab.offsetWidth }) : null;
+    if (to !== null) el.scrollLeft = to;
+  }, []);
+
   const measure = useCallback(() => {
     const el = nav.current;
     if (!el) return;
+    wasOverflowing.current = el.scrollWidth > el.clientWidth + 1;
     const next = edgeFades(el);
     setFades((f) => (f.fl === next.fl && f.fr === next.fr ? f : next));
   }, []);
 
   // Bring the current tab into view, then measure the fades.
   useLayoutEffect(() => {
-    const el = nav.current;
-    if (!el) return;
-    const tab = el.querySelector<HTMLElement>("[aria-current]");
-    const to = tab ? scrollToShow(el, { left: tab.offsetLeft, width: tab.offsetWidth }) : null;
-    if (to !== null) el.scrollLeft = to;
+    reveal();
     measure();
-  }, [pathname, measure]);
+  }, [pathname, reveal, measure]);
 
   useEffect(() => {
     const el = nav.current;
     if (!el) return;
     el.addEventListener("scroll", measure, { passive: true });
-    const ro = new ResizeObserver(measure);
+    // Fitting -> overflowing (rotation, late font swap): bring the current tab back into view.
+    const ro = new ResizeObserver(() => {
+      const was = wasOverflowing.current;
+      const now = el.scrollWidth > el.clientWidth + 1;
+      if (now && !was) reveal();
+      measure();
+    });
     ro.observe(el);
+    if (el.lastElementChild) ro.observe(el.lastElementChild);
     return () => {
       el.removeEventListener("scroll", measure);
       ro.disconnect();
     };
-  }, [measure]);
+  }, [measure, reveal]);
 
   const cls = `tabs${fades.fl ? " fl" : ""}${fades.fr ? " fr" : ""}`;
   return (

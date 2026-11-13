@@ -32,7 +32,7 @@ svg.ico{width:14px;height:14px;flex:none}
 /* Top menu: fully transparent over the banner, every item is a pill */
 .topbar{position:absolute;top:0;left:0;right:0;z-index:20}
 .topbar .wrap{display:flex;align-items:center;gap:12px;height:58px}
-.tabs{position:relative;display:flex;align-items:center;gap:6px;overflow-x:auto;scrollbar-width:none;flex:1;min-width:0}
+.tabs{position:relative;display:flex;align-items:center;gap:6px;overflow-x:auto;scroll-padding-inline:32px;scrollbar-width:none;flex:1;min-width:0}
 .tabs.fl{-webkit-mask-image:linear-gradient(to right,transparent 0,#000 32px);mask-image:linear-gradient(to right,transparent 0,#000 32px)}
 .tabs.fr{-webkit-mask-image:linear-gradient(to left,transparent 0,#000 32px);mask-image:linear-gradient(to left,transparent 0,#000 32px)}
 .tabs.fl.fr{-webkit-mask-image:linear-gradient(to right,transparent 0,#000 32px,#000 calc(100% - 32px),transparent 100%);mask-image:linear-gradient(to right,transparent 0,#000 32px,#000 calc(100% - 32px),transparent 100%)}
@@ -228,12 +228,13 @@ button.select{font-family:inherit;cursor:pointer;padding-right:26px;background-i
 
 /* Phones: Games head on two lines (title + count + Show all, then the toggle), 32 px touch zones */
 @media (max-width:640px){
-  .games-head{flex-wrap:wrap;justify-content:flex-start;column-gap:10px;row-gap:8px}
+  .games-head{flex-wrap:wrap;justify-content:flex-start;column-gap:10px;row-gap:4px}
   .games-head .ph-left,.games-head .head-right{display:contents}
   .games-head h2{order:1}
   .games-head .head-right>.aside{order:2}
   .games-head .head-right>span:not(.aside){order:3;margin-left:auto}
-  .games-head .toggle{order:4;flex-basis:100%}
+  .games-head::after{content:"";order:4;flex-basis:100%}
+  .games-head .toggle{order:5}
   .btn-sync,.show-all,.edit-btn{position:relative}
   .btn-sync::after,.show-all::after,.edit-btn::after{content:"";position:absolute;left:0;right:0;top:50%;height:max(100%,32px);transform:translateY(-50%)}
 }

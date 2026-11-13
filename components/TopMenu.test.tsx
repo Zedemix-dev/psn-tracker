@@ -82,9 +82,22 @@ describe("TopMenu", () => {
     expect(nav()).not.toHaveClass("fr");
   });
 
+  it("brings the current tab back into view when the strip starts to overflow", () => {
+    path = "/stats";
+    clientWidth = 600;
+    render(<TopMenu />);
+    expect(nav().scrollLeft).toBe(0);
+    clientWidth = 293;
+    act(() => resize());
+    expect(nav().scrollLeft).toBe(184);
+    expect(nav()).toHaveClass("fl");
+  });
+
   it("names the Settings link", () => {
     path = "/settings";
     render(<TopMenu />);
-    expect(screen.getByRole("link", { name: "Settings" })).toHaveAttribute("aria-current", "page");
+    const link = screen.getByRole("link", { name: "Settings" });
+    expect(link).toHaveAttribute("aria-current", "page");
+    expect(link).toHaveAttribute("aria-label", "Settings");
   });
 });
