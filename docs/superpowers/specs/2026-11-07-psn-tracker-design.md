@@ -562,6 +562,11 @@ C'est un panneau translucide qui chevauche le bas de la bannière, comme le band
 - **Build [décidé]** : le code est sur GitHub, et **GitHub Actions** construit l'image Docker.
   - **[mon choix]** L'image est construite pour `linux/amd64` (le DS1522+ est un x86-64 avec 8 Go de RAM), puis publiée sur le registre de GitHub (GHCR). Portainer la télécharge pour mettre à jour la stack « site ».
   - **[décidé]** La mise en place côté GitHub sera expliquée pas à pas à l'utilisateur au moment voulu : création du dépôt, accès de Portainer au registre, quotas de l'offre gratuite.
+  - **[décidé le 24 novembre 2026]** Le dépôt est public depuis le 13 novembre 2026 pour les minutes de la CI, mais **il repassera en privé** à terme. Le déploiement ne doit donc dépendre d'aucun accès public :
+    - le package GHCR **reste privé**. Il ne doit jamais passer en public : la doc de GitHub dit qu'un package public ne peut plus redevenir privé. Sa visibilité ne suit pas celle du dépôt ;
+    - Portainer télécharge l'image avec un token GitHub *classic* limité à `read:packages` (registre `ghcr.io` dans Portainer). Le stockage et le téléchargement des images sur GHCR sont gratuits à ce jour, même privées ;
+    - les deux stacks sont collées dans le *Web editor* de Portainer, pas tirées du dépôt, et `default.conf` est copié sur le NAS depuis le PC (File Station) : aucun des deux n'a besoin d'accéder au dépôt ;
+    - quand le dépôt sera privé, la CI retombe à 2 000 minutes par mois. Les réglages de la spec 21.9 (CI sur les PR et `main` seulement) sont faits pour tenir dans ce quota.
 - **Volumes :**
   - données Postgres ;
   - images (bannière envoyée et images Sony stockées en local, 6.5).

@@ -275,7 +275,8 @@ L'utilisateur a décidé le 12 novembre 2026 de finir **tous** les points restan
 
 ## 3. Ce qui reste à faire, dans l'ordre
 1. **Déployer sur le NAS** en suivant `deploy/README.md` (décidé le 9 novembre 2026, après la fin de l'audit). Copier le nouveau `deploy/nginx/default.conf` (étape 2) et les deux stacks à jour.
-   - Avant tout, vérifier sur github.com (onglet Actions) que la CI de `main` est verte après la dernière fusion, et que l'image a été publiée.
+   - Avant tout, vérifier sur github.com (onglet Actions) que la CI de `main` est verte après la dernière fusion, et que l'image a été publiée. Vérifié le 24 novembre 2026 : run 251 vert, `latest` = `sha-212b55c`.
+   - Le dépôt repassera en privé (décidé le 24 novembre 2026, spec 11) : le package GHCR reste privé, ne jamais le passer en public (c'est irréversible). Portainer télécharge l'image avec un token classic `read:packages` (guide, étape 1.3).
    - Le rôle **Admin** du dépôt dans « Manage Actions access » du package GHCR (étape 1.5) est déjà donné. Vérifier qu'une publication n'ajoute qu'une version au package et que l'étiquette `sha-…` précédente se télécharge toujours.
    - Faire les vérifications du premier déploiement de l'étape 7 du guide, dont le partage du NAS avec Plex (point 12).
 2. **Points laissés tels quels** : `docs/superpowers/plans/2026-11-08-phase1-suivis.md` marque chaque point réglé ; ce qui reste est un choix assumé (coins transparents de la tuile, spec 19.6). Dans `a_reprendre.md`, plus aucun point n'est ouvert.
