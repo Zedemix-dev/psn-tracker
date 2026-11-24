@@ -1,0 +1,64 @@
+# fw refine — fonctionnalité : Conseiller les trophées à obtenir
+# fw-need/1
+# Écris sous chaque ligne « >8 », sans modifier ces lignes
+# fw retire ses propres lignes « # » et garde les tiennes
+# Enregistre et ferme l'éditeur pour continuer. Fichier rendu tel quel ou vidé : fw ne crée rien
+
+------------------------ >8 ------------------------ Besoin (obligatoire)
+# Décris le besoin dans tes mots
+Une page du profil (« Trophy Advisor ») montre tout ce qu'il reste à obtenir au joueur, pour l'aider à choisir quoi aller chercher : tous les trophées non obtenus, une ligne par trophée, du plus courant au plus rare par défaut, et une colonne qui classe ses jeux incomplets par nombre de trophées manquants.
+
+Haut de page : le haut de page commun du profil (03-01), sans carrousel. Deux colonnes : la liste, et à droite une colonne de 450 px.
+
+Panneau de la liste :
+- en-tête à gauche : « <pseudo>'s Trophy Advisor », puis juste à côté trois interrupteurs : « Hide unobtainable », « Hide DLC », « DLC only » ;
+- en-tête à droite : le nombre (« 798 trophies » sans filtre, « 336 of 798 trophies match » dès qu'un filtre de plateforme, rareté ou type est actif ; le total tient compte des trois interrupteurs), puis « Show all » tant que tout n'est pas chargé ;
+- en dessous les contrôles, puis la liste.
+
+Ligne de trophée (environ 66 px), de gauche à droite :
+1. l'image du jeu, 56 px, lien vers la progression du joueur sur ce jeu ;
+2. l'icône du trophée, 56 px, sans fond, en couleur ;
+3. nom, description en entier, puis le nom du jeu (lien), le nom du DLC le cas échéant et les pastilles de plateforme ;
+4. le compteur d'un trophée à paliers (« 0/4 », « 3,626/5,000 »), dans une colonne de 120 px pour que les plus longs (« 38,200/38,280 ») ne débordent pas sur la rareté ; vide pour les autres ; un compteur plus long passe à la ligne ;
+5. la rareté PSN et sa catégorie ;
+6. l'icône officielle du type, 30 px.
+Pas de numéro ni de date. La ligne n'est pas un lien, seuls l'image et le nom du jeu le sont. Un trophée caché sur le PSN est affiché en entier, nom et description. Un trophée non obtenable (si « Hide unobtainable » est inactif) a la teinte rouge et le « ! » avec « No longer obtainable. » suivi de la cause.
+
+Tris et filtres :
+- Rarity (par défaut, sens par défaut « Most common first ») ou Alphabetical (« A to Z »), avec le bouton de sens (« Most common first » / « Rarest first », « A to Z » / « Z to A ») ; changer de tri remet le sens naturel ;
+- à égalité, dans les deux sens : le nom du jeu, puis l'identifiant de la liste, puis l'ordre du trophée dans son jeu (les trophées d'un même jeu restent groupés et l'ordre est total) ;
+- filtres Platform, Rarity, Type, et « Reset », comme le journal des trophées (03-07) ; « Reset » ne touche pas aux trois interrupteurs.
+
+Les trois interrupteurs :
+- « Hide unobtainable » retire les trophées marqués non obtenables (02-06) ; « Hide DLC » retire les trophées d'un groupe autre que le jeu de base ; « DLC only » ne garde que ceux-là ; « Hide DLC » et « DLC only » s'excluent (activer l'un coupe l'autre) ;
+- ils agissent sur la liste, son nombre et la colonne de droite ; effet immédiat, la liste repart du haut ;
+- ils sont mémorisés pour le lecteur (dans son compte s'il est connecté, sinon dans son navigateur) et restent d'une visite à l'autre, quel que soit le profil consulté ; inactifs au départ ;
+- « Hide 0% games » du propriétaire (01-03) retire aussi les trophées des jeux à 0 %.
+
+Colonne « Incomplete games » :
+- tous les jeux du profil qui ne sont pas à 100 %, du plus de trophées manquants au moins, DLC inclus ; en-tête « Incomplete games » et « 41 games » ;
+- le compteur de chaque jeu tient compte des trois interrupteurs ; un jeu dont le compteur tombe à 0 sort de la colonne ; elle ne dépend ni du tri ni des filtres de plateforme, rareté et type ;
+- ligne : image du jeu 48 px ; nom jamais tronqué, pastilles de plateforme et « ! » s'il reste des non obtenables comptés (infobulle « 13 unobtainable trophies » et la cause, ouverte sous la ligne dans la largeur de la colonne) ; en dessous la barre aux couleurs du rang et le pourcentage PSN (inchangés par les interrupteurs) ; à droite le nombre de trophées manquants en gras avec « left » dessous ; toute la ligne est un lien vers le jeu ;
+- à égalité : nom du jeu, puis identifiant de la liste ; tous les jeux s'affichent, sans pagination.
+
+------------------------ >8 ------------------------ Problème (facultatif)
+# Ce qui ne va pas aujourd'hui, et pour qui, si tu le sais
+Un chasseur de trophées cherche ses « trophées faciles » restants (les plus courants) et les jeux les plus proches de la fin ; sans cette page il doit ouvrir chaque jeu un par un.
+Les trophées impossibles et les DLC qu'il ne compte pas acheter polluent la liste : il faut pouvoir les écarter durablement.
+Un compteur de colonne qui ne correspond pas aux lignes de la liste avec les mêmes réglages serait faux et déroutant.
+
+------------------------ >8 ------------------------ Contexte (facultatif)
+# Qui l'a demandé, à quelle occasion, et pour quand
+Acteurs : visiteur anonyme, membre, propriétaire du profil
+Prérequis : 03-01 Afficher l'en-tête du profil ; 02-06 Signaler les trophées non obtenables
+Fiches liées : 03-07 Consulter le journal des trophées ; 03-12 Suivre la progression d'un joueur sur un jeu ; 05-04 Publier, lire et évaluer les guides ; 06-02 Charger les longues listes et revenir à sa place
+Lot indicatif : Profil
+
+------------------------ >8 ------------------------ Notes (facultatif, une note par ligne)
+# Chaque ligne devient une note que l'entretien de spécification traite une par une
+Règle : les trois interrupteurs ne changent que cette page, jamais les statistiques du profil.
+Règle : un jeu sur deux plateformes a deux listes distinctes : il apparaît deux fois, comme dans la liste des jeux.
+Règle : la liste et la colonne se mettent à jour après une synchro sans recharger la page ; retour au même endroit depuis une page de jeu, que le lien cliqué soit dans la liste ou dans la colonne.
+Cas limite : sans résultat, « No trophies match these filters. » ; plus rien à obtenir avant filtres, « Nothing left to earn. » ; colonne vide, « No incomplete games. ».
+Cas limite : sous 1400 px la colonne passe à 360 px ; sous 1180 px une seule colonne, la colonne des jeux passe au-dessus de la liste, limitée à 300 px de haut avec son propre défilement ; sous 900 px l'image du jeu est masquée et l'icône passe à 48 px ; sur téléphone, compteur et rareté passent sous la description.
+Question : faut-il indiquer sur chaque ligne qu'un guide existe pour ce trophée (lien vers la section du guide, 05-04), et une estimation de difficulté issue des guides ?

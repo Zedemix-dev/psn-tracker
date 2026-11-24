@@ -1,0 +1,59 @@
+# fw refine — fonctionnalité : Lister tous les trophées du PSN
+# fw-need/1
+# Écris sous chaque ligne « >8 », sans modifier ces lignes
+# fw retire ses propres lignes « # » et garde les tiennes
+# Enregistre et ferme l'éditeur pour continuer. Fichier rendu tel quel ou vidé : fw ne crée rien
+
+------------------------ >8 ------------------------ Besoin (obligatoire)
+# Décris le besoin dans tes mots
+Une page publique « Trophies » liste tous les trophées de tous les jeux du catalogue (02-05), une ligne par trophée, pour chercher un trophée précis, explorer les plus rares du PSN ou repérer des trophées faciles.
+
+En-tête : le titre, le nombre (« 412,880 trophies », « 1,284 of 412,880 trophies match »), puis « Show all » quand le nombre de résultats le permet (au plus 20 000 lignes ; au-delà, seul le défilement est proposé).
+
+Recherche : par nom ou description du trophée, et par nom du jeu.
+
+Filtres (un seul choix par filtre, contour d'accent quand actifs, bouton « Reset (n) ») :
+- plateforme : All, PS4, PS5 ;
+- type : All, Platinum, Gold, Silver, Bronze ;
+- rareté : All, Ultra rare, Very rare, Rare, Uncommon, Common (rareté PSN) ;
+- groupe : All, Base game, DLC ;
+- trophées secrets : All, Hidden only, Not hidden ;
+- non obtenables : All, Unobtainable only, Hide unobtainable ;
+- avec un compteur (trophées à paliers) ;
+- jeu (sélection d'un ou plusieurs jeux par recherche) ;
+- pour un membre connecté : All, Earned by me, Not earned by me, In games I own.
+
+Tris : Rarity (par défaut, le plus rare d'abord), Most common, Alphabetical (règle de 03-07), Recently added (date d'ajout au catalogue), Game, Site rarity ; bouton de sens.
+
+Ligne de trophée (environ 66 px) :
+1. l'image du jeu, 56 px, lien vers la fiche du jeu ;
+2. l'icône du trophée, 56 px, sans fond ;
+3. nom, description en entier (y compris des trophées secrets, avec un bouton « Show » qui la révèle si le lecteur a activé le masquage des secrets), puis le nom du jeu, le nom du DLC le cas échéant et les pastilles de plateforme ;
+4. l'objectif d'un trophée à paliers (« 5,000 ») le cas échéant ;
+5. la rareté PSN et sa catégorie, la rareté du site en second ;
+6. le nombre de membres suivis qui l'ont obtenu ;
+7. l'icône officielle du type ;
+- pour un membre connecté qui l'a obtenu : fond vert et date d'obtention ; non obtenable et non obtenu : teinte rouge et « ! » ;
+- un clic sur le nom ouvre la fiche du trophée (04-04).
+
+Chargement : 50 lignes, puis 50 de plus à l'approche du bas, affichage par paquets, retour au même endroit (06-02).
+
+------------------------ >8 ------------------------ Problème (facultatif)
+# Ce qui ne va pas aujourd'hui, et pour qui, si tu le sais
+Retrouver un trophée dont on ne connaît que le nom, ou voir les trophées les plus rares de tout le PSN, est impossible sur la console et pénible ailleurs.
+Le volume (plusieurs centaines de milliers de trophées) impose une pagination et des index solides : une page qui charge tout serait inutilisable.
+
+------------------------ >8 ------------------------ Contexte (facultatif)
+# Qui l'a demandé, à quelle occasion, et pour quand
+Acteurs : visiteur anonyme, membre
+Prérequis : 02-05 Alimenter le catalogue des jeux et DLC ; 02-07 Calculer la rareté communautaire
+Fiches liées : 04-02 Lister tous les jeux du PSN ; 04-04 Consulter la fiche d'un trophée ; 02-06 Signaler les trophées non obtenables ; 06-02 Charger les longues listes et revenir à sa place
+Lot indicatif : Catalogue
+
+------------------------ >8 ------------------------ Notes (facultatif, une note par ligne)
+# Chaque ligne devient une note que l'entretien de spécification traite une par une
+Règle : à égalité de tri, l'ordre est total et stable (nom du jeu, identifiant de la liste, ordre du trophée dans son jeu) pour que les pages ne se chevauchent pas.
+Règle : les trophées sans rareté connue passent en dernier dans les deux sens et n'apparaissent que sous « All » du filtre de rareté.
+Règle : filtres, tri et recherche vivent dans l'adresse de la page.
+Donnée : une préférence du lecteur « Hide secret trophy descriptions » (inactive par défaut) masque nom et description des trophées secrets non obtenus, sur toutes les pages.
+Question : la limite de 20 000 lignes pour « Show all » convient-elle ?

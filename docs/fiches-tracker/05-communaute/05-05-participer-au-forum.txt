@@ -1,0 +1,57 @@
+# fw refine — fonctionnalité : Participer au forum
+# fw-need/1
+# Écris sous chaque ligne « >8 », sans modifier ces lignes
+# fw retire ses propres lignes « # » et garde les tiennes
+# Enregistre et ferme l'éditeur pour continuer. Fichier rendu tel quel ou vidé : fw ne crée rien
+
+------------------------ >8 ------------------------ Besoin (obligatoire)
+# Décris le besoin dans tes mots
+Un forum permet aux joueurs de partager : questions sur un trophée, astuces, recherche de partenaires, discussions générales. Il est lisible sans compte ; écrire demande un compte confirmé.
+
+Organisation :
+- des catégories générales, définies par les administrateurs (01-05), par exemple : Announcements (lecture seule pour les membres), General discussion, Trophy hunting talk, Help & support, Site feedback, Off-topic ;
+- un sous-forum par jeu : chaque jeu du catalogue (ensemble de ses versions PS4 et PS5) a son sous-forum, accessible depuis l'onglet Forum de sa fiche (04-01) ; il est créé automatiquement au premier sujet (il n'apparaît pas dans les listes tant qu'il est vide) ;
+- dans un sous-forum de jeu, des étiquettes de sujet : Question, Trophy help, Boosting, Glitch, News, Discussion ; un sujet peut être rattaché à un ou plusieurs trophées du jeu, et apparaît alors sur la fiche de ces trophées (04-04).
+
+Page d'accueil du forum :
+- les catégories générales avec leur description, nombre de sujets et de messages, dernier message (titre, auteur, date) ;
+- « Game forums » : les sous-forums de jeux les plus actifs des 7 derniers jours, une recherche de jeu, et pour un membre connecté « My games » (sous-forums des jeux qu'il possède ou suit) ;
+- « Latest posts », « Unanswered topics », « My topics ».
+
+Liste des sujets d'une section : sujets épinglés en tête, puis par date du dernier message ; chaque sujet : titre, étiquettes, trophées rattachés (icônes), auteur, nombre de réponses et de vues, dernier message (auteur, date), marque « non lu » pour un membre connecté ; 30 sujets par page ; filtres par étiquette.
+
+Sujet :
+- les messages dans l'ordre chronologique, 20 par page, avec saut au premier message non lu ;
+- chaque message : avatar, pseudo, badge « Verified », niveau PSN et nombre de platines de l'auteur, et pour un sous-forum de jeu sa progression sur ce jeu (barre et pourcentage) ; date (relative, exacte en infobulle) ; contenu ; mention « Edited » avec date ;
+- actions : répondre, citer (tout ou partie sélectionnée), mentionner (@pseudo, avec notification), réagir (« Helpful », « Thanks »), modifier son message (historique conservé, visible des modérateurs), supprimer son message tant qu'il n'a pas de réponse, signaler ;
+- l'auteur d'un sujet de type Question peut marquer une réponse comme « Solution » : elle est reprise sous le premier message ;
+- s'abonner au sujet (notifications des réponses), suivre une section.
+
+Rédaction d'un message : même éditeur que les guides en version allégée (texte enrichi ou Markdown, citations, listes, liens, spoiler, images envoyées, vidéos YouTube/Twitch, carte de trophée insérable par recherche, mention d'un jeu) ; aperçu ; brouillon conservé automatiquement.
+
+Recherche dans le forum : par mots, section, auteur, étiquette, trophée rattaché, période.
+
+------------------------ >8 ------------------------ Problème (facultatif)
+# Ce qui ne va pas aujourd'hui, et pour qui, si tu le sais
+Les questions sur un trophée précis se perdent dans des forums généralistes ; rattachées au jeu et au trophée, elles servent aux joueurs suivants.
+Un forum où l'on ne voit pas si l'interlocuteur a vraiment joué au jeu donne des réponses peu fiables : afficher sa progression sur le jeu crée la confiance.
+
+------------------------ >8 ------------------------ Contexte (facultatif)
+# Qui l'a demandé, à quelle occasion, et pour quand
+Acteurs : visiteur anonyme, membre, modérateur, administrateur
+Prérequis : 01-01 Créer un compte et se connecter ; 02-05 Alimenter le catalogue des jeux et DLC
+Fiches liées : 04-01 Consulter la fiche complète d'un jeu ; 04-04 Consulter la fiche d'un trophée ; 01-04 Gérer les rôles, la modération et les signalements ; 05-01 Afficher la page d'accueil ; 05-08 Notifier les membres ; 05-06 Organiser des sessions de jeu
+Lot indicatif : Communauté
+
+------------------------ >8 ------------------------ Notes (facultatif, une note par ligne)
+# Chaque ligne devient une note que l'entretien de spécification traite une par une
+Règle : un sujet rattaché à une version précise (PS4 ou PS5) l'indique par un badge ; par défaut il vaut pour toutes les versions.
+Règle : les contenus sont stockés dans un format structuré et rendus par le site : aucun HTML saisi n'est interprété.
+Règle : un sujet sans message depuis 12 mois est archivé (lecture seule) ; un modérateur peut le rouvrir.
+Règle : les liens externes s'ouvrent dans un nouvel onglet, sans transmettre l'adresse d'origine (noopener noreferrer) et marqués « nofollow ».
+Contrôle : titre de 5 à 120 caractères ; message de 2 à 20 000 caractères ; limites de fréquence de 01-04.
+Contrôle : la vente de services (boost payant, comptes) est interdite et signalable sous un motif dédié.
+Donnée : un sujet porte la section, le jeu éventuel, les trophées rattachés, les étiquettes, l'auteur, l'état (ouvert, verrouillé, archivé, masqué), l'épinglage, la solution éventuelle, les compteurs et les dates ; un message porte le sujet, l'auteur, le contenu, les versions, les réactions et l'état.
+Intégration : les nouveaux sujets d'annonce sont publiés dans un salon du Discord officiel (05-07).
+Question : faut-il une messagerie privée entre membres, ou laisser cet usage à Discord ?
+Question : faut-il un sous-forum par DLC important, ou une simple étiquette DLC dans le sous-forum du jeu ?

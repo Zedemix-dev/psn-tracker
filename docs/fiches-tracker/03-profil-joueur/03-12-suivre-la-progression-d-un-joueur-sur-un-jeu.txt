@@ -1,0 +1,55 @@
+# fw refine — fonctionnalité : Suivre la progression d'un joueur sur un jeu
+# fw-need/1
+# Écris sous chaque ligne « >8 », sans modifier ces lignes
+# fw retire ses propres lignes « # » et garde les tiennes
+# Enregistre et ferme l'éditeur pour continuer. Fichier rendu tel quel ou vidé : fw ne crée rien
+
+------------------------ >8 ------------------------ Besoin (obligatoire)
+# Décris le besoin dans tes mots
+La progression d'un joueur sur une liste de trophées s'affiche comme un mode de la fiche du jeu (04-01) : la même page, avec le joueur choisi. On y arrive en cliquant un jeu depuis un profil (liste des jeux, journal, conseiller, mur, statistiques), ou depuis la fiche d'un jeu en choisissant un joueur (par défaut soi-même si l'on est connecté et qu'on possède le jeu). L'adresse contient la liste de trophées et le pseudo du joueur ; un sélecteur « Viewing: <pseudo> » permet de changer de joueur ou de revenir à la vue sans joueur.
+
+Une page par liste de trophées : les versions PS4 et PS5 d'un même jeu ont chacune la leur, et la fiche propose de passer à l'autre version.
+
+Bannière et fond : image de fond du jeu au format de la bannière de profil (1920 × 520, entre 240 et 560 px de haut, fondu sur son dernier quart), cadrage vertical fixe à 25 % depuis le haut, la même image floutée en fond de page ; le logo du jeu posé en bas à gauche, aligné sur le contenu, au-dessus du bandeau, avec une ombre portée, au plus 400 px de large et 42 % de la hauteur de la bannière, masqué sur téléphone. Un jeu sans image de fond n'en affiche aucune : l'espace garde sa hauteur, vide, sur fond uni (jamais la bannière d'un profil).
+
+Bandeau du jeu, translucide, qui chevauche le bas de la bannière :
+- le nom du jeu (24 px, gras) et le badge de plateforme ;
+- dessous, pour le joueur : « 47 of 58 trophies | Last played 8 Nov 2026 | 71h 24m played » (une information inconnue est omise avec son séparateur) ;
+- à droite, la progression empilée (pastilles par type, barre aux couleurs du rang, pourcentage PSN), puis l'icône d'état (platine en couleur ou grisé, ou coche).
+
+Liste des trophées (colonne principale) :
+- en-tête « Trophies » et à droite « 47 of 58 earned » ;
+- deux listes déroulantes : affichage (All trophies par défaut, Earned, Unearned) et tri (PSN order par défaut ; Date earned : les obtenus du plus ancien au plus récent, platine après les autres à la même seconde, puis les non obtenus dans l'ordre PSN ; Rarest first : rareté PSN croissante, sans rareté à la fin) ; repris dans l'adresse ;
+- groupes gardés quels que soient l'affichage et le tri (le tri s'applique dans chaque groupe) ; un groupe sans trophée visible disparaît ; s'il ne reste rien, « No trophy matches this filter. ».
+
+Groupes (seulement si la liste a plus d'un groupe) : en-tête d'environ 110 px avec une image carrée de 100 px (pour une liste PS5, l'icône d'origine du groupe ; pour une liste PS4, dont les icônes de groupe sont rectangulaires, la même image que la ligne du jeu dans la liste des jeux, répétée sur le jeu de base et chaque DLC), un sur-titre en petites capitales (« Base game », puis « DLC 1 », « DLC 2 »…), le nom (celui du jeu pour le jeu de base, celui du pack pour un DLC), « 45 of 45 trophies », les pastilles, la barre et le pourcentage du groupe, l'icône d'état du groupe (le platine s'il le contient, sinon la coche), sans fond ni ombre.
+
+Pourcentage d'un groupe (règle du PSN) : points obtenus hors platine divisés par points du groupe hors platine (bronze 15, argent 30, or 90), arrondi à l'inférieur, et au moins 1 % dès qu'un trophée est obtenu.
+
+Ligne de trophée (environ 66 px, icône de 56 px sans fond) : icône ; nom (15 px, gras) et description en entier ; si obtenu, la date et l'heure avec les secondes sur deux lignes en vert clair #93E2AE, sinon, pour un trophée à paliers, la progression du joueur à la place de la date (« 0/4 », « 3,626/5,000 », 15 px gras) ; la rareté PSN et sa catégorie, avec la rareté du site en second (02-07) ; l'icône officielle du type. Un trophée obtenu a un fond vert #3DBE6B à 14 % et un liseré de 2 px de ce vert autour de l'icône. Un trophée non obtenu n'a ni fond, ni liseré, ni date, et son icône reste en couleur. Les trophées secrets sont affichés en entier. Repères de non obtenables : voir 02-06. Chaque ligne propose un lien discret vers la section du guide qui traite ce trophée, s'il existe (05-04).
+
+Colonne latérale (320 px) :
+1. la jaquette en 320 × 320 (ou l'icône sur sa tuile) ;
+2. infos du jeu : « Total 58 trophies · 1,485 points » et « Earned 47 trophies · 1,320 points » avec les pastilles par type ; le décompte des raretés sur tous les trophées de la liste (03-05) ; Publisher, Genre, Release date (02-04, ligne masquée si inconnue) ; Avg. rarity de tous les trophées de la liste (« 25.81% ») et dessous, sur une ligne, la plus basse, la médiane et la plus haute (« 0.50% · 19.05% · 86.20% »), dont les libellés « Lowest », « Median », « Highest » n'apparaissent qu'au survol, signalé par un fin pointillé ;
+3. Timeline du joueur : First trophy (date et temps écoulé), Platinum (date et temps mis depuis le premier trophée, en 3 unités consécutives, « 1 week, 4 days, 3 hours » ; « Not earned yet » si non obtenu ; absente si pas de platine), Latest trophy (date et temps écoulé), Gap (temps entre le premier et le dernier trophée, toutes les unités non nulles jusqu'à la minute) ; sans trophée obtenu, une seule ligne « No trophy earned yet » (règles de durée : 06-05).
+
+------------------------ >8 ------------------------ Problème (facultatif)
+# Ce qui ne va pas aujourd'hui, et pour qui, si tu le sais
+Un joueur veut voir d'un coup d'œil, jeu par jeu, ce qui lui manque, dans quel DLC, et sa progression vers les trophées à paliers.
+Les icônes de groupe rectangulaires des listes PS4 cassent l'alignement : une image carrée partout.
+Un pourcentage de DLC calculé autrement que le PSN serait contredit par la console.
+
+------------------------ >8 ------------------------ Contexte (facultatif)
+# Qui l'a demandé, à quelle occasion, et pour quand
+Acteurs : visiteur anonyme, membre, propriétaire du profil
+Prérequis : 04-01 Consulter la fiche complète d'un jeu ; 02-01 Synchroniser les profils des joueurs
+Fiches liées : 03-03 Lister les jeux d'un joueur ; 02-06 Signaler les trophées non obtenables ; 05-04 Publier, lire et évaluer les guides ; 06-05 Formater les dates, nombres et durées
+Lot indicatif : Profil
+
+------------------------ >8 ------------------------ Notes (facultatif, une note par ligne)
+# Chaque ligne devient une note que l'entretien de spécification traite une par une
+Règle : si la progression d'un trophée à paliers est inconnue, rien n'est affiché (pas de « 0 » supposé) ; seules les listes PS5 ont des compteurs ; un trophée obtenu affiche sa date, jamais de compteur.
+Règle : la page se met à jour une seule fois à la fin de chaque synchro du joueur affiché (réussie ou échouée), sans se redessiner pendant la synchro.
+Règle : une liste de trophées inconnue mène à la page 404 ; un joueur qui ne possède pas la liste affiche « <pseudo> doesn't own this game » avec la liste des trophées sans progression.
+Cas limite : sous 980 px, une colonne ; infos et Timeline passent au-dessus de la liste (côte à côte si possible), la jaquette est masquée ; sur téléphone (640 px et moins), le logo est masqué, date et rareté d'un trophée passent sous son nom ; sous 720 px de liste, les en-têtes de groupe passent sur deux lignes.
+Question : faut-il une comparaison côte à côte de deux joueurs sur le même jeu (« Compare with… ») ?

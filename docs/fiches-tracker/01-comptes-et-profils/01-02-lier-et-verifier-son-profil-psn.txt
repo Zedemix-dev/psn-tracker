@@ -1,0 +1,62 @@
+# fw refine — fonctionnalité : Lier et vérifier son profil PSN
+# fw-need/1
+# Écris sous chaque ligne « >8 », sans modifier ces lignes
+# fw retire ses propres lignes « # » et garde les tiennes
+# Enregistre et ferme l'éditeur pour continuer. Fichier rendu tel quel ou vidé : fw ne crée rien
+
+------------------------ >8 ------------------------ Besoin (obligatoire)
+# Décris le besoin dans tes mots
+Le site suit les profils PSN publics. Deux notions distinctes coexistent :
+- un **profil suivi** : n'importe quel profil PSN public, ajouté par un visiteur ou un membre en saisissant son PSN ID (Online ID). Le site le lit avec son propre compte de service PSN (voir 02-02), le synchronise (02-01) et lui donne une page publique. Aucun compte du site n'est nécessaire pour qu'un profil soit suivi ;
+- un **profil revendiqué** : un profil suivi qu'un membre a prouvé être le sien. Le membre en devient propriétaire sur le site : il peut personnaliser la page du profil (bannière, vitrine de trophées, préférences d'affichage), demander des synchros prioritaires, et son nom d'affichage sur le forum, les guides et les sessions devient son pseudo PSN.
+
+Ajouter un profil à suivre :
+- champ « PSN ID » sur la page d'accueil et dans la recherche ; le site cherche le compte PSN correspondant ;
+- si le profil existe et que ses trophées sont visibles publiquement, il est créé et une première synchro complète est mise en file d'attente ; la page du profil s'affiche aussitôt avec l'état « First sync in progress » et la progression (nombre de jeux traités sur le total) ;
+- si le profil n'existe pas : message « No PSN profile with this ID. » ;
+- si les trophées du profil sont privés : message expliquant comment rendre la liste de trophées visible dans les paramètres de confidentialité PlayStation, et bouton « Try again » ;
+- un profil déjà suivi n'est jamais créé deux fois : on est redirigé vers sa page.
+
+Revendiquer un profil (vérification de propriété) :
+- depuis la page d'un profil non revendiqué, ou depuis son compte, le membre clique « This is me » ;
+- le site génère un code court unique (par exemple 8 caractères, préfixé du nom du site) valable 1 heure ;
+- le membre place ce code dans la zone « À propos de moi » de son profil PlayStation (depuis la console, l'application PlayStation ou le site Sony), puis clique « Verify » ;
+- le site relit le profil PSN ; si le code est trouvé, le profil est rattaché au compte du membre et le membre peut retirer le code de sa bio ;
+- échec : message clair (« Code not found yet. PSN can take a few minutes to update. ») et nouvel essai possible, au plus une vérification par minute ;
+- un compte du site possède au plus un profil PSN principal ; il peut en revendiquer d'autres comme comptes secondaires (affichés sur son profil comme « Also plays as »), chacun vérifié de la même façon.
+
+Changement de pseudo PSN :
+- l'identifiant stable d'un profil est l'identifiant de compte PSN (accountId), jamais le pseudo ;
+- quand le pseudo change chez Sony, la synchro suivante met à jour le nom affiché ; les anciennes adresses de la page du profil redirigent vers la nouvelle.
+
+Retrait :
+- le propriétaire peut libérer son profil (« Unlink this PSN profile ») : le profil redevient simplement suivi ;
+- il peut demander que son profil ne soit plus suivi ni affiché du tout (« Remove my profile from the site ») : toutes les données de trophées du profil sont supprimées, il disparaît des leaderboards et ne peut plus être rajouté par un tiers tant que le propriétaire n'a pas levé ce blocage.
+
+------------------------ >8 ------------------------ Problème (facultatif)
+# Ce qui ne va pas aujourd'hui, et pour qui, si tu le sais
+Demander à chaque joueur un jeton d'authentification Sony serait lourd, technique et à renouveler tous les deux mois environ : peu de joueurs le feraient.
+Sans preuve de propriété, n'importe qui pourrait se faire passer pour un chasseur de trophées connu sur le forum ou dans les guides.
+Un pseudo PSN peut changer : s'en servir comme identifiant casserait les liens, les classements et l'historique.
+
+------------------------ >8 ------------------------ Contexte (facultatif)
+# Qui l'a demandé, à quelle occasion, et pour quand
+Acteurs : visiteur anonyme, membre, propriétaire d'un profil, administrateur
+Prérequis : 01-01 Créer un compte et se connecter ; 02-02 Gérer l'accès au PSN du compte de service
+Fiches liées : 02-01 Synchroniser les profils des joueurs ; 03-01 Afficher l'en-tête du profil ; 01-03 Gérer son compte et ses préférences ; 05-02 Consulter les leaderboards
+Lot indicatif : Socle
+
+------------------------ >8 ------------------------ Notes (facultatif, une note par ligne)
+# Chaque ligne devient une note que l'entretien de spécification traite une par une
+Règle : seuls les profils PS4 et PS5 sont pris en compte ; les listes de trophées exclusivement PS3 ou PS Vita sont ignorées (une liste partagée PS4 et PS3 ou Vita compte comme PS4).
+Règle : un profil revendiqué ne peut pas être revendiqué par un autre compte ; en cas de litige, un administrateur peut forcer une nouvelle vérification (le premier qui place le code gagne).
+Règle : la vérification lit la bio PSN à l'instant du clic, jamais une copie en cache.
+Contrôle : un PSN ID fait 3 à 16 caractères (lettres, chiffres, tiret, tiret bas) ; toute autre saisie est refusée avant tout appel au PSN.
+Contrôle : l'ajout de profils est limité par adresse IP et par compte (par exemple 20 par heure) pour éviter de saturer la file de synchro.
+Donnée : un profil porte l'identifiant de compte PSN, le pseudo courant, l'historique des pseudos, l'avatar, l'état de visibilité (public, privé, introuvable), le compte propriétaire éventuel, la date d'ajout et la date de vérification.
+Donnée : un code de vérification porte le compte demandeur, le profil visé, le code, la date d'expiration et le nombre d'essais.
+Intégration : recherche du compte par pseudo (recherche d'utilisateurs PSN), puis lecture du profil (pseudo, avatar, bio « À propos de moi ») et du résumé des trophées par l'identifiant de compte.
+Cas limite : un profil devenu privé après son ajout garde ses données déjà connues, affiche un bandeau « This profile's trophies are private on PSN » et sort des leaderboards tant qu'il reste privé.
+Cas limite : un profil supprimé chez Sony (introuvable) est marqué comme tel et sort des leaderboards ; ses données sont conservées 90 jours puis supprimées.
+Question : faut-il autoriser l'ajout d'un profil par un visiteur anonyme, ou réserver l'ajout aux membres connectés ?
+Question : faut-il proposer en option la liaison par jeton NPSSO pour les joueurs dont la liste de trophées est privée ?

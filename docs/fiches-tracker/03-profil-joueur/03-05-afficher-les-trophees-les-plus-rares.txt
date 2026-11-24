@@ -1,0 +1,33 @@
+# fw refine — fonctionnalité : Afficher les trophées les plus rares et la répartition par rareté
+# fw-need/1
+# Écris sous chaque ligne « >8 », sans modifier ces lignes
+# fw retire ses propres lignes « # » et garde les tiennes
+# Enregistre et ferme l'éditeur pour continuer. Fichier rendu tel quel ou vidé : fw ne crée rien
+
+------------------------ >8 ------------------------ Besoin (obligatoire)
+# Décris le besoin dans tes mots
+Dans la colonne latérale de la page principale d'un profil, sous la vitrine (03-04), un encart « Rarest trophies » montre :
+- les 5 trophées obtenus les plus rares au niveau mondial (rareté PSN croissante) : une ligne de 66 px chacun, icône de 56 px sans fond, nom du trophée, nom du jeu, rareté PSN en % et sa catégorie, icône officielle du type tout à droite ; un clic mène à la fiche du trophée (04-04) ;
+- puis le décompte des trophées obtenus par catégorie de rareté (Ultra rare < 5 %, Very rare 5–10 %, Rare 10–20 %, Uncommon 20–50 %, Common ≥ 50 %, voir 02-07) : une barre empilée aux couleurs des catégories, et 5 colonnes de même largeur, avec le nombre et le libellé centrés dans chacune.
+
+Ce composant de décompte (barre empilée + 5 chiffres centrés) est partagé avec la fiche d'un jeu (04-01) et la progression d'un joueur sur un jeu (03-12), où il porte sur tous les trophées de la liste.
+
+------------------------ >8 ------------------------ Problème (facultatif)
+# Ce qui ne va pas aujourd'hui, et pour qui, si tu le sais
+Le nombre de trophées très rares est ce qui distingue un chasseur de trophées d'un autre ; il doit se voir sans calcul.
+Une rareté calculée sur les membres d'un site fausse cette vitrine : on utilise la rareté PSN.
+
+------------------------ >8 ------------------------ Contexte (facultatif)
+# Qui l'a demandé, à quelle occasion, et pour quand
+Acteurs : visiteur anonyme, membre, propriétaire du profil
+Prérequis : 02-07 Calculer la rareté communautaire ; 03-03 Lister les jeux d'un joueur
+Fiches liées : 03-04 Composer sa vitrine de trophées ; 04-01 Consulter la fiche complète d'un jeu ; 03-12 Suivre la progression d'un joueur sur un jeu ; 05-02 Consulter les leaderboards
+Lot indicatif : Profil
+
+------------------------ >8 ------------------------ Notes (facultatif, une note par ligne)
+# Chaque ligne devient une note que l'entretien de spécification traite une par une
+Règle : à égalité de rareté, le trophée obtenu le plus récemment passe devant.
+Règle : les trophées sans rareté connue sont exclus de la liste et du décompte.
+Règle : un survol d'un segment de la barre affiche son libellé, son nombre et sa part en pourcentage.
+Donnée : couleurs des catégories de rareté : Ultra rare #B3261E, Very rare #D6502A, Rare #E8862A, Uncommon #F2B233, Common #F7DC5A.
+Cas limite : sans trophée obtenu, l'encart affiche « No trophy earned yet. » et la barre est vide.

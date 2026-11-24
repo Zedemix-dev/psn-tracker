@@ -1,0 +1,65 @@
+# fw refine — fonctionnalité : Gérer les rôles, la modération et les signalements
+# fw-need/1
+# Écris sous chaque ligne « >8 », sans modifier ces lignes
+# fw retire ses propres lignes « # » et garde les tiennes
+# Enregistre et ferme l'éditeur pour continuer. Fichier rendu tel quel ou vidé : fw ne crée rien
+
+------------------------ >8 ------------------------ Besoin (obligatoire)
+# Décris le besoin dans tes mots
+Un site communautaire (forum, guides, sessions de jeu, bannières envoyées) a besoin de rôles et d'outils de modération pour rester sain.
+
+Rôles (cumulatifs, du moins au plus puissant) :
+- visiteur : lecture seule des contenus publics ;
+- membre : compte confirmé ; peut poster, créer et rejoindre des sessions, rédiger des guides en brouillon et les soumettre, signaler ;
+- rédacteur confirmé : membre dont au moins un guide a été publié ; ses mises à jour de guides publiés peuvent être publiées sans relecture (voir 05-04) ;
+- modérateur : modère le forum, les guides, les sessions, les bannières et les commentaires ; peut être limité à certaines sections du forum (par exemple un modérateur dédié à quelques jeux) ;
+- administrateur : tout, y compris la gestion des rôles, les réglages globaux (01-05) et les données PSN.
+
+Signalements :
+- tout contenu créé par un membre (post, sujet, guide, commentaire de guide, session de jeu, bannière, nom d'affichage, message de session) porte un bouton « Report » ;
+- le signalement demande un motif dans une liste (spam, insulte ou harcèlement, contenu sexuel ou choquant, triche ou vente de services de boost, spoiler non masqué, hors sujet, autre) et un commentaire facultatif ;
+- un membre ne peut signaler qu'une fois le même contenu ;
+- les signalements arrivent dans une file de modération, triée par nombre de signalements puis ancienneté, filtrable par type de contenu, motif et section.
+
+Actions de modération :
+- sur un contenu : masquer (visible des seuls modérateurs et de l'auteur, avec la mention « Hidden by a moderator »), rétablir, modifier (avec trace de la modification), supprimer définitivement, déplacer (un sujet vers une autre section du forum), verrouiller ou épingler (sujets) ;
+- sur un membre : avertissement (message privé à motif), réduction au silence temporaire (ne peut plus poster ni créer de session, durée au choix), suspension temporaire, bannissement définitif ; chaque sanction a un motif obligatoire, une date de début, une date de fin éventuelle, et est notifiée au membre ;
+- classement d'un signalement : fondé (action prise) ou infondé, avec commentaire interne.
+
+Journal de modération :
+- toute action est historisée : qui, quand, sur quoi, quelle action, quel motif, l'état avant et après ;
+- consultable par les modérateurs (leurs sections) et les administrateurs ;
+- l'historique des sanctions d'un membre est visible sur sa fiche de modération.
+
+Protections automatiques :
+- limite de fréquence par membre (par exemple 1 post toutes les 15 s, 10 sujets par jour, 5 sessions créées par jour) ;
+- un membre au compte très récent (moins de 24 h) ou sans profil PSN vérifié ne peut pas poster de lien ;
+- un contenu atteignant un seuil de signalements (par exemple 5 membres distincts) est masqué automatiquement en attendant un modérateur ;
+- filtre de mots interdits configurable par les administrateurs (remplacement ou blocage).
+
+------------------------ >8 ------------------------ Problème (facultatif)
+# Ce qui ne va pas aujourd'hui, et pour qui, si tu le sais
+Sans modération, un forum de jeu attire spam, vente de « boost » et harcèlement, et les joueurs sérieux partent.
+Sans journal, une décision de modération contestée ne peut pas être revue ni justifiée.
+Une modération centralisée sur un seul administrateur ne tient pas avec un sous-forum par jeu ; il faut pouvoir déléguer par section.
+
+------------------------ >8 ------------------------ Contexte (facultatif)
+# Qui l'a demandé, à quelle occasion, et pour quand
+Acteurs : membre, modérateur, administrateur
+Prérequis : 01-01 Créer un compte et se connecter
+Fiches liées : 01-05 Administrer le site ; 05-04 Publier, lire et évaluer les guides ; 05-05 Participer au forum ; 05-06 Organiser des sessions de jeu ; 05-08 Notifier les membres
+Lot indicatif : Socle
+
+------------------------ >8 ------------------------ Notes (facultatif, une note par ligne)
+# Chaque ligne devient une note que l'entretien de spécification traite une par une
+Règle : un modérateur ne peut pas sanctionner un administrateur ni un autre modérateur ; seul un administrateur le peut.
+Règle : un membre sanctionné voit la sanction, son motif et sa date de fin dans un bandeau en haut de chaque page tant qu'elle dure.
+Règle : la suppression définitive d'un contenu est réservée aux administrateurs ; les modérateurs masquent.
+Contrôle : une sanction sans motif est refusée.
+Donnée : un signalement porte le contenu visé (type et identifiant), le membre signalant, le motif, le commentaire, la date, l'état (ouvert, fondé, infondé) et le modérateur qui l'a traité.
+Donnée : une sanction porte le membre, le type, le motif, l'auteur, la date de début, la date de fin et la date de levée anticipée éventuelle.
+Droit : un rôle de modérateur peut être global ou restreint à une liste de sections du forum et de jeux.
+Droit : l'auteur d'un contenu masqué le voit toujours, avec le motif.
+Cas limite : un membre banni conserve ses contenus publiés, signés de son nom, sauf décision de suppression ; son profil PSN reste suivi mais il ne peut plus le personnaliser.
+Question : faut-il un système de réputation (points gagnés par les guides utiles, réponses appréciées) qui débloque des droits progressivement ?
+Question : faut-il permettre au membre sanctionné de faire appel depuis le site ?

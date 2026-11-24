@@ -1,0 +1,57 @@
+# fw refine — fonctionnalité : Rejoindre le Discord officiel
+# fw-need/1
+# Écris sous chaque ligne « >8 », sans modifier ces lignes
+# fw retire ses propres lignes « # » et garde les tiennes
+# Enregistre et ferme l'éditeur pour continuer. Fichier rendu tel quel ou vidé : fw ne crée rien
+
+------------------------ >8 ------------------------ Besoin (obligatoire)
+# Décris le besoin dans tes mots
+Le site a un serveur Discord officiel. Les membres doivent pouvoir le rejoindre en un clic depuis le site, avec leur compte Discord relié à leur compte du site, pour que le serveur sache qui ils sont (profil PSN vérifié, niveau, platines) et leur donne les bons rôles.
+
+Lier son compte Discord :
+- dans Settings (01-03) ou depuis le bouton « Join our Discord » (page d'accueil, pied de page, page d'un profil vérifié), le membre autorise le site par Discord OAuth2 (portées identify, guilds.join) ;
+- le compte Discord est relié au compte du site (un compte Discord ne peut être relié qu'à un seul compte du site) ;
+- le site ajoute aussitôt le membre au serveur officiel (via le robot du site), sans lien d'invitation à copier ; s'il est déjà membre du serveur, il est simplement reconnu ;
+- le visiteur sans compte du site peut aussi rejoindre le serveur par un lien d'invitation public, mais sans rôle lié.
+
+Rôles synchronisés :
+- « Verified » : profil PSN vérifié sur le site ;
+- paliers de platines (par exemple 1+, 10+, 50+, 100+, 250+, 500+) et de niveau PSN (100+, 300+, 500+…), réglables par les administrateurs (01-05) ;
+- « Top 100 » d'un ou plusieurs leaderboards (05-02) ;
+- « Guide writer » (au moins un guide publié), « Moderator » (rôle de modérateur du site) ;
+- les rôles sont recalculés après chaque synchro du profil et après chaque recalcul des leaderboards ; le robot ajoute ou retire les rôles concernés ;
+- le pseudo sur le serveur peut être remplacé par le pseudo PSN (option du membre).
+
+Annonces automatiques dans des salons configurés par les administrateurs :
+- nouveaux guides publiés (05-04) ;
+- nouvelles sessions de jeu (05-06), avec bouton d'inscription renvoyant sur le site ;
+- nouveaux jeux et DLC au catalogue (02-05), pour les jeux populaires ;
+- annonces du forum (05-05) ;
+- en option, les platines des membres qui l'ont activé (« <pseudo> earned the platinum in <jeu> (4.20%) », avec l'icône du trophée).
+
+Commandes du robot (exemples) : /profile <pseudo> (carte du profil), /game <nom> (fiche du jeu, guide, sessions), /trophy <nom> (fiche du trophée), /sessions <jeu> (sessions à venir).
+
+Délier : le membre peut délier son compte Discord ; les rôles liés sont retirés, il reste sur le serveur s'il le souhaite.
+
+------------------------ >8 ------------------------ Problème (facultatif)
+# Ce qui ne va pas aujourd'hui, et pour qui, si tu le sais
+Sans lien entre le site et Discord, les rôles sont attribués à la main et invérifiables (n'importe qui peut prétendre avoir 300 platines).
+La communauté vit en temps réel sur Discord : y annoncer guides et sessions ramène des joueurs sur le site.
+
+------------------------ >8 ------------------------ Contexte (facultatif)
+# Qui l'a demandé, à quelle occasion, et pour quand
+Acteurs : membre, administrateur, système (robot Discord)
+Prérequis : 01-01 Créer un compte et se connecter ; 01-02 Lier et vérifier son profil PSN
+Fiches liées : 01-03 Gérer son compte et ses préférences ; 01-05 Administrer le site ; 05-02 Consulter les leaderboards ; 05-04 Publier, lire et évaluer les guides ; 05-06 Organiser des sessions de jeu ; 05-08 Notifier les membres
+Lot indicatif : Communauté
+
+------------------------ >8 ------------------------ Notes (facultatif, une note par ligne)
+# Chaque ligne devient une note que l'entretien de spécification traite une par une
+Intégration : Discord OAuth2 (identify, guilds.join, email facultatif pour la connexion de 01-01) et un robot du site avec les droits de gérer les rôles synchronisés uniquement (ses rôles doivent être au-dessus de ceux qu'il gère) ; annonces par le robot ou par webhooks.
+Règle : le robot ne touche jamais aux rôles qu'il ne gère pas.
+Règle : les appels à Discord respectent ses limites de débit ; les mises à jour de rôles sont mises en file et regroupées.
+Sécurité : le jeton du robot et le secret OAuth2 ne vivent que dans l'environnement des conteneurs ; les jetons OAuth2 des membres sont stockés chiffrés et ne servent qu'à l'ajout au serveur.
+Donnée : un lien Discord porte le compte du site, l'identifiant Discord, le nom Discord, les jetons chiffrés, la date de liaison et les rôles appliqués.
+Cas limite : un membre banni du site perd ses rôles liés ; un membre banni du serveur Discord n'y est pas réintégré par le site.
+Question : les messages privés Discord comme canal de notification (05-08) sont-ils souhaités ?
+Question : quels paliers de rôles et quels salons d'annonces voulez-vous au lancement ?

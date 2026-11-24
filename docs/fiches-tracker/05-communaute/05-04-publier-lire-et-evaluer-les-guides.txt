@@ -1,0 +1,59 @@
+# fw refine — fonctionnalité : Publier, lire et évaluer les guides
+# fw-need/1
+# Écris sous chaque ligne « >8 », sans modifier ces lignes
+# fw retire ses propres lignes « # » et garde les tiennes
+# Enregistre et ferme l'éditeur pour continuer. Fichier rendu tel quel ou vidé : fw ne crée rien
+
+------------------------ >8 ------------------------ Besoin (obligatoire)
+# Décris le besoin dans tes mots
+Un guide rédigé avec l'éditeur (05-03) passe par une relecture avant publication, puis il est lu, évalué, commenté et maintenu par la communauté.
+
+Relecture et publication :
+- un guide soumis entre dans la file « Guides in review » des modérateurs ;
+- le modérateur le lit en aperçu et peut : publier ; demander des modifications (avec un commentaire général et des commentaires par section, visibles des auteurs) ; refuser (avec motif) ;
+- les auteurs sont notifiés à chaque décision (05-08) ;
+- un guide publié devient public, sur la fiche du jeu (onglet Guides), sur la fiche de chaque trophée couvert (section « How to unlock », 04-04), dans la page des guides et sur la page d'accueil (05-01) ;
+- une mise à jour d'un guide publié se fait sur une copie de travail : la version publiée reste en ligne ; la mise à jour d'un rédacteur confirmé (01-04) est publiée directement, celle d'un nouveau rédacteur repasse en relecture ; une mise à jour marquée « Major update » remonte dans les derniers guides de la page d'accueil.
+
+Lecture d'un guide :
+- en-tête : bannière du jeu, titre, auteurs (avatars, pseudos, badge « Author has the platinum » si l'un d'eux l'a), dates de publication et de dernière mise à jour, note moyenne et nombre de notes, nombre de vues ;
+- encart « Overview » : difficulté (1 à 10, avec une barre), durée estimée, nombre minimum de parties, trophées en ligne, manquables, buggés, et la répartition des trophées par type ;
+- table des matières fixe sur le côté (en haut sur téléphone), qui suit le défilement ;
+- roadmap, puis sections de trophées, avec leurs étiquettes et un filtre par étiquette (« Show only Missable ») ;
+- pour un membre connecté qui possède le jeu, chaque section de trophée indique s'il l'a obtenu (fond vert et date, comme 03-12) ; un interrupteur « Hide earned trophies » masque les sections déjà obtenues ; une barre de progression en haut du guide ;
+- le lecteur peut cocher des étapes de la roadmap comme faites (mémorisé dans son compte) ;
+- liens partageables vers chaque section (ancre).
+
+Évaluation et retours :
+- note de 1 à 5 étoiles, une par membre et par guide, modifiable ; seuls les membres dont le profil vérifié possède le jeu peuvent noter ; l'auteur ne note pas son propre guide ;
+- vote « Helpful » sur chaque section de trophée ;
+- commentaires en bas du guide (même mise en forme que le forum, 05-05), avec réponse des auteurs mise en avant ;
+- « Suggest an edit » sur une section : une proposition de modification envoyée aux auteurs, qu'ils acceptent (intégrée dans leur copie de travail) ou refusent ;
+- signalement (01-04).
+
+Page « Guides » : tous les guides publiés, filtrables par plateforme, difficulté, durée, note, présence de trophées en ligne ; triés par date de publication, note, popularité (vues des 30 derniers jours) ; recherche par jeu ou titre.
+
+Classement des guides d'un jeu : le mieux noté d'abord (moyenne bayésienne pour ne pas favoriser un guide à une seule note de 5), puis le plus récent.
+
+------------------------ >8 ------------------------ Problème (facultatif)
+# Ce qui ne va pas aujourd'hui, et pour qui, si tu le sais
+Des guides publiés sans relecture contiennent souvent des erreurs, du plagiat ou du contenu hors sujet ; une relecture systématique décourage pourtant les rédacteurs réguliers : d'où le statut de rédacteur confirmé.
+Un joueur qui suit un guide veut savoir où il en est sans tout cocher à la main : le site connaît déjà ses trophées.
+Les notes d'un guide n'ont de valeur que si ceux qui notent ont joué au jeu.
+
+------------------------ >8 ------------------------ Contexte (facultatif)
+# Qui l'a demandé, à quelle occasion, et pour quand
+Acteurs : visiteur anonyme, membre, auteur, rédacteur confirmé, modérateur
+Prérequis : 05-03 Rédiger un guide de trophées ; 01-04 Gérer les rôles, la modération et les signalements
+Fiches liées : 04-01 Consulter la fiche complète d'un jeu ; 04-04 Consulter la fiche d'un trophée ; 05-01 Afficher la page d'accueil ; 05-05 Participer au forum ; 05-08 Notifier les membres ; 03-08 Conseiller les trophées à obtenir
+Lot indicatif : Communauté
+
+------------------------ >8 ------------------------ Notes (facultatif, une note par ligne)
+# Chaque ligne devient une note que l'entretien de spécification traite une par une
+Règle : un guide publié dont le jeu reçoit un DLC affiche « This guide doesn't cover the new DLC yet » sur les sections ajoutées non rédigées.
+Règle : un guide dont aucun auteur n'est actif depuis 12 mois peut être repris : un modérateur peut ajouter un nouvel auteur, avec l'accord de l'auteur d'origine s'il répond sous 30 jours.
+Règle : les vues sont comptées une fois par lecteur et par jour.
+Contrôle : un vote ou une note par membre ; les votes suspects (comptes créés en masse, votes croisés) sont neutralisés par les modérateurs.
+Donnée : une note porte le guide, le membre, la valeur et la date ; une proposition de modification porte la section, le texte proposé, l'auteur, l'état et la date.
+Intégration : un nouveau guide publié est annoncé dans un salon du Discord officiel (05-07).
+Question : faut-il proposer l'export d'un guide en PDF ou en mode hors ligne pour le lire sur un second écran pendant la partie ?

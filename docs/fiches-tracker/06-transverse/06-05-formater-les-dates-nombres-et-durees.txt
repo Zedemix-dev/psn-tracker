@@ -1,0 +1,46 @@
+# fw refine — fonctionnalité : Formater les dates, nombres et durées
+# fw-need/1
+# Écris sous chaque ligne « >8 », sans modifier ces lignes
+# fw retire ses propres lignes « # » et garde les tiennes
+# Enregistre et ferme l'éditeur pour continuer. Fichier rendu tel quel ou vidé : fw ne crée rien
+
+------------------------ >8 ------------------------ Besoin (obligatoire)
+# Décris le besoin dans tes mots
+Toutes les pages affichent des dates, des nombres et des durées selon les mêmes règles, écrites une seule fois et partagées, pour qu'un trophée ait la même date et la même heure partout.
+
+Dates et heures :
+- format de date : « 5 Nov 2026 » ; date et heure : « 5 Nov 2026, 00:16 » (24 h) ;
+- l'heure d'obtention d'un trophée s'affiche avec les secondes (« 01:21:07 ») partout où elle apparaît (progression sur un jeu, Timeline, carrousel, étapes, journal, historique du niveau) ; les autres heures (dernière synchro, historique des synchros, forum) n'ont pas les secondes ;
+- fuseau : les dates sont affichées dans le fuseau du lecteur (réglage du compte, ou fuseau du navigateur pour un visiteur) ; les statistiques d'un profil sont calculées dans le fuseau du propriétaire (03-10) ; les calculs de durée se font dans un fuseau fixe pour qu'un changement d'heure ne décale pas les heures ;
+- temps relatif : « just now », « 3 minutes ago », « 2 hours ago », « 4 days ago », « 3 weeks ago », « 5 months ago », « 9 years ago », avec la date et l'heure exactes en infobulle.
+
+Nombres : séparateur de milliers « , » (« 11,622 ») ; pourcentages à deux décimales (« 93.74% », « 4.60% ») ; durée de jeu « 33h 27m played » ; heures totales « 19,416 h ».
+
+Durées :
+- unités : years, months, weeks, days, hours, minutes ; une unité nulle est omise ; singulier et pluriel (« 1 day », « 2 days ») ;
+- durée courte (temps vers le platine, records de vitesse) : les 3 plus grandes unités consécutives à partir de la plus grande unité non nulle, les unités nulles parmi elles étant omises (« 1 week, 4 days, 3 hours » ; 1 an, 0 mois, 2 semaines et 3 jours donnent « 1 year, 2 weeks ») ;
+- durée complète (Gap entre le premier et le dernier trophée) : toutes les unités non nulles jusqu'à la minute (« 4 years, 4 months, 21 hours, 11 minutes ») ;
+- moins d'une minute : « less than a minute ».
+
+Noms et tri :
+- nom normalisé d'un jeu (rapprochement des versions) : minuscules, sans ™ ® ©, espaces multiples réduites à une ;
+- tri alphabétique : sans tenir compte de la casse, des accents, de la ponctuation et des espaces en tête ;
+- texte de recherche externe construit à partir d'un nom : sans ™ ® ©, espaces réduites, encodé pour l'adresse, sans qu'aucune lettre ni aucun chiffre ne disparaisse (testé sur les « s », ™ ®, apostrophes droites et typographiques, deux-points et accents).
+
+------------------------ >8 ------------------------ Problème (facultatif)
+# Ce qui ne va pas aujourd'hui, et pour qui, si tu le sais
+Un trophée affiché à 01:21 sur une page et 01:21:07 sur une autre, ou un jour différent selon la page, fait douter de toutes les données.
+Des règles recopiées dans plusieurs fichiers finissent par diverger : une règle de nettoyage de nom qui supprime une lettre (« Gran Turi mo ») casse une recherche.
+
+------------------------ >8 ------------------------ Contexte (facultatif)
+# Qui l'a demandé, à quelle occasion, et pour quand
+Acteurs : tous
+Prérequis : aucun
+Fiches liées : 01-03 Gérer son compte et ses préférences ; 03-06 Afficher les étapes franchies ; 03-07 Consulter le journal des trophées ; 03-10 Consulter les statistiques d'un joueur ; 03-12 Suivre la progression d'un joueur sur un jeu ; 04-05 Classer les joueurs d'un jeu
+Lot indicatif : Transverse
+
+------------------------ >8 ------------------------ Notes (facultatif, une note par ligne)
+# Chaque ligne devient une note que l'entretien de spécification traite une par une
+Contrôle : chaque règle est une fonction unique couverte par des tests, y compris les cas limites (changement d'heure, 29 février, noms à caractères spéciaux).
+Règle : une date inconnue n'est jamais remplacée par une date supposée : l'information est masquée ou affiche « — ».
+Question : faut-il proposer un format de date américain (« Nov 5, 2026 », 12 h) en préférence du lecteur ?

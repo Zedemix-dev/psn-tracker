@@ -1,0 +1,55 @@
+# fw refine — fonctionnalité : Consulter la fiche complète d'un jeu
+# fw-need/1
+# Écris sous chaque ligne « >8 », sans modifier ces lignes
+# fw retire ses propres lignes « # » et garde les tiennes
+# Enregistre et ferme l'éditeur pour continuer. Fichier rendu tel quel ou vidé : fw ne crée rien
+
+------------------------ >8 ------------------------ Besoin (obligatoire)
+# Décris le besoin dans tes mots
+Chaque liste de trophées du catalogue (02-05) a une fiche publique, point central de tout ce qui concerne ce jeu sur le site : ses trophées, son classement, ses guides, son forum et ses sessions de jeu. Elle existe même si aucun membre ne possède le jeu.
+
+Haut de page (commun à tous les onglets) :
+- bannière du jeu, fond flouté et logo, exactement comme pour la progression d'un joueur (03-12) ;
+- bandeau du jeu : nom, badge de plateforme, repère « ! » des non obtenables ; dessous « 58 trophies · 1,485 points · 3 DLC » ; à droite les pastilles du nombre de trophées par type et l'icône du platine s'il existe ;
+- statistiques communautaires : « 1,284 tracked players · 312 platinum (24.3%) · 198 at 100% (15.4%) » ; temps moyen et médian pour obtenir le platine (écart entre premier trophée et platine des joueurs suivis), affiché à partir de 10 platinés ;
+- un sélecteur de version quand le même jeu existe en plusieurs listes (« PS5 · PS4 · PS4 (Asia) ») ;
+- boutons d'action : « Follow this game » (notifications de nouveaux DLC, guides, sujets et sessions, voir 05-08) ; « Create a session » (05-06) ; « Write a guide » (05-03) ;
+- un sélecteur « Viewing: <pseudo> » pour afficher la progression d'un joueur sur la page (03-12) ; connecté et propriétaire du jeu, la page s'ouvre directement sur sa propre progression.
+
+Onglets, chacun avec sa propre adresse :
+1. Trophies (par défaut) : la liste des trophées par groupe (jeu de base puis DLC), avec les en-têtes de groupe et les lignes de 03-12 ; sans joueur choisi, chaque ligne montre la rareté PSN et la rareté du site, le nombre de membres suivis qui l'ont obtenu, et un lien vers la fiche du trophée (04-04) ; avec un joueur choisi, sa progression ; listes déroulantes d'affichage et de tri identiques à 03-12 ;
+2. Leaderboard : le classement des joueurs suivis sur ce jeu (04-05) ;
+3. Guides : les guides publiés pour cette liste (et ceux d'une autre version du même jeu, signalés comme tels), le mieux noté d'abord ; un aperçu de chaque guide (titre, auteur, note, difficulté, durée estimée, nombre de parties, trophées manquables), voir 05-04 ;
+4. Forum : le sous-forum du jeu (05-05), avec ses sujets épinglés, puis les derniers sujets ; bouton « New topic » ;
+5. Sessions : les sessions de jeu à venir pour ce jeu (05-06), avec bouton « Create a session ».
+Chaque onglet affiche son nombre d'éléments (« Guides (3) », « Forum (128) », « Sessions (2) »).
+
+Colonne latérale (320 px, sur tous les onglets) :
+- la jaquette en 320 × 320 ;
+- infos du jeu : totaux et points, décompte des raretés de tous les trophées, Publisher, Genre, Release date, Avg. rarity avec la plus basse, la médiane et la plus haute (règles de 03-12) ;
+- résumé du meilleur guide (difficulté sur 10, durée estimée, parties minimales, trophées en ligne, trophées manquables) avec lien vers le guide ;
+- derniers sujets du forum du jeu (5) et prochaine session ;
+- si le joueur affiché possède le jeu : sa Timeline (03-12).
+
+------------------------ >8 ------------------------ Problème (facultatif)
+# Ce qui ne va pas aujourd'hui, et pour qui, si tu le sais
+Un joueur qui commence un jeu cherche au même endroit la liste des trophées, un guide, la difficulté, les trophées impossibles, des partenaires pour les trophées en ligne et ses chances (combien de joueurs ont fini) ; aujourd'hui il doit passer d'un site à l'autre.
+Une page de jeu limitée à la progression d'un seul joueur ne sert à rien à celui qui ne possède pas encore le jeu.
+
+------------------------ >8 ------------------------ Contexte (facultatif)
+# Qui l'a demandé, à quelle occasion, et pour quand
+Acteurs : visiteur anonyme, membre, rédacteur de guide
+Prérequis : 02-05 Alimenter le catalogue des jeux et DLC ; 02-04 Enrichir les jeux avec les informations du store
+Fiches liées : 03-12 Suivre la progression d'un joueur sur un jeu ; 04-04 Consulter la fiche d'un trophée ; 04-05 Classer les joueurs d'un jeu ; 05-03 Rédiger un guide de trophées ; 05-04 Publier, lire et évaluer les guides ; 05-05 Participer au forum ; 05-06 Organiser des sessions de jeu ; 02-06 Signaler les trophées non obtenables ; 02-07 Calculer la rareté communautaire
+Lot indicatif : Catalogue
+
+------------------------ >8 ------------------------ Notes (facultatif, une note par ligne)
+# Chaque ligne devient une note que l'entretien de spécification traite une par une
+Règle : guides, forum et sessions sont rattachés au « jeu » (ensemble des versions), sauf mention de plateforme : un guide de la version PS5 est proposé sur la fiche PS4 avec la mention « Written for PS5 ».
+Règle : les statistiques communautaires excluent les profils privés, introuvables ou qui masquent ce jeu.
+Règle : les informations inconnues sont masquées, jamais supposées ; un trophée sans rareté connue affiche « Unknown ».
+Règle : la page se met à jour après les synchros sans recharger ; les compteurs des onglets sont gardés en mémoire et recalculés à chaque nouveau contenu.
+Contrôle : une liste de trophées inconnue mène à la page 404.
+Donnée : l'adresse de la fiche est fondée sur un identifiant stable de la liste et un nom lisible (« /games/12345-cyberpunk-2077 ») ; un changement de nom ne casse pas les liens.
+Question : faut-il garder des liens de recherche vers des guides externes quand aucun guide communautaire n'existe encore pour ce jeu ?
+Question : faut-il afficher une note de difficulté communautaire (vote des platinés) en plus de celle des guides ?

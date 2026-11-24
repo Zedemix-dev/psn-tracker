@@ -1,0 +1,51 @@
+# fw refine — fonctionnalité : Enrichir les jeux avec les informations du store
+# fw-need/1
+# Écris sous chaque ligne « >8 », sans modifier ces lignes
+# fw retire ses propres lignes « # » et garde les tiennes
+# Enregistre et ferme l'éditeur pour continuer. Fichier rendu tel quel ou vidé : fw ne crée rien
+
+------------------------ >8 ------------------------ Besoin (obligatoire)
+# Décris le besoin dans tes mots
+Une liste de trophées ne dit presque rien du jeu. Les pages d'un jeu, les statistiques par éditeur et par genre et les bannières ont besoin d'informations venues du store PSN, sans autre source externe.
+
+Informations récupérées pour chaque concept de jeu :
+- image de fond du jeu (bannière, image du hub de jeu PS5) et logo (PNG transparent), à partir des médias du concept ;
+- éditeur, tel que le store le nomme (« CD PROJEKT RED S.A. ») ;
+- genres, en clair, sans doublon (le store peut répéter un genre) ;
+- date de sortie du concept.
+
+Le développeur n'est pas affiché : le PSN ne le fournit pas, et aucune base externe n'est utilisée.
+
+Emprunt à une autre version du même jeu :
+- pour toute information qui manque à une liste de trophées (jaquette, image de fond, logo, éditeur, genres, date de sortie), le site la cherche chez les autres listes du même jeu, en préférant la version PS5, et la reprend si elle existe ; il ne laisse le manque que si aucune version ne l'a ;
+- « du même jeu » veut dire même nom normalisé : en minuscules, sans ™ ® ©, espaces multiples réduites à une, ou rattachement manuel fait par un administrateur (01-05) ;
+- une information propre à la liste n'est jamais remplacée ;
+- l'emprunt se fait à l'affichage : rien d'emprunté n'est stocké, et une information empruntée suit donc toujours la version qui la prête ;
+- si aucune version n'a de jaquette carrée, une liste PS4 prend l'icône carrée de la liste PS5 du même jeu plutôt que sa propre icône rectangulaire ; sans autre version, la liste garde son icône, posée sur une tuile (02-03).
+
+Bannières ajoutées à la main :
+- pour les rares jeux dont aucune version n'a d'image de fond au PSN, un administrateur associe au jeu une image envoyée (01-05) ;
+- ordre de priorité : l'image propre de la liste, puis celle d'une autre version du même jeu, puis l'image ajoutée à la main, puis aucune bannière (espace vide sur fond uni). Une image qui arrive plus tard au PSN reprend donc la main d'elle-même.
+
+Fréquence : informations récupérées pour tout concept qui n'en a pas encore, puis rafraîchies une fois par jour avec les raretés. Un échec sur un concept n'arrête rien : il est retenté la fois suivante.
+
+------------------------ >8 ------------------------ Problème (facultatif)
+# Ce qui ne va pas aujourd'hui, et pour qui, si tu le sais
+Beaucoup de listes de trophées n'ont aucun jeu joué relié (anciens jeux, jeux supprimés de la console) : sans emprunt, la version PS4 d'un jeu n'aurait ni jaquette ni bannière alors que la version PS5 les a.
+Les noms d'éditeurs du store sont des raisons sociales (« BANDAI NAMCO ENTERTAINMENT EUROPE ») peu lisibles dans un graphique.
+
+------------------------ >8 ------------------------ Contexte (facultatif)
+# Qui l'a demandé, à quelle occasion, et pour quand
+Acteurs : système (worker), administrateur
+Prérequis : 02-01 Synchroniser les profils des joueurs
+Fiches liées : 02-03 Stocker et servir les images ; 02-05 Alimenter le catalogue des jeux et DLC ; 04-01 Consulter la fiche complète d'un jeu ; 03-10 Consulter les statistiques d'un joueur ; 01-05 Administrer le site
+Lot indicatif : Socle
+
+------------------------ >8 ------------------------ Notes (facultatif, une note par ligne)
+# Chaque ligne devient une note que l'entretien de spécification traite une par une
+Intégration : catalogue du store PSN par concept (paramètres pays, langue et âge tous présents ou tous absents, sinon erreur ; pays et langue déduits de la langue des appels, en-GB donne GB et en ; âge 99 pour éviter tout filtrage) ; champs éditeur, date de sortie, genres localisés.
+Intégration : médias du concept, images de type « image du hub de jeu » (bannière) et « logo ».
+Donnée : un concept porte son identifiant, l'adresse et le fichier de sa bannière et de son logo, l'éditeur brut, les genres, la date de sortie et la date de dernière récupération.
+Donnée : une liste de correspondance des éditeurs (nom brut → nom affiché) est gérée par les administrateurs ; deux noms bruts qui donnent le même nom affiché sont additionnés dans les statistiques ; un nom absent de cette liste s'affiche tel quel. Exemples : « Square Enix LTD » → « Square Enix », « SEGA EUROPE LTD » → « SEGA », « EA Swiss Sarl » → « Electronic Arts », « CE EUROPE LIMITED » → « Capcom », « Activision Blizzard Int'l BV » → « Activision Blizzard ».
+Règle : une ligne d'information dont la valeur est inconnue est masquée à l'affichage, jamais remplie d'une valeur supposée.
+Question : faut-il récupérer aussi la description du jeu, les captures d'écran et le prix du store pour enrichir la fiche d'un jeu ?

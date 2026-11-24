@@ -1,0 +1,62 @@
+# fw refine — fonctionnalité : Signaler les trophées non obtenables
+# fw-need/1
+# Écris sous chaque ligne « >8 », sans modifier ces lignes
+# fw retire ses propres lignes « # » et garde les tiennes
+# Enregistre et ferme l'éditeur pour continuer. Fichier rendu tel quel ou vidé : fw ne crée rien
+
+------------------------ >8 ------------------------ Besoin (obligatoire)
+# Décris le besoin dans tes mots
+Certains trophées ne peuvent plus être obtenus (serveurs fermés, contenu retiré, bug définitif). Un joueur veut le savoir avant de commencer un jeu, pour ne pas découvrir au dernier moment qu'un trophée est impossible. Le site marque donc, **trophée par trophée**, ceux qui ne sont plus obtenables, à partir d'une liste publique maintenue par la communauté, et réutilise ces marques partout.
+
+Source :
+- une liste communautaire publique au format JSON, téléchargeable sans authentification, dont l'adresse est réglable par un administrateur (01-05) ;
+- format attendu : un objet avec « version » valant 2 et « list », un dictionnaire d'entrées ; chaque entrée a un titre, des plateformes (PS3, PS4, PS5, Vita, PC), un auteur, une note (cause, souvent avec des liens Markdown), une liste de numéros de trophées et une date (absente sur certaines entrées) ;
+- la liste ne donne aucun identifiant PSN : il faut rapprocher ses entrées des listes de trophées du catalogue.
+
+Règles de rapprochement (vérifiées sur des données réelles, elles redonnent exactement les bons jeux) :
+- clé de nom, dans cet ordre : suppression de ™ ® © (sans rien laisser à leur place), décomposition Unicode NFKD, suppression des accents, minuscules, toute suite de caractères qui ne sont ni lettres ni chiffres devient une espace, espaces de bord retirées ; une clé vide ne correspond à rien. L'ordre compte : NFKD transformerait ™ en « TM » ;
+- il faut au moins une plateforme commune : PSVITA du PSN équivaut à Vita, PSPC à PC ; PS3, PS4, PS5 sont identiques ; VR n'équivaut à rien. Une entrée qui ne vise que la version PS4 ne marque pas la version PS5 ;
+- plusieurs entrées pour un même jeu (une par région) : on prend l'union de leurs numéros ; si l'une vaut [0], tout le jeu est concerné ; la note retenue est celle de l'entrée la plus récente qui en a une (sans date : après les autres ; à égalité : le plus petit identifiant) ;
+- du numéro au trophée : identifiant PSN du trophée = numéro − 1 ; [0] veut dire « tous les trophées du jeu » ; un numéro qui ne correspond à aucun trophée est ignoré ;
+- un jeu est « concerné » dès qu'au moins un de ses trophées existants est marqué, même si le joueur les a déjà tous.
+
+Téléchargement :
+- fait par le service de fond, indépendamment de l'accès au PSN et des synchros ; il n'apparaît pas dans l'historique des synchros ;
+- au plus une tentative par heure, si la liste n'a jamais été téléchargée ou si le dernier succès date de 24 h ou plus ; immédiatement quand un administrateur enregistre l'adresse ;
+- garde-fous : http ou https seulement, délai maximum de 30 s, taille maximum de 10 Mo ; réponse refusée si ce n'est pas du JSON, si la version n'est pas 2 ou s'il ne reste aucune entrée valide ; une entrée mal formée est ignorée individuellement ;
+- en cas d'échec, l'ancienne liste et toutes les marques restent en place ; l'échec est affiché aux administrateurs (raison, date de la tentative, date de la liste encore utilisée) ;
+- la liste brute est gardée, pour refaire le rapprochement sans la retélécharger.
+
+Application :
+- le rapprochement est refait après chaque téléchargement réussi et après chaque ajout de liste au catalogue, pour qu'un nouveau jeu soit signalé sans attendre ; il s'applique d'un seul coup (transaction) ;
+- l'application enregistre sa date, pour que les pages mises en cache sachent qu'elles doivent se recalculer (06-03).
+
+Affichage (règles communes, reprises par les fiches concernées) :
+- un repère « ! » après le badge de plateforme d'un jeu concerné, avec une infobulle : « N unobtainable trophies », « 1 unobtainable trophy », ou « All N trophies are unobtainable », puis la note en texte simple ;
+- sur la page d'un jeu, un bandeau avec le nombre et la situation du joueur affiché (« 7 unobtainable trophies, 4 you don't have », « 10 unobtainable trophies, you have them all », « All 37 trophies are unobtainable, 13 you don't have »), puis la note avec ses liens cliquables ;
+- chaque trophée marqué porte un « ! » à côté de son nom (« No longer obtainable. », ou « No longer obtainable. You already have it. » s'il est obtenu) ;
+- non obtenable et non obtenu : surbrillance rouge (fond à 14 % et anneau de 2 px autour de l'icône, couleur du rang F) ; non obtenable mais obtenu : surbrillance verte habituelle, seulement le « ! » ;
+- filtre « With unobtainable / Without unobtainable » dans les listes de jeux.
+
+------------------------ >8 ------------------------ Problème (facultatif)
+# Ce qui ne va pas aujourd'hui, et pour qui, si tu le sais
+Un chasseur de trophées peut investir des dizaines d'heures dans un jeu avant de découvrir qu'un trophée a disparu avec la fermeture des serveurs.
+Marquer seulement le jeu ne suffit pas : le conseiller de trophées et la liste de tous les trophées doivent savoir lesquels exactement.
+Une liste externe peut tomber en panne ; elle ne doit jamais faire disparaître des repères existants.
+
+------------------------ >8 ------------------------ Contexte (facultatif)
+# Qui l'a demandé, à quelle occasion, et pour quand
+Acteurs : système (worker), administrateur, tout lecteur
+Prérequis : 02-05 Alimenter le catalogue des jeux et DLC
+Fiches liées : 03-03 Lister les jeux d'un joueur ; 03-08 Conseiller les trophées à obtenir ; 03-12 Suivre la progression d'un joueur sur un jeu ; 04-01 Consulter la fiche complète d'un jeu ; 04-03 Lister tous les trophées du PSN ; 01-05 Administrer le site
+Lot indicatif : Catalogue
+
+------------------------ >8 ------------------------ Notes (facultatif, une note par ligne)
+# Chaque ligne devient une note que l'entretien de spécification traite une par une
+Règle : dans le doute, on préfère signaler : un jeu concerné qui n'est pas signalé est l'échec à éviter.
+Règle : la note vient de l'extérieur et n'est jamais interprétée comme du HTML ; seuls les liens Markdown [libellé](adresse) sont interprétés (dans une infobulle, seulement le libellé ; sur une page, un lien qui s'ouvre dans un nouvel onglet, si l'adresse est en http ou https) ; les ** et accents graves restent tels quels.
+Règle : le filtre « unobtainable » ne change que la liste affichée, jamais les statistiques du profil.
+Sécurité : risque accepté : le téléchargement depuis le réseau interne pourrait viser une adresse interne ; seul un administrateur peut changer l'adresse, et la réponse n'est jamais affichée.
+Donnée : une marque porte la liste de trophées, l'identifiant du trophée, la note retenue et la date d'application.
+Question : faut-il permettre aux modérateurs de corriger une marque (ajout ou retrait) en plus de la liste externe, avec la cause saisie sur le site ?
+Question : faut-il proposer aux membres de signaler un trophée devenu non obtenable, pour alimenter la liste communautaire ?

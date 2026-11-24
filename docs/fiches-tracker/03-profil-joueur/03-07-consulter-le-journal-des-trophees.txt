@@ -1,0 +1,62 @@
+# fw refine — fonctionnalité : Consulter le journal des trophées
+# fw-need/1
+# Écris sous chaque ligne « >8 », sans modifier ces lignes
+# fw retire ses propres lignes « # » et garde les tiennes
+# Enregistre et ferme l'éditeur pour continuer. Fichier rendu tel quel ou vidé : fw ne crée rien
+
+------------------------ >8 ------------------------ Besoin (obligatoire)
+# Décris le besoin dans tes mots
+Une page du profil (« Trophy Log ») liste tous les trophées obtenus par le joueur, une ligne par trophée, dans une belle liste chronologique, du plus récent au plus ancien par défaut.
+
+Haut de page : le haut de page commun du profil (03-01), sans carrousel ni colonne latérale.
+
+Panneau, en pleine largeur :
+- en-tête : à gauche « <pseudo>'s Trophy Log » ; à droite le nombre (« 11,636 trophies » sans filtre, « 1,234 of 11,636 trophies match » dès qu'un filtre de plateforme, de rareté ou de type est actif), puis « Show all » tant que tout n'est pas chargé (toujours après le nombre) ;
+- en dessous les contrôles, puis la liste.
+
+Ligne de trophée (environ 66 px), de gauche à droite :
+1. l'image du jeu, 56 px, coins de 10 px, la même que sa ligne dans la liste des jeux (jaquette carrée ou icône sur sa tuile) ; c'est un lien vers la progression du joueur sur ce jeu ;
+2. l'icône du trophée, 56 px, coins de 10 px, sans aucun fond ;
+3. le nom (15 px, gras), la description en dessous en entier, puis une ligne avec le nom du jeu (lien), le nom du DLC pour un trophée de DLC (« · Phantom Liberty ») et les pastilles de plateforme ;
+4. le numéro d'obtention (« #11,636 »), en gris ;
+5. la date (« 9 Nov 2026 ») et l'heure avec les secondes (« 15:46:30 »), sur deux lignes, en vert clair #93E2AE, au format 24 h dans le fuseau du lecteur ;
+6. la rareté PSN (« 4.60% ») et sa catégorie (« Ultra rare ») ;
+7. l'icône officielle du type, 30 px.
+La ligne elle-même n'est pas un lien : seuls l'image et le nom du jeu le sont. Pas de fond vert (tous les trophées sont obtenus). Un trophée devenu non obtenable porte le « ! » avec « No longer obtainable. You already have it. ».
+
+Numéro d'obtention :
+- la place du trophée dans l'ordre d'obtention de tous les trophées obtenus du profil, le premier étant le n° 1 ; le plus récent porte donc le total ;
+- à la même seconde, le platine passe après les autres trophées (il est forcément obtenu en même temps que le dernier trophée de son jeu) ; ordre complet : seconde d'obtention, platine en dernier, identifiant du trophée, identifiant de la liste ;
+- il ne change ni avec les filtres ni avec le tri.
+
+Tris et sens :
+- Date earned (par défaut), Alphabetical (nom du trophée, sans la casse, les accents, ni la ponctuation et les espaces en tête : « À On » se range dans les A, « “Endless” » dans les E, « …There You Are » dans les T), Rarity (rareté PSN, sans rareté en dernier dans les deux sens) ;
+- un bouton à côté du tri inverse l'ordre, avec un libellé qui dit ce qu'il fait : « Newest first » / « Oldest first », « A to Z » / « Z to A », « Rarest first » / « Most common first » ; changer de tri remet le sens naturel ;
+- à égalité de nom ou de rareté, le plus récent passe devant, dans les deux sens.
+
+Filtres (un seul choix par filtre) : Platform (All platforms, PS4, PS5) ; Rarity (All rarities, Ultra rare, Very rare, Rare, Uncommon, Common ; un trophée sans rareté n'apparaît que sous All) ; Type (All types, Platinum, Gold, Silver, Bronze).
+Bouton « Reset » : remet tri, sens et filtres par défaut ; il n'apparaît que si au moins un contrôle a changé, avec leur nombre (« Reset (3) »). Un contrôle hors valeur par défaut prend le contour d'accent (pour le sens, la valeur par défaut est le sens naturel du tri choisi).
+
+Chargement : 50 lignes, puis 50 de plus à l'approche du bas (« The next 50 trophies load as you scroll down », « Retry » en cas d'échec) ; « Show all » charge tout le reste, affiché par paquets sans figer la page (voir 06-02). Retour depuis une page de jeu : mêmes lignes, même position, même après « Show all ».
+
+------------------------ >8 ------------------------ Problème (facultatif)
+# Ce qui ne va pas aujourd'hui, et pour qui, si tu le sais
+Les joueurs veulent relire leurs derniers trophées dans l'ordre exact où ils les ont obtenus ; un platine affiché avant le dernier trophée de son jeu est faux.
+Un profil de plus de 10 000 trophées doit pouvoir tout afficher sans que la page se fige, et rester cherchable avec la recherche du navigateur.
+
+------------------------ >8 ------------------------ Contexte (facultatif)
+# Qui l'a demandé, à quelle occasion, et pour quand
+Acteurs : visiteur anonyme, membre, propriétaire du profil
+Prérequis : 03-01 Afficher l'en-tête du profil ; 02-01 Synchroniser les profils des joueurs
+Fiches liées : 03-06 Afficher les étapes franchies ; 03-08 Conseiller les trophées à obtenir ; 03-12 Suivre la progression d'un joueur sur un jeu ; 06-02 Charger les longues listes et revenir à sa place ; 06-05 Formater les dates, nombres et durées
+Lot indicatif : Profil
+
+------------------------ >8 ------------------------ Notes (facultatif, une note par ligne)
+# Chaque ligne devient une note que l'entretien de spécification traite une par une
+Règle : tri, sens et filtres vivent dans l'adresse de la page, sans enregistrement ; une valeur par défaut n'y figure pas, une valeur invalide est ignorée.
+Règle : les nouveaux trophées apparaissent après une synchro sans recharger la page.
+Règle : seuls les trophées des jeux non masqués par le joueur sur le PSN sont listés et numérotés.
+Contrôle : objectifs de performance sur un profil de plus de 11 000 trophées : premières nouvelles lignes moins de 1 s après « Show all », page jamais figée plus de 250 ms d'affilée, liste complète en moins de 5 s ; les réponses JSON volumineuses sont compressées.
+Cas limite : sous 900 px, l'image du jeu est masquée (le nom du jeu reste un lien) et l'icône passe à 48 px ; sur téléphone (640 px et moins), le numéro, la date et la rareté passent sous la description ; le numéro reste visible à toutes les largeurs.
+Cas limite : sans résultat, « No trophies match these filters. ».
+Question : faut-il ajouter un filtre par période (année, mois) et une recherche par nom ?

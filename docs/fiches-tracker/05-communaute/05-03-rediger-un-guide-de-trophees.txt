@@ -1,0 +1,64 @@
+# fw refine — fonctionnalité : Rédiger un guide de trophées
+# fw-need/1
+# Écris sous chaque ligne « >8 », sans modifier ces lignes
+# fw retire ses propres lignes « # » et garde les tiennes
+# Enregistre et ferme l'éditeur pour continuer. Fichier rendu tel quel ou vidé : fw ne crée rien
+
+------------------------ >8 ------------------------ Besoin (obligatoire)
+# Décris le besoin dans tes mots
+Les guides de trophées sont écrits par la communauté, avec un éditeur intégré au site, pensé pour la structure d'un guide de trophées. Un guide est rattaché à une liste de trophées (et donc à un jeu, 04-01) ; il peut couvrir le jeu de base, un ou plusieurs DLC, ou tout.
+
+Création :
+- depuis la fiche d'un jeu (« Write a guide ») ou depuis son espace « My guides » ;
+- choix de la liste de trophées et du périmètre (jeu de base, DLC choisis) ;
+- le guide est créé en brouillon, privé, visible de son auteur et des co-auteurs invités.
+
+Structure générée automatiquement à partir des trophées du périmètre :
+1. En-tête « Overview », un formulaire structuré : difficulté estimée (1 à 10), durée estimée pour le platine ou le 100 % (en heures), nombre minimum de parties, trophées en ligne (nombre, et si les serveurs sont nécessaires), trophées manquables (nombre), trophées buggés connus, niveau de difficulté requis, trophées liés à la difficulté (oui/non), codes de triche désactivant les trophées (oui/non) ; le résumé de cet en-tête est réutilisé sur la fiche du jeu (04-01) ;
+2. « Introduction » : texte libre ;
+3. « Roadmap » : une suite d'étapes numérotées (titre et texte), qu'on ajoute, réordonne et supprime ;
+4. Une section par trophée, dans l'ordre PSN, regroupée par groupe (jeu de base puis chaque DLC) : chaque section a un en-tête non modifiable (icône sans fond, nom, description, type, rareté PSN, repère de non obtenable, objectif d'un trophée à paliers) et un corps libre ; l'auteur peut marquer chaque trophée avec des étiquettes (Missable, Online, Story, Collectible, Difficulty, Grind, Buggy, Unobtainable) ; un trophée sans texte est signalé « Not covered yet » ;
+5. « Conclusion » facultative.
+Si la liste de trophées change (nouveau DLC), les sections des nouveaux trophées sont ajoutées à la fin de leur groupe et l'auteur en est notifié.
+
+Éditeur de texte :
+- éditeur visuel (texte enrichi) avec un mode source Markdown pour qui le préfère ; titres de niveau 3 et 4, gras, italique, listes, citations, tableaux, liens, séparateurs ;
+- balise de spoiler (texte masqué jusqu'au clic) ;
+- encart « Trophy card » : insertion d'une carte de trophée de n'importe quel trophée du jeu par recherche (icône, nom, type, rareté), qui reste à jour ;
+- encarts « Tip », « Warning », « Missable » visuellement distincts ;
+- images : envoi depuis l'appareil (JPEG, PNG, WebP, GIF, 10 Mo maximum par image), légende, texte alternatif obligatoire, redimensionnées et stockées par le site (02-03) ; collage d'image depuis le presse-papiers ;
+- vidéos : intégration par lien YouTube ou Twitch (lecteur intégré en mode respectueux de la vie privée, chargé au clic), avec horodatage de départ ;
+- liens internes vers un autre trophée, une étape de la roadmap ou un autre guide ;
+- table des matières générée automatiquement et suivie au défilement.
+
+Confort :
+- enregistrement automatique du brouillon toutes les 10 secondes et à chaque changement de section, avec indication « Saved 3 s ago » ; reprise du brouillon après une coupure ;
+- historique des versions : chaque enregistrement manuel crée une version, comparable à une autre (différences surlignées) et restaurable ;
+- aperçu exactement tel que le lecteur le verra, sur grand écran et sur téléphone ;
+- co-auteurs : l'auteur invite d'autres membres par pseudo ; deux personnes ne peuvent pas modifier la même section en même temps (la section est verrouillée par celui qui l'édite, avec son nom affiché) ;
+- notes privées par section, visibles des seuls auteurs.
+
+Soumission : quand le guide est prêt, l'auteur le soumet à la relecture (05-04). Le formulaire de soumission vérifie que l'en-tête « Overview » est rempli et indique le nombre de trophées non couverts ; un guide peut être soumis incomplet s'il le dit dans son titre ou son introduction.
+
+------------------------ >8 ------------------------ Problème (facultatif)
+# Ce qui ne va pas aujourd'hui, et pour qui, si tu le sais
+Un guide de trophées a toujours la même structure (aperçu, roadmap, un paragraphe par trophée) : un éditeur générique fait tout recopier à la main, avec des erreurs de noms et de descriptions.
+Les guides deviennent faux quand un DLC arrive : il faut que la structure suive la liste de trophées.
+Écrire un long guide sans enregistrement automatique ni historique décourage les rédacteurs.
+
+------------------------ >8 ------------------------ Contexte (facultatif)
+# Qui l'a demandé, à quelle occasion, et pour quand
+Acteurs : membre, rédacteur confirmé, co-auteur, modérateur
+Prérequis : 01-01 Créer un compte et se connecter ; 04-01 Consulter la fiche complète d'un jeu
+Fiches liées : 05-04 Publier, lire et évaluer les guides ; 04-04 Consulter la fiche d'un trophée ; 02-03 Stocker et servir les images ; 02-06 Signaler les trophées non obtenables ; 01-04 Gérer les rôles, la modération et les signalements
+Lot indicatif : Communauté
+
+------------------------ >8 ------------------------ Notes (facultatif, une note par ligne)
+# Chaque ligne devient une note que l'entretien de spécification traite une par une
+Règle : le contenu d'un guide est stocké dans un format structuré (blocs typés), jamais en HTML brut ; le rendu se fait par le site, ce qui empêche tout script ou style injecté.
+Règle : en-têtes des sections de trophées, cartes de trophée et étiquettes de non obtenable sont lus depuis le catalogue à l'affichage : ils restent justes si la rareté ou la liste change.
+Contrôle : un membre ne peut rédiger un guide que si son compte est confirmé ; il doit avoir un profil vérifié pour le soumettre ; il est conseillé (pas obligatoire) d'avoir obtenu le platine ou le 100 % de la liste, et la fiche du guide l'indique (« Author has the platinum »).
+Contrôle : au plus 5 brouillons actifs par membre ; images et vidéos limitées à 100 par guide.
+Donnée : un guide porte la liste de trophées, le périmètre (groupes), le titre, le statut (draft, in review, published, changes requested, archived), l'auteur, les co-auteurs, l'en-tête structuré, les sections, les versions, les dates de création, de soumission et de publication.
+Question : faut-il limiter à un seul guide officiel par jeu (rédaction collaborative de type wiki), ou permettre plusieurs guides concurrents par jeu, classés par note ?
+Question : faut-il permettre de rédiger des guides dans d'autres langues que l'anglais ?

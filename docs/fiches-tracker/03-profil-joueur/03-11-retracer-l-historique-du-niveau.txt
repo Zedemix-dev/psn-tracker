@@ -1,0 +1,48 @@
+# fw refine — fonctionnalité : Retracer l'historique du niveau
+# fw-need/1
+# Écris sous chaque ligne « >8 », sans modifier ces lignes
+# fw retire ses propres lignes « # » et garde les tiennes
+# Enregistre et ferme l'éditeur pour continuer. Fichier rendu tel quel ou vidé : fw ne crée rien
+
+------------------------ >8 ------------------------ Besoin (obligatoire)
+# Décris le besoin dans tes mots
+Tout en bas de la page des statistiques d'un profil (03-10), un panneau « Level history » montre la courbe du niveau PSN du joueur dans le temps et, en dessous, le trophée qui lui a fait passer chaque palier de 10 niveaux.
+
+Calcul :
+- les trophées obtenus sont pris dans l'ordre du numéro d'obtention (03-07) ; leurs points s'additionnent (platine 300, or 90, argent 30, bronze 15) ;
+- le niveau 1 vaut 0 point ; le passage de chaque niveau coûte : niveaux 1 à 99 : 60 points par niveau ; 100 à 199 : 90 ; 200 à 299 : 450 ; 300 à 399 : 900 ; 400 à 499 : 1 350 ; 500 à 599 : 1 800 ; 600 à 699 : 2 250 ; 700 à 799 : 2 700 ; 800 à 899 : 3 150 ; 900 à 998 : 3 600 ;
+- le trophée qui atteint ou dépasse le seuil d'un niveau multiple de 10 est celui de ce palier ;
+- ce calcul ne sert qu'à cette section : le niveau affiché dans le bandeau du profil reste celui du PSN. Sur des données réelles, le total de points calculé redonne exactement le niveau et le pourcentage du PSN.
+
+Courbe :
+- un point tous les 10 niveaux, reliés par une ligne dorée (#F2C462) ;
+- axe horizontal : le temps, une étiquette par année (une année sur deux sous 420 px de large) ; axe vertical : le niveau ; mention « A point every 10 levels » en haut à droite ;
+- au survol (ou au doigt), la date, le niveau et le nom du trophée du point le plus proche.
+
+Liste, sous la courbe, du palier le plus récent au plus ancien, tous affichés sans pagination ; ligne d'environ 66 px :
+1. l'image du jeu, 56 px, lien vers la progression du joueur sur ce jeu ;
+2. l'icône du trophée, 56 px, sans fond ;
+3. le nom, la description en entier, puis le nom du jeu (lien) ;
+4. l'icône de niveau PSN du palier (palier d'icône = partie entière de niveau / 100, plus 1, 10 au maximum) et le niveau ;
+5. la date, et en dessous l'heure avec les secondes ;
+6. la rareté PSN et sa catégorie ;
+7. l'icône officielle du type, 30 px, avec son nom dessous (« Gold »).
+La ligne n'est pas un lien ; seuls l'image et le nom du jeu le sont.
+
+------------------------ >8 ------------------------ Problème (facultatif)
+# Ce qui ne va pas aujourd'hui, et pour qui, si tu le sais
+Le PSN ne donne que le niveau actuel : un joueur ne peut pas savoir quand il a passé le niveau 300 ni grâce à quel trophée.
+Un palier attribué au mauvais trophée (mauvais ordre à la même seconde, mauvais barème de points) serait une erreur visible pour les joueurs qui comparent.
+
+------------------------ >8 ------------------------ Contexte (facultatif)
+# Qui l'a demandé, à quelle occasion, et pour quand
+Acteurs : visiteur anonyme, membre, propriétaire du profil
+Prérequis : 03-10 Consulter les statistiques d'un joueur ; 03-07 Consulter le journal des trophées
+Fiches liées : 03-01 Afficher l'en-tête du profil ; 05-02 Consulter les leaderboards
+Lot indicatif : Profil
+
+------------------------ >8 ------------------------ Notes (facultatif, une note par ligne)
+# Chaque ligne devient une note que l'entretien de spécification traite une par une
+Règle : seuls les trophées des jeux non masqués comptent ; si le total calculé diffère du niveau PSN (jeux masqués, trophées supprimés), un avertissement discret le signale sous la courbe.
+Cas limite : sous 900 px, les lignes perdent l'image du jeu et la rareté ; sur téléphone, elles passent sur deux rangées avec la rareté de retour.
+Cas limite : un profil sous le niveau 10 n'a aucun palier : le panneau affiche « No level milestone yet. ».

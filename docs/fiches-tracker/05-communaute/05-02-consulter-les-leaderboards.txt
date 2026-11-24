@@ -1,0 +1,60 @@
+# fw refine — fonctionnalité : Consulter les leaderboards
+# fw-need/1
+# Écris sous chaque ligne « >8 », sans modifier ces lignes
+# fw retire ses propres lignes « # » et garde les tiennes
+# Enregistre et ferme l'éditeur pour continuer. Fichier rendu tel quel ou vidé : fw ne crée rien
+
+------------------------ >8 ------------------------ Besoin (obligatoire)
+# Décris le besoin dans tes mots
+Une page publique « Leaderboards » classe les profils suivis selon plusieurs catégories. Chaque catégorie est un classement distinct, avec sa propre adresse, sélectionnable par des onglets ou une liste.
+
+Catégories au lancement :
+- PSN points : total des points des trophées obtenus (platine 300, or 90, argent 30, bronze 15) ; c'est aussi l'ordre du niveau PSN ; la ligne affiche le niveau avec son icône ;
+- Level : niveau PSN puis pourcentage vers le suivant (équivalent aux points, affiché pour ceux qui raisonnent en niveau) ;
+- Platinums : nombre de platines ; à égalité, la date du dernier platine la plus ancienne passe devant ;
+- Total trophies : nombre de trophées obtenus ;
+- Completion : taux de complétion (trophées obtenus / trophées définis de tous les jeux, DLC compris, 03-01) ; éligibilité : au moins 50 jeux et 1 000 trophées obtenus, pour écarter les profils à un seul jeu fini ;
+- Games completed : nombre de jeux à 100 % ;
+- Rarity : score de rareté (voir règle ci-dessous) ;
+- Ultra rare trophies : nombre de trophées Ultra rare obtenus (rareté PSN < 5 %) ;
+- Average rarity : rareté PSN moyenne des trophées obtenus, la plus basse d'abord ; éligibilité : au moins 1 000 trophées obtenus ;
+- Monthly : trophées (ou points) obtenus pendant le mois en cours, avec archive des mois précédents (« Leaderboard of October 2026 ») ;
+- Fastest platinums : nombre de platines obtenus en moins de 24 h après le premier trophée du jeu.
+Les classements par jeu sont sur la fiche du jeu (04-05).
+
+Filtres : plateforme (All, PS4 only, PS5 only : ne comptent alors que les listes de cette plateforme) ; période pour les classements mensuels ; « Verified profiles only » ; pays si cette donnée devient disponible.
+
+Ligne :
+- rang, évolution depuis la veille (flèche et écart) ;
+- avatar, pseudo (lien vers le profil), badge « Verified » ;
+- la valeur du classement en gros, et les valeurs secondaires utiles (pour PSN points : niveau et platines ; pour Rarity : score et nombre d'Ultra rare) ;
+- les compteurs par type en petit.
+
+Navigation : 50 profils par page, pagination numérotée ; pour un membre connecté avec un profil vérifié, sa position rappelée en tête (« Your rank: #1,204 ») et « Jump to my rank » ; recherche d'un pseudo dans le classement.
+
+Score de rareté (proposition) : chaque trophée obtenu dont la rareté PSN est connue vaut la valeur de son type (15, 30, 90, 300) multipliée par un coefficient de sa catégorie de rareté PSN : Common ×1, Uncommon ×2, Rare ×4, Very rare ×6, Ultra rare ×10 ; le score est la somme. La règle exacte est affichée sur la page (« How is this calculated? »).
+
+------------------------ >8 ------------------------ Problème (facultatif)
+# Ce qui ne va pas aujourd'hui, et pour qui, si tu le sais
+Un classement unique par nombre de trophées récompense les jeux faciles à gros volume ; les chasseurs veulent aussi être reconnus pour la rareté et la complétion.
+Un classement de complétion sans seuil est dominé par des profils à un seul jeu à 100 %.
+Un classement recalculé à chaque affichage serait lent sur des centaines de milliers de profils.
+
+------------------------ >8 ------------------------ Contexte (facultatif)
+# Qui l'a demandé, à quelle occasion, et pour quand
+Acteurs : visiteur anonyme, membre, administrateur
+Prérequis : 02-01 Synchroniser les profils des joueurs ; 02-07 Calculer la rareté communautaire
+Fiches liées : 04-05 Classer les joueurs d'un jeu ; 03-01 Afficher l'en-tête du profil ; 05-01 Afficher la page d'accueil ; 05-07 Rejoindre le Discord officiel ; 01-05 Administrer le site
+Lot indicatif : Communauté
+
+------------------------ >8 ------------------------ Notes (facultatif, une note par ligne)
+# Chaque ligne devient une note que l'entretien de spécification traite une par une
+Règle : sont exclus les profils privés, introuvables, retirés du site, et ceux exclus des classements par un modérateur (triche avérée : trophées obtenus en masse à la même seconde, horloge modifiée) ; un profil exclu le voit indiqué sur sa page.
+Règle : les jeux masqués par le joueur sur le PSN ne comptent pas.
+Règle : à égalité de valeur, l'ordre est stable : la valeur secondaire, puis la date à laquelle la valeur a été atteinte (le plus ancien devant), puis l'identifiant du profil.
+Règle : les classements sont recalculés en tâche de fond (par exemple toutes les heures) et la date de calcul est affichée (« Updated 12 min ago ») ; le rang affiché sur un profil est celui du dernier calcul.
+Règle : les seuils d'éligibilité et les coefficients de rareté sont réglables par les administrateurs (01-05) ; un changement de règle provoque un recalcul complet et une mention datée sur la page.
+Donnée : on conserve l'historique quotidien du rang de chaque profil dans chaque classement, pour l'évolution et un futur graphique de rang.
+Question : la formule du score de rareté proposée convient-elle, ou préférez-vous une formule continue (par exemple valeur du type × 100 / rareté plafonnée) ?
+Question : le classement de rareté doit-il pouvoir basculer sur la rareté du site au lieu de la rareté PSN ?
+Question : faut-il des classements d'amis (profils suivis par le membre) en plus des classements globaux ?

@@ -1,0 +1,59 @@
+# fw refine — fonctionnalité : Administrer le site
+# fw-need/1
+# Écris sous chaque ligne « >8 », sans modifier ces lignes
+# fw retire ses propres lignes « # » et garde les tiennes
+# Enregistre et ferme l'éditeur pour continuer. Fichier rendu tel quel ou vidé : fw ne crée rien
+
+------------------------ >8 ------------------------ Besoin (obligatoire)
+# Décris le besoin dans tes mots
+Les administrateurs disposent d'un espace d'administration, accessible à eux seuls, pour piloter le fonctionnement du site sans intervention technique. Il regroupe :
+
+État de l'accès au PSN (voir 02-02) :
+- état du ou des comptes de service : valide, expire bientôt, expiré, injoignable ; date du dernier renouvellement du jeton NPSSO, âge en jours ;
+- encart de renouvellement du jeton NPSSO avec un mini tutoriel (se connecter sur le site PlayStation dans son navigateur, ouvrir l'adresse qui affiche le cookie d'authentification Sony, copier la valeur « npsso » de 64 caractères, la coller ici et enregistrer) ;
+- le jeton est validé tout de suite en l'échangeant contre des jetons d'accès ; il n'est jamais réaffiché.
+
+Supervision des synchros (voir 02-01) :
+- file d'attente : nombre de profils en attente par priorité, durée d'attente estimée, synchro en cours ;
+- débit : appels PSN par minute, erreurs 429 et 5xx de la dernière heure, temps moyen d'une synchro ;
+- historique global des exécutions (500 dernières), filtrable par profil, statut et type (synchro d'un profil, rafraîchissement quotidien, découverte du catalogue) ;
+- actions : relancer une synchro complète d'un profil, suspendre ou reprendre toutes les synchros, vider la file d'un profil.
+
+Données de référence des jeux :
+- bannières de jeu ajoutées à la main pour les jeux dont aucune version n'a d'image de fond au PSN (voir 02-04) : association d'un jeu (par son nom normalisé) à une image envoyée ;
+- correspondances manuelles entre listes de trophées d'un même jeu, quand le rapprochement par nom échoue ;
+- liste de correspondance des noms d'éditeurs (nom brut du store → nom affiché, voir 03-10) ;
+- source de la liste des trophées non obtenables (adresse, état du dernier téléchargement, bouton « Save » qui relance un téléchargement, voir 02-06).
+
+Communauté :
+- gestion des rôles (attribuer, retirer, limiter un modérateur à des sections) ;
+- structure du forum : catégories générales, ordre, description, droits (voir 05-05) ;
+- réglages du Discord officiel : identifiant du serveur, rôles synchronisés et leurs règles, salons d'annonces (voir 05-07) ;
+- paramètres des leaderboards (seuils d'éligibilité, catégories actives, voir 05-02) ;
+- filtre de mots interdits, limites de fréquence.
+
+Tableau de bord :
+- nombre de comptes, de profils suivis, de profils revendiqués, de jeux, de trophées, de guides publiés, de posts et de sessions sur 24 h, 7 jours, 30 jours ;
+- espace disque des images, nombre d'images, dernières erreurs de téléchargement.
+
+------------------------ >8 ------------------------ Problème (facultatif)
+# Ce qui ne va pas aujourd'hui, et pour qui, si tu le sais
+Le jeton d'accès au PSN expire environ tous les deux mois : sans écran pour le renouveler et un signal clair avant expiration, toutes les synchros s'arrêtent sans que personne ne le voie.
+Les cas particuliers de données (bannières manquantes, noms d'éditeurs bruts, jeux mal rapprochés) ne doivent pas demander un déploiement de code.
+
+------------------------ >8 ------------------------ Contexte (facultatif)
+# Qui l'a demandé, à quelle occasion, et pour quand
+Acteurs : administrateur
+Prérequis : 01-04 Gérer les rôles, la modération et les signalements
+Fiches liées : 02-01 Synchroniser les profils des joueurs ; 02-02 Gérer l'accès au PSN du compte de service ; 02-04 Enrichir les jeux avec les informations du store ; 02-06 Signaler les trophées non obtenables ; 05-02 Consulter les leaderboards ; 05-05 Participer au forum ; 05-07 Rejoindre le Discord officiel
+Lot indicatif : Socle
+
+------------------------ >8 ------------------------ Notes (facultatif, une note par ligne)
+# Chaque ligne devient une note que l'entretien de spécification traite une par une
+Règle : un bandeau visible des seuls administrateurs s'affiche sur toutes les pages quand le jeton NPSSO a plus de 50 jours (libellé indicatif « PSN token is 52 days old — renew it in the admin area »), et un bandeau d'alerte quand il est refusé (« PSN token expired — update it in the admin area »).
+Règle : quand l'accès au PSN est refusé, les synchros s'arrêtent proprement et les données déjà synchronisées restent affichées partout.
+Règle : toute action d'administration est historisée dans le journal (qui, quand, quoi, avant, après).
+Contrôle : une adresse de liste externe qui n'est pas en http ou https est refusée.
+Contrôle : le jeton NPSSO collé doit faire 64 caractères ; « Couldn't reach PSN. Try again. » si le PSN est injoignable, « PSN didn't accept this npsso » si le PSN le refuse ; le champ garde le texte collé après une erreur.
+Droit : l'espace d'administration n'est accessible qu'au rôle administrateur ; il est exigé une double authentification pour ce rôle.
+Question : faut-il plusieurs comptes de service PSN en rotation pour augmenter le débit de synchro, et comment les répartir ?

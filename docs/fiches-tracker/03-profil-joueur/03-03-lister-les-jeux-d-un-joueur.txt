@@ -1,0 +1,64 @@
+# fw refine — fonctionnalité : Lister les jeux d'un joueur
+# fw-need/1
+# Écris sous chaque ligne « >8 », sans modifier ces lignes
+# fw retire ses propres lignes « # » et garde les tiennes
+# Enregistre et ferme l'éditeur pour continuer. Fichier rendu tel quel ou vidé : fw ne crée rien
+
+------------------------ >8 ------------------------ Besoin (obligatoire)
+# Décris le besoin dans tes mots
+La page principale d'un profil présente, sous le carrousel (03-02), deux colonnes : à gauche la liste de tous ses jeux (une ligne par liste de trophées), à droite une colonne latérale d'environ 450 px (vitrine 03-04, trophées les plus rares 03-05, étapes 03-06).
+
+En-tête de la liste :
+- le titre « Games », juste à côté l'interrupteur « Hide 0% games » (visible et modifiable par le propriétaire seulement, voir 01-03) ;
+- à droite le nombre de jeux affichés, puis le bouton « Show all » tant qu'il reste des jeux à charger.
+
+Filtres (combinables, un seul choix par filtre) :
+- état : All ; 100% (progression PSN à 100 %) ; Not 100% ; Not 100% or Platinum (ni à 100 % ni platinés, « pas encore finis ») ; Platinum (platine obtenu) ; Platinum, not 100% (platine obtenu mais il manque des trophées, en général des DLC) ;
+- plateforme : All / PS4 / PS5 (un jeu est retenu si la plateforme fait partie de sa liste) ;
+- trophées non obtenables : désactivé par défaut, « With unobtainable », « Without unobtainable » (voir 02-06) ;
+- recherche par nom du jeu.
+Un filtre qui n'est pas sur sa valeur par défaut prend un contour de couleur d'accent.
+
+Tris, chacun avec son sens naturel :
+- Last trophy (par défaut, en tête) : ordre de la console, sur la date de dernière mise à jour de la liste donnée par le PSN, la plus récente d'abord, à défaut la date du dernier trophée ; un jeu lancé sans trophée se place au moment de son premier lancement ;
+- Last played : date de dernière partie, à défaut date du dernier trophée, la plus récente d'abord ;
+- Alphabetical : de A à Z, sans tenir compte de la casse, des accents ni de la ponctuation en tête ;
+- Percent completion, Time played, Total trophies, Earned trophies, Unearned trophies : les plus grandes valeurs d'abord ;
+- Platinum rarity : le platine le plus rare d'abord, les jeux sans platine à la fin.
+
+Ligne d'un jeu (environ 80 px, cliquable : elle ouvre la progression du joueur sur ce jeu, 03-12) :
+- jaquette carrée de 60 px (celle de l'écran d'accueil de la console), empruntée au besoin à une autre version du même jeu, ou icône sur sa tuile carrée (02-03, 02-04) ;
+- trois lignes de texte, sans rien de tronqué : le nom du jeu suivi du badge PS4/PS5 et du « ! » des non obtenables ; « 47 / 47 trophies » (obtenus / total) ; « Last played 5 Nov 2026 | 33h 27m played » (une information inconnue est omise avec son séparateur) ;
+- à droite, sur environ 40 % de la ligne, une progression « empilée » : en haut les pastilles obtenus/définis par type (les types absents ne sont pas affichés et ne décalent pas le centrage), centrées sur la barre ; en dessous une longue barre de progression suivie du pourcentage PSN ;
+- couleur de la barre selon la complétion (rangs) : 100 % S #667FB2 ; 80 à 99 % A #008000 ; 60 à 79 % B #7B9E00 ; 40 à 59 % C #A68E00 ; 20 à 39 % D #A66A00 ; 1 à 19 % E #FF4100 ; 0 % F #EE0000 (à 0 %, c'est le fond de la barre qui prend la couleur F, atténuée) ;
+- tout à droite, l'icône d'état : si le jeu a un platine, la vraie icône du platine, en couleur si obtenu, grisée sinon ; sans platine, une coche en V, en couleur à 100 %, grisée sinon.
+
+Chargement :
+- les 50 premiers jeux sont rendus côté serveur ; les 50 suivants se chargent à l'approche du bas de la liste, et ainsi de suite (texte « The next 50 games load as you scroll down ») ;
+- « Show all » charge tous les jeux restants en une requête : libellé « Loading… », puis le bouton et le texte disparaissent sans que la page bouge ; en cas d'échec, « Couldn't load more games. Retry » ;
+- changer un filtre, un tri ou la recherche repart des 50 premiers jeux ;
+- retour depuis la page d'un jeu par « précédent » : même endroit, mêmes jeux chargés (voir 06-02).
+
+------------------------ >8 ------------------------ Problème (facultatif)
+# Ce qui ne va pas aujourd'hui, et pour qui, si tu le sais
+Un joueur avec plusieurs centaines de jeux veut retrouver vite ce qui reste à finir : les filtres « Not 100% or Platinum » et « Platinum, not 100% » répondent à cette question précise.
+Une liste qui repart du haut à chaque retour arrière est pénible quand on parcourt ses jeux un par un.
+Des noms de jeux coupés par « … » sont illisibles : rien ne doit être tronqué.
+
+------------------------ >8 ------------------------ Contexte (facultatif)
+# Qui l'a demandé, à quelle occasion, et pour quand
+Acteurs : visiteur anonyme, membre, propriétaire du profil
+Prérequis : 03-01 Afficher l'en-tête du profil ; 02-01 Synchroniser les profils des joueurs
+Fiches liées : 03-04 Composer sa vitrine de trophées ; 03-05 Afficher les trophées les plus rares ; 03-06 Afficher les étapes franchies ; 03-12 Suivre la progression d'un joueur sur un jeu ; 02-06 Signaler les trophées non obtenables ; 06-02 Charger les longues listes et revenir à sa place
+Lot indicatif : Profil
+
+------------------------ >8 ------------------------ Notes (facultatif, une note par ligne)
+# Chaque ligne devient une note que l'entretien de spécification traite une par une
+Règle : « Hide 0% games » est une préférence du propriétaire, enregistrée côté serveur, inactive par défaut ; active, les jeux à 0 % disparaissent de la liste, de son conseiller de trophées et de ses statistiques affichées.
+Règle : filtres, tri et recherche vivent dans l'adresse de la page (une valeur par défaut n'y figure pas, une valeur invalide est ignorée) et ne sont pas enregistrés ; une nouvelle visite repart des valeurs par défaut.
+Règle : les jeux masqués par le joueur sur le PSN n'apparaissent jamais.
+Règle : la liste continue de charger la page suivante même si une page ne contient que des jeux déjà affichés.
+Contrôle : l'interrupteur « Hide 0% games » garde le focus clavier pendant son enregistrement.
+Contrôle : une demande de page hors bornes (décalage ou taille invalide) reçoit une erreur 400, jamais 500.
+Cas limite : un nom de jeu exceptionnellement long passe sur deux lignes dans la hauteur de la ligne, sans l'épaissir.
+Question : faut-il ajouter un filtre par genre ou par éditeur, et un affichage en grille de jaquettes ?

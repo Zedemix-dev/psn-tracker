@@ -1,0 +1,67 @@
+# fw refine — fonctionnalité : Organiser des sessions de jeu
+# fw-need/1
+# Écris sous chaque ligne « >8 », sans modifier ces lignes
+# fw retire ses propres lignes « # » et garde les tiennes
+# Enregistre et ferme l'éditeur pour continuer. Fichier rendu tel quel ou vidé : fw ne crée rien
+
+------------------------ >8 ------------------------ Besoin (obligatoire)
+# Décris le besoin dans tes mots
+Beaucoup de trophées demandent de jouer à plusieurs (trophées en ligne, coopération, « boost » entre joueurs) ou bénéficient d'une entraide. Les membres peuvent créer des sessions de jeu planifiées et s'y inscrire.
+
+Créer une session (membre confirmé avec un profil PSN vérifié) :
+- jeu (liste de trophées) et plateforme, obligatoires ; le créateur doit posséder le jeu, sauf exception signalée ;
+- type : Trophy boosting, Co-op, Online multiplayer, Help / carry, Casual play ;
+- trophées visés : un ou plusieurs trophées de la liste, choisis par recherche (affichés avec icône, nom, rareté) ;
+- date et heure de début, dans le fuseau du créateur, enregistrées en UTC et affichées à chacun dans son propre fuseau ; durée estimée ;
+- nombre de places (2 à 64, créateur compris) et, en option, une liste d'attente ;
+- langue parlée, chat vocal (aucun, PlayStation party, Discord), niveau attendu (débutant accepté, expérimenté) ;
+- conditions : avoir le DLC, progression minimale, micro obligatoire, etc. (texte libre) ;
+- description (éditeur allégé du forum) ;
+- inscription : ouverte (premier arrivé), sur validation de l'hôte ;
+- récurrence facultative (toutes les semaines, jusqu'à une date).
+
+Page d'une session :
+- en-tête : jeu (jaquette, nom, plateforme), type, date et heure locales avec compte à rebours, durée, état (Open, Full, In progress, Finished, Cancelled) ;
+- hôte (avatar, pseudo, badge, fiabilité : sessions organisées et honorées) ;
+- liste des participants : avatar, pseudo, progression sur le jeu, trophées visés déjà obtenus ou non ; liste d'attente ;
+- bouton « Join » / « Leave » ; pour une inscription sur validation, « Request to join », et l'hôte accepte ou refuse ;
+- fil de discussion propre à la session (visible des participants, ou public au choix de l'hôte) ;
+- bouton « Add to calendar » (fichier iCalendar) et lien vers le salon vocal Discord si l'hôte en a ouvert un (05-07) ;
+- les pseudos PSN des participants sont visibles des autres participants, pour s'ajouter en amis sur la console.
+
+Rôle de l'hôte : modifier la session (les participants sont notifiés d'un changement de date), retirer un participant, transférer le rôle d'hôte, annuler (avec un message), clore les inscriptions.
+
+Après la session :
+- au bout de la durée prévue, la session passe à « Finished » ;
+- les participants peuvent confirmer la présence des autres (« Showed up / No-show ») ; cela alimente la fiabilité affichée de chacun ;
+- à la synchro suivante des participants, la page indique pour chaque trophée visé qui l'a obtenu pendant la session (date d'obtention dans la plage de la session).
+
+Trouver une session :
+- page « Sessions » : sessions à venir, filtrables par jeu, plateforme, type, trophée, date, langue, places libres, « Only games I own » ; triées par date ;
+- onglet Sessions de la fiche d'un jeu (04-01), section Sessions de la fiche d'un trophée (04-04), bloc de la page d'accueil (05-01) ;
+- « My sessions » : sessions à venir et passées du membre, comme hôte ou participant.
+
+------------------------ >8 ------------------------ Problème (facultatif)
+# Ce qui ne va pas aujourd'hui, et pour qui, si tu le sais
+Les trophées en ligne sont souvent les plus rares parce qu'on ne trouve plus de joueurs ; organiser une session sur un fil de forum est confus (dates dans des fuseaux différents, inscriptions perdues, absents).
+Sans indicateur de fiabilité, les hôtes se découragent des inscrits qui ne viennent pas.
+
+------------------------ >8 ------------------------ Contexte (facultatif)
+# Qui l'a demandé, à quelle occasion, et pour quand
+Acteurs : membre (hôte, participant), modérateur
+Prérequis : 01-02 Lier et vérifier son profil PSN ; 04-01 Consulter la fiche complète d'un jeu
+Fiches liées : 04-04 Consulter la fiche d'un trophée ; 05-01 Afficher la page d'accueil ; 05-05 Participer au forum ; 05-07 Rejoindre le Discord officiel ; 05-08 Notifier les membres ; 01-04 Gérer les rôles, la modération et les signalements
+Lot indicatif : Communauté
+
+------------------------ >8 ------------------------ Notes (facultatif, une note par ligne)
+# Chaque ligne devient une note que l'entretien de spécification traite une par une
+Règle : on ne peut pas s'inscrire à deux sessions qui se chevauchent ; le système prévient et propose de quitter l'autre.
+Règle : quand une place se libère, le premier de la liste d'attente est inscrit automatiquement et notifié.
+Règle : rappels automatiques aux participants 24 h et 1 h avant le début (05-08).
+Règle : une session ne peut pas commencer plus de 90 jours dans le futur ni dans le passé.
+Contrôle : un membre peut avoir au plus 10 sessions à venir comme hôte ; limites de création de 01-04.
+Contrôle : une session payante, ou qui propose un service rémunéré, est interdite et signalable.
+Donnée : une session porte le jeu, la plateforme, le type, les trophées visés, l'hôte, le début (UTC), la durée, les places, le mode d'inscription, la langue, le chat vocal, les conditions, la description, l'état, la récurrence ; une participation porte le membre, l'état (inscrit, en attente, accepté, refusé, retiré, présent, absent) et les dates.
+Intégration : une session peut être annoncée automatiquement dans un salon Discord par jeu ou par type, avec un lien d'inscription ; un salon vocal temporaire peut être créé par le robot Discord pour la durée de la session.
+Question : faut-il une note de réputation visible (fiabilité en %), ou seulement un compteur de sessions honorées ?
+Question : faut-il gérer les sessions récurrentes dès la première version ?

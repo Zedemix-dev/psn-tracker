@@ -1,0 +1,42 @@
+# fw refine — fonctionnalité : Charger les longues listes et revenir à sa place
+# fw-need/1
+# Écris sous chaque ligne « >8 », sans modifier ces lignes
+# fw retire ses propres lignes « # » et garde les tiennes
+# Enregistre et ferme l'éditeur pour continuer. Fichier rendu tel quel ou vidé : fw ne crée rien
+
+------------------------ >8 ------------------------ Besoin (obligatoire)
+# Décris le besoin dans tes mots
+Beaucoup de pages présentent de longues listes (jeux d'un joueur, journal des trophées, conseiller, tous les jeux, tous les trophées). Elles suivent toutes le même comportement, porté par un composant de liste partagé et paramétrable (clé d'une ligne, sélecteur de ligne, nom des éléments dans les textes, taille de page) :
+
+Chargement :
+- les 50 premières lignes sont rendues côté serveur avec la page ;
+- les 50 suivantes se chargent à l'approche du bas de la liste, avec le texte « The next 50 <items> load as you scroll down » ; en cas d'échec, « Couldn't load more <items>. Retry » ;
+- un bouton « Show all », après le nombre dans l'en-tête, charge tout le reste ; il n'apparaît que s'il reste des lignes à charger ; pendant le chargement il est désactivé et affiche « Loading… » ; en cas d'échec il redevient « Show all » avec le message « Retry » ;
+- affichage progressif : les lignes reçues s'ajoutent par paquets, un paquet par image affichée, pour que la page reste utilisable ; aucune autre page n'est demandée tant qu'il reste des lignes à afficher ; « Loading… » reste jusqu'au dernier paquet ;
+- changer un filtre, un tri ou la recherche repart des 50 premières lignes ;
+- une page qui ne contient que des lignes déjà affichées est sautée sans arrêter le chargement.
+
+Retour à sa place :
+- revenir sur la liste par « précédent » (ou le geste équivalent sur téléphone) remet les lignes chargées et la position de défilement, même après « Show all » ;
+- pour les listes courtes (jeux d'un joueur), les lignes sont gardées dans l'historique de l'onglet et remises aussitôt, sans requête ni « Loading… » ; pour les listes très longues (dizaines de milliers de lignes), seuls le nombre de lignes chargées et la position sont gardés, puis les lignes sont rechargées par paquets et la page défile jusqu'à la position gardée dès que les lignes affichées suffisent à l'atteindre ;
+- l'état est gardé le temps de l'onglet, pour les mêmes filtres, tri et recherche ;
+- une nouvelle visite (clic sur la navigation) repart du haut ; si une synchro a modifié les données entre-temps, la liste repart du haut.
+
+------------------------ >8 ------------------------ Problème (facultatif)
+# Ce qui ne va pas aujourd'hui, et pour qui, si tu le sais
+Afficher plus de 10 000 lignes d'un seul bloc fige la page plusieurs secondes ; n'afficher que les lignes visibles (virtualisation) casserait la recherche dans la page du navigateur (Ctrl+F), très utilisée.
+Repartir du haut à chaque retour arrière oblige à refaire tout le défilement, ce qui décourage la navigation ligne par ligne.
+
+------------------------ >8 ------------------------ Contexte (facultatif)
+# Qui l'a demandé, à quelle occasion, et pour quand
+Acteurs : tous
+Prérequis : aucun
+Fiches liées : 03-03 Lister les jeux d'un joueur ; 03-07 Consulter le journal des trophées ; 03-08 Conseiller les trophées à obtenir ; 04-02 Lister tous les jeux du PSN ; 04-03 Lister tous les trophées du PSN ; 06-03 Mettre à jour les pages en direct
+Lot indicatif : Transverse
+
+------------------------ >8 ------------------------ Notes (facultatif, une note par ligne)
+# Chaque ligne devient une note que l'entretien de spécification traite une par une
+Contrôle : objectifs mesurés sur le build de production : premières nouvelles lignes moins de 1 s après « Show all », page jamais figée plus de 250 ms d'affilée, liste de plus de 11 000 lignes complète en moins de 5 s.
+Contrôle : l'interface de pagination refuse un décalage ou une taille hors bornes avec une erreur 400 et applique réellement la taille demandée.
+Règle : l'ordre de chaque liste est total (critère final unique), pour que deux pages ne se chevauchent jamais.
+Règle : les réponses JSON volumineuses sont compressées par le serveur (au-delà de 1 Ko).

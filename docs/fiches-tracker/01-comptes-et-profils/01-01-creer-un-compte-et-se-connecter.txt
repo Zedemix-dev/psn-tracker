@@ -1,0 +1,70 @@
+# fw refine — fonctionnalité : Créer un compte et se connecter
+# fw-need/1
+# Écris sous chaque ligne « >8 », sans modifier ces lignes
+# fw retire ses propres lignes « # » et garde les tiennes
+# Enregistre et ferme l'éditeur pour continuer. Fichier rendu tel quel ou vidé : fw ne crée rien
+
+------------------------ >8 ------------------------ Besoin (obligatoire)
+# Décris le besoin dans tes mots
+Le site est une plateforme communautaire de suivi des jeux et trophées PlayStation (PS4 et PS5). Une grande partie du site est consultable sans compte (profils publics, fiches de jeux, listes de jeux et de trophées, leaderboards, guides publiés, forum en lecture). Un compte est nécessaire pour tout ce qui écrit quelque chose : revendiquer son profil PSN, rédiger un guide, poster sur le forum, créer ou rejoindre une session de jeu, lier son compte Discord, enregistrer des préférences.
+
+Le besoin est de permettre à un visiteur de créer un compte du site, de s'y connecter et de rester connecté longtemps, sans se reconnecter tous les mois.
+
+Création de compte :
+- par adresse e-mail et mot de passe, avec confirmation de l'adresse par un lien envoyé par e-mail (lien valable 24 h, renvoyable) ;
+- ou par connexion Discord (OAuth2) : le compte est créé avec l'identité Discord, l'e-mail fourni par Discord est repris s'il est vérifié chez Discord ;
+- nom d'affichage du membre : par défaut le pseudo PSN une fois le profil lié et vérifié (voir 01-02) ; avant cela, un nom choisi à l'inscription, unique sur le site, 3 à 24 caractères (lettres, chiffres, tiret, tiret bas) ;
+- acceptation des conditions d'utilisation et de la politique de confidentialité, horodatée, obligatoire pour créer le compte.
+
+Connexion :
+- e-mail + mot de passe, ou Discord ;
+- session « sans fin » en pratique : le cookie de session est prolongé à chaque visite (durée de vie de l'ordre de 400 jours, plafond imposé par les navigateurs) ; une session non vue depuis plus de 400 jours est supprimée côté serveur ;
+- les sessions sont enregistrées côté serveur ; la base ne garde que l'empreinte (hachage SHA-256) de l'identifiant de session, jamais l'identifiant lui-même ;
+- cookie httpOnly, Secure en HTTPS, SameSite=Lax ;
+- un membre voit la liste de ses sessions actives (appareil, navigateur, dernière activité, adresse IP approximative) et peut fermer une session ou toutes ;
+- « Se déconnecter » ferme la session courante ; « Se déconnecter partout » ferme toutes les sessions.
+
+Mot de passe :
+- 10 caractères minimum, 256 au maximum ; au-delà de 256 caractères, la tentative est refusée sans calcul de hachage, avec le même message qu'un mauvais mot de passe ;
+- hachage avec un algorithme lent (bcrypt ou argon2id) ;
+- réinitialisation par lien envoyé à l'adresse e-mail (valable 1 h, à usage unique) ; la réinitialisation ferme toutes les sessions ouvertes ;
+- un compte créé par Discord peut ajouter un mot de passe plus tard.
+
+Protection contre les attaques :
+- les tentatives de connexion sont limitées par adresse IP réelle du client (et par compte) : par exemple 10 échecs sur 15 minutes bloquent les tentatives suivantes pendant le reste de la fenêtre ;
+- le limiteur oublie les adresses dont toutes les tentatives sont plus vieilles que la fenêtre ;
+- message d'échec unique et neutre (libellé indicatif « Wrong e-mail or password. »), qui ne révèle pas si le compte existe ;
+- même neutralité pour « mot de passe oublié » : le message est identique que l'adresse existe ou non.
+
+L'interface du site est entièrement en anglais.
+
+------------------------ >8 ------------------------ Problème (facultatif)
+# Ce qui ne va pas aujourd'hui, et pour qui, si tu le sais
+Les joueurs de trophées ne veulent pas se reconnecter régulièrement : une session courte est vécue comme une gêne sur un site consulté plusieurs fois par jour, souvent sur téléphone.
+Un site exposé sur internet avec des comptes est une cible de tentatives de connexion automatisées ; sans limitation, les comptes sont vulnérables.
+Un identifiant de session stocké en clair en base permettrait, en cas de fuite de la base, de se faire passer pour n'importe quel membre.
+
+------------------------ >8 ------------------------ Contexte (facultatif)
+# Qui l'a demandé, à quelle occasion, et pour quand
+Acteurs : visiteur anonyme, membre, administrateur
+Prérequis : aucun
+Fiches liées : 01-02 Lier et vérifier son profil PSN ; 01-03 Gérer son compte et ses préférences ; 01-04 Gérer les rôles, la modération et les signalements ; 05-07 Rejoindre le Discord officiel ; 06-04 Sécuriser et exploiter le site
+Lot indicatif : Socle
+
+------------------------ >8 ------------------------ Notes (facultatif, une note par ligne)
+# Chaque ligne devient une note que l'entretien de spécification traite une par une
+Règle : toutes les pages publiques restent consultables sans compte ; seules les actions d'écriture et les préférences demandent une connexion.
+Règle : à la connexion, le membre revient sur la page qu'il consultait avant d'être redirigé vers l'écran de connexion.
+Règle : chaque connexion réussie supprime les sessions périmées du membre.
+Contrôle : un e-mail déjà utilisé par un autre compte est refusé à l'inscription, avec un message neutre et l'envoi d'un e-mail d'information au propriétaire de l'adresse.
+Contrôle : le nom d'affichage est unique sans tenir compte de la casse ; les noms réservés (admin, moderator, support, nom du site) sont refusés.
+Contrôle : un compte dont l'e-mail n'est pas confirmé peut se connecter mais ne peut ni poster, ni publier, ni créer de session de jeu.
+Donnée : un compte porte au minimum un identifiant interne, un e-mail, l'empreinte du mot de passe (facultative si Discord), la date de création, la date d'acceptation des conditions, le rôle, l'état (actif, suspendu, banni, supprimé), la date de dernière connexion.
+Donnée : une session porte l'empreinte de son identifiant, le compte, la date de création, la date de dernière activité, l'agent utilisateur et l'adresse IP de création.
+Intégration : connexion Discord par OAuth2 (portées identify et email) ; si un compte existe déjà avec le même e-mail vérifié, proposer de lier plutôt que créer un doublon.
+Sécurité : l'adresse IP utilisée par le limiteur est la vraie adresse du client, transmise par le reverse proxy ; seuls les proxys de confiance sont crus (voir 06-04).
+Sécurité : les formulaires de connexion et d'inscription sont protégés contre la falsification de requête (jeton ou vérification d'origine).
+Cas limite : un membre banni qui tente de se connecter voit un message indiquant la sanction et sa date de fin éventuelle.
+Question : faut-il une double authentification (TOTP) pour les membres, ou seulement pour les modérateurs et administrateurs ?
+Question : faut-il proposer d'autres fournisseurs de connexion que Discord (Google, compte PlayStation si une connexion officielle devient possible) ?
+Question : faut-il une protection anti-robot à l'inscription, et laquelle (défi invisible, délai, question) ?
