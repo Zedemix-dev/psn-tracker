@@ -1,0 +1,40 @@
+# fw refine — fonctionnalité : Composer sa vitrine de trophées
+# fw-need/1
+# Écris sous chaque ligne « >8 », sans modifier ces lignes
+# fw retire ses propres lignes « # » et garde les tiennes
+# Enregistre et ferme l'éditeur pour continuer. Fichier rendu tel quel ou vidé : fw ne crée rien
+
+------------------------ >8 ------------------------ Besoin (obligatoire)
+# Décris le besoin dans tes mots
+Le propriétaire d'un profil choisit les trophées dont il est le plus fier et les expose en tête de la colonne latérale de sa page principale, dans une vitrine (« Trophy cabinet ») : un top 10 personnel, dans l'ordre qu'il a choisi.
+
+Affichage (visible de tous) :
+- une ligne par trophée, environ 66 px, portée par une icône de 56 px sans fond : icône, nom du trophée, nom du jeu, rareté PSN en % et sa catégorie, puis l'icône officielle du type tout à droite ;
+- aucun nom tronqué ; un nom de jeu très long passe sur deux lignes dans la hauteur de l'icône sans épaissir la ligne ;
+- un clic sur la ligne mène à la fiche du trophée (04-04) ;
+- vitrine vide : un message (« No trophy in the cabinet yet. ») ; pour le propriétaire, un lien pour la remplir.
+
+Modification (propriétaire seulement) :
+- un lien « Edit » dans l'en-tête de la vitrine, directement sur la page du profil (il n'y a pas d'éditeur en double dans les réglages) ;
+- il ouvre une fenêtre par-dessus la page, où l'on peut : chercher parmi ses trophées obtenus (par nom de trophée ou de jeu, résultats au fil de la frappe) ; ajouter jusqu'à 10 trophées ; les réordonner (glisser-déposer, et boutons haut/bas pour le clavier) ; les retirer ; enregistrer ou annuler ;
+- l'enregistrement remplace la vitrine en une fois et ferme la fenêtre ; la page se met à jour sans rechargement.
+
+------------------------ >8 ------------------------ Problème (facultatif)
+# Ce qui ne va pas aujourd'hui, et pour qui, si tu le sais
+Les trophées les plus rares ne sont pas toujours ceux dont un joueur est le plus fier : il veut choisir lui-même et dans son ordre.
+Un éditeur caché dans les réglages oblige à quitter la page pour une modification qu'on fait en regardant sa vitrine.
+
+------------------------ >8 ------------------------ Contexte (facultatif)
+# Qui l'a demandé, à quelle occasion, et pour quand
+Acteurs : propriétaire du profil, visiteur
+Prérequis : 01-02 Lier et vérifier son profil PSN ; 03-03 Lister les jeux d'un joueur
+Fiches liées : 03-05 Afficher les trophées les plus rares ; 04-04 Consulter la fiche d'un trophée
+Lot indicatif : Profil
+
+------------------------ >8 ------------------------ Notes (facultatif, une note par ligne)
+# Chaque ligne devient une note que l'entretien de spécification traite une par une
+Contrôle : seuls des trophées obtenus par le profil peuvent être ajoutés ; un même trophée ne peut figurer qu'une fois ; au plus 10.
+Contrôle : seul le propriétaire vérifié du profil peut modifier la vitrine ; la demande est refusée côté serveur pour tout autre compte.
+Règle : un trophée de la vitrine dont le jeu devient masqué par le joueur sur le PSN n'est plus affiché, mais reste enregistré et réapparaît si le jeu redevient visible.
+Donnée : la vitrine est une liste ordonnée de couples (liste de trophées, identifiant du trophée) rattachée au profil.
+Contrôle : la fenêtre se ferme avec Échap, piège le focus clavier tant qu'elle est ouverte et le rend au lien « Edit » à la fermeture.

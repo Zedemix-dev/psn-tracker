@@ -1,0 +1,47 @@
+# fw refine — fonctionnalité : Classer les joueurs d'un jeu
+# fw-need/1
+# Écris sous chaque ligne « >8 », sans modifier ces lignes
+# fw retire ses propres lignes « # » et garde les tiennes
+# Enregistre et ferme l'éditeur pour continuer. Fichier rendu tel quel ou vidé : fw ne crée rien
+
+------------------------ >8 ------------------------ Besoin (obligatoire)
+# Décris le besoin dans tes mots
+L'onglet « Leaderboard » de la fiche d'un jeu (04-01) classe les joueurs suivis qui possèdent cette liste de trophées. Plusieurs classements sont proposés par un sélecteur :
+
+- Completion (par défaut) : progression PSN décroissante ; à égalité, celui qui a atteint cette progression le premier (celui dont le dernier trophée obtenu sur cette liste est le plus ancien) passe devant ; ainsi le premier joueur à avoir fini le jeu à 100 % est premier ;
+- Fastest platinum : temps entre le premier trophée de la liste et le platine, du plus court au plus long ; seuls les platinés y figurent ; durée affichée en 3 unités consécutives (« 2 days, 4 hours, 12 minutes ») ;
+- Fastest 100% : temps entre le premier trophée et le dernier trophée qui a amené la liste à 100 % (DLC compris) ;
+- First to platinum : date du platine, de la plus ancienne à la plus récente ;
+- Rarest trophies : somme du score de rareté (05-02) des trophées obtenus sur cette liste.
+
+Ligne :
+- rang (« #1 », séparateurs de milliers) ; avatar et pseudo (lien vers la progression du joueur sur ce jeu, 03-12), badge « Verified » ;
+- progression : pastilles par type, barre aux couleurs du rang, pourcentage ;
+- la valeur du classement (date, durée ou score) ;
+- l'icône d'état (platine obtenu ou non).
+
+Navigation :
+- 50 joueurs par page, pagination numérotée ;
+- pour un membre connecté qui possède le jeu, sa propre ligne est rappelée en tête (« Your rank: #312 of 1,284 ») avec un lien « Jump to my rank » ;
+- filtre plateforme quand la page regroupe plusieurs versions ; recherche d'un pseudo dans le classement.
+
+------------------------ >8 ------------------------ Problème (facultatif)
+# Ce qui ne va pas aujourd'hui, et pour qui, si tu le sais
+Les chasseurs de trophées veulent se situer jeu par jeu : qui a platiné le premier, qui a été le plus rapide.
+Un classement par progression sans règle d'égalité serait instable et injuste : des centaines de joueurs sont à 100 %.
+
+------------------------ >8 ------------------------ Contexte (facultatif)
+# Qui l'a demandé, à quelle occasion, et pour quand
+Acteurs : visiteur anonyme, membre
+Prérequis : 04-01 Consulter la fiche complète d'un jeu ; 02-01 Synchroniser les profils des joueurs
+Fiches liées : 05-02 Consulter les leaderboards ; 03-12 Suivre la progression d'un joueur sur un jeu ; 06-05 Formater les dates, nombres et durées
+Lot indicatif : Catalogue
+
+------------------------ >8 ------------------------ Notes (facultatif, une note par ligne)
+# Chaque ligne devient une note que l'entretien de spécification traite une par une
+Règle : sont exclus les profils privés, introuvables, retirés du site, qui masquent ce jeu, ou exclus des classements par un modérateur (01-04).
+Règle : les classements sont recalculés après chaque synchro d'un joueur du jeu (au plus une fois toutes les 10 minutes par jeu) et gardés en mémoire entre-temps.
+Règle : un joueur dont les dates sont incohérentes (platine avant le premier trophée, trophées obtenus à la même seconde en très grand nombre, horloge de console modifiée) est signalé pour vérification et peut être exclu des classements de vitesse par un modérateur.
+Contrôle : un platine obtenu en moins d'une minute après le premier trophée n'entre dans « Fastest platinum » qu'après validation d'un modérateur.
+Cas limite : un jeu sans joueur suivi affiche « No tracked player yet. » ; un jeu sans platine n'a pas les classements de platine.
+Question : faut-il des classements par plateforme séparés (PS4 et PS5) même quand la page regroupe les versions ?

@@ -1,0 +1,45 @@
+# fw refine — fonctionnalité : Mettre à jour les pages en direct
+# fw-need/1
+# Écris sous chaque ligne « >8 », sans modifier ces lignes
+# fw retire ses propres lignes « # » et garde les tiennes
+# Enregistre et ferme l'éditeur pour continuer. Fichier rendu tel quel ou vidé : fw ne crée rien
+
+------------------------ >8 ------------------------ Besoin (obligatoire)
+# Décris le besoin dans tes mots
+Les pages doivent toujours montrer les données de la dernière synchro terminée, et se mettre à jour d'elles-mêmes quand une synchro les concernant se termine, sans que le lecteur recharge.
+
+Mise à jour en direct :
+- une page de profil (en-tête, liste des jeux, carrousel, journal, conseiller, mur, statistiques) suit l'état des synchros de ce profil ; à la fin de chaque synchro (réussie, partielle ou échouée), elle se redessine une seule fois ; elle ne se redessine pas pendant la synchro ;
+- la page de progression d'un joueur sur un jeu suit les synchros de ce joueur de la même façon ;
+- le bouton « Update profile » suit l'avancement (en attente, en cours avec progression, terminé, échec) ;
+- l'historique des synchros dans Settings montre l'avancement en direct ;
+- les éléments communautaires (nouveaux messages d'un sujet ouvert, participants d'une session, cloche de notifications) se mettent à jour en direct ;
+- le mécanisme (interrogation périodique légère ou flux d'événements) est laissé au builder, à condition qu'une synchro commencée et finie entre deux interrogations soit bien vue.
+
+Caches :
+- les calculs coûteux (étapes d'un profil, statistiques, index des versions d'un même jeu, correspondance des images locales, leaderboards, compteurs d'une fiche de jeu) sont gardés en mémoire et invalidés à la fin de toute synchro, de tout rafraîchissement quotidien et de toute application de la liste des non obtenables qui les concernent ;
+- un cache qui dépend du jour (calendrier des statistiques) est aussi invalidé au changement de jour du fuseau concerné, sans accumuler une entrée par jour ;
+- une page ne montre jamais un chiffre d'avant la dernière synchro terminée ni d'avant la dernière liste appliquée.
+
+Page d'attente pendant une mise à jour du site :
+- tant que la base n'a pas toutes les migrations attendues par l'application, le site répond par une page d'attente (« Updating… », « This page reloads by itself. », rechargée toutes les 5 s, code 503) au lieu d'une erreur ; les interfaces de programmation répondent 503 sans page ;
+- la vérification est faite avant tout rendu et ne coûte plus rien une fois la base à jour.
+
+------------------------ >8 ------------------------ Problème (facultatif)
+# Ce qui ne va pas aujourd'hui, et pour qui, si tu le sais
+Un joueur qui vient d'obtenir un platine lance une synchro et veut le voir apparaître sans recharger.
+Un cache mal invalidé affiche des chiffres anciens, ce qui est vécu comme une erreur du site.
+Une page qui se redessine toutes les quelques secondes pendant une synchro gaspille des ressources et fait sauter l'affichage.
+
+------------------------ >8 ------------------------ Contexte (facultatif)
+# Qui l'a demandé, à quelle occasion, et pour quand
+Acteurs : tous, système
+Prérequis : 02-01 Synchroniser les profils des joueurs
+Fiches liées : 03-01 Afficher l'en-tête du profil ; 03-12 Suivre la progression d'un joueur sur un jeu ; 05-08 Notifier les membres ; 06-02 Charger les longues listes et revenir à sa place ; 06-04 Sécuriser et exploiter le site
+Lot indicatif : Transverse
+
+------------------------ >8 ------------------------ Notes (facultatif, une note par ligne)
+# Chaque ligne devient une note que l'entretien de spécification traite une par une
+Règle : le site et le service de fond ne partagent que la base de données ; le marqueur d'invalidation est lu en base (date de fin de la dernière exécution par profil, date de la dernière liste appliquée), pour une petite requête par affichage au plus.
+Règle : après une mise à jour en direct, une liste longue repart du haut, sauf si le lecteur est en train de la parcourir : un bandeau « New trophies — refresh » lui propose alors de recharger.
+Question : faut-il un indicateur discret « Live » sur les pages qui se mettent à jour en direct ?

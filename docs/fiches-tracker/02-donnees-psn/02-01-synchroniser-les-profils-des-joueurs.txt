@@ -1,0 +1,73 @@
+# fw refine — fonctionnalité : Synchroniser les profils des joueurs
+# fw-need/1
+# Écris sous chaque ligne « >8 », sans modifier ces lignes
+# fw retire ses propres lignes « # » et garde les tiennes
+# Enregistre et ferme l'éditeur pour continuer. Fichier rendu tel quel ou vidé : fw ne crée rien
+
+------------------------ >8 ------------------------ Besoin (obligatoire)
+# Décris le besoin dans tes mots
+Toutes les pages du site lisent des données stockées en local ; aucune page n'interroge le PSN à l'affichage. Un service de fond (worker), distinct du site, récupère les données des profils suivis auprès du PSN et les enregistre. Les chiffres doivent être exacts : le PSN fait foi (rareté mondiale PSN, progression PSN par jeu), et il n'y a **aucune limite de nombre de trophées par jeu** (certains jeux dépassent 256 trophées).
+
+Données récupérées pour chaque profil :
+- profil : pseudo, avatar, bio « À propos de moi » (uniquement pour la vérification, 01-02) ;
+- résumé : niveau PSN, pourcentage vers le niveau suivant, palier d'icône de niveau (1 à 10), compteurs obtenus par type (platine, or, argent, bronze) ;
+- liste des listes de trophées du joueur (pagination par 800 au plus), avec pour chacune : identifiant de liste, service (PS4 « trophy » ou PS5 « trophy2 »), plateformes, nom, icône, version de la liste, présence de groupes, compteurs définis et obtenus par type, progression PSN en %, indicateur « masqué par le joueur », date de dernière mise à jour ;
+- groupes de chaque liste (jeu de base « default », puis chaque pack DLC), avec nom et icône ;
+- définition de chaque trophée : nom, description, icône, type, groupe, caché ou non, objectif d'un trophée à paliers (ex. « 0/4 », « 3,626/5,000 » ; listes PS5 seulement) ;
+- état du joueur pour chaque trophée : obtenu ou non, date et heure d'obtention à la seconde, rareté mondiale PSN en %, catégorie de rareté PSN, progression vers l'objectif d'un trophée à paliers non obtenu et sa date ;
+- jeux joués (PS4 et PS5) : temps de jeu, nombre de sessions, première et dernière partie, jaquette carrée, identifiant de concept du jeu ;
+- lien entre un jeu joué et sa liste de trophées (calculé une fois par nouveau jeu joué, puis mis en cache ; revérifié chaque jour quand aucune liste n'a été trouvée).
+
+Définition et état d'un trophée viennent de deux appels distincts, rapprochés par l'identifiant du trophée. Les définitions (noms, descriptions) sont communes à tous les joueurs : une liste de trophées n'est définie qu'une fois sur le site et partagée par tous les profils qui la possèdent.
+
+Déclenchement :
+- synchro automatique de chaque profil suivi, à une fréquence qui dépend de son activité : toutes les 6 h pour un profil revendiqué ou actif dans les 30 derniers jours, une fois par jour pour un profil actif dans l'année, une fois par semaine sinon ;
+- bouton « Update profile » sur la page d'un profil : le propriétaire peut le lancer à tout moment (priorité haute), tout membre au plus une fois par heure et par profil (priorité normale) ;
+- une seule synchro à la fois par profil ; le bouton affiche « Syncing… » avec une icône qui tourne tant qu'une demande attend ou qu'une synchro tourne, sans réapparaître entre la demande et le démarrage ;
+- une file d'attente globale avec priorités ; position et attente estimée affichées au demandeur (« Queued, about 3 min ») ;
+- une demande manuelle n'est effacée qu'une fois la synchro terminée ; après 3 échecs de suite sur la même demande, elle est abandonnée.
+
+Synchro incrémentale :
+- la toute première synchro d'un profil récupère tout l'historique et affiche sa progression ;
+- ensuite, on ne recharge que les listes qui ont changé : comparaison de la date de dernière mise à jour, des compteurs obtenus et définis, de la version de la liste et de la présence de groupes ; une liste qui a changé est entièrement rechargée (groupes, trophées, état du joueur) ;
+- un nouveau DLC ajouté à un ancien jeu doit être récupéré même si aucun de ses trophées n'est obtenu : la date de dernière mise à jour ne change qu'à l'obtention d'un trophée, on surveille donc la version de la liste et le nombre de trophées définis, et une revérification des groupes de toutes les listes connues est faite une fois par jour ;
+- les compteurs des trophées à paliers peuvent avancer sans trophée obtenu : ils sont rafraîchis quand la liste est rechargée, au rafraîchissement quotidien, et à chaque synchro pour les jeux dont la date de dernière partie a changé ;
+- jeux joués, temps de jeu et jaquettes sont relus à chaque synchro.
+
+Rafraîchissement quotidien :
+- la rareté mondiale PSN évolue même quand personne ne joue : elle est relue une fois par jour pour toutes les listes connues (une lecture par liste suffit, la rareté mondiale ne dépend pas du joueur) ;
+- les informations du store sont rafraîchies au même moment (voir 02-04) ;
+- les images nouvelles sont téléchargées à la fin du rafraîchissement (voir 02-03).
+
+Historique : chaque exécution est enregistrée (début, fin, statut, nombre de jeux et de trophées mis à jour, erreur éventuelle) ; seules les 500 dernières exécutions par profil sont gardées.
+
+------------------------ >8 ------------------------ Problème (facultatif)
+# Ce qui ne va pas aujourd'hui, et pour qui, si tu le sais
+Les sites existants sont lents parce qu'ils interrogent ou recalculent à l'affichage ; ici tout est en local pour un affichage quasi instantané.
+Certains sites plafonnent à 256 trophées par jeu, ce qui fausse toutes les statistiques de complétion des gros jeux à DLC.
+Une synchro uniquement incrémentale laisserait dériver la rareté et manquerait les nouveaux DLC non commencés.
+Avec des milliers de profils, appeler le PSN sans file ni priorités provoquerait des refus de débit (429) et des synchros qui n'aboutissent jamais.
+
+------------------------ >8 ------------------------ Contexte (facultatif)
+# Qui l'a demandé, à quelle occasion, et pour quand
+Acteurs : système (worker), propriétaire d'un profil, membre, administrateur
+Prérequis : 02-02 Gérer l'accès au PSN du compte de service ; 01-02 Lier et vérifier son profil PSN
+Fiches liées : 02-03 Stocker et servir les images ; 02-04 Enrichir les jeux avec les informations du store ; 02-05 Alimenter le catalogue des jeux et DLC ; 02-07 Calculer la rareté communautaire ; 06-03 Mettre à jour les pages en direct ; 01-05 Administrer le site
+Lot indicatif : Socle
+
+------------------------ >8 ------------------------ Notes (facultatif, une note par ligne)
+# Chaque ligne devient une note que l'entretien de spécification traite une par une
+Règle : les versions PS4 et PS5 d'un même jeu sont deux listes de trophées distinctes, comme au PSN.
+Règle : les jeux masqués par le joueur sur le PSN (indicateur « hidden ») sont exclus de tous les chiffres, listes et classements du site.
+Règle : une valeur de rareté ou de catégorie de rareté vide renvoyée par le PSN ne remplace jamais une valeur déjà connue.
+Règle : une synchro qui recharge une liste ne doit pas effacer, même temporairement, les marques de trophées non obtenables (02-06) ni les données utilisées par les pages ; l'écriture d'une liste se fait d'un seul coup (transaction).
+Règle : un échec sur une liste n'arrête pas la synchro du profil ; la synchro est alors « partielle » et la liste est retentée la fois suivante.
+Règle : les appels au PSN sont faits l'un après l'autre avec une petite pause, et réessayés avec un délai croissant sur une erreur 429 ou 5xx ; aucune limite de débit n'étant documentée, le débit global est réglable.
+Règle : l'arrêt du worker termine proprement la synchro en cours ; une synchro coupée est marquée « Interrupted » au redémarrage.
+Donnée : les appels au PSN demandent les textes en anglais (en-tête de langue en-GB) ; si la langue change, les définitions de toutes les listes sont rechargées une fois dans la nouvelle langue.
+Donnée : l'objectif d'un trophée à paliers est dans la définition du trophée, pas dans l'état du joueur ; la progression du joueur n'est renvoyée que pour les trophées non obtenus qui ont un objectif, et vaut 0 tant que rien n'est fait.
+Donnée : on enregistre aussi les trophées non obtenus, avec leur rareté : le conseiller de trophées (03-08) et le catalogue (04-03) en ont besoin.
+Donnée : la date de dernière mise à jour d'une liste vaut la date du dernier trophée obtenu ou, sans trophée, celle du premier lancement du jeu ; elle sert au tri « Last trophy » (03-03).
+Intégration : PSN via une bibliothèque cliente de l'API mobile (résumé des trophées, titres, groupes, trophées d'un titre, trophées obtenus d'un titre, jeux joués, correspondance titre/liste par lots de 5).
+Cas limite : un concept de jeu est celui du jeu joué relié le plus récemment joué ; une liste sans jeu joué relié n'a ni concept, ni image de fond, ni logo, ni infos du store, et on emprunte alors ces informations à une autre version du même jeu (02-04).
+Question : faut-il exposer aux visiteurs la position dans la file et l'heure de la prochaine synchro automatique de chaque profil ?

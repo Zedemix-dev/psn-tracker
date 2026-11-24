@@ -1,0 +1,66 @@
+# fw refine — fonctionnalité : Gérer son compte et ses préférences
+# fw-need/1
+# Écris sous chaque ligne « >8 », sans modifier ces lignes
+# fw retire ses propres lignes « # » et garde les tiennes
+# Enregistre et ferme l'éditeur pour continuer. Fichier rendu tel quel ou vidé : fw ne crée rien
+
+------------------------ >8 ------------------------ Besoin (obligatoire)
+# Décris le besoin dans tes mots
+Un membre dispose d'un espace « Settings » unique où il règle son compte et la présentation de son profil. Les réglages sont regroupés en blocs :
+
+Compte :
+- e-mail (changement avec confirmation par un lien envoyé à la nouvelle adresse), mot de passe, connexion Discord liée ou non (voir 05-07) ;
+- fuseau horaire (par défaut celui du navigateur à l'inscription) : il sert à afficher toutes les dates et heures, et à calculer les jours, mois, heures et jours de la semaine des statistiques de son propre profil (voir 06-05) ;
+- sessions actives et déconnexion (voir 01-01).
+
+Profil PSN (si un profil est revendiqué, voir 01-02) :
+- état du profil : pseudo, dernière synchro, prochaine synchro prévue, état (public, privé) ;
+- historique des synchros de son profil : début, fin, durée, statut (réussie, partielle, échouée, interrompue), nombre de jeux et de trophées mis à jour, message d'erreur ; les 20 dernières, mises à jour en direct pendant une synchro ;
+- comptes PSN secondaires.
+
+Bannière du profil :
+- envoi d'une image depuis l'appareil : JPEG, PNG ou WebP, 10 Mo maximum, avec aperçu avant enregistrement ;
+- format recommandé 1920 × 520 ; si l'image n'a pas ce format, le membre choisit la partie verticale à garder (haut, centre, bas, ou un curseur de 0 à 100 %) ;
+- l'envoi d'une nouvelle bannière remplace et supprime l'ancien fichier ;
+- sans bannière personnalisée, la bannière est automatique : celle du dernier jeu joué par le profil (l'image de fond du jeu fournie par le store PSN), cadrée à 25 % depuis le haut, sans le logo du jeu. L'aperçu l'indique (libellé indicatif « Automatic — last played game (<nom du jeu>) ») et un bouton « Use automatic banner » permet de revenir à ce mode ;
+- le curseur de position ne s'applique qu'à une bannière personnalisée.
+
+Présentation du profil :
+- « Hide 0% games » : masquer de sa page les jeux sans aucun trophée obtenu, et les exclure de ses statistiques affichées (voir 03-01 et 03-03) ; inactif par défaut ;
+- visibilité des sections facultatives (sessions de jeu auxquelles il participe, activité forum, guides rédigés) ;
+- vitrine de trophées (éditée directement depuis la page du profil, pas ici, voir 03-04).
+
+Notifications : choix par type d'événement et par canal (sur le site, e-mail, message privé Discord), voir 05-08.
+
+Confidentialité et données :
+- télécharger ses données (export JSON de tout ce que le site sait du compte : compte, préférences, posts, guides, sessions, historique de vérification) ;
+- supprimer son compte : confirmation par saisie du nom d'affichage ; les sessions sont fermées, le compte est anonymisé (posts et guides restent signés « Deleted member » sauf demande explicite de suppression du contenu), le profil PSN revendiqué redevient simplement suivi, ou est retiré du site si le membre le demande (voir 01-02).
+
+Chaque bloc a son propre bouton d'enregistrement et son propre message de succès ou d'erreur, affiché sous le bloc.
+
+------------------------ >8 ------------------------ Problème (facultatif)
+# Ce qui ne va pas aujourd'hui, et pour qui, si tu le sais
+Un réglage dispersé dans plusieurs pages se retrouve mal ; un seul espace par membre évite les doublons (par exemple un éditeur de vitrine en double).
+Une bannière automatique évite qu'un profil sans personnalisation ait une page vide et terne.
+Les membres doivent pouvoir exercer leurs droits sur leurs données (accès, suppression) sans passer par un administrateur.
+
+------------------------ >8 ------------------------ Contexte (facultatif)
+# Qui l'a demandé, à quelle occasion, et pour quand
+Acteurs : membre, propriétaire d'un profil
+Prérequis : 01-01 Créer un compte et se connecter
+Fiches liées : 01-02 Lier et vérifier son profil PSN ; 02-03 Stocker et servir les images ; 03-01 Afficher l'en-tête du profil ; 03-04 Composer sa vitrine de trophées ; 05-08 Notifier les membres ; 06-05 Formater les dates, nombres et durées
+Lot indicatif : Socle
+
+------------------------ >8 ------------------------ Notes (facultatif, une note par ligne)
+# Chaque ligne devient une note que l'entretien de spécification traite une par une
+Règle : la bannière automatique est celle du jeu non masqué dont la date de dernière partie est la plus récente et dont l'image de fond est déjà téléchargée ; elle change d'elle-même après une synchro quand le joueur passe à un autre jeu.
+Règle : si aucun jeu du profil n'a d'image de fond, la bannière est un dégradé neutre ; pour le propriétaire seulement, un lien « Choose a banner in Settings » s'y affiche.
+Règle : une bannière envoyée a toujours la priorité sur la bannière automatique.
+Contrôle : le type réel du fichier envoyé est vérifié sur son contenu, pas sur son extension ; un fichier qui n'est pas une image JPEG, PNG ou WebP valide est refusé.
+Contrôle : les métadonnées de l'image (EXIF, position GPS) sont retirées à l'enregistrement.
+Contrôle : le changement d'e-mail ne prend effet qu'après clic sur le lien de confirmation ; l'ancienne adresse reçoit un e-mail d'information.
+Donnée : une préférence de bannière porte le fichier, sa position verticale (0 à 100) et la date d'envoi.
+Droit : une bannière peut être retirée par un modérateur (contenu choquant, haineux, sexuel) ; le profil revient alors à la bannière automatique et le propriétaire est notifié.
+Réglementaire : l'export et la suppression des données répondent aux droits d'accès et d'effacement (RGPD) ; une demande de suppression est exécutée sous 30 jours au plus, idéalement immédiatement.
+Question : la bannière envoyée doit-elle être validée par un modérateur avant d'être visible, ou visible tout de suite et modérée sur signalement ?
+Question : faut-il proposer une galerie de bannières de jeux (les images de fond des jeux du profil) en plus de l'envoi d'un fichier ?

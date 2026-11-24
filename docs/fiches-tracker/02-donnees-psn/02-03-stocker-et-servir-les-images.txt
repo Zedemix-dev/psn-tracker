@@ -1,0 +1,60 @@
+# fw refine — fonctionnalité : Stocker et servir les images
+# fw-need/1
+# Écris sous chaque ligne « >8 », sans modifier ces lignes
+# fw retire ses propres lignes « # » et garde les tiennes
+# Enregistre et ferme l'éditeur pour continuer. Fichier rendu tel quel ou vidé : fw ne crée rien
+
+------------------------ >8 ------------------------ Besoin (obligatoire)
+# Décris le besoin dans tes mots
+Les images sont récupérées chez Sony pendant la synchro puis stockées et servies par le site lui-même ; le site ne dépend jamais du CDN de Sony à l'affichage, et ne charge jamais d'image d'un autre site de trophées.
+
+Images concernées :
+- avatars des profils ;
+- icônes des listes de trophées, jaquettes carrées des jeux (celles de l'écran d'accueil de la console), icônes des groupes (jeu de base et DLC), icônes des trophées ;
+- image de fond du jeu (bannière, image du hub de jeu PS5) et logo du jeu (PNG transparent) ;
+- images envoyées par les membres : bannières de profil, illustrations des guides (voir 05-03), avatars de forum éventuels.
+
+Règles de stockage :
+- téléchargement pendant la synchro, dans un volume dédié ; une image est retéléchargée si son adresse côté Sony change ;
+- une image partagée par plusieurs profils (icône de trophée, jaquette) n'est stockée qu'une fois ;
+- délai maximal de 30 s par téléchargement, en-têtes et contenu compris ; passé ce délai, l'image compte comme un échec et est retentée à la synchro suivante ; en attendant, une vignette neutre s'affiche ;
+- une miniature WebP de 192 px est créée pour chaque icône et jaquette (transparence conservée), servie dans les listes ; l'original reste disponible pour les grandes tailles ;
+- l'image de fond d'un jeu est gardée en taille originale (3840 × 2160, environ 1 Mo) pour rester parfaitement nette ;
+- le logo est réduit à 800 px de large au plus (le serveur d'images de Sony redimensionne à la demande avec un paramètre de largeur) ;
+- ordre de grandeur : plusieurs dizaines de milliers d'icônes de trophées, soit plusieurs Go à l'échelle du catalogue.
+
+Tuile carrée :
+- aucune image rectangulaire n'est affichée nulle part (voir 06-01). Une image non carrée (icône de liste PS4, icône de groupe PS4) est posée entière sur une tuile carrée ;
+- la couleur de la tuile est calculée au téléchargement : pour une image plus large que haute, on lit sa première et sa dernière ligne de pixels (pour une image plus haute que large, sa première et sa dernière colonne). Si chaque bord est opaque (opacité d'au moins 250/255 pour tous ses pixels) et uni (aucun pixel ne s'écarte de plus de 16 de la moyenne sur un canal), la bande correspondante prend cette couleur ; sinon la tuile garde la couleur sombre par défaut (#0B1022). Le résultat est un fond (une couleur, ou un dégradé à deux couleurs) enregistré avec l'image et appliqué dès le premier affichage ;
+- la couleur n'est calculée que pour les images qui peuvent être affichées sur une tuile ; la base distingue « pas encore calculée » de « calculée, pas de bord uni » ;
+- une image SVG n'a pas de couleur de tuile.
+
+Nettoyage :
+- après une synchro réussie sans aucun échec, les fichiers d'images, leurs miniatures et leurs références qu'aucune donnée n'utilise plus sont supprimés (y compris pour les listes masquées, qui peuvent revenir) ;
+- les images envoyées par les membres ne sont jamais concernées par ce nettoyage automatique ; elles sont supprimées quand leur contenu l'est.
+
+Diffusion :
+- les images sont servies avec un cache long (adresse qui change quand le contenu change) ;
+- elles ne peuvent exécuter aucun script, même un SVG venu de l'extérieur (politique de sécurité de contenu « sandbox ») et le navigateur ne devine pas leur type (nosniff).
+
+------------------------ >8 ------------------------ Problème (facultatif)
+# Ce qui ne va pas aujourd'hui, et pour qui, si tu le sais
+Dépendre du CDN de Sony à l'affichage rend le site lent et fragile ; Sony change parfois ses adresses.
+Une icône rectangulaire au milieu d'une liste de carrés casse l'alignement ; un bandeau sombre autour d'une icône à fond noir se voit et fait « bricolé ».
+Sans nettoyage, les images inutilisées s'accumulent sans limite sur le disque.
+
+------------------------ >8 ------------------------ Contexte (facultatif)
+# Qui l'a demandé, à quelle occasion, et pour quand
+Acteurs : système (worker)
+Prérequis : 02-01 Synchroniser les profils des joueurs
+Fiches liées : 02-04 Enrichir les jeux avec les informations du store ; 06-01 Appliquer le système visuel ; 06-04 Sécuriser et exploiter le site ; 01-03 Gérer son compte et ses préférences ; 05-03 Rédiger un guide de trophées
+Lot indicatif : Socle
+
+------------------------ >8 ------------------------ Notes (facultatif, une note par ligne)
+# Chaque ligne devient une note que l'entretien de spécification traite une par une
+Règle : la bibliothèque de traitement d'images n'est chargée que par le worker et par les fonctions qui en ont besoin (export d'images, envoi de fichiers), jamais au rendu des pages.
+Règle : le journal du worker donne le nombre d'images téléchargées, échouées, de miniatures créées et d'images supprimées.
+Contrôle : seuls les types image courants sont acceptés (JPEG, PNG, WebP, et SVG venu de Sony uniquement) ; tout autre contenu est refusé.
+Donnée : une image porte l'adresse d'origine, le chemin local, le type, les dimensions, le chemin de sa miniature, le fond de tuile (ou « aucun », ou « non calculé ») et la date de téléchargement.
+Cas limite : trois images au moins ont des coins arrondis transparents ; elles ne s'affichent nulle part sur une tuile car leurs jeux ont une jaquette carrée.
+Question : faut-il un stockage objet (compatible S3) et un CDN devant les images quand le volume devient important ?

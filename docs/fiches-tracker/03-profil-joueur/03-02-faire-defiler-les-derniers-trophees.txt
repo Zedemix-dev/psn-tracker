@@ -1,0 +1,46 @@
+# fw refine — fonctionnalité : Faire défiler les derniers trophées
+# fw-need/1
+# Écris sous chaque ligne « >8 », sans modifier ces lignes
+# fw retire ses propres lignes « # » et garde les tiennes
+# Enregistre et ferme l'éditeur pour continuer. Fichier rendu tel quel ou vidé : fw ne crée rien
+
+------------------------ >8 ------------------------ Besoin (obligatoire)
+# Décris le besoin dans tes mots
+Sur la page principale d'un profil (la liste de ses jeux), juste sous le haut de page, un carrousel montre les derniers trophées obtenus par le joueur, du plus récent au plus ancien.
+
+Présentation :
+- aucun titre au-dessus du carrousel ;
+- autant de derniers trophées que la largeur le permet (16 sur un écran de 1 630 px), calé sur les deux bords du contenu, sans barre de défilement ; la page dispose d'au moins les 20 derniers trophées ;
+- icônes de 56 px, sans aucun fond derrière l'icône ;
+- un seul trophée à la fois affiche ses détails : icône, nom, description, date et heure d'obtention avec les secondes, nom du jeu, rareté PSN en % et sa catégorie, icône officielle du type ;
+- la case détaillée a exactement la même hauteur que les icônes voisines (pas de contour blanc, pas d'effet de zoom) ; elle s'élargit seulement pour faire tenir le texte, sur environ 380 px.
+
+Comportement :
+- passage automatique au trophée suivant toutes les 6 secondes, en boucle ;
+- pause quand la souris est dessus ou qu'un élément du carrousel a le focus clavier ;
+- au doigt : pause tant que le doigt est posé, reprise dès qu'il se lève ;
+- clic (ou appui) sur une icône : ce trophée devient le trophée détaillé ;
+- une petite barre de progression du minuteur indique le temps restant avant le passage au suivant ;
+- le défilement automatique fonctionne même quand le système demande de réduire les animations ; seule la barre de progression est alors masquée ;
+- un clic sur le nom du jeu mène à la progression du joueur sur ce jeu (03-12).
+
+Écrans étroits : le trophée détaillé passe au-dessus et les autres icônes s'alignent en dessous.
+
+------------------------ >8 ------------------------ Problème (facultatif)
+# Ce qui ne va pas aujourd'hui, et pour qui, si tu le sais
+Les joueurs veulent voir leurs derniers trophées dès l'ouverture de leur profil, sans aller dans le journal complet.
+Un carrousel qui s'arrête quand l'utilisateur a demandé de réduire les animations le rendrait inutile pour ces utilisateurs.
+
+------------------------ >8 ------------------------ Contexte (facultatif)
+# Qui l'a demandé, à quelle occasion, et pour quand
+Acteurs : visiteur anonyme, membre, propriétaire du profil
+Prérequis : 03-01 Afficher l'en-tête du profil
+Fiches liées : 03-07 Consulter le journal des trophées ; 03-12 Suivre la progression d'un joueur sur un jeu ; 06-01 Appliquer le système visuel ; 06-03 Mettre à jour les pages en direct
+Lot indicatif : Profil
+
+------------------------ >8 ------------------------ Notes (facultatif, une note par ligne)
+# Chaque ligne devient une note que l'entretien de spécification traite une par une
+Règle : l'ordre est celui du numéro d'obtention (voir 03-07) : à la même seconde, le platine passe après les autres trophées de son jeu.
+Règle : après une synchro qui apporte de nouveaux trophées, le carrousel se met à jour sans recharger la page.
+Contrôle : le carrousel est utilisable au clavier (flèches gauche et droite pour changer de trophée) et lisible par un lecteur d'écran (région annoncée, trophée détaillé annoncé à chaque changement manuel seulement).
+Cas limite : un profil sans aucun trophée obtenu n'affiche pas de carrousel.

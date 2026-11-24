@@ -1,0 +1,55 @@
+# fw refine — fonctionnalité : Alimenter le catalogue des jeux et DLC
+# fw-need/1
+# Écris sous chaque ligne « >8 », sans modifier ces lignes
+# fw retire ses propres lignes « # » et garde les tiennes
+# Enregistre et ferme l'éditeur pour continuer. Fichier rendu tel quel ou vidé : fw ne crée rien
+
+------------------------ >8 ------------------------ Besoin (obligatoire)
+# Décris le besoin dans tes mots
+Le site doit présenter un catalogue aussi complet que possible de tous les jeux PS4 et PS5 qui ont une liste de trophées, et de tous leurs trophées, y compris des jeux qu'aucun membre ne possède encore. Ce catalogue nourrit la liste de tous les jeux (04-02), la liste de tous les trophées (04-03), la page d'accueil (05-01, « derniers jeux et DLC ajoutés ») et les sous-forums par jeu (05-05).
+
+Sources d'alimentation :
+- les profils suivis : chaque liste de trophées rencontrée lors d'une synchro entre au catalogue, avec ses groupes et ses définitions de trophées ;
+- une découverte active : un traitement régulier (toutes les heures par exemple) parcourt les nouveautés du store PSN (nouvelles sorties, précommandes, DLC), récupère leurs concepts et cherche les listes de trophées associées, pour qu'un jeu apparaisse dès sa sortie, avant même qu'un membre y joue ;
+- un échantillon de profils publics très actifs, suivis par le site lui-même, qui révèle rapidement les nouvelles listes (les premiers joueurs d'un jeu) ;
+- l'ajout manuel d'une liste par un administrateur, à partir de son identifiant.
+
+Date d'ajout et nouveautés :
+- chaque jeu porte la date à laquelle sa liste de trophées a été vue pour la première fois sur le site, et la date de sortie du store ;
+- chaque groupe DLC porte la date à laquelle il a été vu pour la première fois : l'ajout d'un DLC à un jeu existant (nouveau groupe ou augmentation du nombre de trophées définis) est un événement « nouveau DLC » ;
+- ces événements alimentent le fil « Latest games » et « Latest DLC » de la page d'accueil et les notifications des membres qui suivent ce jeu (05-08).
+
+Fiche catalogue d'un jeu (pour chaque liste de trophées) :
+- nom, plateformes, icône, jaquette, image de fond, logo, éditeur, genres, date de sortie (02-04) ;
+- groupes (jeu de base et DLC) avec leur nom, icône et nombre de trophées par type ;
+- trophées avec nom, description, icône, type, groupe, caché ou non, objectif éventuel ;
+- rareté mondiale PSN de chaque trophée et catégorie de rareté, rafraîchies chaque jour ;
+- statistiques communautaires : nombre de membres suivis qui possèdent le jeu, qui l'ont commencé, platiné, terminé à 100 % ; rareté communautaire de chaque trophée (02-07) ;
+- présence d'un platine, points PSN totaux (bronze 15, argent 30, or 90, platine 300).
+
+Rapprochement des versions :
+- les listes d'un même jeu (PS4 et PS5, éditions régionales) sont regroupées sous un même « jeu » pour la navigation et les recherches, tout en restant des listes distinctes pour les trophées et la progression ;
+- le rapprochement se fait par concept du store quand il est connu, sinon par nom normalisé ; un administrateur peut corriger (01-05).
+
+------------------------ >8 ------------------------ Problème (facultatif)
+# Ce qui ne va pas aujourd'hui, et pour qui, si tu le sais
+Un site qui ne connaît que les jeux de ses membres ne peut pas annoncer les sorties ni accueillir un joueur qui arrive avec un jeu récent : la page du jeu n'existerait pas.
+Sans date de première apparition, impossible de distinguer un nouveau DLC d'une simple mise à jour de rareté.
+
+------------------------ >8 ------------------------ Contexte (facultatif)
+# Qui l'a demandé, à quelle occasion, et pour quand
+Acteurs : système (worker), administrateur
+Prérequis : 02-01 Synchroniser les profils des joueurs ; 02-04 Enrichir les jeux avec les informations du store
+Fiches liées : 04-02 Lister tous les jeux du PSN ; 04-03 Lister tous les trophées du PSN ; 04-01 Consulter la fiche complète d'un jeu ; 05-01 Afficher la page d'accueil ; 05-05 Participer au forum ; 05-08 Notifier les membres ; 02-07 Calculer la rareté communautaire
+Lot indicatif : Catalogue
+
+------------------------ >8 ------------------------ Notes (facultatif, une note par ligne)
+# Chaque ligne devient une note que l'entretien de spécification traite une par une
+Règle : les définitions d'une liste de trophées sont uniques sur le site et partagées par tous les profils ; seule la progression est propre à chaque profil.
+Règle : un jeu du catalogue sans aucun membre suivi a tout de même sa fiche ; ses statistiques communautaires affichent « No tracked player yet ».
+Règle : seules les listes PS4 et PS5 entrent au catalogue ; une liste partagée avec la PS3 ou la Vita y entre comme PS4.
+Contrôle : une liste découverte par le store mais dont les trophées ne sont pas encore lisibles reste en attente et est retentée chaque jour pendant 30 jours.
+Donnée : un événement de catalogue porte le type (nouveau jeu, nouveau DLC, trophées ajoutés), la liste, le groupe éventuel, la date et le nombre de trophées concernés.
+Intégration : la rareté mondiale PSN d'une liste qu'aucun profil suivi ne possède ne peut être lue que via un profil qui la possède ; le site utilise alors un profil de l'échantillon, ou laisse la rareté vide (« Unknown ») sans jamais la supposer.
+Question : quel niveau de complétude vise-t-on au lancement : uniquement les jeux découverts à partir d'une date, ou un rattrapage de l'historique complet PS4 et PS5 ?
+Question : faut-il inclure les jeux PS VR et PS VR2 comme une plateforme filtrable à part ?

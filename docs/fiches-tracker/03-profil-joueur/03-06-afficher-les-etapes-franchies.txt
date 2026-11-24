@@ -1,0 +1,41 @@
+# fw refine — fonctionnalité : Afficher les étapes franchies
+# fw-need/1
+# Écris sous chaque ligne « >8 », sans modifier ces lignes
+# fw retire ses propres lignes « # » et garde les tiennes
+# Enregistre et ferme l'éditeur pour continuer. Fichier rendu tel quel ou vidé : fw ne crée rien
+
+------------------------ >8 ------------------------ Besoin (obligatoire)
+# Décris le besoin dans tes mots
+Dans la colonne latérale de la page principale d'un profil, sous les trophées les plus rares (03-05), un encart « Milestones » liste **toutes** les étapes franchies par le joueur, de la plus récente à la plus ancienne, sans limite ni lien « View all », même si la liste est longue (plusieurs dizaines d'étapes).
+
+Chaque étape montre : l'icône du trophée (sans fond), son nom et le nom du jeu en entier, le libellé de l'étape (« 225th platinum ») et la date en temps relatif (« 9 years ago »), avec la date et l'heure exactes (avec les secondes) en infobulle. Un clic mène à la fiche du trophée (04-04).
+
+Étapes calculées :
+- First trophy : le premier trophée obtenu ;
+- First platinum : le premier platine ;
+- Latest platinum : le platine le plus récent ;
+- Fastest platinum : le platine obtenu le plus vite après le premier trophée de son jeu (durée affichée en infobulle) ;
+- platines : 10th, 20th, 30th, 40th, 50th, puis tous les 25 jusqu'au 250th (75th, 100th, 125th… 250th), puis tous les 50 (300th, 350th, 400th…) ;
+- trophées : 500th, puis tous les 500 jusqu'au 5,000th (1,000th, 1,500th… 5,000th), puis tous les 1 000 jusqu'au 10,000th, puis tous les 5 000 (15,000th, 20,000th…), plus le clin d'œil 1,337th trophy. Pas de 11,000th.
+
+Pour le comptage, les trophées sont numérotés dans l'ordre de leur numéro d'obtention (voir 03-07) : la seconde d'obtention, puis le platine après les autres trophées de la même seconde, puis l'identifiant du trophée, puis l'identifiant de la liste. Le n° 10 000 des étapes est donc exactement la ligne n° 10 000 du journal des trophées.
+
+------------------------ >8 ------------------------ Problème (facultatif)
+# Ce qui ne va pas aujourd'hui, et pour qui, si tu le sais
+Les joueurs aiment retrouver les moments marquants de leur parcours (premier platine, 100e platine, 10 000e trophée).
+Si les étapes et le journal ne numérotent pas les trophées de la même façon, le « 10,000th trophy » ne tombe pas sur le même trophée selon la page : c'est une erreur visible et décevante.
+
+------------------------ >8 ------------------------ Contexte (facultatif)
+# Qui l'a demandé, à quelle occasion, et pour quand
+Acteurs : visiteur anonyme, membre, propriétaire du profil
+Prérequis : 03-07 Consulter le journal des trophées (règle du numéro d'obtention)
+Fiches liées : 03-03 Lister les jeux d'un joueur ; 03-05 Afficher les trophées les plus rares ; 06-05 Formater les dates, nombres et durées
+Lot indicatif : Profil
+
+------------------------ >8 ------------------------ Notes (facultatif, une note par ligne)
+# Chaque ligne devient une note que l'entretien de spécification traite une par une
+Règle : une seule définition du numéro d'obtention sert aux étapes, au journal des trophées, au tri « Date earned » d'un jeu et à l'historique du niveau.
+Règle : seuls comptent les trophées des jeux non masqués par le joueur sur le PSN.
+Règle : les étapes sont recalculées après chaque synchro du profil et gardées en mémoire jusqu'à la synchro suivante.
+Donnée : le temps relatif suit la règle commune (« 3 minutes ago », « 2 days ago », « 9 years ago », voir 06-05).
+Question : faut-il afficher aussi des étapes de niveau (niveau 100, 200, 500…) et de jeux complétés à 100 % ?

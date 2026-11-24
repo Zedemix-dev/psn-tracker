@@ -1,0 +1,61 @@
+# fw refine — fonctionnalité : Appliquer le système visuel
+# fw-need/1
+# Écris sous chaque ligne « >8 », sans modifier ces lignes
+# fw retire ses propres lignes « # » et garde les tiennes
+# Enregistre et ferme l'éditeur pour continuer. Fichier rendu tel quel ou vidé : fw ne crée rien
+
+------------------------ >8 ------------------------ Besoin (obligatoire)
+# Décris le besoin dans tes mots
+Toutes les pages partagent un même système visuel de style « console », inspiré de l'écran d'accueil de la PS5, avec une lisibilité épurée : listes propres, rien de tronqué, des chiffres grands et fins.
+
+Ambiance :
+- une bannière en haut de page ; la même image, floutée et assombrie, sert de fond à toute la page ;
+- les blocs sont des panneaux translucides, avec un flou d'arrière-plan et des coins arrondis ;
+- la navigation principale du site est en haut de page, posée sur la bannière, sans bandeau : chaque entrée est une pastille (fond sombre translucide, fin contour clair, texte blanc) ; l'entrée de la page affichée a un contour blanc et un fond un peu plus clair ; elle défile avec la page ; à droite, la recherche, la cloche des notifications et l'accès au compte.
+
+Typographie : une police sans empattement géométrique (par exemple Sora, graisses 300 à 700), embarquée dans le site, sans dépendance réseau au build ; texte de base 14 px ; chiffres des statistiques en 28 px, graisse 300.
+
+Couleurs (tokens) :
+- fond #0F1631 ; texte #F3F5FB ; texte secondaire #A9B3CB ; accent #5AA9FF ;
+- métaux : platine #D3E2FF, or #F2C462, argent #C9D0DA, bronze #DE9563 ;
+- rangs de complétion : S #667FB2, A #008000, B #7B9E00, C #A68E00, D #A66A00, E #FF4100, F #EE0000 (100 %, 80–99, 60–79, 40–59, 20–39, 1–19, 0) ;
+- trophée obtenu : vert #3DBE6B (fond à 14 %, liseré de 2 px), date #93E2AE ; trophée perdu (non obtenable non obtenu) : rouge du rang F, mêmes règles ;
+- raretés : Ultra rare #B3261E, Very rare #D6502A, Rare #E8862A, Uncommon #F2B233, Common #F7DC5A ;
+- tuile par défaut des images non carrées : #0B1022.
+
+Proportions de référence (sur un écran de 1 630 px) : contenu de 1 400 px ; colonne latérale d'environ 450 px pour les pages de profil, 320 px pour les pages d'un jeu ; bannière au format 1920 × 520 ; lignes de jeux d'environ 80 px ; lignes de trophées et des listes latérales d'environ 66 px ; icônes de 56 px ; en-têtes de groupe de 110 px avec icône de 100 px.
+
+Icônes :
+- les icônes des types de trophée (platine, or, argent, bronze) et les 10 icônes de palier de niveau sont les icônes officielles, embarquées comme images fixes ; seules les petites pastilles de compteurs gardent un pictogramme simplifié coloré, plus lisible à 11 px ;
+- aucune image rectangulaire nulle part : toute image de jeu ou de groupe est carrée, ou posée entière sur une tuile carrée (02-03) ;
+- aucun fond, ombre ou cadre derrière une icône de trophée à fond transparent ; seuls les conteneurs (ligne, carte) peuvent avoir un fond.
+
+Règles d'interface :
+- aucun nom tronqué par « … » dans les listes : un texte long passe à la ligne ; lignes d'une liste à hauteur constante quand c'est possible ;
+- contrôles de filtre : un contrôle qui n'est pas sur sa valeur par défaut prend un contour de couleur d'accent ; « Show all » toujours après le nombre dans l'en-tête d'une liste ;
+- infobulles : une seule à la fois, qui reste dans l'écran et n'est jamais coupée par un panneau ; au doigt, elle s'affiche tant que le doigt est posé, au-dessus du doigt, et disparaît quand il se lève ; un appui long n'ouvre pas de menu contextuel ; les mises en valeur au survol ne valent qu'à la souris ;
+- défilement de côté d'un graphique ou d'un calendrier trop large : dans son panneau, sans barre visible, au clic maintenu à la souris, au glissement à deux doigts sur un pavé tactile, au doigt sur téléphone, avec un fondu sur le bord qui cache du contenu, sans déclencher le retour arrière du navigateur ;
+- jamais de défilement horizontal de la page, du téléphone de 320 px au grand écran.
+
+Accessibilité : focus clavier toujours visible ; contrastes suffisants (WCAG AA) ; tous les contrôles utilisables au clavier ; textes alternatifs des images ; la demande de réduction des animations est respectée (sauf le défilement du carrousel, 03-02, dont seule la barre de minuteur est masquée).
+
+Thème : le site est en thème sombre uniquement (le fond flouté de la bannière fait partie de l'identité).
+
+------------------------ >8 ------------------------ Problème (facultatif)
+# Ce qui ne va pas aujourd'hui, et pour qui, si tu le sais
+Les sites de trophées existants sont soit très lisibles mais austères, soit agréables mais lents et encombrés ; le but est d'avoir les deux : la lisibilité et la présentation.
+Des images de formats différents (icônes PS4 rectangulaires, PS5 carrées) donnent des listes désordonnées si une règle unique ne s'applique pas partout.
+
+------------------------ >8 ------------------------ Contexte (facultatif)
+# Qui l'a demandé, à quelle occasion, et pour quand
+Acteurs : tous
+Prérequis : aucun
+Fiches liées : 02-03 Stocker et servir les images ; 06-02 Charger les longues listes et revenir à sa place ; 06-05 Formater les dates, nombres et durées ; toutes les fiches d'affichage
+Lot indicatif : Transverse
+
+------------------------ >8 ------------------------ Notes (facultatif, une note par ligne)
+# Chaque ligne devient une note que l'entretien de spécification traite une par une
+Règle : l'interface est entièrement en anglais, noms et descriptions des jeux et trophées compris.
+Règle : les styles sont découpés en une base commune (tokens, typographie, navigation, éléments partagés) et en styles propres à chaque page, pour qu'une page ne modifie pas l'apparence d'une autre.
+Contrôle : un relevé automatique des styles calculés de chaque page, à 1 630 px et 375 px, permet de vérifier qu'un changement transverse ne modifie rien d'involontaire.
+Question : faut-il une identité visuelle (nom, logo) définie avant de figer les couleurs, ou ces couleurs servent-elles de base définitive ?

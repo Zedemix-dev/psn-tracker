@@ -1,0 +1,64 @@
+# fw refine — fonctionnalité : Consulter les statistiques d'un joueur
+# fw-need/1
+# Écris sous chaque ligne « >8 », sans modifier ces lignes
+# fw retire ses propres lignes « # » et garde les tiennes
+# Enregistre et ferme l'éditeur pour continuer. Fichier rendu tel quel ou vidé : fw ne crée rien
+
+------------------------ >8 ------------------------ Besoin (obligatoire)
+# Décris le besoin dans tes mots
+Une page du profil (« Stats ») raconte l'histoire de la chasse aux trophées du joueur sur une seule page : son activité récente, la répartition de son profil, sa progression depuis son premier trophée, ses habitudes horaires, ses jeux par année, éditeur et genre, et l'historique de son niveau (03-11).
+
+Haut de page commun du profil (03-01), sans carrousel. Puis, en pleine largeur et dans cet ordre, chacun dans un panneau translucide titré en haut à gauche :
+
+1. Calendrier « Last 12 months » :
+- 53 semaines ; la dernière colonne est la semaine en cours, les jours à venir n'ont pas de case ; une colonne par semaine, une ligne par jour du lundi au dimanche, nom de chaque jour affiché (Mon … Sun) ; nom du mois au-dessus de la première semaine dont le lundi tombe dans ce mois (sauf dans les deux dernières colonnes) ;
+- cases carrées, cinq intensités de la couleur d'accent : 0, 1 à 2, 3 à 6, 7 à 12, 13 et plus ; légende « Less … More » en haut à droite ;
+- infobulle : la date (« Mon 31 Aug 2026 »), le nombre de trophées et, s'il y en a, de platines ;
+- résumé dessous, quatre valeurs équidistantes (la première calée à gauche, la dernière à droite, libellés centrés sous leur valeur) : Trophies ; Platinums ; Best day (nombre et date, à égalité le plus récent) ; Longest streak, la plus longue série de jours consécutifs avec au moins un trophée (« 61 days », à côté « 515 trophies », libellé « Longest streak, 13 Jul 2026 to 11 Sep 2026 », à égalité la plus récente) ; les quatre ne regardent que les jours affichés.
+
+2. Quatre anneaux, sur une ligne, l'anneau et sa valeur centrale à gauche, la légende à droite (pastille, nom, nombre exact), au survol d'une part son nom, son nombre et sa part :
+- Rarity : trophées obtenus par catégorie de rareté PSN ; au centre la rareté moyenne (« Average ») ;
+- Completion : jeux par progression PSN en 5 tranches (80–100 %, 60–79 %, 40–59 %, 20–39 %, 0–19 %) ; au centre la moyenne des progressions par jeu (différente de « Completion rate », qui rapporte tous les trophées obtenus à tous les trophées existants) ;
+- PSN points : points par type (platine 300, or 90, argent 30, bronze 15) ; au centre le total (« Points ») ;
+- Platforms : seulement PS5 et PS4 ; une liste qui inclut PS5 compte en PS5, toutes les autres en PS4 ; au centre le nombre de jeux.
+
+3. « Monthly activity » puis « Trophy progression », chacun en pleine largeur : sur l'axe horizontal chaque mois depuis celui du premier trophée jusqu'au mois en cours, mois sans trophée compris, étiquette tous les 6 mois (tous les 12 sous 700 px de large, tous les 24 sous 420 px) au format « Nov 16 » :
+- Monthly activity : courbe du nombre de trophées par mois, couleur d'accent, voile léger dessous, valeur du mois record écrite au-dessus de son point ;
+- Trophy progression : trophées cumulés par type en aires empilées, platine en bas et bronze en haut, légende avec le total de chaque type ;
+- au survol, une ligne verticale suit la souris et s'accroche au mois le plus proche.
+
+4. « Trophies by time » (deux tiers) et « Trophies by day » (un tiers) : colonnes du total des trophées par heure (00 à 23, avec le fuseau affiché en haut à droite) et par jour de la semaine (Mon à Sun) ; valeur de la colonne record écrite au-dessus.
+
+5. Trois colonnes égales :
+- Games by release year : une colonne par année de la plus ancienne à la plus récente, année vide gardée à 0, étiquettes « '14 », « '15 » ; phrase « 25 games have no release date on PSN. » ; colonnes jamais plus fines que 18 px : au-delà, le graphique défile de côté dans son panneau, sans barre, ouvert sur les années récentes, axe fixe à gauche, fondu sur le bord qui cache des années ;
+- Games by publisher : barres horizontales triées, nombre au bout, les 15 premiers puis une ligne grise « Other (48) » ; noms raccourcis par la liste de correspondance des éditeurs (02-04) ; phrase « 6 games have no publisher on PSN. » ;
+- Games by genre : mêmes barres, tous les genres, un jeu compte dans chacun de ses genres ; « A game can have several genres. 6 have none on PSN. » ;
+- à égalité, ordre alphabétique ; une phrase de bas de graphique disparaît quand son nombre est 0 ; date, éditeur et genres empruntés au besoin à une autre version du même jeu.
+
+6. Level history (voir 03-11), tout en bas.
+
+------------------------ >8 ------------------------ Problème (facultatif)
+# Ce qui ne va pas aujourd'hui, et pour qui, si tu le sais
+Les statistiques sont ce qui fait revenir un chasseur de trophées : voir ses séries, ses meilleurs jours, ses éditeurs favoris.
+Un jour compté dans un autre fuseau que celui des dates affichées rend les chiffres incohérents entre les pages.
+Un graphique des années qui gagne une colonne par an finit illisible si ses colonnes rétrécissent sans limite.
+
+------------------------ >8 ------------------------ Contexte (facultatif)
+# Qui l'a demandé, à quelle occasion, et pour quand
+Acteurs : visiteur anonyme, membre, propriétaire du profil
+Prérequis : 03-01 Afficher l'en-tête du profil ; 02-04 Enrichir les jeux avec les informations du store
+Fiches liées : 03-11 Retracer l'historique du niveau ; 03-05 Afficher les trophées les plus rares ; 06-01 Appliquer le système visuel ; 06-05 Formater les dates, nombres et durées
+Lot indicatif : Profil
+
+------------------------ >8 ------------------------ Notes (facultatif, une note par ligne)
+# Chaque ligne devient une note que l'entretien de spécification traite une par une
+Règle : tout ce qui dépend d'un jour, d'un mois, d'une heure ou d'un jour de la semaine est calculé dans le fuseau du propriétaire du profil (réglage 01-03), affiché dans le graphique.
+Règle : les graphiques de jeux (complétion, plateformes, année, éditeur, genre) respectent « Hide 0% games » du propriétaire, comme les 6 cases ; les graphiques de trophées n'en dépendent pas.
+Règle : un jeu sur deux plateformes a deux listes et compte deux fois ; les jeux masqués sur le PSN sont exclus.
+Règle : le navigateur ne reçoit que des totaux, jamais la liste complète des trophées ; les données de la page sont gardées en mémoire jusqu'à la synchro suivante du profil ou au changement de jour.
+Règle : graphiques dessinés en SVG par le site, qui s'adaptent à la largeur de leur panneau et réservent leur hauteur (la page ne saute pas à l'affichage) ; une seule infobulle, qui reste dans l'écran et n'est jamais coupée par un panneau.
+Règle : au doigt, l'infobulle s'affiche tant que le doigt est posé, au-dessus de lui ; sur les courbes la ligne verticale suit le doigt qui glisse de côté ; un glissement vertical fait défiler la page ; un appui long n'ouvre pas de menu contextuel ; les mises en valeur au survol ne valent qu'à la souris (voir 06-01).
+Donnée : couleurs des types pour les grandes surfaces : platine #6C8AD8, or #B48E26, argent #868FA3, bronze #C2703F ; complétion #4CCB7A, #3FAE66, #339353, #2A7845, #216038 ; plateformes PS5 #4F8FE8, PS4 #2EAD7F ; barre « Other » en couleur atténuée.
+Cas limite : sans aucun trophée obtenu, un seul panneau « No trophies yet. » ; sous 860 px, le calendrier défile de côté comme le graphique des années, ouvert sur les jours récents.
+Cas limite : sous 1280 px les anneaux passent sur 2 colonnes ; sous 1100 px les trois graphiques de jeux s'empilent ; sous 900 px « by time » et « by day » s'empilent ; sur téléphone, les anneaux sont sur une colonne et le résumé du calendrier sur 2 colonnes ; jamais de défilement horizontal de la page.
+Question : faut-il permettre de comparer ses statistiques à celles d'un autre joueur ou à la moyenne du site ?

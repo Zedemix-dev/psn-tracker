@@ -1,0 +1,55 @@
+# fw refine — fonctionnalité : Afficher et exporter le mur des platines
+# fw-need/1
+# Écris sous chaque ligne « >8 », sans modifier ces lignes
+# fw retire ses propres lignes « # » et garde les tiennes
+# Enregistre et ferme l'éditeur pour continuer. Fichier rendu tel quel ou vidé : fw ne crée rien
+
+------------------------ >8 ------------------------ Besoin (obligatoire)
+# Décris le besoin dans tes mots
+Une page du profil (« Plat Wall ») montre tous les platines obtenus par le joueur d'un seul coup d'œil, sous forme de mur, et permet d'en fabriquer une image PNG, avec les statistiques du profil en haut, pour la garder ou la partager.
+
+Chaque case montre la miniature du trophée platine lui-même (l'image du platine dans la liste de trophées du jeu), et non la jaquette du jeu ni le pictogramme générique du platine.
+
+Page :
+- haut de page commun du profil (03-01), sans carrousel ni colonne latérale ;
+- panneau du mur, en pleine largeur : à gauche « <pseudo>'s Plat Wall » et dessous « Showing X of Y platinum trophies » (Y étant le total sans filtre) ; à droite, dans cet ordre, Display, années, plateformes, tri, puis le bouton « Export PNG » ;
+- grille : 13 cases par ligne en pleine largeur (cases d'environ 93 px), moins si la fenêtre est plus étroite, 4 par ligne sous 640 px ;
+- case : miniature à coins arrondis de 12 px, sans fond ni ombre (la transparence reste visible), léger agrandissement au survol ; rareté PSN dessous si « Rarity » est coché ; nom du jeu dessous (3 lignes au plus) si « Name » est coché ; carte texte de même largeur si « Art » est décoché ;
+- au survol, une bulle : nom du jeu, date d'obtention, rareté ; au clic, la progression du joueur sur ce jeu ;
+- sans résultat : « No platinum trophies match these filters. ».
+
+Réglages :
+- Display : trois cases à cocher, Art, Rarity, Name ; par défaut seul Art est coché ; au moins une reste cochée ;
+- années : « All years » par défaut, puis chaque année où le joueur a un platine, de la plus récente à la plus ancienne (année de la date d'obtention, dans le fuseau du propriétaire) ;
+- plateformes : « All platforms », PS4, PS5 ;
+- tri : Newest (par défaut), Rarity (du plus rare au moins rare), Alphabetical (nom du jeu, sans la casse) ; à égalité, le plus récent devant ;
+- les réglages vivent dans l'adresse de la page, sans enregistrement.
+
+Export PNG :
+- « Export PNG » ouvre un aperçu par-dessus la page ; pendant la fabrication « Generating your image… » avec une icône qui tourne et « Download PNG » inactif ; image prête : l'image entière à la largeur de l'écran, qu'on fait défiler, avec une barre fixe en haut (« PNG preview », dimensions, « Download PNG », « Close ») ; « Close » ou Échap ramène à la page ; en cas d'échec, un message et un bouton pour réessayer ;
+- « Download PNG » doit fonctionner sur PC, Android et iPhone : c'est un vrai fichier envoyé par le serveur en téléchargement ;
+- nom du fichier : « <pseudo>-plat-wall.png », ou avec les filtres actifs « <pseudo>-plat-wall-2026-PS5.png » (le tri et Display n'y figurent pas) ;
+- contenu : double résolution, 2896 px de large quel que soit l'appareil, toujours 13 cases par ligne ; en haut la bannière du profil derrière le bandeau, la même image floutée en fond de toute l'image (sans bannière, le fond uni du site) ; le bandeau du profil (avatar, pseudo, compteurs, niveau) sans bouton de synchro ni « Last synced » ; les 6 cases de statistiques du profil entier, jamais filtrées ; le mur avec les réglages en cours ; rien d'autre (ni navigation, ni titre, ni « Showing… », ni rappel des filtres) ; un petit filigrane discret avec le nom et l'adresse du site en bas à droite.
+
+------------------------ >8 ------------------------ Problème (facultatif)
+# Ce qui ne va pas aujourd'hui, et pour qui, si tu le sais
+Les chasseurs de trophées aiment montrer leurs platines ; une capture d'écran d'une longue page est illisible et coupée.
+Fabriquer l'image dans le navigateur échoue sur iPhone au-delà d'environ 16,7 millions de pixels ; un mur de 230 platines avec rareté et nom en fait environ 20 millions.
+Accumuler les images générées sur le serveur remplirait le disque sans raison.
+
+------------------------ >8 ------------------------ Contexte (facultatif)
+# Qui l'a demandé, à quelle occasion, et pour quand
+Acteurs : visiteur anonyme, membre, propriétaire du profil
+Prérequis : 03-01 Afficher l'en-tête du profil ; 02-03 Stocker et servir les images
+Fiches liées : 03-12 Suivre la progression d'un joueur sur un jeu ; 06-01 Appliquer le système visuel ; 06-04 Sécuriser et exploiter le site
+Lot indicatif : Profil
+
+------------------------ >8 ------------------------ Notes (facultatif, une note par ligne)
+# Chaque ligne devient une note que l'entretien de spécification traite une par une
+Règle : aucune image exportée n'est écrite sur le disque du serveur (ni fichier, ni dossier temporaire, ni ligne en base) ; elle est fabriquée en mémoire à la demande ; le serveur garde la dernière image de chaque demandeur en mémoire vive au plus 10 minutes, pour que « Download PNG » ne la refabrique pas.
+Règle : la fabrication est faite par le serveur, à partir des miniatures WebP de 192 px, en PNG sans perte ; elle reste largement sous la limite de délai du reverse proxy (60 s) : environ 9 s pour 230 platines sur une machine modeste.
+Règle : le texte de l'image est dessiné avec la police du site, embarquée dans l'application (les conteneurs n'ont aucune police) ; un caractère absent de la police est remplacé par son équivalent (Ⅱ → II, Ⅻ → XII, ～ → ~) ou retiré ; la page, elle, garde le nom exact du PSN.
+Règle : le mur ne montre que les platines obtenus des jeux non masqués ; une pile PS4 et PS5 du même jeu donne deux cases.
+Contrôle : l'adresse d'export refuse les paramètres invalides et est limitée en fréquence (par exemple 5 exports par minute et par adresse IP) ; le build échoue si la bibliothèque d'images ou la police ne peuvent pas être chargées.
+Cas limite : un nouveau platine apparaît après une synchro sans recharger la page.
+Question : faut-il proposer un format carré ou paysage pour les réseaux sociaux, et un partage direct vers Discord (05-07) ?

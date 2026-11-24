@@ -1,0 +1,48 @@
+# fw refine — fonctionnalité : Notifier les membres
+# fw-need/1
+# Écris sous chaque ligne « >8 », sans modifier ces lignes
+# fw retire ses propres lignes « # » et garde les tiennes
+# Enregistre et ferme l'éditeur pour continuer. Fichier rendu tel quel ou vidé : fw ne crée rien
+
+------------------------ >8 ------------------------ Besoin (obligatoire)
+# Décris le besoin dans tes mots
+Le forum, les guides et les sessions de jeu n'ont de sens que si les membres sont prévenus de ce qui les concerne. Le site propose des notifications, réglables par type d'événement et par canal.
+
+Canaux :
+- sur le site : une cloche dans l'en-tête avec le nombre de notifications non lues, un panneau des 20 dernières, une page de toutes les notifications ; marquer comme lu, tout marquer comme lu ;
+- e-mail : immédiat ou en résumé quotidien, au choix ;
+- message privé Discord, si le compte Discord est lié (05-07).
+
+Événements (chacun activable par canal dans Settings, 01-03, avec des valeurs par défaut raisonnables) :
+- forum : réponse à un de mes sujets, réponse dans un sujet suivi, mention de mon pseudo, citation d'un de mes messages, ma réponse marquée « Solution », réaction à mes messages (regroupées) ;
+- guides : décision de relecture (publié, modifications demandées, refusé), nouveau commentaire sur mon guide, proposition de modification, nouveau DLC à couvrir dans mon guide, nouveau guide publié pour un jeu que je possède ou suis ;
+- sessions : inscription ou départ d'un participant (pour l'hôte), demande d'inscription à valider, acceptation ou refus, passage de la liste d'attente à inscrit, modification ou annulation, rappels 24 h et 1 h avant, nouvelle session pour un jeu suivi ou un trophée que je n'ai pas ;
+- catalogue : nouveau DLC pour un jeu que je possède ou suis, trophée devenu non obtenable dans un jeu que je n'ai pas fini ;
+- profil : première synchro terminée, échec de vérification, entrée dans un top 100 de leaderboard ;
+- modération : avertissement, sanction, contenu masqué, bannière retirée (toujours activées, non désactivables).
+
+Règles d'envoi :
+- regroupement : plusieurs événements du même type sur le même objet en peu de temps donnent une seule notification (« 5 new replies in <sujet> ») ;
+- pas de notification pour ses propres actions ;
+- un e-mail porte un lien de désinscription en un clic par type d'événement ;
+- heures calmes facultatives (pas d'e-mail ni de message Discord entre deux heures choisies, dans le fuseau du membre), sauf rappels de session.
+
+------------------------ >8 ------------------------ Problème (facultatif)
+# Ce qui ne va pas aujourd'hui, et pour qui, si tu le sais
+Une question sans réponse vue, une session annulée sans prévenir, un guide en attente d'une correction que l'auteur ignore : sans notifications, la communauté s'essouffle.
+Trop de notifications font fuir : il faut des réglages fins et des regroupements.
+
+------------------------ >8 ------------------------ Contexte (facultatif)
+# Qui l'a demandé, à quelle occasion, et pour quand
+Acteurs : membre, système
+Prérequis : 01-01 Créer un compte et se connecter
+Fiches liées : 01-03 Gérer son compte et ses préférences ; 05-04 Publier, lire et évaluer les guides ; 05-05 Participer au forum ; 05-06 Organiser des sessions de jeu ; 05-07 Rejoindre le Discord officiel ; 02-05 Alimenter le catalogue des jeux et DLC
+Lot indicatif : Communauté
+
+------------------------ >8 ------------------------ Notes (facultatif, une note par ligne)
+# Chaque ligne devient une note que l'entretien de spécification traite une par une
+Règle : les notifications du site se mettent à jour en direct (compteur de la cloche) sans recharger la page.
+Règle : les notifications de plus de 90 jours sont supprimées.
+Contrôle : l'envoi d'e-mails passe par un service d'envoi avec domaine authentifié (SPF, DKIM, DMARC) ; les rebonds désactivent l'e-mail du membre après 3 échecs.
+Donnée : une notification porte le membre, le type, l'objet visé, le nombre d'événements regroupés, le texte, le lien, la date et l'état lu ou non.
+Question : faut-il des notifications push du navigateur (et d'une future application mobile) ?

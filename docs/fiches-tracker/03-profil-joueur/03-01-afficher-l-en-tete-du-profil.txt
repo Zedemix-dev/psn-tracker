@@ -1,0 +1,56 @@
+# fw refine — fonctionnalité : Afficher l'en-tête du profil
+# fw-need/1
+# Écris sous chaque ligne « >8 », sans modifier ces lignes
+# fw retire ses propres lignes « # » et garde les tiennes
+# Enregistre et ferme l'éditeur pour continuer. Fichier rendu tel quel ou vidé : fw ne crée rien
+
+------------------------ >8 ------------------------ Besoin (obligatoire)
+# Décris le besoin dans tes mots
+Chaque profil suivi a une page publique, à une adresse stable fondée sur son pseudo PSN (avec redirection quand le pseudo change). Toutes les pages d'un profil (jeux, journal, conseiller, mur des platines, statistiques) partagent le même haut de page, composé de trois éléments.
+
+1. La bannière :
+- bannière personnalisée du propriétaire, ou bannière automatique du dernier jeu joué (voir 01-03) ;
+- grande et le moins rognée possible : hauteur qui suit la largeur de l'écran au format 1920 × 520 (environ 440 px de haut sur un écran de 1 630 px), bornée entre 240 et 560 px ;
+- elle ne se fond dans la page que sur son dernier quart ;
+- la même image, floutée et assombrie, sert de fond à toute la page (style « console », voir 06-01).
+
+2. Le bandeau du profil, panneau translucide qui chevauche le bas de la bannière :
+- l'avatar PSN dans un cercle qui déborde du panneau ; pas de badge d'abonnement, pas de pays ;
+- le pseudo, avec un badge « Verified » si le profil est revendiqué (01-02), et un lien vers le profil du membre sur le forum ;
+- « Last synced 7 Nov 2026, 09:27 » et le bouton « Update profile » avec trois états : prêt, « Syncing… » avec une icône qui tourne, erreur (voir 02-01) ;
+- les compteurs : total des trophées, puis platine, or, argent et bronze, chacun dans sa couleur ;
+- le niveau PSN avec l'icône officielle du palier (10 icônes embarquées dans le site, l'API ne donnant que le numéro de palier 1 à 10), la barre de progression vers le niveau suivant et « 42% to level 537 » ;
+- les rangs du profil dans les principaux leaderboards (par exemple « #1,204 PSN points · #312 Rarity »), chaque rang étant un lien vers le leaderboard à la position du profil (voir 05-02).
+
+3. Les 6 cases de statistiques, chacune avec un libellé et une valeur, sans texte en dessous, chiffres grands et fins :
+- Games completed : jeux à 100 % de progression PSN / nombre total de jeux (« 224 / 266 ») ;
+- Completion rate : trophées obtenus / total des trophées de tous les jeux, DLC compris (« 93.74% ») ;
+- Average rarity : moyenne de la rareté PSN de tous les trophées obtenus (« 26.54% ») ;
+- Unearned trophies : trophées définis moins trophées obtenus, DLC compris (« 776 ») ;
+- Trophies per day : trophées obtenus / jours écoulés depuis le premier trophée (« 3.19 ») ;
+- Hours played : somme des temps de jeu PS4 et PS5 (« 19,416 h »).
+
+En dessous du haut de page vient la navigation entre les pages du profil (jeux, journal des trophées, conseiller, mur des platines, statistiques), puis le contenu de la page.
+
+------------------------ >8 ------------------------ Problème (facultatif)
+# Ce qui ne va pas aujourd'hui, et pour qui, si tu le sais
+Les joueurs veulent retrouver en un coup d'œil l'essentiel de leur profil (niveau, compteurs, complétion, rareté) sur toutes les pages, sans naviguer.
+Un chiffre estimé ou incomplet affiché comme exact détruit la confiance : un profil dont la première synchro n'est pas finie doit le dire.
+
+------------------------ >8 ------------------------ Contexte (facultatif)
+# Qui l'a demandé, à quelle occasion, et pour quand
+Acteurs : visiteur anonyme, membre, propriétaire du profil
+Prérequis : 02-01 Synchroniser les profils des joueurs ; 01-02 Lier et vérifier son profil PSN
+Fiches liées : 01-03 Gérer son compte et ses préférences ; 03-02 Faire défiler les derniers trophées ; 03-03 Lister les jeux d'un joueur ; 05-02 Consulter les leaderboards ; 06-01 Appliquer le système visuel ; 06-03 Mettre à jour les pages en direct
+Lot indicatif : Profil
+
+------------------------ >8 ------------------------ Notes (facultatif, une note par ligne)
+# Chaque ligne devient une note que l'entretien de spécification traite une par une
+Règle : les jeux masqués par le joueur sur le PSN sont exclus de tous les chiffres.
+Règle : quand le propriétaire a activé « Hide 0% games », les jeux à 0 % sont exclus des 6 cases : le total de jeux, la complétion, les trophées manquants et les heures changent ; les compteurs de trophées obtenus, la rareté et les étapes ne changent pas (un jeu à 0 % n'a aucun trophée obtenu).
+Règle : le niveau affiché est celui que donne le PSN, jamais un niveau recalculé.
+Règle : pendant la première synchro d'un profil, les cases affichent « — » et un bandeau « First sync in progress: 120 of 266 games » remplace les chiffres partiels.
+Donnée : nombres au format « 11,622 », pourcentages à deux décimales « 93.74% » (voir 06-05).
+Cas limite : sans aucun trophée obtenu, « Average rarity » et « Trophies per day » affichent « — ».
+Cas limite : sur téléphone (640 px et moins), le total « Trophies » prend toute la largeur sur une ligne (nombre puis libellé), et les 4 types sont en dessous en 4 colonnes égales ; tout tient sur un écran de 320 px.
+Question : faut-il afficher le pays du joueur, que le PSN ne fournit pas toujours, pour permettre des leaderboards par pays ?

@@ -1,0 +1,45 @@
+# fw refine — fonctionnalité : Consulter la fiche d'un trophée
+# fw-need/1
+# Écris sous chaque ligne « >8 », sans modifier ces lignes
+# fw retire ses propres lignes « # » et garde les tiennes
+# Enregistre et ferme l'éditeur pour continuer. Fichier rendu tel quel ou vidé : fw ne crée rien
+
+------------------------ >8 ------------------------ Besoin (obligatoire)
+# Décris le besoin dans tes mots
+Chaque trophée du catalogue a sa propre fiche publique, reliée depuis toutes les listes (fiche d'un jeu, liste de tous les trophées, vitrine, trophées les plus rares, étapes). Elle rassemble tout ce qu'on sait d'un trophée et la manière de l'obtenir.
+
+Haut de page : la bannière du jeu (comme 04-01), puis un bandeau avec l'icône du trophée en grand (sans fond), son nom, sa description en entier, son type (icône officielle et nom), le jeu (lien), le groupe (« Base game » ou nom du DLC), les pastilles de plateforme, le repère « ! » s'il n'est plus obtenable (avec la cause, 02-06), l'objectif s'il s'agit d'un trophée à paliers, et la mention « Hidden trophy » s'il est secret.
+
+Chiffres :
+- rareté PSN et sa catégorie, avec la date de lecture ;
+- rareté du site, nombre de membres suivis qui l'ont obtenu sur le nombre qui possèdent le jeu ;
+- pour un membre connecté : « Earned on 18 Jul 2022, 01:21:07 » ou « Not earned yet », avec sa progression s'il s'agit d'un trophée à paliers.
+
+Sections :
+- « How to unlock » : la section consacrée à ce trophée dans le meilleur guide publié du jeu (05-04), affichée en entier, avec le nom du guide, son auteur et un lien vers le guide complet ; un sélecteur permet de lire la section correspondante des autres guides ; sans guide, un appel « Be the first to write a guide » ;
+- « Tips » : les conseils courts laissés par les membres qui ont obtenu le trophée (500 caractères au plus, un par membre et par trophée), triés par votes utiles ; seul un membre dont le profil vérifié a obtenu le trophée peut en laisser un ;
+- « Forum » : les sujets du forum du jeu rattachés à ce trophée (05-05), et un bouton « Ask about this trophy » qui ouvre un nouveau sujet prérempli ;
+- « Sessions » : les sessions de jeu à venir qui visent ce trophée (05-06) ;
+- « First achievers » : les 10 premiers membres suivis à l'avoir obtenu, avec la date, et « Latest achievers » : les 10 derniers ;
+- si la date d'obtention est significative pour un trophée de difficulté (platine), la répartition des obtentions par mois sur les membres suivis.
+
+------------------------ >8 ------------------------ Problème (facultatif)
+# Ce qui ne va pas aujourd'hui, et pour qui, si tu le sais
+Le joueur bloqué sur un trophée cherche une réponse à ce trophée précis, pas à tout le jeu : il doit trouver au même endroit la méthode du guide, des astuces, des discussions et des partenaires.
+Un lien partageable vers un trophée précis facilite l'entraide sur Discord et sur le forum.
+
+------------------------ >8 ------------------------ Contexte (facultatif)
+# Qui l'a demandé, à quelle occasion, et pour quand
+Acteurs : visiteur anonyme, membre, propriétaire d'un profil vérifié
+Prérequis : 04-01 Consulter la fiche complète d'un jeu
+Fiches liées : 04-03 Lister tous les trophées du PSN ; 05-04 Publier, lire et évaluer les guides ; 05-05 Participer au forum ; 05-06 Organiser des sessions de jeu ; 02-06 Signaler les trophées non obtenables ; 02-07 Calculer la rareté communautaire
+Lot indicatif : Catalogue
+
+------------------------ >8 ------------------------ Notes (facultatif, une note par ligne)
+# Chaque ligne devient une note que l'entretien de spécification traite une par une
+Règle : un conseil est modérable comme tout contenu (01-04) ; il peut porter une balise de spoiler.
+Règle : les listes d'obtenteurs excluent les profils privés, introuvables ou qui masquent ce jeu.
+Contrôle : un vote « utile » par membre et par conseil ; on ne vote pas pour son propre conseil.
+Donnée : l'adresse est stable : identifiant de la liste, identifiant du trophée et nom lisible.
+Cas limite : pour un trophée secret, si le lecteur a activé « Hide secret trophy descriptions » et ne l'a pas obtenu, nom et description sont masqués derrière un bouton « Show ».
+Question : faut-il des votes de difficulté par trophée (sur 10) en plus de la difficulté globale des guides ?

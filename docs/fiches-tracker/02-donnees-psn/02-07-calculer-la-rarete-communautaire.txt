@@ -1,0 +1,49 @@
+# fw refine — fonctionnalité : Calculer la rareté communautaire
+# fw-need/1
+# Écris sous chaque ligne « >8 », sans modifier ces lignes
+# fw retire ses propres lignes « # » et garde les tiennes
+# Enregistre et ferme l'éditeur pour continuer. Fichier rendu tel quel ou vidé : fw ne crée rien
+
+------------------------ >8 ------------------------ Besoin (obligatoire)
+# Décris le besoin dans tes mots
+Deux raretés coexistent sur le site :
+- la **rareté PSN** (mondiale) : le pourcentage de tous les joueurs PlayStation possédant le jeu qui ont obtenu le trophée, fourni par Sony. C'est la référence du site : c'est elle qui sert par défaut aux catégories de rareté, aux tris, aux statistiques et aux scores ;
+- la **rareté du site** (communautaire) : le pourcentage des profils suivis sur le site qui possèdent la liste de trophées et ont obtenu le trophée. Elle est affichée à côté de la rareté PSN, jamais à sa place.
+
+Calcul de la rareté du site :
+- dénominateur : profils suivis, publics, non masqués pour ce jeu, qui possèdent la liste (au moins la liste présente dans leurs jeux, y compris à 0 %) ;
+- numérateur : parmi eux, ceux qui ont obtenu le trophée ;
+- recalculée une fois par jour pour tout le catalogue, et pour un jeu dès qu'un de ses joueurs est synchronisé (au plus une fois par heure par jeu) ;
+- sous un seuil de 10 propriétaires suivis, la rareté du site n'est pas affichée (« Not enough players ») : un petit échantillon donnerait des chiffres trompeurs.
+
+Catégories de rareté (appliquées aux deux raretés, mêmes paliers) :
+- Ultra rare : moins de 5 % ;
+- Very rare : 5 % à moins de 10 % ;
+- Rare : 10 % à moins de 20 % ;
+- Uncommon : 20 % à moins de 50 % ;
+- Common : 50 % et plus.
+Un trophée sans rareté connue n'a pas de catégorie et n'entre dans aucun calcul de moyenne.
+
+Affichage :
+- partout où une rareté est affichée, la rareté PSN est en premier (« 4.60% Ultra rare ») ; la rareté du site apparaît en second, plus discrète, avec une étiquette (« Site 22.94% ») ou dans une infobulle selon la place disponible ;
+- les statistiques communautaires d'une liste (nombre de propriétaires suivis, de platinés, de 100 %) s'affichent sur la fiche du jeu (04-01).
+
+------------------------ >8 ------------------------ Problème (facultatif)
+# Ce qui ne va pas aujourd'hui, et pour qui, si tu le sais
+Une rareté calculée sur les seuls membres d'un site de chasseurs de trophées surestime fortement l'obtention : des trophées très durs y paraissent communs (un trophée à 4,60 % au PSN peut dépasser 20 % chez les membres). Les joueurs veulent la rareté PSN comme référence.
+La rareté communautaire reste utile pour situer un trophée parmi les chasseurs actifs, et pour les jeux dont la rareté PSN n'est pas encore connue.
+
+------------------------ >8 ------------------------ Contexte (facultatif)
+# Qui l'a demandé, à quelle occasion, et pour quand
+Acteurs : système (worker), tout lecteur
+Prérequis : 02-01 Synchroniser les profils des joueurs ; 02-05 Alimenter le catalogue des jeux et DLC
+Fiches liées : 03-05 Afficher les trophées les plus rares ; 04-01 Consulter la fiche complète d'un jeu ; 04-03 Lister tous les trophées du PSN ; 04-04 Consulter la fiche d'un trophée ; 05-02 Consulter les leaderboards
+Lot indicatif : Catalogue
+
+------------------------ >8 ------------------------ Notes (facultatif, une note par ligne)
+# Chaque ligne devient une note que l'entretien de spécification traite une par une
+Règle : la rareté PSN est stockée en nombre (pourcentage à deux décimales) pour pouvoir trier et calculer des moyennes ; la catégorie PSN renvoyée par Sony est conservée aussi mais l'affichage utilise les paliers ci-dessus.
+Règle : les profils privés, introuvables ou retirés du site ne comptent pas dans la rareté du site.
+Donnée : pour chaque trophée, on garde la rareté PSN, sa date de lecture, la rareté du site, le nombre de propriétaires suivis, le nombre d'obtentions sur le site et la date de calcul.
+Question : le leaderboard de rareté (05-02) doit-il utiliser la rareté PSN seule, ou permettre de basculer sur la rareté du site ?
+Question : le seuil de 10 propriétaires suivis convient-il ?

@@ -1,0 +1,61 @@
+# fw refine — fonctionnalité : Lister tous les jeux du PSN
+# fw-need/1
+# Écris sous chaque ligne « >8 », sans modifier ces lignes
+# fw retire ses propres lignes « # » et garde les tiennes
+# Enregistre et ferme l'éditeur pour continuer. Fichier rendu tel quel ou vidé : fw ne crée rien
+
+------------------------ >8 ------------------------ Besoin (obligatoire)
+# Décris le besoin dans tes mots
+Une page publique « Games » liste tous les jeux PS4 et PS5 connus du catalogue (02-05), qu'un membre les possède ou non, pour explorer, chercher un jeu, découvrir les sorties et trouver des jeux à platiner.
+
+En-tête : le titre, le nombre de jeux qui correspondent (« 8,412 games », « 213 of 8,412 games match »), puis « Show all » si la liste n'est pas entièrement chargée.
+
+Recherche : par nom (sans tenir compte de la casse, des accents, de ™ ® © ni de la ponctuation), résultats au fil de la frappe.
+
+Filtres (combinables, contour d'accent quand actifs) :
+- plateforme : All, PS4, PS5 ;
+- présence d'un platine : All, With platinum, Without platinum ;
+- DLC : All, With DLC, Without DLC ;
+- genre (liste des genres du store) ; éditeur (liste des éditeurs affichés) ;
+- année de sortie (de… à…) ;
+- trophées non obtenables : With / Without unobtainable ;
+- avec un guide publié ; avec des sessions à venir ;
+- pour un membre connecté : « Owned by me », « Not owned by me », « Not started », « Completed by me ».
+
+Tris :
+- Recently added (par défaut : date de première apparition au catalogue, la plus récente d'abord) ;
+- Release date ; Alphabetical ;
+- Most tracked players ; Most players today (05-01) ;
+- Easiest platinum (plus fort pourcentage PSN d'obtention du platine) ; Hardest platinum (le plus faible) ;
+- Average completion of tracked players ; Number of trophies ; Shortest platinum (temps médian vers le platine des joueurs suivis, à partir de 10 platinés).
+Chaque tri a son sens naturel et un bouton de sens.
+
+Ligne d'un jeu (environ 80 px, cliquable vers la fiche du jeu 04-01) :
+- jaquette carrée de 60 px (ou icône sur sa tuile) ;
+- nom, badge de plateforme, « ! » des non obtenables ; dessous « 58 trophies · 3 DLC · Release 10 Dec 2020 » ; dessous l'éditeur et les genres ;
+- à droite, les pastilles du nombre de trophées par type ; la rareté PSN du platine (« Platinum 12.40% ») ; le nombre de joueurs suivis ; une pastille « Guide » si un guide est publié ;
+- pour un membre connecté qui possède le jeu, sa barre de progression aux couleurs du rang et son pourcentage, et l'icône d'état.
+
+Affichage alternatif en grille de jaquettes (bouton de bascule, mémorisé pour le lecteur).
+
+Chargement : 50 jeux rendus côté serveur, puis 50 de plus à l'approche du bas, « Show all » par paquets, retour au même endroit (06-02).
+
+------------------------ >8 ------------------------ Problème (facultatif)
+# Ce qui ne va pas aujourd'hui, et pour qui, si tu le sais
+Un chasseur de trophées cherche son prochain jeu selon des critères précis (platine facile, court, sans trophée en ligne impossible, avec un guide) que le store PlayStation ne propose pas.
+Un catalogue limité aux jeux de ses propres membres ne permet pas de découvrir les nouveautés.
+
+------------------------ >8 ------------------------ Contexte (facultatif)
+# Qui l'a demandé, à quelle occasion, et pour quand
+Acteurs : visiteur anonyme, membre
+Prérequis : 02-05 Alimenter le catalogue des jeux et DLC
+Fiches liées : 04-01 Consulter la fiche complète d'un jeu ; 04-03 Lister tous les trophées du PSN ; 05-01 Afficher la page d'accueil ; 06-02 Charger les longues listes et revenir à sa place
+Lot indicatif : Catalogue
+
+------------------------ >8 ------------------------ Notes (facultatif, une note par ligne)
+# Chaque ligne devient une note que l'entretien de spécification traite une par une
+Règle : chaque liste de trophées est une ligne (une version PS4 et une version PS5 font deux lignes) ; un regroupement par jeu est proposé en option (« Group versions ») qui affiche une ligne par jeu avec ses badges de plateformes.
+Règle : filtres, tri et recherche vivent dans l'adresse de la page, sans enregistrement ; valeur invalide ignorée.
+Règle : la page doit rester rapide sur un catalogue de plusieurs dizaines de milliers de listes : index de recherche sur le nom normalisé, compteurs précalculés.
+Cas limite : sans résultat, « No games match these filters. ».
+Question : faut-il exposer aussi les jeux PS3 et PS Vita en lecture seule, ou les exclure totalement du catalogue ?

@@ -1,0 +1,56 @@
+# fw refine — fonctionnalité : Afficher la page d'accueil
+# fw-need/1
+# Écris sous chaque ligne « >8 », sans modifier ces lignes
+# fw retire ses propres lignes « # » et garde les tiennes
+# Enregistre et ferme l'éditeur pour continuer. Fichier rendu tel quel ou vidé : fw ne crée rien
+
+------------------------ >8 ------------------------ Besoin (obligatoire)
+# Décris le besoin dans tes mots
+La page d'accueil du site est la vitrine de l'actualité des trophées et de la communauté. Elle est publique et identique pour tous, avec quelques blocs personnels pour un membre connecté.
+
+Haut de page :
+- une bannière du site : l'image de fond du jeu le plus joué du jour (bloc 4), floutée en fond de page comme sur les profils ;
+- un champ de recherche central : « Find a PSN profile, a game or a trophy », avec suggestions au fil de la frappe groupées par type (profils, jeux, trophées, guides) ; un PSN ID inconnu propose de l'ajouter (01-02) ;
+- pour un membre connecté avec un profil vérifié : un bandeau compact de son profil (avatar, pseudo, niveau, compteurs, derniers trophées) avec un lien vers son profil.
+
+Blocs, dans cet ordre (deux colonnes sur grand écran, une sur téléphone) :
+
+1. Latest games : les derniers jeux ajoutés au PSN (02-05), les plus récents d'abord, 12 jaquettes carrées avec nom, plateforme, nombre de trophées par type et date d'ajout (« Added 2 hours ago ») ; lien « See all » vers la liste des jeux triée par ajout récent (04-02) ;
+
+2. Latest DLC : les derniers packs DLC ajoutés à des jeux (nouveau groupe de trophées), 8 lignes : icône du groupe (règle des images carrées), nom du DLC, nom du jeu, nombre de trophées par type, date d'ajout ; un clic mène au groupe dans la fiche du jeu ;
+
+3. Latest guides : les 6 derniers guides publiés ou mis à jour de façon importante (05-04) : jaquette du jeu, titre du guide, auteur, note moyenne, difficulté, durée estimée, date de publication ;
+
+4. Most played today : le top 10 des jeux qui ont le plus de joueurs actifs sur la journée en cours : rang, jaquette, nom, nombre de joueurs actifs du jour (« 1,204 players today »), évolution par rapport à la veille (flèche et écart de rang) ; un sélecteur « Today / This week / This month » ;
+
+5. Latest forum posts : les 10 derniers messages publics du forum (05-05), toutes sections confondues : titre du sujet, section (jeu ou catégorie), auteur, extrait du message (150 caractères, sans spoiler), date relative ; lien vers le message ;
+
+6. Upcoming sessions : les prochaines sessions de jeu ouvertes avec des places libres (05-06) : jeu, type, date et heure dans le fuseau du lecteur, places restantes ;
+
+7. Leaderboards : un aperçu des 5 premiers des principaux classements (points PSN, rareté, complétion), avec lien vers chacun (05-02) ;
+
+8. Community : quelques chiffres du site (profils suivis, trophées suivis, guides, platines obtenus aujourd'hui par les membres) et le bouton « Join our Discord » (05-07).
+
+Pour un membre connecté, un bloc supplémentaire en tête de la colonne de droite : « For you » : nouveaux DLC de ses jeux, nouveaux guides de ses jeux non terminés, réponses à ses sujets, sessions auxquelles il est inscrit dans les prochaines 24 h.
+
+------------------------ >8 ------------------------ Problème (facultatif)
+# Ce qui ne va pas aujourd'hui, et pour qui, si tu le sais
+Un chasseur de trophées veut savoir chaque jour ce qui est sorti (jeux, DLC), ce qui a été écrit (guides, forum) et à quoi joue la communauté, sans chercher à plusieurs endroits.
+Une page d'accueil statique ne donne aucune raison de revenir.
+
+------------------------ >8 ------------------------ Contexte (facultatif)
+# Qui l'a demandé, à quelle occasion, et pour quand
+Acteurs : visiteur anonyme, membre
+Prérequis : 02-05 Alimenter le catalogue des jeux et DLC ; 05-04 Publier, lire et évaluer les guides ; 05-05 Participer au forum
+Fiches liées : 04-02 Lister tous les jeux du PSN ; 05-02 Consulter les leaderboards ; 05-06 Organiser des sessions de jeu ; 05-07 Rejoindre le Discord officiel ; 01-02 Lier et vérifier son profil PSN
+Lot indicatif : Communauté
+
+------------------------ >8 ------------------------ Notes (facultatif, une note par ligne)
+# Chaque ligne devient une note que l'entretien de spécification traite une par une
+Règle : un joueur actif du jour sur un jeu est un profil suivi qui a obtenu au moins un trophée de ce jeu pendant la journée en cours, ou dont la date de dernière partie de ce jeu tombe dans la journée ; la journée est celle du fuseau UTC pour que le classement soit le même pour tous, ce qui est indiqué en petit (« Today, UTC »).
+Règle : un jeu PS4 et sa version PS5 sont regroupés dans le top (un joueur compté une fois par jeu).
+Règle : le top est recalculé toutes les 15 minutes ; la page d'accueil est mise en cache et rafraîchie à chaque nouvel élément sans dépasser une minute de retard.
+Règle : les messages des sections réservées ou masqués par la modération n'apparaissent jamais dans « Latest forum posts » ; un extrait contenant un spoiler montre « Spoiler hidden ».
+Contrôle : la page d'accueil doit s'afficher en moins de 300 ms côté serveur.
+Cas limite : un bloc vide (pas encore de guide, pas de session) affiche un message d'invitation (« No guide yet — write the first one »).
+Question : le classement « Most played today » doit-il compter les membres suivis seulement, ou peut-on approcher l'activité réelle du PSN (nombre de joueurs du store) ?

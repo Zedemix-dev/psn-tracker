@@ -1,0 +1,50 @@
+# fw refine — fonctionnalité : Gérer l'accès au PSN du compte de service
+# fw-need/1
+# Écris sous chaque ligne « >8 », sans modifier ces lignes
+# fw retire ses propres lignes « # » et garde les tiennes
+# Enregistre et ferme l'éditeur pour continuer. Fichier rendu tel quel ou vidé : fw ne crée rien
+
+------------------------ >8 ------------------------ Besoin (obligatoire)
+# Décris le besoin dans tes mots
+Le site lit les profils publics des joueurs avec un ou plusieurs comptes PlayStation qui lui appartiennent (comptes de service). L'accès au PSN se fait par un jeton NPSSO (cookie d'authentification Sony de 64 caractères), que l'administrateur colle dans l'espace d'administration (01-05).
+
+Chaîne d'authentification :
+- NPSSO → code d'accès → jetons d'authentification : un jeton d'accès (valable quelques heures) et un jeton de renouvellement ;
+- le jeton de renouvellement est conservé, et on stocke toujours le dernier reçu ; le jeton d'accès est renouvelé avec lui quand il expire ;
+- le NPSSO n'est pas conservé : il sert une fois à obtenir les jetons, puis il est oublié. Seule la date du dernier collage est gardée (pour calculer l'âge affiché) ;
+- les jetons PSN sont stockés chiffrés en base (AES-256-GCM), avec une clé fournie par variable d'environnement ; ils ne sont jamais envoyés au navigateur. L'écran n'affiche que leur état.
+
+Distinguer refus et panne :
+- refus du PSN (réponse sans jeton utilisable : jeton d'accès ou de renouvellement vide, durées non numériques) : l'accès passe à l'état « expired », les synchros s'arrêtent, le bandeau d'alerte s'affiche aux administrateurs ;
+- PSN injoignable (réseau, DNS, délai dépassé) : l'état ne change pas, l'exécution échoue avec « Couldn't reach PSN », aucun bandeau ; la synchro suivante réessaie normalement ;
+- toute autre erreur (par exemple une page d'erreur HTML de Sony) : l'état ne change pas, l'exécution échoue avec « PSN token refresh failed (<message d'origine>) ».
+
+Délais :
+- l'échange du NPSSO et le renouvellement ont un délai maximal de 20 s, reprises comprises (reprises sur erreur réseau à 1, 2 puis 4 s) ;
+- un renouvellement qui répond après ce délai est quand même enregistré : l'exécution a déjà échoué, mais le jeton reçu n'est pas perdu.
+
+Le contrôle du refus se fait au plus près de l'appel, avant tout autre traitement de la réponse, pour qu'une réponse mal formée ne soit jamais prise pour une panne réseau, ni l'inverse.
+
+------------------------ >8 ------------------------ Problème (facultatif)
+# Ce qui ne va pas aujourd'hui, et pour qui, si tu le sais
+Certaines bibliothèques clientes du PSN ne signalent pas un refus : elles renvoient un objet sans jeton, et le traitement plante plus loin avec un message technique sans jamais indiquer que le jeton a expiré.
+Afficher « token expired » alors que le PSN est seulement injoignable pousse l'administrateur à recoller un jeton inutilement ; ne rien afficher alors que le jeton est refusé arrête toutes les synchros sans alerte.
+Garder le NPSSO en base est un risque inutile : il donne un accès complet au compte Sony.
+
+------------------------ >8 ------------------------ Contexte (facultatif)
+# Qui l'a demandé, à quelle occasion, et pour quand
+Acteurs : administrateur, système (worker)
+Prérequis : aucun
+Fiches liées : 01-05 Administrer le site ; 02-01 Synchroniser les profils des joueurs ; 06-04 Sécuriser et exploiter le site
+Lot indicatif : Socle
+
+------------------------ >8 ------------------------ Notes (facultatif, une note par ligne)
+# Chaque ligne devient une note que l'entretien de spécification traite une par une
+Règle : le NPSSO expire au bout d'environ 2 mois ; un bandeau administrateur apparaît à partir de 50 jours d'âge.
+Règle : à l'enregistrement, le NPSSO est validé tout de suite en l'échangeant contre des jetons ; en cas d'échec, rien n'est remplacé.
+Contrôle : un NPSSO de longueur différente de 64 caractères est refusé avant tout appel.
+Sécurité : la clé de chiffrement ne vit que dans l'environnement des conteneurs, jamais dans le code ni dans la base.
+Sécurité : les journaux ne contiennent jamais de jeton, même tronqué.
+Donnée : un compte de service porte un libellé, les jetons chiffrés, leurs dates d'expiration, la date du dernier collage du NPSSO, l'état (valid, expired), la date et le motif du dernier échec.
+Risque accepté : la bibliothèque ne donne pas le code HTTP ; une réponse JSON sans jeton, même renvoyée par une panne de Sony, compte comme un refus.
+Question : faut-il notifier les administrateurs par e-mail ou Discord quand le jeton approche de l'expiration ou est refusé ?
