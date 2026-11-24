@@ -6,11 +6,13 @@ Deux stacks Portainer : **infra** (`stack-infra.yml` : postgres + nginx) et **si
 
 ## 1. GitHub
 
-1. Le dépôt `Zedemix-dev/psn-tracker` est **privé**. GitHub Actions est activé par défaut : rien à configurer.
+1. Le dépôt `Zedemix-dev/psn-tracker` est public depuis le 13 novembre 2026 (minutes de la CI), mais il **repassera en privé** : tout ce guide marche dans les deux cas. GitHub Actions est activé par défaut : rien à configurer.
 2. Après le premier push sur `main`, le workflow « CI » construit l'image et la publie. Elle apparaît dans l'onglet **Packages** du dépôt (`ghcr.io/zedemix-dev/psn-tracker`, étiquettes `latest` et `sha-<court>`).
-3. Portainer doit pouvoir télécharger l'image. Deux options :
-   - **Package privé (recommandé)** : créer un *Personal Access Token (classic)* sur GitHub (Settings → Developer settings → Personal access tokens → Tokens (classic)) avec **uniquement** la permission `read:packages`. Puis dans Portainer : **Registries → Add registry → Custom registry** (ou GitHub/GHCR), URL `ghcr.io`, avec authentification : nom d'utilisateur GitHub + le token.
-   - **Package public** : sur la page du package → Package settings → Change visibility → Public. Aucun token n'est alors nécessaire (mais l'image est visible de tous : elle ne contient aucun secret, ceux-ci sont dans les variables d'environnement).
+3. Portainer doit pouvoir télécharger l'image. Le package est **privé**, et sa visibilité ne suit pas celle du dépôt : il le reste même quand le dépôt est public. **Ne le passez jamais en public** : un package public ne peut plus redevenir privé.
+   - Créer un *Personal Access Token (classic)* sur GitHub (Settings → Developer settings → Personal access tokens → Tokens (classic)) avec **uniquement** la permission `read:packages`. Pour l'expiration, choisissez « No expiration », ou notez la date : un token expiré n'arrête pas le site, mais le « Re-pull image » de l'étape 8 échoue alors avec `unauthorized` ou `denied`, et il faut un nouveau token.
+   - Puis dans Portainer : **Registries → Add registry → Custom registry** (ou GitHub/GHCR), URL `ghcr.io`, avec authentification : nom d'utilisateur GitHub + le token.
+   - Le stockage et le téléchargement des images sur GHCR sont gratuits à ce jour, même pour un package privé (page de facturation GitHub Packages).
+   - Les stacks sont collées dans le *Web editor* de Portainer (étape 5) et `default.conf` est copié depuis le PC (étape 2) : ni l'un ni l'autre n'a besoin d'accéder au dépôt.
 4. Quotas gratuits : pour un dépôt privé, GitHub Actions offre un nombre limité de minutes par mois (2 000 sur le plan gratuit) et un espace de stockage limité (les plafonds exacts sont sur la page de facturation GitHub ; un dépôt public n'a pas de limite de minutes). En novembre 2026, les minutes ont été épuisées parce que la CI tournait à chaque push de chaque branche. Le workflow est maintenant réglé pour les économiser :
    - il ne tourne **que** sur une pull request vers `main` (à sa création, puis à chaque push sur sa branche), sur `main` après une fusion (pour publier l'image), ou à la demande. Un push sur une branche de travail ne lance rien : on peut pousser après chaque commit sans coût ;
    - un nouveau push sur la même pull request annule le run en cours (jamais sur `main`) ;
